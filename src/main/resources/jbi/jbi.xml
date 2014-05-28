@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2010-2012 EBM WebSourcing, 2012-2014 Linagora
+ Copyright (c) 2014 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -27,7 +27,7 @@
 			<jbi:name>petals-se-activitibpmn</jbi:name>
 			<jbi:description>ACTIVITI BPMN service engine</jbi:description>
 		</jbi:identification>
-		<jbi:component-class-name>org.ow2.petals.acitivitibpmn.ActivitiSE</jbi:component-class-name>
+		<jbi:component-class-name>org.ow2.petals.activitibpmn.ActivitiSE</jbi:component-class-name>
 		<jbi:component-class-path><jbi:path-element/></jbi:component-class-path>
 		<jbi:bootstrap-class-name>org.ow2.petals.component.framework.DefaultBootstrap</jbi:bootstrap-class-name>
 		<jbi:bootstrap-class-path><jbi:path-element/></jbi:bootstrap-class-path>
@@ -44,7 +44,7 @@
 		<petalsCDK:processor-stop-max-wait />
 		<petalsCDK:time-beetween-async-cleaner-runs />
 		<petalsCDK:properties-file />
-		<petalsCDK:jbi-listener-class-name>org.ow2.petals.se.activitibpmn.JBIListener</petalsCDK:jbi-listener-class-name>	
+		<petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.listener.JBIListener</petalsCDK:jbi-listener-class-name>	
 		<!-- Component specific configuration -->
 	</jbi:component>
 </jbi:jbi>

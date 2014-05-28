@@ -19,12 +19,12 @@ package org.ow2.petals.activitibpmn;
 
 import javax.jbi.JBIException;
 
-import org.ow2.petals.component.framework.se.AbstractServiceEngine;
-import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.ProcessEngineConfiguration;
 /* import org.activiti.engine.ProcessEngines; */
 import org.activiti.engine.ActivitiException;
+import org.activiti.engine.ProcessEngine;
+import org.activiti.engine.ProcessEngineConfiguration;
+import org.ow2.petals.component.framework.se.AbstractServiceEngine;
+import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 
 
 /**
@@ -57,12 +57,16 @@ public class ActivitiSE extends AbstractServiceEngine {
 		try {
 			/* this.activitiEngine = ProcessEngines.getDefaultProcessEngine(); */
 			
-			/* Create a standalone in memory default Activiti Engine */
-			this.activitiEngine = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
-					  .setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_FALSE)
-					  .setJdbcUrl("jdbc:h2:mem:my-own-db;DB_CLOSE_DELAY=1000")
-					  .setJobExecutorActivate(false)
-					  .buildProcessEngine();
+            /* Create a stand-alone in memory default Activiti Engine */
+            final ProcessEngineConfiguration pec = ProcessEngineConfiguration
+                    .createStandaloneInMemProcessEngineConfiguration();
+            pec.setJdbcDriver("org.h2.Driver");
+            pec.setJdbcUrl("jdbc:h2:mem:my-own-db;DB_CLOSE_DELAY=1000");
+            pec.setJdbcUsername("sa").setJdbcPassword("");
+            pec.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
+            pec.setJobExecutorActivate(false);
+
+            this.activitiEngine = pec.buildProcessEngine();
 			
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while creating the Activiti BPMN Engine.", e );

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014-2014 Linagora
+ Copyright (c) 2014 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -53,14 +53,10 @@
 		</developer>
 	</developers>
 	
-	<!-- ============ -->
-	<!-- Dependencies -->
-	<!-- ============ -->
 	<dependencies>
 		<dependency>
 			<groupId>org.ow2.petals</groupId>
 			<artifactId>petals-cdk-core</artifactId>
-	<!--		<version>5.3.0</version>  -->
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.petals</groupId>
@@ -71,12 +67,16 @@
 			<artifactId>activiti-engine</artifactId>
 			<version>5.15</version>
 		</dependency>
+      
+      <dependency>
+         <!-- TODO: The JDBC Driver should be set as shared library. How to set the default one ? -->
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <version>1.4.178</version>
+         <scope>runtime</scope>
+      </dependency>
 	</dependencies>
 	
-	
-	<!-- ===== -->
-	<!-- Build -->
-	<!-- ===== -->
 	<build>
 		<plugins>
 			<plugin>
@@ -85,24 +85,10 @@
 			</plugin>
 		</plugins>
 	</build>
-  
-	<!-- ============ -->
-	<!-- Repositories -->
-	<!-- ============ -->
-<!-- 
-	<repositories>
-		<repository>
-			<id>petals-link</id>
-			<url>http://maven.petalslink.com/public/</url>
-		</repository>
-	</repositories>
-	
-	<scm>
-		<connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-se-activitibpmn</connection>
-		<developerConnection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-se-activitibpmn</developerConnection>
-		<url>http://gitorious.ow2.org/ow2/pom/petals-parent/tags/petals-components-parent-1.0.1/petals-se-activitibpmn</url>
-	</scm>	
--->
-	
-	
+
+   <scm>
+		<connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
+		<developerConnection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</developerConnection>
+	</scm>
+
 </project>
