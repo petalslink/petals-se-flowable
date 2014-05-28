@@ -1,0 +1,19 @@
+^#!
+^<\?xml.*>$
+^\W*$
+^\W*Copyright \(c\) ((\d\d\d\d-)?\d\d\d\d .*, )?(\d\d\d\d-)?2014 Linagora$
+^\W*$
+^\W*This program/library is free software: you can redistribute it and/or modify$
+^\W*it under the terms of the GNU Lesser General Public License as published by$
+^\W*the Free Software Foundation, either version 2.1 of the License, or \(at your$
+^\W*option\) any later version.$
+^\W*$
+^\W*This program/library is distributed in the hope that it will be useful, but$
+^\W*WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or$
+^\W*FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License$
+^\W*for more details.$
+^\W*$
+^\W*You should have received a copy of the GNU Lesser General Public License$
+^\W*along with this program/library; If not, see <http://www.gnu.org/licenses/>$
+^\W*for the GNU Lesser General Public License version 2.1.$
+^\W*$
