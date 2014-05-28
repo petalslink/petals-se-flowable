@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014-2014 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses />
+ for the GNU Lesser General Public License version 2.1.
+-->
+<project 
+		xmlns="http://maven.apache.org/POM/4.0.0" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+		
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>petals-cdkbased-components-parent</artifactId>
+		<groupId>org.ow2.petals</groupId>
+		<relativePath>../cdk-based-parent/pom.xml</relativePath>
+		<version>1.0.0-SNAPSHOT</version>
+	</parent>
+	
+	<!-- ============== -->
+	<!-- Identification -->
+	<!-- ============== -->
+	<name>Petals ESB - Components - SE Activiti BPMN</name>
+	<artifactId>petals-se-activitibpmn</artifactId>
+	<groupId>org.ow2.petals</groupId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jbi-component</packaging>
+	<description>BPMN Service Engine based on Activiti</description>
+
+	<developers>
+		<developer>
+			<name>Bertrand Escudie </name>
+			<email>bescudie@linagora.com</email>
+			<id>bescudie</id>
+			<organization>Linagora</organization>
+			<organizationUrl>http://www.linagora.com</organizationUrl>
+			<roles>
+				<role>Product Owner</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+	
+	<!-- ============ -->
+	<!-- Dependencies -->
+	<!-- ============ -->
+	<dependencies>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+			<artifactId>petals-cdk-core</artifactId>
+	<!--		<version>5.3.0</version>  -->
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.petals</groupId>
+ 			<artifactId>petals-jbi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.activiti</groupId>
+			<artifactId>activiti-engine</artifactId>
+			<version>5.15</version>
+		</dependency>
+	</dependencies>
+	
+	
+	<!-- ===== -->
+	<!-- Build -->
+	<!-- ===== -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+  
+	<!-- ============ -->
+	<!-- Repositories -->
+	<!-- ============ -->
+<!-- 
+	<repositories>
+		<repository>
+			<id>petals-link</id>
+			<url>http://maven.petalslink.com/public/</url>
+		</repository>
+	</repositories>
+	
+	<scm>
+		<connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-se-activitibpmn</connection>
+		<developerConnection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-se-activitibpmn</developerConnection>
+		<url>http://gitorious.ow2.org/ow2/pom/petals-parent/tags/petals-components-parent-1.0.1/petals-se-activitibpmn</url>
+	</scm>	
+-->
+	
+	
+</project>
