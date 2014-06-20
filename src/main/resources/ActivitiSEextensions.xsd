@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014-2014 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0"
+	xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+	xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0"
+	elementFormDefault="qualified">
+	<xs:import namespace="http://petals.ow2.org/components/extensions/version-5"
+		schemaLocation="CDKextensions.xsd" />
+		
+	<!-- Activiti DataBase configuration elements -->
+	<xs:element name="jdbcDriver" type="petalsCDK:settablestring" default="org.h2.Driver">
+		<xs:annotation>
+			<xs:documentation>Implementation of the driver for the specific database type</xs:documentation>
+			<xs:documentation xml:lang="fr">Implémentation du driver pour le type de base de données </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="jdbcUrl" type="petalsCDK:settablestring" default="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000">
+		<xs:annotation>
+			<xs:documentation>jdbcUrl: JDBC URL of the database</xs:documentation>
+			<xs:documentation xml:lang="fr">URL JDBC de la base de données</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="jdbcUsername" type="petalsCDK:settablestring" default="sa">
+		<xs:annotation>
+			<xs:documentation>username to connect to the database</xs:documentation>
+			<xs:documentation xml:lang="fr">utilisateur de connexion à la base de données</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="jdbcPassword" type="petalsCDK:settablestring" default="">
+		<xs:annotation>
+			<xs:documentation>password to connect to the database</xs:documentation>
+			<xs:documentation xml:lang="fr">mot de passe de connexion à la base de données</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="jdbcMaxActiveConnections" type="petalsCDK:settableint" default="10">
+		<xs:annotation>
+			<xs:documentation>The number of active connections that the connection pool at maximum at any time can contain</xs:documentation>
+			<xs:documentation xml:lang="fr">Nombre de connexions actives simultanées que le pool de connexion peut accepter au maximum</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="jdbcMaxIdleConnections" type="petalsCDK:settableint">
+		<xs:annotation>
+			<xs:documentation>The number of idle connections that the connection pool at maximum at any time can contain</xs:documentation>
+			<xs:documentation xml:lang="fr">Nombre de connexions inactives simultanées que le pool de connexion peut accepter au maximum</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="jdbcMaxCheckoutTime" type="petalsCDK:settableint" default="20000">
+		<xs:annotation>
+			<xs:documentation>The amount of time in milliseconds a connection can be 'checked out' from the connection pool before it is forcefully returned</xs:documentation>
+			<xs:documentation xml:lang="fr">Durée en millisecondes avant qu'une connexion soit 'vérifiée' du pool de connexion avant d'être renvoyé de force</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="jdbcMaxWaitTime" type="petalsCDK:settableint" default="20000">
+		<xs:annotation>
+			<xs:documentation>This is a low level setting that gives the pool a chance to print a log status and re-attempt the acquisition of a connection in the case that it’s taking unusually long</xs:documentation>
+			<xs:documentation xml:lang="fr">Paramètre de bas niveau qui donne au pool une chance pour imprimer un état ​​de journal et re-tenter l'acquisition d'une connexion dans le cas où elle est exceptionnellement longue </xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:element name="databaseType" type="petals-se-activitibpmn:DatabaseType" default="h2">
+		<xs:annotation>
+			<xs:documentation>Should only be specified in case automatic detection fails. Possible values: (h2/mysql/oracle/postgres/mssql/db2)</xs:documentation>
+			<xs:documentation xml:lang="fr">Doit être précisé en cas de non fonctionnement de la détection automatique. Valeurs possibles: (h2/mysql/oracle/postgres/mssql/db2)</xs:documentation>
+		</xs:annotation>
+	</xs:element>	
+
+	<xs:element name="databaseSchemaUpdate" type="petals-se-activitibpmn:DatabaseSchemaUpdate" default="false">
+		<xs:annotation>
+			<xs:documentation>Allows to set the strategy to handle the database schema on process engine boot and shutdown</xs:documentation>
+			<xs:documentation xml:lang="fr">Permet de définir la stratégie pour gérer le schéma de base de données lors du démarrage et l'arrêt du moteur de processus</xs:documentation>
+		</xs:annotation>
+	</xs:element>	
+
+	
+	<!-- TYPES -->
+	<xs:simpleType name="DatabaseType">
+		<xs:restriction base="petalsCDK:settablestring">
+			<xs:enumeration value="h2" />
+			<xs:enumeration value="mysql" />
+			<xs:enumeration value="oracle" />
+			<xs:enumeration value="postgres" />
+			<xs:enumeration value="mssql" />
+			<xs:enumeration value="db2" />
+		</xs:restriction>
+	</xs:simpleType>	
+
+	<xs:simpleType name="DatabaseSchemaUpdate">
+		<xs:restriction base="petalsCDK:settablestring">
+			<xs:enumeration value="false">
+				<xs:annotation>
+					<xs:documentation>Checks the version of the DB schema against the library when the process engine is being created and throws an exception if the versions don't match</xs:documentation>
+					<xs:documentation xml:lang="fr">Vérifie la version du schéma DB à la bibliothèque lorsque le moteur de processus est en cours de création et lève une exception si les versions ne correspondent pas</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>
+			<xs:enumeration value="true">
+				<xs:annotation>
+					<xs:documentation>Upon building the process engine, a check is performed and an update of the schema is performed if it is necessary. If the schema doesn't exist, it is created</xs:documentation>
+					<xs:documentation xml:lang="fr">Lors de la construction du moteur de processus, une vérification est effectuée et une mise à jour du schéma est effectuée si cela est nécessaire. Si le schéma n'existe pas, il est créé</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>			
+			<xs:enumeration value="create-drop">
+				<xs:annotation>
+					<xs:documentation>Creates the schema when the process engine is being created and drops the schema when the process engine is being closed</xs:documentation>
+					<xs:documentation xml:lang="fr">Crée le schéma lors de la construction du moteur de processus et détruit le schéma quand le moteur de processus est arrêté</xs:documentation>
+				</xs:annotation>
+			</xs:enumeration>			
+		</xs:restriction>
+	</xs:simpleType>	
+
+</xs:schema>	
+
+
+
+
+

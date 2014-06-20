@@ -29,7 +29,7 @@
 		</jbi:identification>
 		<jbi:component-class-name>org.ow2.petals.activitibpmn.ActivitiSE</jbi:component-class-name>
 		<jbi:component-class-path><jbi:path-element/></jbi:component-class-path>
-		<jbi:bootstrap-class-name>org.ow2.petals.component.framework.DefaultBootstrap</jbi:bootstrap-class-name>
+		<jbi:bootstrap-class-name>org.ow2.petals.activitibpmn.ActivitiSEBootstrap</jbi:bootstrap-class-name>
 		<jbi:bootstrap-class-path><jbi:path-element/></jbi:bootstrap-class-path>
 		
 		<!-- CDK specific fields -->
@@ -45,6 +45,18 @@
 		<petalsCDK:time-beetween-async-cleaner-runs />
 		<petalsCDK:properties-file />
 		<petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.listener.JBIListener</petalsCDK:jbi-listener-class-name>	
+
 		<!-- Component specific configuration -->
+		<petals-se-activitibpmn:jdbcDriver>org.h2.Driver</petals-se-activitibpmn:jdbcDriver>
+		<petals-se-activitibpmn:jdbcUrl>jdbc:h2:tcp://localhost//Users/bescudie/my-own-db;DB_CLOSE_DELAY=1000</petals-se-activitibpmn:jdbcUrl>
+		<petals-se-activitibpmn:jdbcUsername>sa</petals-se-activitibpmn:jdbcUsername>
+		<petals-se-activitibpmn:jdbcPassword></petals-se-activitibpmn:jdbcPassword>
+		<petals-se-activitibpmn:jdbcMaxActiveConnections />
+		<petals-se-activitibpmn:jdbcMaxIdleConnections />
+		<petals-se-activitibpmn:jdbcMaxCheckoutTime />
+		<petals-se-activitibpmn:jdbcMaxWaitTime />
+		<petals-se-activitibpmn:databaseType />
+		<petals-se-activitibpmn:databaseSchemaUpdate>true</petals-se-activitibpmn:databaseSchemaUpdate>
+		
 	</jbi:component>
 </jbi:jbi>
