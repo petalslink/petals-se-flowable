@@ -21,74 +21,101 @@
 	xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
 	xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0"
 	elementFormDefault="qualified">
-	<xs:import namespace="http://petals.ow2.org/components/extensions/version-5"
-		schemaLocation="CDKextensions.xsd" />
+	<xs:import namespace="http://petals.ow2.org/components/extensions/version-5" schemaLocation="CDKextensions.xsd" />
+
+	<!--
+	Element for the SU configuration
+	-->
+    <!-- Activiti provide configuration -->		
+ 	<xs:element name="tenand_id" type="petalsCDK:settablestring" default="myTenant">
+		<xs:annotation>
+			<xs:documentation> tenantId in which the process will be deployed in Activiti dataBase</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="category_id" type="petalsCDK:settablestring" default="myCategory">
+		<xs:annotation>
+			<xs:documentation> categoryId that will carecterize the process in Activiti dataBase (e.g. Dev, Test, prod ...)</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="process_file" type="petalsCDK:File">
+		<xs:annotation>
+			<xs:documentation>BPMN 2.0 File providing the xml process description</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="version" type="petalsCDK:settablestring" default="1">
+		<xs:annotation>
+			<xs:documentation> version that will carecterize the process in Activiti dataBase</xs:documentation>
+		</xs:annotation>
+	</xs:element>
 		
+	<!--
+	Element for the Component petals-se-activitibpmn configuration
+	-->
 	<!-- Activiti DataBase configuration elements -->
-	<xs:element name="jdbcDriver" type="petalsCDK:settablestring" default="org.h2.Driver">
+	<xs:element name="jdbc_driver" type="petalsCDK:settablestring" default="org.h2.Driver">
 		<xs:annotation>
 			<xs:documentation>Implementation of the driver for the specific database type</xs:documentation>
 			<xs:documentation xml:lang="fr">Implémentation du driver pour le type de base de données </xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="jdbcUrl" type="petalsCDK:settablestring" default="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000">
+	<xs:element name="jdbc_url" type="petalsCDK:settablestring" default="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000">
 		<xs:annotation>
 			<xs:documentation>jdbcUrl: JDBC URL of the database</xs:documentation>
 			<xs:documentation xml:lang="fr">URL JDBC de la base de données</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="jdbcUsername" type="petalsCDK:settablestring" default="sa">
+	<xs:element name="jdbc_username" type="petalsCDK:settablestring" default="sa">
 		<xs:annotation>
 			<xs:documentation>username to connect to the database</xs:documentation>
 			<xs:documentation xml:lang="fr">utilisateur de connexion à la base de données</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="jdbcPassword" type="petalsCDK:settablestring" default="">
+	<xs:element name="jdbc_password" type="petalsCDK:settablestring" default="">
 		<xs:annotation>
 			<xs:documentation>password to connect to the database</xs:documentation>
 			<xs:documentation xml:lang="fr">mot de passe de connexion à la base de données</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="jdbcMaxActiveConnections" type="petalsCDK:settableint" default="10">
+	<xs:element name="jdbc_max_active_connections" type="petalsCDK:settableint" default="10">
 		<xs:annotation>
 			<xs:documentation>The number of active connections that the connection pool at maximum at any time can contain</xs:documentation>
 			<xs:documentation xml:lang="fr">Nombre de connexions actives simultanées que le pool de connexion peut accepter au maximum</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="jdbcMaxIdleConnections" type="petalsCDK:settableint">
+	<xs:element name="jdbc_max_idle_connections" type="petalsCDK:settableint">
 		<xs:annotation>
 			<xs:documentation>The number of idle connections that the connection pool at maximum at any time can contain</xs:documentation>
 			<xs:documentation xml:lang="fr">Nombre de connexions inactives simultanées que le pool de connexion peut accepter au maximum</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="jdbcMaxCheckoutTime" type="petalsCDK:settableint" default="20000">
+	<xs:element name="jdbc_max_checkout_time" type="petalsCDK:settableint" default="20000">
 		<xs:annotation>
 			<xs:documentation>The amount of time in milliseconds a connection can be 'checked out' from the connection pool before it is forcefully returned</xs:documentation>
 			<xs:documentation xml:lang="fr">Durée en millisecondes avant qu'une connexion soit 'vérifiée' du pool de connexion avant d'être renvoyé de force</xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="jdbcMaxWaitTime" type="petalsCDK:settableint" default="20000">
+	<xs:element name="jdbc_max_wait_time" type="petalsCDK:settableint" default="20000">
 		<xs:annotation>
 			<xs:documentation>This is a low level setting that gives the pool a chance to print a log status and re-attempt the acquisition of a connection in the case that it’s taking unusually long</xs:documentation>
 			<xs:documentation xml:lang="fr">Paramètre de bas niveau qui donne au pool une chance pour imprimer un état ​​de journal et re-tenter l'acquisition d'une connexion dans le cas où elle est exceptionnellement longue </xs:documentation>
 		</xs:annotation>
 	</xs:element>
 
-	<xs:element name="databaseType" type="petals-se-activitibpmn:DatabaseType" default="h2">
+	<xs:element name="database_type" type="petals-se-activitibpmn:DatabaseType" default="h2">
 		<xs:annotation>
 			<xs:documentation>Should only be specified in case automatic detection fails. Possible values: (h2/mysql/oracle/postgres/mssql/db2)</xs:documentation>
 			<xs:documentation xml:lang="fr">Doit être précisé en cas de non fonctionnement de la détection automatique. Valeurs possibles: (h2/mysql/oracle/postgres/mssql/db2)</xs:documentation>
 		</xs:annotation>
 	</xs:element>	
 
-	<xs:element name="databaseSchemaUpdate" type="petals-se-activitibpmn:DatabaseSchemaUpdate" default="false">
+	<xs:element name="database_schema_update" type="petals-se-activitibpmn:DatabaseSchemaUpdate" default="false">
 		<xs:annotation>
 			<xs:documentation>Allows to set the strategy to handle the database schema on process engine boot and shutdown</xs:documentation>
 			<xs:documentation xml:lang="fr">Permet de définir la stratégie pour gérer le schéma de base de données lors du démarrage et l'arrêt du moteur de processus</xs:documentation>

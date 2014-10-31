@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- JBI descriptor for the PEtALS component "ACTIVITIBPMN", version 1.0.0 -->
+<jbi:jbi version="1.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+	xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+	xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0"
+	xmlns:process="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+	
+	<!-- Import a Service into PEtALS or Expose a PEtALS Service => use a BC. -->
+	<jbi:services binding-component="false">
+		
+		<!-- Import a Service into PEtALS => provides a Service. -->
+		<jbi:provides
+			interface-name="process:demandeDeConges"
+			service-name="process:demandeDeCongesService"
+			endpoint-name="autogenerate">
+			
+			<!-- WSDL file -->
+			<petalsCDK:wsdl>vacationRequest.wsdl</petalsCDK:wsdl>
+			
+			<!-- ACTIVITI specific fields -->
+ 			<petals-se-activitibpmn:tenant_id>BEStenant</petals-se-activitibpmn:tenant_id>
+			<petals-se-activitibpmn:category_id>TEST</petals-se-activitibpmn:category_id>
+			<petals-se-activitibpmn:process_file>vacationRequest.bpmn20.xml</petals-se-activitibpmn:process_file>
+			<petals-se-activitibpmn:version>1</petals-se-activitibpmn:version>
+			<petals-se-activitibpmn:process_file>orderProcess.bpmn20.xml</petals-se-activitibpmn:process_file>
+ 			<petals-se-activitibpmn:version>1</petals-se-activitibpmn:version>
+
+		</jbi:provides>
+	</jbi:services>
+</jbi:jbi>

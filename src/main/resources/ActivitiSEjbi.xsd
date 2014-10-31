@@ -26,30 +26,55 @@
 		schemaLocation="ActivitiSEextensions.xsd" />
 
 	<xs:redefine schemaLocation="abstractCDKjbi.xsd">
+		<!--
+		Element for the SU configuration
+		-->
+		<xs:complexType name="Provides">
+			<xs:complexContent>
+				<xs:extension base="jbi:Provides">
+					<xs:sequence>
+						<xs:element ref="petals-se-activitibpmn:tenant_id" maxOccurs="1" minOccurs="1" />
+						<xs:element ref="petals-se-activitibpmn:category_id" maxOccurs="1" minOccurs="1" />
+						<xs:element ref="petals-se-activitibpmn:process_file" maxOccurs="unbounded" minOccurs="1" />
+						<xs:element ref="petals-se-activitibpmn:version" maxOccurs="unbounded" minOccurs="1" />
+					</xs:sequence>
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+
+		<xs:complexType name="Consumes">
+			<xs:complexContent>
+				<xs:extension base="jbi:Consumes" />
+			</xs:complexContent>
+		</xs:complexType>
+
+		<!--
+		Element for the Component petals-se-activitibpmn configuration
+		-->
 		<xs:complexType name="Component">
 			<xs:complexContent>
 				<xs:extension base="jbi:Component">
 					<xs:sequence>
 						<!-- the Activiti DataBase extensions -->
-						<xs:element ref="petals-se-activitibpmn:jdbcDriver"
+						<xs:element ref="petals-se-activitibpmn:jdbc_driver"
 						    maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:jdbcUrl"
+						<xs:element ref="petals-se-activitibpmn:jdbc_url"
 						    maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:jdbcUsername"
+						<xs:element ref="petals-se-activitibpmn:jdbc_username"
 						    maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:jdbcPassword"
+						<xs:element ref="petals-se-activitibpmn:jdbc_password"
 						    maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:jdbcMaxActiveConnections"
+						<xs:element ref="petals-se-activitibpmn:jdbc_max_active_connections"
 						    maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:jdbcMaxIdleConnections"
+						<xs:element ref="petals-se-activitibpmn:jdbc_max_idle_connections"
 						    maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:jdbcMaxCheckoutTime"
+						<xs:element ref="petals-se-activitibpmn:jdbc_max_checkout_time"
 							maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:jdbcMaxWaitTime" 
+						<xs:element ref="petals-se-activitibpmn:jdbc_max_wait_time" 
 						    maxOccurs="1" minOccurs="0" />
-						<xs:element ref="petals-se-activitibpmn:databaseType"
+						<xs:element ref="petals-se-activitibpmn:database_type"
 						    maxOccurs="1" minOccurs="0"/>
-						<xs:element ref="petals-se-activitibpmn:databaseSchemaUpdate"
+						<xs:element ref="petals-se-activitibpmn:database_schema_update"
 							maxOccurs="1" minOccurs="0" />
 					</xs:sequence>
 				</xs:extension>

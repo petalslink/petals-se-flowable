@@ -23,42 +23,69 @@ package org.ow2.petals.activitibpmn;
  */
 public final class ActivitiSEConstants {
 
+	 /**
+     * The Activiti Bpmn Action Type for
+     *   start event
+     *   user task
+     */
+	 enum BpmnActionType { START_EVENT, USER_TASK };
+
+	 /**
+     * The SU parameter that defines the tenantId.
+     */
+    public static final String TENANT_ID = "tenant_id";
+    	
+	 /**
+     * The SU parameter that defines the categoryId
+     */
+    public static final String CATEGORY_ID = "category_id";
+    	
+    /**
+     * The SU parameter that defines the bpmn20.xml file.
+     */
+    public static final String PROCESS_FILE = "process_file";
+    	
+	 /**
+     * The SU parameter that defines the version
+     */
+    public static final String VERSION = "version";
+    	
 	/**
-	 * DB server related constants
+	 * The Component DB server related constants
 	 */
 	public static class DBServer {
 		/**
 		 * The Jdbc driver: implementation of the driver for the specific database type.
 		 */
-		public static final String JDBC_DRIVER = "jdbcDriver";
+		public static final String JDBC_DRIVER = "jdbc_driver";
 
 		/**
 		 * The Jdbc URL of the database. 
 		 */
-		public static final String JDBC_URL = "jdbcUrl";
+		public static final String JDBC_URL = "jdbc_url";
 
 		/**
 		 * The Jdbc Username : username to connect to the database. 
 		 */
-		public static final String JDBC_USERNAME = "jdbcUsername";
+		public static final String JDBC_USERNAME = "jdbc_username";
 
 		/**
 		 * The Jdbc Password: password to connect to the database. 
 		 */
-		public static final String JDBC_PASSWORD = "jdbcPassword";
+		public static final String JDBC_PASSWORD = "jdbc_password";
 
 		/**
 		 * The jdbcMaxActiveConnections: The number of active connections
 		 * that the connection pool at maximum at any time can contain.
 		 * Default is 10.
 		 */
-		public static final String JDBC_MAX_ACTIVE_CONNECTIONS = "jdbcMaxActiveConnections";
+		public static final String JDBC_MAX_ACTIVE_CONNECTIONS = "jdbc_max_active_connections";
 		
 		/**
 		 * The jdbcMaxIdleConnections: The number of idle connections
 		 * that the connection pool at maximum at any time can contain.
 		 */
-		public static final String JDBC_MAX_IDLE_CONNECTIONS = "jdbcMaxIdleConnections";
+		public static final String JDBC_MAX_IDLE_CONNECTIONS = "jdbc_max_idle_connections";
 		
 		/**	
 		 * The jdbcMaxCheckoutTime: The amount of time in milliseconds
@@ -66,7 +93,7 @@ public final class ActivitiSEConstants {
 		 * before it is forcefully returned.
 		 * Default is 20000 (20 seconds).
 		 */
-		public static final String JDBC_MAX_CHECKOUT_TIME = "jdbcMaxCheckoutTime";
+		public static final String JDBC_MAX_CHECKOUT_TIME = "jdbc_max_checkout_time";
 		
 		/**
 		 * The jdbcMaxWaitTime: This is a low level setting
@@ -76,7 +103,7 @@ public final class ActivitiSEConstants {
 		 * forever if the pool is misconfigured).
 		 * Default is 20000 (20 seconds)
 		 */
-		public static final String JDBC_MAX_WAIT_TIME = "jdbcMaxWaitTime";
+		public static final String JDBC_MAX_WAIT_TIME = "jdbc_max_wait_time";
 		
 		/**
 		 * The databaseType: it's normally not necessary to specify this property
@@ -87,7 +114,7 @@ public final class ActivitiSEConstants {
 		 * This setting will determine which create/drop scripts and queries will be used.
 		 * See the 'supported databases' section for an overview of which types are supported.
 		 */
-		public static final String DATABASE_TYPE = "databaseType";
+		public static final String DATABASE_TYPE = "database_type";
 		
 		/**
 		 * The databaseSchemaUpdate: allows to set the strategy to handle
@@ -101,7 +128,7 @@ public final class ActivitiSEConstants {
 		 *   - create-drop: Creates the schema when the process engine is being created
 		 *                  and drops the schema when the process engine is being closed. 
 		 */
-		public static final String DATABASE_SCHEMA_UPDATE = "databaseSchemaUpdate";
+		public static final String DATABASE_SCHEMA_UPDATE = "database_schema_update";
 		
 	}
 

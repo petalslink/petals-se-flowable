@@ -17,26 +17,19 @@
  */
 package org.ow2.petals.activitibpmn;
 
-import javax.jbi.JBIException;
-
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
 
-import org.activiti.engine.repository.DeploymentBuilder;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
+import javax.jbi.JBIException;
+
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 
@@ -52,8 +45,6 @@ public class ActivitiSE extends AbstractServiceEngine {
 	 */
 	private ProcessEngine activitiEngine;
 	private ProcessEngineConfiguration pec;
-	private RepositoryService repS;
-	private RuntimeService runS;
 	
 	/**
 	 * @return the Activiti Engine
@@ -61,6 +52,82 @@ public class ActivitiSE extends AbstractServiceEngine {
 	public ProcessEngine getProcessEngine() {
 		return this.activitiEngine;
 	}
+	
+	/**
+     * A map used to get the Activiti Operation associated with (end-point Name + Operation)
+     */
+    private final Map<EptAndOperation,ActivitiOperation> eptOperationToActivitiOperation =
+        new ConcurrentHashMap<EptAndOperation, ActivitiOperation > ();
+	
+	
+  	/**
+	 * @param eptAndOperation the end-point Name and operation Name
+	 * @param activitiOperation the Activiti Operation
+	 * @return the map with the inserted elements
+	 * @see java.util.concurrent.ConcurrentHashMap#put(java.lang.Object, java.lang.Object)
+	 */
+	public Map<EptAndOperation,ActivitiOperation> registerActivitiOperation(
+			EptAndOperation eptAndOperation,
+			ActivitiOperation activitiOperation ) {
+		this.eptOperationToActivitiOperation.put(eptAndOperation, activitiOperation);
+		return this.eptOperationToActivitiOperation;
+	}
+
+
+	/**
+	 * @param eptAndOperation the end-point Name and operation Name
+	 * @return the previous Activiti Operation that was registered for this end-point Name and operation Name
+	 * @see java.util.concurrent.ConcurrentHashMap#remove(java.lang.Object)
+	 */
+	public ActivitiOperation removeActivitiOperation( EptAndOperation eptAndOperation) {
+		return this.eptOperationToActivitiOperation.remove( eptAndOperation );
+	}
+
+	/**
+	 * @param eptName the end-point Name
+	 * @return the map without the deleted elements
+	 * @see java.util.concurrent.ConcurrentHashMap#remove(java.lang.Object)
+	 */
+	public Map<EptAndOperation,ActivitiOperation> removeActivitiOperation( String eptName) {
+		List<EptAndOperation> toRemove = new ArrayList<EptAndOperation>();
+		for (EptAndOperation key: this.eptOperationToActivitiOperation.keySet()) {
+		    if (key.getEptName() == eptName) {
+		        toRemove.add(key);
+		    }
+		}
+		for (EptAndOperation key: toRemove) {
+			this.eptOperationToActivitiOperation.remove(key);
+		}
+		
+		return this.eptOperationToActivitiOperation;
+	}
+
+	/**
+	 * @param logLevel
+	 */
+	public void logEptOperationToActivitiOperation ( Logger logger, Level logLevel) {
+		for (Map.Entry<EptAndOperation,ActivitiOperation> entry : eptOperationToActivitiOperation.entrySet())
+		{
+			logger.log(logLevel, "*** EptAndoperation ");
+			logger.log(logLevel, "EptName = " + entry.getKey().getEptName());
+			logger.log(logLevel, "OperationName = " + entry.getKey().getOperationName());
+			logger.log(logLevel, "------------------------------------------------------ ");
+			entry.getValue().logActivitiOperation(logger, logLevel);
+			logger.log(logLevel, "******************* ");
+		}
+	}
+
+
+
+	/**
+	 * @param eptAndOperation the end-point Name and operation Name
+	 * @return the Activiti Operation associated with this end-point name and operation Name
+	 * @see java.util.Map#get(java.lang.Object)
+	 */
+	public ActivitiOperation getActivitiOperations( EptAndOperation eptAndOperation) {
+		return this.eptOperationToActivitiOperation.get(eptAndOperation);
+	}
+	
 	
 	/*
 	 * (non-Javadoc)
@@ -70,25 +137,53 @@ public class ActivitiSE extends AbstractServiceEngine {
 	@Override
 	public void doInit() throws JBIException {
 		try {
-			/* Create a stand-alone in Activiti Engine with h2 server base on localhost */
-			
-			
-			
-			this.getLogger().info("*** Start Init Activiti BPMN Service Engine...");
+		
 	        this.getLogger().info("***********************");
-			
-			pec = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
-			pec.setJdbcDriver("org.h2.Driver");
-            pec.setJdbcUrl("jdbc:h2:tcp://localhost//Users/bescudie/my-own-db;DB_CLOSE_DELAY=1000");           
-            pec.setJdbcUsername("sa").setJdbcPassword("");
-            pec.setDatabaseSchemaUpdate(ProcessEngineConfiguration.DB_SCHEMA_UPDATE_TRUE);
+			this.getLogger().info("*** Start doInit() in ActivitiSE");
+	        
+	        /* get Activiti database configuration */
+			final String jdbcDriver = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_DRIVER);
+			final String jdbcUrl = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_URL);
+			final String jdbcUsername = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_USERNAME);
+			final String jdbcPassword = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_PASSWORD);
+			final String jdbcMaxActiveConnections = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+			final String jdbcMaxIdleConnections = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+			final String jdbcMaxCheckoutTime = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+			final String jdbcMaxWaitTime = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+			 /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
+			final String databaseType = getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_TYPE);
+			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
+			final String databaseSchemaUpdate = getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_DRIVER + " = " + jdbcDriver);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_URL + " = " + jdbcUrl);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_USERNAME + " = " + jdbcUsername);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_PASSWORD + " = " + jdbcPassword);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS + " = " + jdbcMaxIdleConnections);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME + " = " + jdbcMaxCheckoutTime);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.DATABASE_TYPE + " = " + databaseType);
+	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
+		    
+	        /* TODO Test Activiti database connection configuration */
+	        /* TODO Test the Database Schema Version
+	         *      What about databaseSchemaUpdate values "true" and "create-drop" 
+	         */
+	        /* TODO Set the non set value with default value */
+
+			/* Create an Activiti ProcessEngine with database configuration */
+	        pec = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
+			pec.setJdbcDriver(jdbcDriver);
+            pec.setJdbcUrl(jdbcUrl);           
+            pec.setJdbcUsername(jdbcUsername).setJdbcPassword(jdbcPassword);
+            pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
             pec.setJobExecutorActivate(false);
 
             this.activitiEngine = pec.buildProcessEngine();
 			
-            this.getLogger().info("***********************");
-			this.getLogger().info("*** End Init Activiti BPMN Service Engine...");
-	        this.getLogger().info("***********************");			
+			this.getLogger().info("*** End doInit() in ActivitiSE");
+	        this.getLogger().info("***********************");
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while creating the Activiti BPMN Engine.", e );
@@ -105,118 +200,24 @@ public class ActivitiSE extends AbstractServiceEngine {
 	public void doStart() throws JBIException {
 		try {
 
-			this.getLogger().info("***********************");
-			this.getLogger().info("*** Start doStart Activiti BPMN Service Engine...");
-	        this.getLogger().info("***********************");			
-			
-            /* deploy Demo processes */
-			repS = this.activitiEngine.getRepositoryService();
-			runS = this.activitiEngine.getRuntimeService();
-			
-			String bpmnFileName;
-			FileInputStream bpmnInputFile;
-			DeploymentBuilder db;
-			ProcessInstance pI;
-
-			
-			this.getLogger().info("***********************");
-			this.getLogger().info("*** Test Activiti SE  process deployment");
-	        this.getLogger().info("***********************");						
-			
-			/* print list of existing process */
-			/*
-			String deploymentName = "Demo processes";
-		    List<Deployment> deploymentList = repS.createDeploymentQuery().deploymentName(deploymentName).list();
-		    
-		    if (deploymentList == null || deploymentList.size() == 0) {
-		    	db = repS.createDeployment();
-		        db.name(deploymentName);
-		        db.addClasspathResource("org/activiti/explorer/demo/process/createTimersProcess.bpmn20.xml");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/VacationRequest.bpmn20.xml");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/VacationRequest.png");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/FixSystemFailureProcess.bpmn20.xml");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/FixSystemFailureProcess.png");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/simple-approval.bpmn20.xml");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/Helpdesk.bpmn20.xml");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/Helpdesk.png");
-		        db.addClasspathResource("org/activiti/explorer/demo/process/reviewSalesLead.bpmn20.xml");
-		        db.enableDuplicateFiltering();
-		        db.deploy();
-		    	}
-		     */
-			
-			/*
-			 * bpmnFileName = "/Users/bescudie/Dev Java/src/Activiti/modules/activiti-engine/src/test/resources/org/activiti/examples/bpmn/callactivity/orderProcess.bpmn20.xml";
-			bpmnFile = new FileInputStream(bpmnFileName);		  
+	        this.getLogger().info("***********************");
+			this.getLogger().info("*** Start doStart() in ActivitiSE");
+	        
+	        /* TODO Start Job Executor */
+			/*   For timers you can even dedicate one specifc machine which only runs the job executor.
+			 *   (or more than one to make them fault tolerant).
+			 *   Both the job executor and Activiti in general is designed in a way that works clusterable out of the box.
+			 *   see : http://forums.activiti.org/content/clustering
 			 */
-			db = repS.createDeployment();
-			/* Put the process name (process id from BPMN20.xml file) in order to allow DuplicateFiltering */
-			/* put NAME_ in ACT_GE_DEPLOYMENT table */
-			String depName = "Test Activiti SE";
-			db.name(depName);
-			/* retrieve id of the process in the xml file */
-			/* put NAME_ in ACT_GE_BYTEARRAY */
-			bpmnFileName = "/Users/bescudie/Test-Petals-StandAlone/Process/orderProcess.bpmn20.xml";
-			bpmnInputFile = new FileInputStream(bpmnFileName);		  
-			db.addInputStream("orderProcess.bpmn20.xml", bpmnInputFile);
-			/*
-			 * File bpmnFile = new File(bpmnFileName);
-			 * URL bpmnUrl = bpmnFile.toURI().toURL();
-			 */
-			
-			db.addClasspathResource("process/VacationRequest.bpmn20.xml");
-			
-			/* 	db.activateProcessDefinitionsOn(activationDate);  seem to don't work*/
-			
-			db.enableDuplicateFiltering();
-			db.deploy();
-			
-			this.getLogger().info("***********************");
-			this.getLogger().info("*** Test Activiti SE  deploy()");
-	        this.getLogger().info("***********************");						
-			this.getLogger().info("*** Test Activiti SE  activate process");
-	        this.getLogger().info("***********************");						
 
-			
-			Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put("employeeName", "Kermit");
-			variables.put("numberOfDays", new Integer(4));
-			variables.put("vacationMotivation", "I'm really tired!");
-			      
-			pI = runS.startProcessInstanceByKey("vacationRequest", variables);
-			      
-			// Verify that we started a new process instance
-			this.getLogger().info("***********************************");
-			this.getLogger().info("****** Number of process instances: " + runS.createProcessInstanceQuery().count());           
-			this.getLogger().info("***********************************");
-			
-			// Fetch all tasks for the management group
-			TaskService taskService = this.activitiEngine.getTaskService();
-			List<Task> tasks = taskService.createTaskQuery().taskCandidateGroup("management").list();
-			this.getLogger().info("***********************************");
-			for (Task task : tasks) {
-				this.getLogger().info("***** Task available: " + task.getName());
-			}  
-			this.getLogger().info("***********************************");
-			
-			Task task = tasks.get(0);
-		      
-			Map<String, Object> taskVariables = new HashMap<String, Object>();
-			taskVariables.put("vacationApproved", "false");
-			taskVariables.put("managerMotivation", "We have a tight deadline!");
-			taskService.complete(task.getId(), taskVariables); 
-			
-			
-
+	        /* TODO Build Process Engine */
+	        
+			this.getLogger().info("*** End doStart() in ActivitiSE");
+	        this.getLogger().info("***********************");
+	        
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while starting the Activiti BPMN Engine.", e );
-		} catch (final FileNotFoundException e) {
-			throw new JBIException( "An error occurred while starting the Activiti BPMN unable to find file.", e );
-		} /* catch (IOException e) {
-			throw new JBIException( "An error occurred while creating file logBES.log.", e );
-		}   catch (final MalformedURLException e) {
-			throw new JBIException( "An error occurred while starting the Activiti BPMN unable to form URL", e );
-		} */
+		} 
 	}
 
 
@@ -228,7 +229,14 @@ public class ActivitiSE extends AbstractServiceEngine {
 	@Override
 	public void doStop() throws JBIException {
 		try {
-			/* this.activitiEngine.standby(); */
+	        this.getLogger().info("***********************");
+			this.getLogger().info("*** Start doStop() in ActivitiSE");
+	        
+	        /* TODO STOP Job Executor */
+			/* TODO this.activitiEngine.standby(); */
+	        
+			this.getLogger().info("*** End doStop() in ActivitiSE");
+	        this.getLogger().info("***********************");
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while stopping the Activiti BPMN Engine.", e );
@@ -244,7 +252,13 @@ public class ActivitiSE extends AbstractServiceEngine {
 	@Override
 	public void doShutdown() throws JBIException {
 		try {
+	        this.getLogger().info("***********************");
+			this.getLogger().info("*** Start doStart() in ActivitiSE");
+	        
 			this.activitiEngine.close();
+	        
+			this.getLogger().info("*** End doStart() in ActivitiSE");
+	        this.getLogger().info("***********************");
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while shutdowning the Activiti BPMN Engine.", e );

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jbi:jbi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jbi="http://java.sun.com/xml/ns/jbi" version="1.0">
+	<jbi:service-assembly>
+		<jbi:identification>
+			<jbi:name>sa-xslt</jbi:name>
+			<jbi:description>sa-xslt description</jbi:description>
+		</jbi:identification>
+		<jbi:service-unit>
+			<jbi:identification>
+				<jbi:name>my-su</jbi:name>
+				<jbi:description>My SU description</jbi:description>
+			</jbi:identification>
+			<jbi:target>
+				<jbi:artifacts-zip>my-su-$version.zip</jbi:artifacts-zip>
+				<jbi:component-name>my-component</jbi:component-name>
+			</jbi:target>
+		</jbi:service-unit>
+	</jbi:service-assembly>
+</jbi:jbi>

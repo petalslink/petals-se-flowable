@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>petals-activitibpmn</artifactId>
+    <groupId>org.ow2.petals.samples</groupId>
+    <version>0-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
+  
+  <groupId>org.ow2.petals.samples</groupId>
+  <artifactId>sa-activitibpmn-vacationRequest</artifactId>
+  <packaging>jbi-service-assembly</packaging>
+  <name>sa-activitibpmn-vacationRequest</name>
+  <version>0-SNAPSHOT</version>
+  <description>sa-acitvitibpmn-vacationRequest description</description>
+
+  <properties>
+    <!-- Skip dependency check for service assembly because it has Java no source code. -->
+    <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
+  </properties>
+  
+  <dependencies>
+    <dependency>
+      <groupId>org.ow2.petals.samples</groupId>
+      <artifactId>su-activitibpmn-vacationRequest-provide</artifactId>
+      <version>0-SNAPSHOT</version>
+      <type>jbi-service-unit</type>
+    </dependency>
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.ow2.petals</groupId>
+        <artifactId>maven-petals-plugin</artifactId>
+        <configuration>
+          <serviceAssemblyNameMapping>${project.artifactId}</serviceAssemblyNameMapping>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <scm>
+    <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-se-activitibpmn/samples/sa-activitibpmn</connection>
+    <developerConnection>${project.scm.connection}</developerConnection>
+  </scm>
+</project>

@@ -44,19 +44,19 @@
 		<petalsCDK:processor-stop-max-wait />
 		<petalsCDK:time-beetween-async-cleaner-runs />
 		<petalsCDK:properties-file />
-		<petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.listener.JBIListener</petalsCDK:jbi-listener-class-name>	
+		<petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.ActivitiJBIListener</petalsCDK:jbi-listener-class-name>	
 
 		<!-- Component specific configuration -->
-		<petals-se-activitibpmn:jdbcDriver>org.h2.Driver</petals-se-activitibpmn:jdbcDriver>
-		<petals-se-activitibpmn:jdbcUrl>jdbc:h2:tcp://localhost//Users/bescudie/my-own-db;DB_CLOSE_DELAY=1000</petals-se-activitibpmn:jdbcUrl>
-		<petals-se-activitibpmn:jdbcUsername>sa</petals-se-activitibpmn:jdbcUsername>
-		<petals-se-activitibpmn:jdbcPassword></petals-se-activitibpmn:jdbcPassword>
-		<petals-se-activitibpmn:jdbcMaxActiveConnections />
-		<petals-se-activitibpmn:jdbcMaxIdleConnections />
-		<petals-se-activitibpmn:jdbcMaxCheckoutTime />
-		<petals-se-activitibpmn:jdbcMaxWaitTime />
-		<petals-se-activitibpmn:databaseType />
-		<petals-se-activitibpmn:databaseSchemaUpdate>true</petals-se-activitibpmn:databaseSchemaUpdate>
+		<petals-se-activitibpmn:jdbc_driver>org.h2.Driver</petals-se-activitibpmn:jdbc_driver>
+		<petals-se-activitibpmn:jdbc_url>jdbc:h2:tcp://localhost//Users/bescudie/my-own-db;DB_CLOSE_DELAY=1000</petals-se-activitibpmn:jdbc_url>
+		<petals-se-activitibpmn:jdbc_username>sa</petals-se-activitibpmn:jdbc_username>
+		<petals-se-activitibpmn:jdbc_password></petals-se-activitibpmn:jdbc_password>
+		<petals-se-activitibpmn:jdbc_max_active_connections />
+		<petals-se-activitibpmn:jdbc_max_idle_connections />
+		<petals-se-activitibpmn:jdbc_max_checkout_time />
+		<petals-se-activitibpmn:jdbc_max_wait_time />
+		<petals-se-activitibpmn:database_type />
+		<petals-se-activitibpmn:database_schema_update>true</petals-se-activitibpmn:database_schema_update>
 		
 	</jbi:component>
 </jbi:jbi>
