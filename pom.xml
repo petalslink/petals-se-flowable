@@ -52,12 +52,25 @@
 			<timezone>+1</timezone>
 		</developer>
 	</developers>
+   
+   <properties>
+      <activiti.version>5.17.0-SNAPSHOT</activiti.version>
+   </properties>
 	
 	<dependencies>
+      <dependency>
+         <groupId>com.ebmwebsourcing.easycommons</groupId>
+         <artifactId>easycommons-util</artifactId>
+      </dependency>
 		<dependency>
 			<groupId>org.ow2.petals</groupId>
 			<artifactId>petals-cdk-core</artifactId>
 		</dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-api</artifactId>
+         <version>2.4.1-SNAPSHOT</version>
+      </dependency>
 		<dependency>
 			<groupId>org.ow2.petals</groupId>
  			<artifactId>petals-jbi</artifactId>
@@ -70,23 +83,23 @@
 		<dependency>
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-engine</artifactId>
-    		<version>5.17-SNAPSHOT</version>
-<!-- 		<version>5.16</version>  -->
+    		<version>${activiti.version}</version>
 		</dependency>
-	    <dependency>
+	   <dependency>
  	     	<groupId>org.activiti</groupId>
  	     	<artifactId>activiti-bpmn-converter</artifactId>
-    		<version>5.17-SNAPSHOT</version>
+    		<version>${activiti.version}</version>
  	   	</dependency>
- 	   	<dependency>
+ 	   <dependency>
 			<groupId>org.activiti</groupId>
-	      	<artifactId>activiti-bpmn-model</artifactId>
-    		<version>5.17-SNAPSHOT</version>
+	      <artifactId>activiti-bpmn-model</artifactId>
+    		<version>${activiti.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
 			<version>1.7.6</version>
+         <scope>runtime</scope>
 		</dependency>
       
       <dependency>
@@ -106,6 +119,22 @@
 			</plugin>
 		</plugins>
 	</build>
+   
+   <repositories>
+      <repository>
+         <!-- The repository in which SNAPSHOT version of Activiti are available -->
+         <id>sonatype-snapshots</id>
+         <name>Sonatype Snapshots Repository</name>
+         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+         <layout>default</layout>
+         <releases>
+            <enabled>false</enabled>
+         </releases>
+         <snapshots>
+            <enabled>true</enabled>
+         </snapshots>
+      </repository>
+   </repositories>
 
    <scm>
 		<connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>

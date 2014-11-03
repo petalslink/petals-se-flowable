@@ -54,8 +54,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.ebmwebsourcing.easycommons.lang.StringHelper;
-
 
 /**
  * @author Bertrand ESCUDIE - Linagora
@@ -228,9 +226,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 	 * @return a Map<String processKey,ProcessDefinition> of the corresponding processes described in the SU
 	 * @throws PEtALSCDKException 
 	 */
-    private Map< String, ProcessDefinition> deployActivitiProcess (
-final Provides provides, final String suRootPath
-    			) throws PEtALSCDKException{
+    private Map<String, ProcessDefinition> deployActivitiProcess(final Provides provides, final String suRootPath)
+            throws PEtALSCDKException {
 	
         // TODO: I'm not sure that a concurrent hash map is required, only one thread will instantiate it at a time.
         // If the concurrency is required elsewhere, the map should be created at this place.
@@ -320,7 +317,8 @@ final Provides provides, final String suRootPath
                 if (processFilePath != null) {
 					processFilePath = processFilePath.trim();
                 }
-                if (StringHelper.isNullOrEmpty(processFilePath)) {
+                // TODO: Something is strange because suRootPath, that is a part of processFilePath, is not null
+                if (processFilePath == null || processFilePath.isEmpty()) {
 					throw new PEtALSCDKException( "The '" + ActivitiSEConstants.PROCESS_FILE + "' parameter is not well defined or is empty." );
                 }
                 final FileInputStream bpmnInputFile;
