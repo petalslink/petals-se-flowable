@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2014 Linagora
+ * Copyright (c) 2014 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -28,7 +28,9 @@ public final class ActivitiSEConstants {
      *   start event
      *   user task
      */
-	 enum BpmnActionType { START_EVENT, USER_TASK };
+    protected enum BpmnActionType {
+        START_EVENT, USER_TASK
+    };
 
 	 /**
      * The SU parameter that defines the tenantId.
@@ -131,6 +133,4 @@ public final class ActivitiSEConstants {
 		public static final String DATABASE_SCHEMA_UPDATE = "database_schema_update";
 		
 	}
-
-
 }

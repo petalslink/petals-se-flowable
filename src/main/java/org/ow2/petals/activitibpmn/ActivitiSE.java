@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2014 Linagora
+ * Copyright (c) 2014 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,19 +17,18 @@
  */
 package org.ow2.petals.activitibpmn;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jbi.JBIException;
+
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
-
-import javax.jbi.JBIException;
-
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 
@@ -64,57 +63,43 @@ public class ActivitiSE extends AbstractServiceEngine {
 	 * @param eptAndOperation the end-point Name and operation Name
 	 * @param activitiOperation the Activiti Operation
 	 * @return the map with the inserted elements
-	 * @see java.util.concurrent.ConcurrentHashMap#put(java.lang.Object, java.lang.Object)
 	 */
-	public Map<EptAndOperation,ActivitiOperation> registerActivitiOperation(
-			EptAndOperation eptAndOperation,
-			ActivitiOperation activitiOperation ) {
-		this.eptOperationToActivitiOperation.put(eptAndOperation, activitiOperation);
-		return this.eptOperationToActivitiOperation;
-	}
+    public void registerActivitiOperation(final EptAndOperation eptAndOperation,
+            final ActivitiOperation activitiOperation) {
+        this.eptOperationToActivitiOperation.put(eptAndOperation, activitiOperation);
+    }
 
+	    /**
+     * @param eptName
+     *            the end-point name
+     */
+    public void removeActivitiOperation(final String eptName) {
 
-	/**
-	 * @param eptAndOperation the end-point Name and operation Name
-	 * @return the previous Activiti Operation that was registered for this end-point Name and operation Name
-	 * @see java.util.concurrent.ConcurrentHashMap#remove(java.lang.Object)
-	 */
-	public ActivitiOperation removeActivitiOperation( EptAndOperation eptAndOperation) {
-		return this.eptOperationToActivitiOperation.remove( eptAndOperation );
-	}
-
-	/**
-	 * @param eptName the end-point Name
-	 * @return the map without the deleted elements
-	 * @see java.util.concurrent.ConcurrentHashMap#remove(java.lang.Object)
-	 */
-	public Map<EptAndOperation,ActivitiOperation> removeActivitiOperation( String eptName) {
-		List<EptAndOperation> toRemove = new ArrayList<EptAndOperation>();
-		for (EptAndOperation key: this.eptOperationToActivitiOperation.keySet()) {
-		    if (key.getEptName() == eptName) {
-		        toRemove.add(key);
-		    }
-		}
-		for (EptAndOperation key: toRemove) {
-			this.eptOperationToActivitiOperation.remove(key);
-		}
-		
-		return this.eptOperationToActivitiOperation;
+        final Iterator<Entry<EptAndOperation, ActivitiOperation>> itEptOperationToActivitiOperation = this.eptOperationToActivitiOperation
+                .entrySet().iterator();
+        while (itEptOperationToActivitiOperation.hasNext()) {
+            final Entry<EptAndOperation, ActivitiOperation> entry = itEptOperationToActivitiOperation.next();
+            if (entry.getKey().getEptName().equals(eptName)) {
+                itEptOperationToActivitiOperation.remove();
+            }
+        }
 	}
 
 	/**
 	 * @param logLevel
 	 */
-	public void logEptOperationToActivitiOperation ( Logger logger, Level logLevel) {
-		for (Map.Entry<EptAndOperation,ActivitiOperation> entry : eptOperationToActivitiOperation.entrySet())
-		{
-			logger.log(logLevel, "*** EptAndoperation ");
-			logger.log(logLevel, "EptName = " + entry.getKey().getEptName());
-			logger.log(logLevel, "OperationName = " + entry.getKey().getOperationName());
-			logger.log(logLevel, "------------------------------------------------------ ");
-			entry.getValue().logActivitiOperation(logger, logLevel);
-			logger.log(logLevel, "******************* ");
-		}
+    public void logEptOperationToActivitiOperation(final Logger logger, final Level logLevel) {
+        if (logger.isLoggable(logLevel)) {
+            for (final Map.Entry<EptAndOperation, ActivitiOperation> entry : eptOperationToActivitiOperation.entrySet()) {
+                final EptAndOperation key = entry.getKey();
+                logger.log(logLevel, "*** EptAndoperation ");
+                logger.log(logLevel, "EptName = " + key.getEptName());
+                logger.log(logLevel, "OperationName = " + key.getOperationName());
+                logger.log(logLevel, "------------------------------------------------------ ");
+                entry.getValue().log(logger, logLevel);
+                logger.log(logLevel, "******************* ");
+            }
+        }
 	}
 
 
@@ -122,18 +107,15 @@ public class ActivitiSE extends AbstractServiceEngine {
 	/**
 	 * @param eptAndOperation the end-point Name and operation Name
 	 * @return the Activiti Operation associated with this end-point name and operation Name
-	 * @see java.util.Map#get(java.lang.Object)
 	 */
-	public ActivitiOperation getActivitiOperations( EptAndOperation eptAndOperation) {
+    public ActivitiOperation getActivitiOperations(final EptAndOperation eptAndOperation) {
 		return this.eptOperationToActivitiOperation.get(eptAndOperation);
 	}
 	
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.ow2.petals.component.framework.AbstractComponent
-	 * #doInit()
-	 */
+    /**
+     * {@inheritDoc}
+     */
 	@Override
 	public void doInit() throws JBIException {
 		try {
@@ -173,12 +155,12 @@ public class ActivitiSE extends AbstractServiceEngine {
 	        /* TODO Set the non set value with default value */
 
 			/* Create an Activiti ProcessEngine with database configuration */
-	        pec = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
-			pec.setJdbcDriver(jdbcDriver);
-            pec.setJdbcUrl(jdbcUrl);           
-            pec.setJdbcUsername(jdbcUsername).setJdbcPassword(jdbcPassword);
-            pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
-            pec.setJobExecutorActivate(false);
+            this.pec = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
+            this.pec.setJdbcDriver(jdbcDriver);
+            this.pec.setJdbcUrl(jdbcUrl);
+            this.pec.setJdbcUsername(jdbcUsername).setJdbcPassword(jdbcPassword);
+            this.pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
+            this.pec.setJobExecutorActivate(false);
 
             this.activitiEngine = pec.buildProcessEngine();
 			
@@ -191,11 +173,9 @@ public class ActivitiSE extends AbstractServiceEngine {
 	}
 
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.ow2.petals.component.framework.AbstractComponent
-	 * #doStart()
-	 */
+    /**
+     * {@inheritDoc}
+     */
 	@Override
 	public void doStart() throws JBIException {
 		try {
@@ -221,11 +201,9 @@ public class ActivitiSE extends AbstractServiceEngine {
 	}
 
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.ow2.petals.component.framework.AbstractComponent
-	 * #doStop()
-	 */
+    /**
+     * {@inheritDoc}
+     */
 	@Override
 	public void doStop() throws JBIException {
 		try {
@@ -244,11 +222,9 @@ public class ActivitiSE extends AbstractServiceEngine {
 	}
 
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.ow2.petals.component.framework.AbstractComponent
-	 * #doShutdown()
-	 */
+    /**
+     * {@inheritDoc}
+     */
 	@Override
 	public void doShutdown() throws JBIException {
 		try {
@@ -265,15 +241,11 @@ public class ActivitiSE extends AbstractServiceEngine {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.ow2.petals.component.framework.se.AbstractServiceEngine
-	 * #createServiceUnitManager()
-	 */
+    /**
+     * {@inheritDoc}
+     */
 	@Override
 	protected AbstractServiceUnitManager createServiceUnitManager() {
 		return new ActivitiSuManager(this);
 	}
-
 }
-

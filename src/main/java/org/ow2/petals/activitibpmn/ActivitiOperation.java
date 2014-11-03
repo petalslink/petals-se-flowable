@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2014 Linagora
+ * Copyright (c) 2014 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,10 +18,12 @@
 package org.ow2.petals.activitibpmn;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.activiti.bpmn.model.FormProperty;
 import org.activiti.bpmn.model.FormValue;
 import org.ow2.petals.activitibpmn.ActivitiSEConstants.BpmnActionType;
 
@@ -42,16 +44,10 @@ public class ActivitiOperation {
 	 * Constructor.
 	 */
 	    
-	public ActivitiOperation (String processDefinitionId,
-            				  String processKey,
-            				  String bpmnAction,
-			                  BpmnActionType bpmnActionType,
-			                  Properties bpmnProcessId,
-			                  Properties bpmnUserId,
-			                  Properties bpmnVarInMsg,
-			                  Properties outMsgBpmnVar,
-			                  Properties faultMsgBpmnVar,
-			                  Map<String, org.activiti.bpmn.model.FormProperty > bpmnVarType ) {
+    public ActivitiOperation(final String processDefinitionId, final String processKey, final String bpmnAction,
+            final BpmnActionType bpmnActionType, final Properties bpmnProcessId, final Properties bpmnUserId,
+            final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
+            final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType) {
 		this.processDefinitionId = processDefinitionId ;
 		this.processKey = processKey ;
 		this.bpmnAction = bpmnAction ;
@@ -67,34 +63,49 @@ public class ActivitiOperation {
 	/**
 	 * @param logLevel
 	 */
-	public void logActivitiOperation( Logger logger, Level logLevel) {
-		logger.log(logLevel, "processDefinitionId = " + processDefinitionId);
-		logger.log(logLevel, "processKey = " + processKey);
-		logger.log(logLevel, "bpmnAction = " + bpmnAction);
-		logger.log(logLevel, "bpmnActionType = " + bpmnActionType);
-		logger.log(logLevel, "bpmnProcessId: InMsg = " + bpmnProcessId.getProperty("inMsg")
-				+ " | outMsg = "+ bpmnProcessId.getProperty("outMsg")
-				+ " | faultMsg = "+ bpmnProcessId.getProperty("faultMsg") );
-		logger.log(logLevel, "bpmnUserId: InMsg = " + bpmnUserId.getProperty("inMsg")
-				+ " | outMsg = "+ bpmnUserId.getProperty("outMsg")
-				+ " | faultMsg = "+ bpmnUserId.getProperty("faultMsg") );
-		for(String key : bpmnVarInMsg.stringPropertyNames()) 
-			logger.log(logLevel, "bpmnVar => inMsg: " + key + " => " + bpmnVarInMsg.getProperty(key) );
-		for(String key : outMsgBpmnVar.stringPropertyNames()) 
-			logger.log(logLevel, "outMsg => bpmnVar: " + key + " => " + outMsgBpmnVar.getProperty(key) );
-		for(String key : faultMsgBpmnVar.stringPropertyNames()) 
-			logger.log(logLevel, "faultMsg => bpmnVar: " + key + " => " + faultMsgBpmnVar.getProperty(key) );
-		logger.log(logLevel,"=== TYPE des VARIALBE ACTIVITI");
-		for(String key : bpmnVarType.keySet()) {
-			logger.log(logLevel,"bpmn variable : " + key + " - Name = " + bpmnVarType.get(key).getName()
-					+ " - Type = " + bpmnVarType.get(key).getType()  );
-			if ( bpmnVarType.get(key).getType().equals("enum") ) 
-				for (FormValue enumValue : bpmnVarType.get(key).getFormValues() ) 
-   				logger.log(logLevel,"|------  enum value Id = " + enumValue.getId() + " - Value = " + enumValue.getName()  );
-			if ( bpmnVarType.get(key).getType().equals("date") )
-				logger.log(logLevel,"|------  Date pattern = " + bpmnVarType.get(key).getDatePattern() );
-
-		}
+    public void log(final Logger logger, final Level logLevel) {
+        if (logger.isLoggable(logLevel)) {
+            logger.log(logLevel, "processDefinitionId = " + this.processDefinitionId);
+            logger.log(logLevel, "processKey = " + this.processKey);
+            logger.log(logLevel, "bpmnAction = " + this.bpmnAction);
+            logger.log(logLevel, "bpmnActionType = " + this.bpmnActionType);
+            logger.log(
+                    logLevel,
+                    "bpmnProcessId: InMsg = " + this.bpmnProcessId.getProperty("inMsg") + " | outMsg = "
+                            + this.bpmnProcessId.getProperty("outMsg") + " | faultMsg = "
+                            + this.bpmnProcessId.getProperty("faultMsg"));
+            logger.log(
+                    logLevel,
+                    "bpmnUserId: InMsg = " + this.bpmnUserId.getProperty("inMsg") + " | outMsg = "
+                            + this.bpmnUserId.getProperty("outMsg") + " | faultMsg = "
+                            + this.bpmnUserId.getProperty("faultMsg"));
+            for (final Entry<Object, Object> entry : this.bpmnVarInMsg.entrySet()) {
+                final String key = (String) entry.getKey();
+                logger.log(logLevel, "bpmnVar => inMsg: " + key + " => " + entry.getValue());
+            }
+            for (final Entry<Object, Object> entry : this.outMsgBpmnVar.entrySet()) {
+                final String key = (String) entry.getKey();
+                logger.log(logLevel, "outMsg => bpmnVar: " + key + " => " + entry.getValue());
+            }
+            for (final Entry<Object, Object> entry : this.faultMsgBpmnVar.entrySet()) {
+                final String key = (String) entry.getKey();
+                logger.log(logLevel, "faultMsg => bpmnVar: " + key + " => " + entry.getValue());
+            }
+            logger.log(logLevel, "=== Activiti variable types");
+            for (final Entry<String, FormProperty> entry : this.bpmnVarType.entrySet()) {
+                final String key = entry.getKey();
+                final FormProperty value = entry.getValue();
+                logger.log(logLevel,
+                        "bpmn variable : " + key + " - Name = " + value.getName() + " - Type = " + value.getType());
+                if (value.getType().equals("enum")) {
+                    for (final FormValue enumValue : value.getFormValues())
+                        logger.log(logLevel, "|------  enum value Id = " + enumValue.getId() + " - Value = "
+                                + enumValue.getName());
+                } else if (value.getType().equals("date")) {
+                    logger.log(logLevel, "|------  Date pattern = " + value.getDatePattern());
+                }
+            }
+        }
 	}
 	
    	public String getProcessDefinitionId() {

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2014 Linagora
+ * Copyright (c) 2014 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -33,22 +33,23 @@ import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.activiti.bpmn.model.FormValue;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
-import org.activiti.bpmn.model.FormValue;
 import org.ow2.petals.activitibpmn.ActivitiSEConstants.BpmnActionType;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
+
+import com.ebmwebsourcing.easycommons.xml.Transformers;
 
 
 /**
@@ -118,33 +119,41 @@ public class ActivitiJBIListener extends AbstractJBIListener {
      */
     private String logHint;
 
-    /*
-     * (non-Javadoc)
-     * @see org.ow2.petals.component.framework.listener.AbstractJBIListener
+    /**
+     * {@inheritDoc}
      */
     public void init() {
-		// Initialize the identityService if necessary
-		if ( identityService == null) identityService = ((ActivitiSE) this.component).getProcessEngine().getIdentityService();
- 		// Initialize the runTimeService if necessary
-		if ( runTimeService == null) runTimeService = ((ActivitiSE) this.component).getProcessEngine().getRuntimeService();
- 		// Initialize the taskService if necessary
-		if ( taskService == null) taskService = ((ActivitiSE) this.component).getProcessEngine().getTaskService();
- 		// Initialize the repositoryService if necessary
-//		if ( repositoryService == null) repositoryService = ((ActivitiSE) this.component).getProcessEngine().getRepositoryService();
-		// Initialize the formService if necessary
-//		if ( formService == null) formService = ((ActivitiSE) this.component).getProcessEngine().getFormService();
+        if (this.component instanceof ActivitiSE) {
+            final ActivitiSE activitiComp = (ActivitiSE) this.component;
+
+            // Initialize the identityService if necessary
+            if (this.identityService == null) {
+                this.identityService = activitiComp.getProcessEngine().getIdentityService();
+            }
+            // Initialize the runTimeService if necessary
+            if (this.runTimeService == null) {
+                this.runTimeService = activitiComp.getProcessEngine().getRuntimeService();
+            }
+            // Initialize the taskService if necessary
+            if (this.taskService == null) {
+                this.taskService = activitiComp.getProcessEngine().getTaskService();
+            }
+            // Initialize the repositoryService if necessary
+            // if ( this.repositoryService == null) { this.repositoryService =
+            // activitiComp.getProcessEngine().getRepositoryService(); }
+            // Initialize the formService if necessary
+            // if ( this.formService == null) { this.formService = activitiComp.getProcessEngine().getFormService(); }
+        }
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.ow2.petals.component.framework.listener.AbstractJBIListener
-     * #onJBIMessage(org.ow2.petals.component.framework.api.message.Exchange)
+    /**
+     * {@inheritDoc}
      */
     @Override
-	public boolean onJBIMessage( Exchange exchange ) {
+    public boolean onJBIMessage(final Exchange exchange) {
  
-        Logger logger = getLogger();
+        final Logger logger = getLogger();
     	logger.info("***********************");		
     	logger.info("*** Start onJBIMessage() in ActivitiJBIListener");
         Exception finalException = null;
@@ -187,16 +196,18 @@ public class ActivitiJBIListener extends AbstractJBIListener {
  
         			// Get the Activiti Operation  from the Map eptOperationToActivitiOperation
         			// @see org.ow2.petals.activitibpmn.ActivitiSE
-        			ActivitiOperation activitiOperation = ((ActivitiSE) this.component).getActivitiOperations(eptAndOperation);
-        			String processDefinitionId = activitiOperation.getProcessDefinitionId();
-        			String bpmnAction = activitiOperation.getBpmnAction();
-        			BpmnActionType bpmnActionType= activitiOperation.getBpmnActionType();
-        			Properties bpmnProcessId = activitiOperation.getBpmnProcessId();
-	                Properties bpmnUserId =activitiOperation.getBpmnUserId();
-	                Properties bpmnVarInMsg = activitiOperation.getBpmnVarInMsg();
-	                Properties outMsgBpmnVar = activitiOperation.getOutMsgBpmnVar();
-	                Properties faultMsgBpmnVar = activitiOperation.getFaultMsgBpmnVar();
-	            	Map<String, org.activiti.bpmn.model.FormProperty > bpmnVarType = activitiOperation.getBpmnVarType() ;
+                    final ActivitiOperation activitiOperation = ((ActivitiSE) this.component)
+                            .getActivitiOperations(eptAndOperation);
+                    final String processDefinitionId = activitiOperation.getProcessDefinitionId();
+                    final String bpmnAction = activitiOperation.getBpmnAction();
+                    final BpmnActionType bpmnActionType = activitiOperation.getBpmnActionType();
+                    final Properties bpmnProcessId = activitiOperation.getBpmnProcessId();
+                    final Properties bpmnUserId = activitiOperation.getBpmnUserId();
+                    final Properties bpmnVarInMsg = activitiOperation.getBpmnVarInMsg();
+                    final Properties outMsgBpmnVar = activitiOperation.getOutMsgBpmnVar();
+                    final Properties faultMsgBpmnVar = activitiOperation.getFaultMsgBpmnVar();
+                    final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType = activitiOperation
+                            .getBpmnVarType();
 
         			if( logger.isLoggable( Level.FINEST )) {
         				logger.finest("Activiti processDefId = " + processDefinitionId);
@@ -205,17 +216,21 @@ public class ActivitiJBIListener extends AbstractJBIListener {
         			}
  
         			// Get the exchange data
-	                Document inMsgWsdl = exchange.getInMessageContentAsDocument();
-	                DOMSource domSource = new DOMSource(inMsgWsdl);
-	        		StringWriter writer = new StringWriter();
-	        		StreamResult result = new StreamResult(writer);
-	        		TransformerFactory tf = TransformerFactory.newInstance();
-	        		Transformer transformer = tf.newTransformer();
-	        		transformer.transform(domSource, result);
+                    final Document inMsgWsdl = exchange.getInMessageContentAsDocument();
+                    final DOMSource domSource = new DOMSource(inMsgWsdl);
+                    final StringWriter writer = new StringWriter();
+                    final StreamResult result = new StreamResult(writer);
+                    final Transformer transformer = Transformers.takeTransformer();
+                    try {
+                        transformer.transform(domSource, result);
+                    } finally {
+                        Transformers.releaseTransformer(transformer);
+                    }
 	        		inMsgWsdl.getDocumentElement().normalize();
 
-	       			if( logger.isLoggable( Level.FINEST ))
+                    if (logger.isLoggable(Level.FINEST)) {
 	       				logger.finest("*** inMsgWsdl = " + writer.toString() );
+                    }
 
 	                String varNameInMsg;
 	                String varValueInMsg;
@@ -225,102 +240,114 @@ public class ActivitiJBIListener extends AbstractJBIListener {
         			String bpmnProcessIdValue = "";
         			if ( bpmnActionType == BpmnActionType.USER_TASK ) { //( varNameInMsg != null)
         				varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su", varNameInMsg).item(0);
-            			if (varNode == null)
+                        if (varNode == null) {
             				throw new MessagingException( "The bpmnProcessId is mandatory and must be given through the message variable: "
             						+ varNameInMsg + " for the userTask: " + bpmnAction + " of process: " + processDefinitionId +" !");
-            			else
+                        } else {
             				bpmnProcessIdValue = varNode.getTextContent().trim();
+                        }
 
-        				if( logger.isLoggable( Level.FINEST ))
+                        if (logger.isLoggable(Level.FINEST)) {
         					logger.finest("bpmnProcessId => InMsg = " + varNameInMsg + " - value = "+ bpmnProcessIdValue );
-
+                        }
         			}
         		
            			// Get the userId
         			varNameInMsg = bpmnUserId.getProperty("inMsg");
         			String bpmnUserIdValue = "";
         			varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su", varNameInMsg).item(0);
-        			if (varNode == null)
+                    if (varNode == null) {
         				throw new MessagingException( "The bpmnUserId is mandatory and must be given through the message variable: "
         						+ varNameInMsg + " for the task: " + bpmnAction + " of process: " + processDefinitionId +" !");
+                    }
         			else {
         				bpmnUserIdValue = varNode.getTextContent().trim();
         			}
         			
-        			if( logger.isLoggable( Level.FINEST ))
+                    if (logger.isLoggable(Level.FINEST)) {
         				logger.finest("bpmnUserId => InMsg = " + varNameInMsg + " - value = "+ bpmnUserIdValue );
+                    }
  
 	        		// Get the bpmn variables
-	        		Map<String, Object> processVars = new HashMap<String, Object>();
-        			for(String varBpmn : bpmnVarInMsg.stringPropertyNames()) {
+                    final Map<String, Object> processVars = new HashMap<String, Object>();
+                    for (final String varBpmn : bpmnVarInMsg.stringPropertyNames()) {
         				varNameInMsg = bpmnVarInMsg.getProperty(varBpmn);
     	        		varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su", varNameInMsg).item(0);
     	        		// test if the process variable is required and value is not present 
     	        		if (varNode == null) {
-    	        			if ( bpmnVarType.get(varBpmn).isRequired() )
+                            if (bpmnVarType.get(varBpmn).isRequired()) {
     	        				throw new MessagingException( "The task: " + bpmnAction + " of process: " + processDefinitionId
     	        						+" required a value of bpmn variables: " + varBpmn 
     	        						+ " that must be given through the message variable: " + varNameInMsg + " !");
-    	        			else { // (! bpmnVarType.get(varBpmn).isRequired() )
+                            } else { // (! bpmnVarType.get(varBpmn).isRequired() )
     	    	        		
-    	    	       			if( logger.isLoggable( Level.FINEST ))
+                                if (logger.isLoggable(Level.FINEST)) {
     	    	       				logger.finest("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg + " => no value" );
+                                }
     	    	       			
     	        				continue;
     	        			}
     	        		}
     	        		varValueInMsg = varNode.getTextContent().trim();
     	        		if ( (varValueInMsg == null) || (varValueInMsg.isEmpty()) ) {
-    	        			if ( bpmnVarType.get(varBpmn).isRequired() )
+                            if (bpmnVarType.get(varBpmn).isRequired()) {
     	        				throw new MessagingException( "The task: " + bpmnAction + " of process: " + processDefinitionId
     	        						+" required a value of bpmn variables: " + varBpmn 
     	        						+ " that must be given through the message variable: " + varNameInMsg + " !");
+                            }
     	        			else { // (! bpmnVarType.get(varBpmn).isRequired() )
     	    	        		
-    	    	       			if( logger.isLoggable( Level.FINEST ))
+                                if (logger.isLoggable(Level.FINEST)) {
     	    	       				logger.finest("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg + " => no value" );
-    	    	       			
+                                }
     	        				continue;
     	        			}
     	        		}
     	        		
-    	       			if( logger.isLoggable( Level.FINEST ))
+                        if (logger.isLoggable(Level.FINEST)) {
     	       				logger.finest("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg + " => value: " + varValueInMsg );
+                        }
     	       			
     	       			// Get the type of the bpmn variable
-    	       			String varType = bpmnVarType.get(varBpmn).getType();
+                        final String varType = bpmnVarType.get(varBpmn).getType();
     	       			// Put the value in Map of activiti variable in the right format
     	       			if (varType.equals("string")) {
     	       				processVars.put(varBpmn, varValueInMsg);
     	       			} else if (varType.equals("long")) {
     	       				try {
     	       					processVars.put(varBpmn, Long.valueOf(varValueInMsg));
-    	       				} catch (NumberFormatException e) {
+                            } catch (final NumberFormatException e) {
     	        	            throw new MessagingException( "The value of " + varNameInMsg + " must be a long !" );
     	       				}
        	       			} else if (varType.equals("enum")) {
-       	       				Boolean validValue = false;
-            				for (FormValue enumValue : bpmnVarType.get(varBpmn).getFormValues() ) 
-            					if ( varValueInMsg.equals(enumValue.getId()) ) validValue = true;
-            				if ( ! validValue ) 
+                            boolean validValue = false;
+                            for (final FormValue enumValue : bpmnVarType.get(varBpmn).getFormValues()) {
+                                if (varValueInMsg.equals(enumValue.getId())) {
+                                    validValue = true;
+                                }
+                            }
+                            if (!validValue) {
             					throw new MessagingException( "The value of " + varNameInMsg 
             							+ " does not belong to the enum of Activiti variable " + varNameInMsg + " !");
-            				else
+                            } else {
             					processVars.put(varBpmn, varValueInMsg);
+                            }
         				} else if (varType.equals("date")) {
     	       				try {
-    	       					SimpleDateFormat sdf = new SimpleDateFormat(bpmnVarType.get(varBpmn).getDatePattern());
+                                final SimpleDateFormat sdf = new SimpleDateFormat(bpmnVarType.get(varBpmn)
+                                        .getDatePattern());
             					processVars.put(varBpmn, (Date) sdf.parse(varValueInMsg) );
-    	       				} catch (ParseException e) {
+                            } catch (final ParseException e) {
     	        	            throw new MessagingException( "The value of " + varNameInMsg 
     	        	            		+ " must be a valid Date with date pattern " + bpmnVarType.get(varBpmn).getDatePattern() + "!" );
     	       				}
         				} else if (varType.equals("boolean")) {
-        					if (varValueInMsg.equalsIgnoreCase("true") || varValueInMsg.equalsIgnoreCase("false")) 
+                            if (varValueInMsg.equalsIgnoreCase("true") || varValueInMsg.equalsIgnoreCase("false")) {
         						processVars.put(varBpmn, (Boolean) Boolean.valueOf(varValueInMsg) );
-        					else
+                            } else {
     	        	            throw new MessagingException( "The value of " + varNameInMsg 
     	        	            		+ " must be a boolean value \"true\" or \"false\" !" );
+                            }
         				}	
 
         			}
@@ -332,36 +359,42 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                		// Start a new process instance
             		// TODO Set the CategoryId (not automaticaly done, but automaticaly done for tenant_id ?)
             		try {
-            			identityService.setAuthenticatedUserId(bpmnUserIdValue);
-            			ProcessInstance processInstance = runTimeService.startProcessInstanceById(processDefinitionId, processVars);
+                            // TODO: How this works on concurrent requests. I think that it is not thread-safe ?
+                            this.identityService.setAuthenticatedUserId(bpmnUserIdValue);
+                            final ProcessInstance processInstance = this.runTimeService.startProcessInstanceById(
+                                    processDefinitionId, processVars);
             			bpmnProcessIdValue = processInstance.getId();
             		} finally {
-            			identityService.setAuthenticatedUserId(null);
+                            this.identityService.setAuthenticatedUserId(null);
             		}
 	        		
-       			if( logger.isLoggable( Level.FINEST ))
-       				logger.finest("*** NEW PROCESS INSTANCE started,  processId = " + bpmnProcessIdValue );
+                        if (logger.isLoggable(Level.FINEST)) {
+                            logger.finest("*** NEW PROCESS INSTANCE started,  processId = " + bpmnProcessIdValue);
+                        }
 	       			
         		} else if ( bpmnActionType == BpmnActionType.USER_TASK) {
-        			// Get the Task
-            		List<Task> taskList = taskService.createTaskQuery().processInstanceId(bpmnProcessIdValue)
+                        // Get the Task
+                        final List<Task> taskList = this.taskService.createTaskQuery()
+                                .processInstanceId(bpmnProcessIdValue)
             				.taskDefinitionKey(bpmnAction).list();
-            		if ( (taskList == null) || (taskList.size() == 0 ) )
+                        if ((taskList == null) || (taskList.size() == 0)) {
         	            throw new MessagingException( "No tasks: " + bpmnAction + " for processInstance: " + bpmnProcessIdValue
         	            		+ " was found.");
+                        }
             		// Perform the user Task
             		try {
-            			identityService.setAuthenticatedUserId(bpmnUserIdValue);
-                		taskService.complete(taskList.get(0).getId(), processVars); 
+                            this.identityService.setAuthenticatedUserId(bpmnUserIdValue);
+                            this.taskService.complete(taskList.get(0).getId(), processVars);
             		} finally {
-            			identityService.setAuthenticatedUserId(null);
+                            this.identityService.setAuthenticatedUserId(null);
             		}
         		}
-        		// Build the outMessage
-        		
-        		//TODO
-        		
-        		StringBuilder sb = new StringBuilder();
+
+                // Build the outMessage
+                // TODO: The output should be compliant to the WSDL, not hard-coded
+                // TODO: Don't build XML using StringBuilder. Because of encoding problems, prefer to use DOM or
+                // equivalent
+                final StringBuilder sb = new StringBuilder();
         		sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         		sb.append("<su:numero xmlns:su=\"http://petals.ow2.org/se/Activitibpmn/1.0/su\">\n");
         		sb.append("   <su:numeroDde>" + bpmnProcessIdValue +"</su:numeroDde>\n");
@@ -372,11 +405,11 @@ public class ActivitiJBIListener extends AbstractJBIListener {
 
         		}
         		
-        	} catch (MessagingException e) {
+            } catch (final MessagingException e) {
             	finalException = e;
-            } catch (UnsupportedEncodingException e) {
+            } catch (final UnsupportedEncodingException e) {
             	finalException = e;
-			} catch (TransformerException e) {
+            } catch (final TransformerException e) {
             	finalException = e;
 			}
 
@@ -395,6 +428,4 @@ public class ActivitiJBIListener extends AbstractJBIListener {
     	// False to explicitly return the exchange.
         return true;
     }
-
-
 }

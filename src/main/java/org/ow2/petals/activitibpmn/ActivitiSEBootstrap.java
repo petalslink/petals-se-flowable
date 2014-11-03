@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2014 Linagora
+ * Copyright (c) 2014 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.activitibpmn;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.ow2.petals.component.framework.DefaultBootstrap;
@@ -29,18 +28,15 @@ import org.ow2.petals.component.framework.DefaultBootstrap;
 public class ActivitiSEBootstrap extends DefaultBootstrap {
 
 	
-	 /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.ow2.petals.component.framework.DefaultBootstrap#getAttributeList()
+    /**
+     * {@inheritDoc}
      */
     @Override
     public List<String> getAttributeList() {
+        final List<String> attributes = super.getAttributeList();
+
         this.getLogger().info("***********************");
 		this.getLogger().info("*** Start getAttributeList() in ActivitiSEBootstrap.");
-
-        final List<String> attributes = new ArrayList<String>();
         
         attributes.add("jdbcDriver");
         attributes.add("jdbcUrl");
@@ -74,6 +70,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the jdbc Driver
      */
     public void setJdbcDriver(final String value) {
+        // TODO: Add a check to verify that the class can be instantiated, ie the class is available in the class loader
         this.setParam(ActivitiSEConstants.DBServer.JDBC_DRIVER, value);
     }
   
@@ -92,6 +89,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the jdbc URL
      */
     public void setJdbcUrl(final String value) {
+        // TODO: Add a check to verify that the given value is an URL
         this.setParam(ActivitiSEConstants.DBServer.JDBC_URL, value);
     }
   
@@ -246,6 +244,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the databaseType
      */
     public void setDatabaseType(final String value) {
+        // TODO: Add a check about valid values
         this.setParam(ActivitiSEConstants.DBServer.DATABASE_TYPE, value);
     }
   
@@ -264,6 +263,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the databaseSchemaUpdate
      */
     public void setDatabaseSchemaUpdate(final String value) {
+        // TODO: Add a check about valid values
         this.setParam(ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE, value);
     }
      
