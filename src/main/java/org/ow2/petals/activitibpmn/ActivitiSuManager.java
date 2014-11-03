@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -259,19 +260,27 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
 		final Set<ProcessBPMN> processes = new HashSet<ProcessBPMN>();
 		String processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE);
+        if (processFileName != null && processFileName.trim().isEmpty()) {
+            throw new PEtALSCDKException("The '" + ActivitiSEConstants.PROCESS_FILE
+                    + "' parameter is not well defined or is empty.");
+        }
 		String version = extensions.get(ActivitiSEConstants.VERSION);
-		Integer nbProcesses = 1;
+        int nbProcesses = 1;
 		if ( processFileName == null || version == null ) {
 			// Several process description
             // TODO: Multi-process definitions should be reviewed because no counter increment should be required, just
             // a simple list
-			processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE + nbProcesses.toString());
-			version = extensions.get(ActivitiSEConstants.VERSION + nbProcesses.toString());
+            processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE + nbProcesses);
+            version = extensions.get(ActivitiSEConstants.VERSION + nbProcesses);
 			while ( !( processFileName == null || version == null ) ) {
 				processes.add(new ProcessBPMN(processFileName,version));
 				nbProcesses++;
-				processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE + nbProcesses.toString());
-				version = extensions.get(ActivitiSEConstants.VERSION + nbProcesses.toString());
+                processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE);
+                if (processFileName != null && processFileName.trim().isEmpty()) {
+                    throw new PEtALSCDKException("The '" + ActivitiSEConstants.PROCESS_FILE
+                            + "' parameter is not well defined or is empty.");
+                }
+                version = extensions.get(ActivitiSEConstants.VERSION);
  			}
             if (nbProcesses == 1) {
 				throw new PEtALSCDKException( "Invalid JBI descriptor: it does not contain any process description." );
@@ -313,17 +322,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 				db.category(categoryId);
 
 				// add the process definition from file: file Name, file Path 
-		    	String processFilePath = suRootPath + process.processFileName;
-                if (processFilePath != null) {
-					processFilePath = processFilePath.trim();
-                }
-                // TODO: Something is strange because suRootPath, that is a part of processFilePath, is not null
-                if (processFilePath == null || processFilePath.isEmpty()) {
-					throw new PEtALSCDKException( "The '" + ActivitiSEConstants.PROCESS_FILE + "' parameter is not well defined or is empty." );
-                }
+                final File processFile = new File(suRootPath, process.processFileName);
                 final FileInputStream bpmnInputFile;
 				try {
-					bpmnInputFile = new FileInputStream(processFilePath);
+                    bpmnInputFile = new FileInputStream(processFile);
 
                     try {
                         final InputStreamProvider bpmnInputStreamSource = new InputStreamSource(bpmnInputFile);
@@ -334,7 +336,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                                 bpmnInputStreamSource, false, false);
                         bpmnModel.setTargetNamespace(categoryId);
 
-                        db.addBpmnModel(processFileName, bpmnModel);
+                        db.addBpmnModel(process.processFileName, bpmnModel);
 
                         // TODO manage the assignee according with su jbi descriptor
 
@@ -342,7 +344,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                         // process
 
                         // Do not use db.enableDuplicateFiltering(); with management of tenantId and CategoryId
-                        Deployment deployment = db.deploy();
+                        final Deployment deployment = db.deploy();
 
                         // Set processDefinition
                         final ProcessDefinition processDefinition = this.repS.createProcessDefinitionQuery()
@@ -372,7 +374,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 				} catch (final FileNotFoundException e) {
                     throw new PEtALSCDKException(
                             "An error occurred while starting the Activiti BPMN unable to find file: "
-                                    + processFilePath, e);
+                                    + processFile.getAbsolutePath(), e);
                 }
 
 			}
