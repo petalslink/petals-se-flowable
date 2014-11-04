@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import javax.management.InvalidAttributeValueException;
 import javax.xml.parsers.DocumentBuilder;
 
+import org.h2.Driver;
 import org.junit.Test;
 import org.ow2.petals.component.framework.JBIBootstrap;
 import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorException;
@@ -267,6 +268,81 @@ public class ActivitiSEBootstrapTest {
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
         bootstrap.setJdbcUrl(expectedUrl);
         assertEquals(expectedUrl, bootstrap.getJdbcUrl());
+    }
+
+    /**
+     * Check to set the value 'space' as JDBC URL
+     */
+    @Test
+    public void setJdbcUrl_SpaceURL() throws InvalidAttributeValueException, IllegalArgumentException,
+            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+
+        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("jbi/jbi.xml");
+        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+
+        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+
+        bootstrap.setJdbcUrl(null);
+        assertEquals("", bootstrap.getJdbcUrl());
+
+        bootstrap.setJdbcUrl("");
+        assertEquals("", bootstrap.getJdbcUrl());
+
+        bootstrap.setJdbcUrl(" ");
+        assertEquals("", bootstrap.getJdbcUrl());
+    }
+
+    /**
+     * Check to set an unknown class as JDBC driver
+     */
+    @Test(expected = InvalidAttributeValueException.class)
+    public void setJdbcDriver_Unknown() throws InvalidAttributeValueException {
+        final ActivitiSEBootstrap bootstrap = new ActivitiSEBootstrap();
+        bootstrap.setJdbcDriver("unknown.class");
+    }
+
+    /**
+     * Check to set a known class as JDBC Driver
+     */
+    @Test
+    public void setJdbcDriver_ValidDriver() throws InvalidAttributeValueException, IllegalArgumentException,
+            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+
+        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("jbi/jbi.xml");
+        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+
+        final String expectedDriver = Driver.class.getName();
+        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        bootstrap.setJdbcDriver(expectedDriver);
+        assertEquals(expectedDriver, bootstrap.getJdbcDriver());
+    }
+
+    /**
+     * Check to set the value 'space' as JDBC Driver
+     */
+    @Test
+    public void setJdbcDriver_SpaceValue() throws InvalidAttributeValueException, IllegalArgumentException,
+            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+
+        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("jbi/jbi.xml");
+        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+
+        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+
+        bootstrap.setJdbcDriver(null);
+        assertEquals("", bootstrap.getJdbcDriver());
+
+        bootstrap.setJdbcDriver("");
+        assertEquals("", bootstrap.getJdbcDriver());
+
+        bootstrap.setJdbcDriver(" ");
+        assertEquals("", bootstrap.getJdbcDriver());
     }
 
 }

@@ -17,6 +17,23 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_DRIVER;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_PASSWORD;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Iterator;
@@ -40,16 +57,6 @@ import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
  * @author Bertrand Escudie - Linagora
  */
 public class ActivitiSE extends AbstractServiceEngine {
-
-    /**
-     * Name of the H2 database file used for the default value of the JDBC URL
-     */
-    private static final String DEFAULT_DATABASE_FILENAME = "h2-activiti.db";
-
-    /**
-     * Default value for JDBC Driver
-     */
-    private static final String DEFAULT_JDBC_DRIVER = "org.h2.Driver";
 	
 	/**
 	 * The Activiti BPMN Engine.
@@ -136,8 +143,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 			this.getLogger().info("*** Start doInit() in ActivitiSE");
 	        
             // JDBC Driver
-            final String jdbcDriverConfigured = this.getComponentExtensions().get(
-                    ActivitiSEConstants.DBServer.JDBC_DRIVER);
+            final String jdbcDriverConfigured = this.getComponentExtensions().get(JDBC_DRIVER);
             final String jdbcDriver;
             if (jdbcDriverConfigured == null || jdbcDriverConfigured.trim().isEmpty()) {
                 this.getLogger().info("No JDBC Driver configured for database. Default value used.");
@@ -147,13 +153,14 @@ public class ActivitiSE extends AbstractServiceEngine {
             }
 
             // JDBC URL
-            final String jdbcUrlConfigured = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_URL);
+            final String jdbcUrlConfigured = this.getComponentExtensions().get(JDBC_URL);
             final String jdbcUrl;
             if (jdbcUrlConfigured == null || jdbcUrlConfigured.trim().isEmpty()) {
                 // JDBC URL not set or empty ---> Default value:
                 // $PETALS_HOME/data/repository/components/<se-bpmn>/h2-activiti.db
                 this.getLogger().info("No JDBC URL configured for database. Default value used.");
-                final File databaseFile = new File(this.getContext().getWorkspaceRoot(), DEFAULT_DATABASE_FILENAME);
+                final File databaseFile = new File(this.getContext().getWorkspaceRoot(),
+                        DEFAULT_JDBC_URL_DATABASE_FILENAME);
                 try {
                     jdbcUrl = String.format("jdbc:h2:%s", databaseFile.toURI().toURL().toExternalForm());
                 } catch (final MalformedURLException e) {
@@ -164,87 +171,86 @@ public class ActivitiSE extends AbstractServiceEngine {
                 jdbcUrl = jdbcUrlConfigured;
             }
 
-			final String jdbcUsername = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_USERNAME);
-			final String jdbcPassword = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_PASSWORD);
+			final String jdbcUsername = this.getComponentExtensions().get(JDBC_USERNAME);
+			final String jdbcPassword = this.getComponentExtensions().get(JDBC_PASSWORD);
 
             final String jdbcMaxActiveConnectionsConfigured = this.getComponentExtensions().get(
-                    ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+                    JDBC_MAX_ACTIVE_CONNECTIONS);
             int jdbcMaxActiveConnections;
             if (jdbcMaxActiveConnectionsConfigured == null || jdbcMaxActiveConnectionsConfigured.trim().isEmpty()) {
                 this.getLogger().info("No JDBC Max Active Connections configured for database. Default value used.");
-                jdbcMaxActiveConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+                jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
             } else {
                 try {
                     jdbcMaxActiveConnections = Integer.parseInt(jdbcMaxActiveConnectionsConfigured);
                 } catch (final NumberFormatException e) {
                     this.getLogger().warning(
                             "Invalid value for the number of JDBC Max Active Connections. Default value used.");
-                    jdbcMaxActiveConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+                    jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
                 }
             }
 
-            final String jdbcMaxIdleConnectionsConfigured = this.getComponentExtensions().get(
-                    ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+            final String jdbcMaxIdleConnectionsConfigured = this.getComponentExtensions()
+                    .get(JDBC_MAX_IDLE_CONNECTIONS);
             int jdbcMaxIdleConnections;
             if (jdbcMaxIdleConnectionsConfigured == null || jdbcMaxIdleConnectionsConfigured.trim().isEmpty()) {
                 this.getLogger().info("No JDBC Max Idle Connections configured for database. Default value used.");
-                jdbcMaxIdleConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+                jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
             } else {
                 try {
                     jdbcMaxIdleConnections = Integer.parseInt(jdbcMaxIdleConnectionsConfigured);
                 } catch (final NumberFormatException e) {
                     this.getLogger().warning(
                             "Invalid value for the number of JDBC Max Idle Connections. Default value used.");
-                    jdbcMaxIdleConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+                    jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
                 }
             }
 
-            final String jdbcMaxCheckoutTimeConfigured = this.getComponentExtensions().get(
-                    ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+            final String jdbcMaxCheckoutTimeConfigured = this.getComponentExtensions().get(JDBC_MAX_CHECKOUT_TIME);
             int jdbcMaxCheckoutTime;
             if (jdbcMaxCheckoutTimeConfigured == null || jdbcMaxCheckoutTimeConfigured.trim().isEmpty()) {
                 this.getLogger().info("No JDBC Max Checkout Time configured for database. Default value used.");
-                jdbcMaxCheckoutTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+                jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
             } else {
                 try {
                     jdbcMaxCheckoutTime = Integer.parseInt(jdbcMaxCheckoutTimeConfigured);
                 } catch (final NumberFormatException e) {
                     this.getLogger().warning(
                             "Invalid value for the number of JDBC Max Checkout Time. Default value used.");
-                    jdbcMaxCheckoutTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+                    jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
                 }
             }
 
-            final String jdbcMaxWaitTimeConfigured = this.getComponentExtensions().get(
-                    ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+            final String jdbcMaxWaitTimeConfigured = this.getComponentExtensions().get(JDBC_MAX_WAIT_TIME);
             int jdbcMaxWaitTime;
             if (jdbcMaxWaitTimeConfigured == null || jdbcMaxWaitTimeConfigured.trim().isEmpty()) {
                 this.getLogger().info("No JDBC Max Wait Time configured for database. Default value used.");
-                jdbcMaxWaitTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
+                jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
             } else {
                 try {
                     jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeConfigured);
                 } catch (final NumberFormatException e) {
                     this.getLogger().warning("Invalid value for the number of JDBC Max Wait Time. Default value used.");
-                    jdbcMaxWaitTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
+                    jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
                 }
             }
 
 			 /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
-			final String databaseType = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_TYPE);
+            final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
 			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
-			final String databaseSchemaUpdate = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+            final String databaseSchemaUpdate = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
 
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_DRIVER + " = " + jdbcDriver);
-            this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_URL + " = " + jdbcUrl);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_USERNAME + " = " + jdbcUsername);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_PASSWORD + " = " + jdbcPassword);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS + " = " + jdbcMaxIdleConnections);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME + " = " + jdbcMaxCheckoutTime);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.DATABASE_TYPE + " = " + databaseType);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
+            this.getLogger().info(" DB configuration - " + JDBC_DRIVER + " = " + jdbcDriver);
+            this.getLogger().info(" DB configuration - " + JDBC_URL + " = " + jdbcUrl);
+            this.getLogger().info(" DB configuration - " + JDBC_USERNAME + " = " + jdbcUsername);
+            this.getLogger().info(" DB configuration - " + JDBC_PASSWORD + " = " + jdbcPassword);
+            this.getLogger().info(
+                    " DB configuration - " + JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);
+            this.getLogger().info(" DB configuration - " + JDBC_MAX_IDLE_CONNECTIONS + " = " + jdbcMaxIdleConnections);
+            this.getLogger().info(" DB configuration - " + JDBC_MAX_CHECKOUT_TIME + " = " + jdbcMaxCheckoutTime);
+            this.getLogger().info(" DB configuration - " + JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
+            this.getLogger().info(" DB configuration - " + DATABASE_TYPE + " = " + databaseType);
+            this.getLogger().info(" DB configuration - " + DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
 		    
 	        /* TODO Test Activiti database connection configuration */
 	        /* TODO Test the Database Schema Version

@@ -17,8 +17,26 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_DRIVER;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_PASSWORD;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
+
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.management.InvalidAttributeValueException;
@@ -31,6 +49,7 @@ import org.ow2.petals.component.framework.DefaultBootstrap;
  */
 public class ActivitiSEBootstrap extends DefaultBootstrap {
 
+    private static final String ATTR_NAME_JDBC_DRIVER = "jdbcDriver";
     private static final String ATTR_NAME_JDBC_URL = "jdbcUrl";
 
 	
@@ -44,7 +63,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
         this.getLogger().info("***********************");
 		this.getLogger().info("*** Start getAttributeList() in ActivitiSEBootstrap.");
         
-        attributes.add("jdbcDriver");
+        attributes.add(ATTR_NAME_JDBC_DRIVER);
         attributes.add(ATTR_NAME_JDBC_URL);
         attributes.add("jdbcUsername");
         attributes.add("jdbcPassword");
@@ -73,11 +92,38 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     /**
      * Set the jdbc Driver
      * 
-     * @param value the jdbc Driver
+     * @param value
+     *            the jdbc Driver
+     * @throws InvalidAttributeValueException
      */
-    public void setJdbcDriver(final String value) {
-        // TODO: Add a check to verify that the class can be instantiated, ie the class is available in the class loader
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_DRIVER, value);
+    public void setJdbcDriver(final String value) throws InvalidAttributeValueException {
+
+        if (value != null && !value.trim().isEmpty()) {
+            // Check that the given value is a JDBC Driver
+            try {
+                Class.forName(value);
+                boolean isRightValue = false;
+                final Enumeration<Driver> drivers = DriverManager.getDrivers();
+                while (drivers.hasMoreElements()) {
+                    if (drivers.nextElement().getClass().getName().equals(value)) {
+                        isRightValue = true;
+                        break;
+                    }
+                }
+                if (!isRightValue) {
+                    throw new InvalidAttributeValueException("Invalid value for attribute '" + ATTR_NAME_JDBC_DRIVER
+                            + "': " + value + " is not known as JDBC Driver.");
+                } else {
+                    this.setParam(JDBC_DRIVER, value);
+                }
+            } catch (final ClassNotFoundException e) {
+                throw new InvalidAttributeValueException("Invalid value for attribute '" + ATTR_NAME_JDBC_DRIVER
+                        + "': The class '" + value + "' has not been found.");
+            }
+        } else {
+            this.setParam(JDBC_DRIVER, null);
+        }
+
     }
   
     /**
@@ -86,7 +132,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the jdbc URL
      */
     public String getJdbcUrl() {
-    	return this.getParam(ActivitiSEConstants.DBServer.JDBC_URL);
+        return this.getParam(JDBC_URL);
     }
  
     /**
@@ -96,15 +142,18 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      */
     public void setJdbcUrl(final String value) throws InvalidAttributeValueException {
 
-        // Check that the given value is an URL
-        try {
-            new URL(value);
-        } catch (final MalformedURLException e) {
-            throw new InvalidAttributeValueException("Invalid value for attribute '" + ATTR_NAME_JDBC_URL
-                    + "': The value must be an URL.");
+        if (value != null && !value.trim().isEmpty()) {
+            // Check that the given value is an URL
+            try {
+                new URL(value);
+            } catch (final MalformedURLException e) {
+                throw new InvalidAttributeValueException("Invalid value for attribute '" + ATTR_NAME_JDBC_URL
+                        + "': The value must be an URL.");
+            }
+            this.setParam(JDBC_URL, value);
+        } else {
+            this.setParam(JDBC_URL, null);
         }
-
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_URL, value);
     }
   
     /**
@@ -113,7 +162,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the jdbc User Name
      */
     public String getJdbcUsername() {
-    	return this.getParam(ActivitiSEConstants.DBServer.JDBC_USERNAME);
+        return this.getParam(JDBC_USERNAME);
     }
  
     /**
@@ -122,7 +171,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the User Name
      */
     public void setJdbcUsername(final String value) {
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_USERNAME, value);
+        this.setParam(JDBC_USERNAME, value);
     }
   
     /**
@@ -131,7 +180,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the jdbc Password
      */
     public String getJdbcPassword() {
-    	return this.getParam(ActivitiSEConstants.DBServer.JDBC_PASSWORD);
+        return this.getParam(JDBC_PASSWORD);
     }
  
     /**
@@ -140,7 +189,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the UserName
      */
     public void setJdbcPassword(final String value) {
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_PASSWORD, value);
+        this.setParam(JDBC_PASSWORD, value);
     }
   
     /**
@@ -151,8 +200,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public int getJdbcMaxActiveConnections() {
         int jdbcMaxActiveConnections;
 
-        final String jdbcMaxActiveConnectionsString = this
-                .getParam(ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+        final String jdbcMaxActiveConnectionsString = this.getParam(JDBC_MAX_ACTIVE_CONNECTIONS);
         if (jdbcMaxActiveConnectionsString != null && !jdbcMaxActiveConnectionsString.trim().isEmpty()) {
             try {
                 jdbcMaxActiveConnections = Integer.parseInt(jdbcMaxActiveConnectionsString);
@@ -160,12 +208,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
                 // Invalid value, we use the default one
                 this.getLogger().warning(
                         "Invalid value (" + jdbcMaxActiveConnectionsString + ") for the configuration parameter: "
-                                + ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS + ". Default value used: "
-                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS);
-                jdbcMaxActiveConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+                                + JDBC_MAX_ACTIVE_CONNECTIONS + ". Default value used: "
+                                + DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS);
+                jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
             }
         } else {
-            jdbcMaxActiveConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+            jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
         }
 
         return jdbcMaxActiveConnections;
@@ -177,7 +225,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the MaxActiveConnections
      */
     public void setJdbcMaxActiveConnections(final int value) {
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS, Integer.toString(value));
+        this.setParam(JDBC_MAX_ACTIVE_CONNECTIONS, Integer.toString(value));
     }
   
     /**
@@ -188,8 +236,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public int getJdbcMaxIdleConnections() {
         int jdbcMaxIdleConnections;
 
-        final String jdbcMaxIdleConnectionsString = this
-                .getParam(ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+        final String jdbcMaxIdleConnectionsString = this.getParam(JDBC_MAX_IDLE_CONNECTIONS);
         if (jdbcMaxIdleConnectionsString != null && !jdbcMaxIdleConnectionsString.trim().isEmpty()) {
             try {
                 jdbcMaxIdleConnections = Integer.parseInt(jdbcMaxIdleConnectionsString);
@@ -197,12 +244,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
                 // Invalid value, we use the default one
                 this.getLogger().warning(
                         "Invalid value (" + jdbcMaxIdleConnectionsString + ") for the configuration parameter: "
-                                + ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS + ". Default value used: "
-                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS);
-                jdbcMaxIdleConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+                                + JDBC_MAX_IDLE_CONNECTIONS + ". Default value used: "
+                                + DEFAULT_JDBC_MAX_IDLE_CONNECTIONS);
+                jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
             }
         } else {
-            jdbcMaxIdleConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+            jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
         }
 
         return jdbcMaxIdleConnections;
@@ -214,7 +261,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the MaxIdleConnections
      */
     public void setJdbcMaxIdleConnections(final int value) {
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS, Integer.toString(value));
+        this.setParam(JDBC_MAX_IDLE_CONNECTIONS, Integer.toString(value));
     }
   
     /**
@@ -225,7 +272,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public int getJdbcMaxCheckoutTime() {
         int jdbcMaxCheckoutTime = 0;
 
-        final String jdbcMaxCheckoutTimeString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+        final String jdbcMaxCheckoutTimeString = this.getParam(JDBC_MAX_CHECKOUT_TIME);
         if (jdbcMaxCheckoutTimeString != null && !jdbcMaxCheckoutTimeString.trim().isEmpty()) {
             try {
                 jdbcMaxCheckoutTime = Integer.parseInt(jdbcMaxCheckoutTimeString);
@@ -233,12 +280,11 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
                 // Invalid value, we use the default one
                 this.getLogger().warning(
                         "Invalid value (" + jdbcMaxCheckoutTimeString + ") for the configuration parameter: "
-                                + ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME + ". Default value used: "
-                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME);
-                jdbcMaxCheckoutTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+                                + JDBC_MAX_CHECKOUT_TIME + ". Default value used: " + DEFAULT_JDBC_MAX_CHECKOUT_TIME);
+                jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
             }
         } else {
-            jdbcMaxCheckoutTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+            jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
         }
 
         return jdbcMaxCheckoutTime;
@@ -250,7 +296,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the MaxCheckoutTime
      */
     public void setJdbcMaxCheckoutTime(final int value) {
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME, Integer.toString(value));
+        this.setParam(JDBC_MAX_CHECKOUT_TIME, Integer.toString(value));
     }
  
     /**
@@ -261,7 +307,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public int getJdbcMaxWaitTime() {
         int jdbcMaxWaitTime = 0;
 
-        final String jdbcMaxWaitTimeString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+        final String jdbcMaxWaitTimeString = this.getParam(JDBC_MAX_WAIT_TIME);
         if (jdbcMaxWaitTimeString != null && !jdbcMaxWaitTimeString.trim().isEmpty()) {
             try {
                 jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeString);
@@ -269,12 +315,11 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
                 // Invalid value, we use the default one
                 this.getLogger().warning(
                         "Invalid value (" + jdbcMaxWaitTimeString + ") for the configuration parameter: "
-                                + ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME + ". Default value used: "
-                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME);
-                jdbcMaxWaitTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
+                                + JDBC_MAX_WAIT_TIME + ". Default value used: " + DEFAULT_JDBC_MAX_WAIT_TIME);
+                jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
             }
         } else {
-            jdbcMaxWaitTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
+            jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
         }
 
         return jdbcMaxWaitTime;
@@ -286,7 +331,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value the MaxWaitTime
      */
     public void setJdbcMaxWaitTime(final int value) {
-        this.setParam(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME, Integer.toString(value));
+        this.setParam(JDBC_MAX_WAIT_TIME, Integer.toString(value));
     }
  
     /**
@@ -295,7 +340,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the databaseType
      */
     public String getDatabaseType() {
-    	return this.getParam(ActivitiSEConstants.DBServer.DATABASE_TYPE);
+        return this.getParam(DATABASE_TYPE);
     }
      
     /**
@@ -305,7 +350,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      */
     public void setDatabaseType(final String value) {
         // TODO: Add a check about valid values
-        this.setParam(ActivitiSEConstants.DBServer.DATABASE_TYPE, value);
+        this.setParam(DATABASE_TYPE, value);
     }
   
     /**
@@ -314,7 +359,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the databaseSchemaUpdate
      */
     public String getDatabaseSchemaUpdate() {
-    	return this.getParam(ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+        return this.getParam(DATABASE_SCHEMA_UPDATE);
     }
      
     /**
@@ -324,7 +369,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      */
     public void setDatabaseSchemaUpdate(final String value) {
         // TODO: Add a check about valid values
-        this.setParam(ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE, value);
+        this.setParam(DATABASE_SCHEMA_UPDATE, value);
     }
      
 }

@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn;
 
+
 /**
  * The component class of the Activiti BPMN Service Engine related constants.
  * @author Bertrand Escudie - Linagora
@@ -56,15 +57,26 @@ public final class ActivitiSEConstants {
 	 * The Component DB server related constants
 	 */
 	public static class DBServer {
+
 		/**
 		 * The Jdbc driver: implementation of the driver for the specific database type.
 		 */
 		public static final String JDBC_DRIVER = "jdbc_driver";
 
+        /**
+         * The default JDBC driver
+         */
+        public static final String DEFAULT_JDBC_DRIVER = "org.h2.Driver";
+
 		/**
 		 * The Jdbc URL of the database. 
 		 */
 		public static final String JDBC_URL = "jdbc_url";
+
+        /**
+         * Name of the H2 database file used for the default value of the JDBC URL
+         */
+        public static final String DEFAULT_JDBC_URL_DATABASE_FILENAME = "h2-activiti.db";
 
 		/**
 		 * The Jdbc Username : username to connect to the database. 
