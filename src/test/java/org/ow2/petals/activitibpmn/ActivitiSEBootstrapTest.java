@@ -25,6 +25,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.management.InvalidAttributeValueException;
 import javax.xml.parsers.DocumentBuilder;
 
 import org.junit.Test;
@@ -239,6 +240,33 @@ public class ActivitiSEBootstrapTest {
                 bootstrap.getJdbcMaxIdleConnections());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME, bootstrap.getJdbcMaxWaitTime());
+    }
+
+    /**
+     * Check to set an invalid URL as JDBC URL
+     */
+    @Test(expected = InvalidAttributeValueException.class)
+    public void setJdbcUrl_InvalidURL() throws InvalidAttributeValueException {
+        final ActivitiSEBootstrap bootstrap = new ActivitiSEBootstrap();
+        bootstrap.setJdbcUrl("invalid-url://path");
+    }
+
+    /**
+     * Check to set a valid URL as JDBC URL
+     */
+    @Test
+    public void setJdbcUrl_ValidURL() throws InvalidAttributeValueException, IllegalArgumentException,
+            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+
+        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("jbi/jbi.xml");
+        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+
+        final String expectedUrl = "http://path";
+        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        bootstrap.setJdbcUrl(expectedUrl);
+        assertEquals(expectedUrl, bootstrap.getJdbcUrl());
     }
 
 }

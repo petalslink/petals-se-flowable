@@ -17,7 +17,11 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
+
+import javax.management.InvalidAttributeValueException;
 
 import org.ow2.petals.component.framework.DefaultBootstrap;
 
@@ -26,6 +30,8 @@ import org.ow2.petals.component.framework.DefaultBootstrap;
  * @author Bertrand Escudie - Linagora
  */
 public class ActivitiSEBootstrap extends DefaultBootstrap {
+
+    private static final String ATTR_NAME_JDBC_URL = "jdbcUrl";
 
 	
     /**
@@ -39,7 +45,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 		this.getLogger().info("*** Start getAttributeList() in ActivitiSEBootstrap.");
         
         attributes.add("jdbcDriver");
-        attributes.add("jdbcUrl");
+        attributes.add(ATTR_NAME_JDBC_URL);
         attributes.add("jdbcUsername");
         attributes.add("jdbcPassword");
         attributes.add("jdbcMaxActiveConnections");
@@ -88,8 +94,16 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * 
      * @param value the jdbc URL
      */
-    public void setJdbcUrl(final String value) {
-        // TODO: Add a check to verify that the given value is an URL
+    public void setJdbcUrl(final String value) throws InvalidAttributeValueException {
+
+        // Check that the given value is an URL
+        try {
+            new URL(value);
+        } catch (final MalformedURLException e) {
+            throw new InvalidAttributeValueException("Invalid value for attribute '" + ATTR_NAME_JDBC_URL
+                    + "': The value must be an URL.");
+        }
+
         this.setParam(ActivitiSEConstants.DBServer.JDBC_URL, value);
     }
   
@@ -250,7 +264,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
         final String jdbcMaxWaitTimeString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
         if (jdbcMaxWaitTimeString != null && !jdbcMaxWaitTimeString.trim().isEmpty()) {
             try {
-            jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeString);
+                jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeString);
             } catch (final NumberFormatException e) {
                 // Invalid value, we use the default one
                 this.getLogger().warning(
