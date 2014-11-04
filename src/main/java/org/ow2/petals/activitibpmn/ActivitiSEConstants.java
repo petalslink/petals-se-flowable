@@ -76,36 +76,52 @@ public final class ActivitiSEConstants {
 		 */
 		public static final String JDBC_PASSWORD = "jdbc_password";
 
-		/**
-		 * The jdbcMaxActiveConnections: The number of active connections
-		 * that the connection pool at maximum at any time can contain.
-		 * Default is 10.
-		 */
+        /**
+         * Tag name of the component JBI descriptor about the number of active connections that the connection pool at
+         * maximum at any time can contain.
+         */
 		public static final String JDBC_MAX_ACTIVE_CONNECTIONS = "jdbc_max_active_connections";
 		
-		/**
-		 * The jdbcMaxIdleConnections: The number of idle connections
-		 * that the connection pool at maximum at any time can contain.
-		 */
+        /**
+         * Default value of the number of active connections that the connection pool at maximum at any time can
+         * contain.
+         */
+        public static final int DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS = 10;
+
+        /**
+         * Tag name of the component JBI descriptor about the number of idle connections that the connection pool at
+         * maximum at any time can contain.
+         */
 		public static final String JDBC_MAX_IDLE_CONNECTIONS = "jdbc_max_idle_connections";
 		
-		/**	
-		 * The jdbcMaxCheckoutTime: The amount of time in milliseconds
-		 * a connection can be 'checked out' from the connection pool
-		 * before it is forcefully returned.
-		 * Default is 20000 (20 seconds).
-		 */
+        /**
+         * Default value of the number of idle connections that the connection pool at maximum at any time can contain.
+         */
+        public static final int DEFAULT_JDBC_MAX_IDLE_CONNECTIONS = 1;
+
+        /**
+         * Tag name of the component JBI descriptor about the amount of time in milliseconds a connection can be
+         * 'checked out' from the connection pool before it is forcefully returned.
+         */
 		public static final String JDBC_MAX_CHECKOUT_TIME = "jdbc_max_checkout_time";
+
+        /**
+         * Default value of the amount of time in milliseconds a connection can be 'checked out' from the connection
+         * pool before it is forcefully returned.
+         */
+        public static final int DEFAULT_JDBC_MAX_CHECKOUT_TIME = 20000;
 		
-		/**
-		 * The jdbcMaxWaitTime: This is a low level setting
-		 * that gives the pool a chance to print a log status
-		 * and re-attempt the acquisition of a connection in the case
-		 * that it's taking unusually long (to avoid failing silently
-		 * forever if the pool is misconfigured).
-		 * Default is 20000 (20 seconds)
-		 */
+        /**
+         * Tag name of the component JBI descriptor about a low level setting that gives the pool a chance to print a
+         * log status and re-attempt the acquisition of a connection in the case that it's taking unusually long (to
+         * avoid failing silently forever if the pool is misconfigured).
+         */
 		public static final String JDBC_MAX_WAIT_TIME = "jdbc_max_wait_time";
+
+        /**
+         * Default value of {@link #JDBC_MAX_WAIT_TIME}.
+         */
+        public static final int DEFAULT_JDBC_MAX_WAIT_TIME = 20000;
 		
 		/**
 		 * The databaseType: it's normally not necessary to specify this property

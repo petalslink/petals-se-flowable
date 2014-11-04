@@ -135,11 +135,23 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the jdbc MaxActiveConnections
      */
     public int getJdbcMaxActiveConnections() {
-        int jdbcMaxActiveConnections = 0;
+        int jdbcMaxActiveConnections;
 
-        final String JdbcMaxActiveConnectionsString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
-        if (JdbcMaxActiveConnectionsString != null) {
-            jdbcMaxActiveConnections = Integer.parseInt(JdbcMaxActiveConnectionsString);
+        final String jdbcMaxActiveConnectionsString = this
+                .getParam(ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+        if (jdbcMaxActiveConnectionsString != null && !jdbcMaxActiveConnectionsString.trim().isEmpty()) {
+            try {
+                jdbcMaxActiveConnections = Integer.parseInt(jdbcMaxActiveConnectionsString);
+            } catch (final NumberFormatException e) {
+                // Invalid value, we use the default one
+                this.getLogger().warning(
+                        "Invalid value (" + jdbcMaxActiveConnectionsString + ") for the configuration parameter: "
+                                + ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS + ". Default value used: "
+                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS);
+                jdbcMaxActiveConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+            }
+        } else {
+            jdbcMaxActiveConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
         }
 
         return jdbcMaxActiveConnections;
@@ -160,11 +172,23 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the jdbc MaxIdleConnections
      */
     public int getJdbcMaxIdleConnections() {
-        int jdbcMaxIdleConnections = 0;
+        int jdbcMaxIdleConnections;
 
-        final String JdbcMaxIdleConnectionsString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
-        if (JdbcMaxIdleConnectionsString != null) {
-            jdbcMaxIdleConnections = Integer.parseInt(JdbcMaxIdleConnectionsString);
+        final String jdbcMaxIdleConnectionsString = this
+                .getParam(ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+        if (jdbcMaxIdleConnectionsString != null && !jdbcMaxIdleConnectionsString.trim().isEmpty()) {
+            try {
+                jdbcMaxIdleConnections = Integer.parseInt(jdbcMaxIdleConnectionsString);
+            } catch (final NumberFormatException e) {
+                // Invalid value, we use the default one
+                this.getLogger().warning(
+                        "Invalid value (" + jdbcMaxIdleConnectionsString + ") for the configuration parameter: "
+                                + ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS + ". Default value used: "
+                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS);
+                jdbcMaxIdleConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+            }
+        } else {
+            jdbcMaxIdleConnections = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
         }
 
         return jdbcMaxIdleConnections;
@@ -187,9 +211,20 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public int getJdbcMaxCheckoutTime() {
         int jdbcMaxCheckoutTime = 0;
 
-        final String JdbcMaxCheckoutTimeString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
-        if (JdbcMaxCheckoutTimeString != null) {
-            jdbcMaxCheckoutTime = Integer.parseInt(JdbcMaxCheckoutTimeString);
+        final String jdbcMaxCheckoutTimeString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+        if (jdbcMaxCheckoutTimeString != null && !jdbcMaxCheckoutTimeString.trim().isEmpty()) {
+            try {
+                jdbcMaxCheckoutTime = Integer.parseInt(jdbcMaxCheckoutTimeString);
+            } catch (final NumberFormatException e) {
+                // Invalid value, we use the default one
+                this.getLogger().warning(
+                        "Invalid value (" + jdbcMaxCheckoutTimeString + ") for the configuration parameter: "
+                                + ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME + ". Default value used: "
+                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME);
+                jdbcMaxCheckoutTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+            }
+        } else {
+            jdbcMaxCheckoutTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
         }
 
         return jdbcMaxCheckoutTime;
@@ -212,9 +247,20 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public int getJdbcMaxWaitTime() {
         int jdbcMaxWaitTime = 0;
 
-        final String JdbcMaxWaitTimeString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
-        if (JdbcMaxWaitTimeString != null) {
-            jdbcMaxWaitTime = Integer.parseInt(JdbcMaxWaitTimeString);
+        final String jdbcMaxWaitTimeString = this.getParam(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+        if (jdbcMaxWaitTimeString != null && !jdbcMaxWaitTimeString.trim().isEmpty()) {
+            try {
+            jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeString);
+            } catch (final NumberFormatException e) {
+                // Invalid value, we use the default one
+                this.getLogger().warning(
+                        "Invalid value (" + jdbcMaxWaitTimeString + ") for the configuration parameter: "
+                                + ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME + ". Default value used: "
+                                + ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME);
+                jdbcMaxWaitTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
+            }
+        } else {
+            jdbcMaxWaitTime = ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME;
         }
 
         return jdbcMaxWaitTime;
