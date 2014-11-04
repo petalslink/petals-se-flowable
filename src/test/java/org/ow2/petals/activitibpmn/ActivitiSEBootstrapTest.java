@@ -78,6 +78,123 @@ public class ActivitiSEBootstrapTest {
     }
 
     /**
+     * Check that the component embeds the right hard-coded default configuration when the integer values of the
+     * component JBI descriptor are set to 'space'.
+     */
+    @Test
+    public void defaultConfiguration_ValuesSetToSpace() throws SecurityException, NoSuchFieldException,
+            IllegalArgumentException, IllegalAccessException {
+
+        // Create a minimalist JBI descriptor
+        final Jbi jbiComponentConfiguration = new Jbi();
+        final Component component = new Component();
+        jbiComponentConfiguration.setComponent(component);
+        final List<Element> params = component.getAny();
+
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document doc = docBuilder.newDocument();
+        final Element eltJdbcMaxActiveConnections = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+        eltJdbcMaxActiveConnections.setTextContent(" ");
+        params.add(eltJdbcMaxActiveConnections);
+        final Element eltJdbcMaxIdleConnections = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+        eltJdbcMaxIdleConnections.setTextContent(" ");
+        params.add(eltJdbcMaxIdleConnections);
+        final Element eltJdbcMaxCheckoutTime = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+        eltJdbcMaxCheckoutTime.setTextContent(" ");
+        params.add(eltJdbcMaxCheckoutTime);
+        final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+        eltJdbcMaxWaitTime.setTextContent(" ");
+        params.add(eltJdbcMaxWaitTime);
+
+        this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
+    }
+
+    /**
+     * Check that the component embeds the right hard-coded default configuration when the integer values of the
+     * component JBI descriptor are set to invalid values.
+     */
+    @Test
+    public void defaultConfiguration_InvalidValues() throws SecurityException, NoSuchFieldException,
+            IllegalArgumentException, IllegalAccessException {
+
+        // Create a minimalist JBI descriptor
+        final Jbi jbiComponentConfiguration = new Jbi();
+        final Component component = new Component();
+        jbiComponentConfiguration.setComponent(component);
+        final List<Element> params = component.getAny();
+
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document doc = docBuilder.newDocument();
+        final Element eltJdbcMaxActiveConnections = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+        eltJdbcMaxActiveConnections.setTextContent("invalid-value");
+        params.add(eltJdbcMaxActiveConnections);
+        final Element eltJdbcMaxIdleConnections = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+        eltJdbcMaxIdleConnections.setTextContent("invalid-value");
+        params.add(eltJdbcMaxIdleConnections);
+        final Element eltJdbcMaxCheckoutTime = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+        eltJdbcMaxCheckoutTime.setTextContent("invalid-value");
+        params.add(eltJdbcMaxCheckoutTime);
+        final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+        eltJdbcMaxWaitTime.setTextContent("invalid-value");
+        params.add(eltJdbcMaxWaitTime);
+
+        this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
+    }
+
+    /**
+     * Check that the component get given configuration when configuration parameters are set to valid values.
+     */
+    @Test
+    public void defaultConfiguration_ValidValues() throws SecurityException, NoSuchFieldException,
+            IllegalArgumentException, IllegalAccessException {
+
+        // Create a minimalist JBI descriptor
+        final Jbi jbiComponentConfiguration = new Jbi();
+        final Component component = new Component();
+        jbiComponentConfiguration.setComponent(component);
+        final List<Element> params = component.getAny();
+
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document doc = docBuilder.newDocument();
+
+        final Element eltJdbcMaxActiveConnections = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+        final int jdbcMaxActiveConnections = 15;
+        eltJdbcMaxActiveConnections.setTextContent(String.valueOf(jdbcMaxActiveConnections));
+        params.add(eltJdbcMaxActiveConnections);
+
+        final Element eltJdbcMaxIdleConnections = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+        final int jdbcMaxIdleConnections = 4;
+        eltJdbcMaxIdleConnections.setTextContent(String.valueOf(jdbcMaxIdleConnections));
+        params.add(eltJdbcMaxIdleConnections);
+
+        final Element eltJdbcMaxCheckoutTime = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+        final int jdbcMaxCheckoutTime = 25000;
+        eltJdbcMaxCheckoutTime.setTextContent(String.valueOf(jdbcMaxCheckoutTime));
+        params.add(eltJdbcMaxCheckoutTime);
+
+        final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+        final int jdbcMaxWaitTime = 15000;
+        eltJdbcMaxWaitTime.setTextContent(String.valueOf(jdbcMaxWaitTime));
+        params.add(eltJdbcMaxWaitTime);
+
+        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+
+        assertEquals(jdbcMaxActiveConnections, bootstrap.getJdbcMaxActiveConnections());
+        assertEquals(jdbcMaxIdleConnections, bootstrap.getJdbcMaxIdleConnections());
+        assertEquals(jdbcMaxCheckoutTime, bootstrap.getJdbcMaxCheckoutTime());
+        assertEquals(jdbcMaxWaitTime, bootstrap.getJdbcMaxWaitTime());
+    }
+
+    /**
      * Check that the component embeds the right default configuration in its JBI descriptor (values set to their
      * default value in jbi.xml)
      */
