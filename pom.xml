@@ -54,7 +54,7 @@
 	</developers>
    
    <properties>
-      <activiti.version>5.17.0-SNAPSHOT</activiti.version>
+      <activiti.version>5.16.4</activiti.version>
    </properties>
 	
 	<dependencies>

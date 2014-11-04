@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,6 +40,16 @@ import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
  * @author Bertrand Escudie - Linagora
  */
 public class ActivitiSE extends AbstractServiceEngine {
+
+    /**
+     * Name of the H2 database file used for the default value of the JDBC URL
+     */
+    private static final String DEFAULT_DATABASE_FILENAME = "h2-activiti.db";
+
+    /**
+     * Default value for JDBC Driver
+     */
+    private static final String DEFAULT_JDBC_DRIVER = "org.h2.Driver";
 	
 	/**
 	 * The Activiti BPMN Engine.
@@ -123,22 +135,48 @@ public class ActivitiSE extends AbstractServiceEngine {
 	        this.getLogger().info("***********************");
 			this.getLogger().info("*** Start doInit() in ActivitiSE");
 	        
-	        /* get Activiti database configuration */
-			final String jdbcDriver = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_DRIVER);
-			final String jdbcUrl = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_URL);
-			final String jdbcUsername = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_USERNAME);
-			final String jdbcPassword = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_PASSWORD);
-			final String jdbcMaxActiveConnections = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
-			final String jdbcMaxIdleConnections = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
-			final String jdbcMaxCheckoutTime = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
-			final String jdbcMaxWaitTime = getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
+            // JDBC Driver
+            final String jdbcDriverConfigured = this.getComponentExtensions().get(
+                    ActivitiSEConstants.DBServer.JDBC_DRIVER);
+            final String jdbcDriver;
+            if (jdbcDriverConfigured == null || jdbcDriverConfigured.trim().isEmpty()) {
+                this.getLogger().info("No JDBC Driver configured for database, default value used.");
+                jdbcDriver = DEFAULT_JDBC_DRIVER;
+            } else {
+                jdbcDriver = jdbcDriverConfigured;
+            }
+
+            // JDBC URL
+            final String jdbcUrlConfigured = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_URL);
+            final String jdbcUrl;
+            if (jdbcUrlConfigured == null || jdbcUrlConfigured.trim().isEmpty()) {
+                // JDBC URL not set or empty ---> Default value:
+                // $PETALS_HOME/data/repository/components/<se-bpmn>/h2-activiti.db
+                this.getLogger().info("No JDBC URL configured for database, default value used.");
+                final File databaseFile = new File(this.getContext().getWorkspaceRoot(), DEFAULT_DATABASE_FILENAME);
+                try {
+                    jdbcUrl = String.format("jdbc:h2:%s", databaseFile.toURI().toURL().toExternalForm());
+                } catch (final MalformedURLException e) {
+                    // This exception should not occur. It's a bug
+                    throw new JBIException("The defaul JDBC URL is invalid !!", e);
+                }
+            } else {
+                jdbcUrl = jdbcUrlConfigured;
+            }
+
+			final String jdbcUsername = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_USERNAME);
+			final String jdbcPassword = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_PASSWORD);
+			final String jdbcMaxActiveConnections = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS);
+			final String jdbcMaxIdleConnections = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_IDLE_CONNECTIONS);
+			final String jdbcMaxCheckoutTime = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_CHECKOUT_TIME);
+			final String jdbcMaxWaitTime = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
 			 /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
-			final String databaseType = getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_TYPE);
+			final String databaseType = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_TYPE);
 			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
-			final String databaseSchemaUpdate = getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+			final String databaseSchemaUpdate = this.getComponentExtensions().get(ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
 
 	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_DRIVER + " = " + jdbcDriver);
-	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_URL + " = " + jdbcUrl);
+            this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_URL + " = " + jdbcUrl);
 	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_USERNAME + " = " + jdbcUsername);
 	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_PASSWORD + " = " + jdbcPassword);
 	        this.getLogger().info(" DB configuration - " + ActivitiSEConstants.DBServer.JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);

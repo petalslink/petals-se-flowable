@@ -48,7 +48,7 @@
 
 		<!-- Component specific configuration -->
 		<petals-se-activitibpmn:jdbc_driver>org.h2.Driver</petals-se-activitibpmn:jdbc_driver>
-		<petals-se-activitibpmn:jdbc_url>jdbc:h2:tcp://localhost//Users/bescudie/my-own-db;DB_CLOSE_DELAY=1000</petals-se-activitibpmn:jdbc_url>
+		<petals-se-activitibpmn:jdbc_url/>
 		<petals-se-activitibpmn:jdbc_username>sa</petals-se-activitibpmn:jdbc_username>
 		<petals-se-activitibpmn:jdbc_password></petals-se-activitibpmn:jdbc_password>
 		<petals-se-activitibpmn:jdbc_max_active_connections />

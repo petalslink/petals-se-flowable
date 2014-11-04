@@ -53,7 +53,7 @@
   </build>
   
   <scm>
-    <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/dev/prod/petals/components-sls/components/petals-se-activitibpmn/samples/parent</connection>
+    <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
     <developerConnection>${project.scm.connection}</developerConnection>
   </scm>
 </project>
