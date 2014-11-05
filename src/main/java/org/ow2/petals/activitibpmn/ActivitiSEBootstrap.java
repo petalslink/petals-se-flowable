@@ -58,26 +58,26 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      */
     @Override
     public List<String> getAttributeList() {
-        final List<String> attributes = super.getAttributeList();
-
-        this.getLogger().info("***********************");
-		this.getLogger().info("*** Start getAttributeList() in ActivitiSEBootstrap.");
+        this.getLogger().fine("Start ActivitiSEBootstrap.getAttributeList()");
         
-        attributes.add(ATTR_NAME_JDBC_DRIVER);
-        attributes.add(ATTR_NAME_JDBC_URL);
-        attributes.add("jdbcUsername");
-        attributes.add("jdbcPassword");
-        attributes.add("jdbcMaxActiveConnections");
-        attributes.add("jdbcMaxIdleConnections");
-        attributes.add("jdbcMaxCheckoutTime");
-        attributes.add("jdbcMaxWaitTime");
-        attributes.add("databaseType");
-        attributes.add("databaseSchemaUpdate");
+        try {
+            final List<String> attributes = super.getAttributeList();
 
-        this.getLogger().info("*** End getAttributeList() in ActivitiSEBootstrap.");
-        this.getLogger().info("***********************");
-        
-        return attributes;
+            attributes.add(ATTR_NAME_JDBC_DRIVER);
+            attributes.add(ATTR_NAME_JDBC_URL);
+            attributes.add("jdbcUsername");
+            attributes.add("jdbcPassword");
+            attributes.add("jdbcMaxActiveConnections");
+            attributes.add("jdbcMaxIdleConnections");
+            attributes.add("jdbcMaxCheckoutTime");
+            attributes.add("jdbcMaxWaitTime");
+            attributes.add("databaseType");
+            attributes.add("databaseSchemaUpdate");
+
+            return attributes;
+        } finally {
+            this.getLogger().fine("End ActivitiSEBootstrap.getAttributeList()");
+        }
     }
 	
     /**

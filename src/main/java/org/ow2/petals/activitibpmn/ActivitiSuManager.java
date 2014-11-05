@@ -80,13 +80,11 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 	 */
     public ActivitiSuManager(final AbstractComponent component) {
 		super(component);
-        if (this.logger.isLoggable(Level.INFO)) {
-            this.logger.info("****************************");
-            this.logger.info("*** Start ActivitiSUManager() in ActivitiSuManager");
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("Start ActivitiSuManager.ActivitiSUManager()");
 		}
-        if (this.logger.isLoggable(Level.INFO)) {
-            this.logger.info("*** End ActivitiSUManager() in ActivitiSuManager");
-            this.logger.info("****************************");
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("End ActivitiSuManager.ActivitiSUManager()");
 		}
 	}
 	
@@ -96,10 +94,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
     @Override
     protected void doDeploy(final String serviceUnitName, final String suRootPath, final Jbi jbiDescriptor)
     throws PEtALSCDKException {
-        if (this.logger.isLoggable(Level.INFO)) {
-            this.logger.info("****************************");
-            this.logger.info("*** Start doDeploy() in ActivitiSuManager");
-            this.logger.info("*** SU =" + serviceUnitName);
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("Start ActivitiSuManager.doDeploy(SU =" + serviceUnitName + ")");
 		}
         // Get the Activiti RepositoryService
         if (this.repS == null) {
@@ -140,9 +136,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         // Get the EptOperation and ActivitiOperation mapping and store in the eptOperationToActivitiOperation Map  
         this.getActivitiOperationMapping(wsdlDocument, edptName, processDefinitions);
         
-        if (this.logger.isLoggable(Level.INFO)) {
-            this.logger.info("*** End doDeploy() in ActivitiSuManager");
-            this.logger.info("***********************");
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("End ActivitiSuManager.doDeploy()");
 		}
     }
 
@@ -151,14 +146,11 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      */
     @Override
     protected void doStart(final String serviceUnitName) throws PEtALSCDKException {
-        this.logger.info("****************************");
-        this.logger.info("*** Start doStart() in ActivitiSuManager");
-        this.logger.info("*** SU =" + serviceUnitName);
+        this.logger.fine("Start ActivitiSuManager.doStart(SU =" + serviceUnitName + ")");
 
 		// TODO Manage the process suspension State be careful of multi-SU deployment for the same process
     	
-        this.logger.info("*** End doStart() in ActivitiSuManager");
-        this.logger.info("***********************");
+        this.logger.fine("End ActivitiSuManager.doStart()");
     }
 
 
@@ -167,12 +159,11 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      */
     @Override
     protected void doStop(final String serviceUnitName) throws PEtALSCDKException {
-        this.logger.info("****************************");
-        this.logger.info("*** Start doStop() in ActivitiSuManager");
-        this.logger.info("*** SU =" + serviceUnitName);
+        this.logger.fine("Start ActivitiSuManager.doStop(SU =" + serviceUnitName + ")");
+
 		// TODO Manage the process suspension State: be careful of multi SU deployement for the same process
-        this.logger.info("*** End doStop() in ActivitiSuManager");
-        this.logger.info("***********************");
+
+        this.logger.fine("End ActivitiSuManager.doStop()");
     }
 
 
@@ -181,37 +172,33 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      */
     @Override
     protected void doUndeploy(final String serviceUnitName) throws PEtALSCDKException {
-        this.logger.info("****************************");
-        this.logger.info("*** Start doUndeploy() in ActivitiSuManager");
-        this.logger.info("*** SU =" + serviceUnitName);
+        this.logger.fine("Start ActivitiSuManager.doUndeploy(SU =" + serviceUnitName + ")");
+        try {
+            // Get the service end point associated to the service Unit Name
+            final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
+            // set the serviceEndPoint Name of the Provides
+            final String edptName = serviceEndpoint.getEndpointName();
+            // Remove the ActivitiOperation in the map with the corresponding end-point
+            ((ActivitiSE) this.component).removeActivitiOperation(edptName);
 
-        // Get the service end point associated to the service Unit Name
-        final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
-        // set the serviceEndPoint Name  of the Provides
-        final String edptName = serviceEndpoint.getEndpointName();
-		// Remove the ActivitiOperation in the map with the corresponding end-point
-		((ActivitiSE) this.component).removeActivitiOperation(edptName);  	
+            /**
+             * // Get the operation Name of the end point ServiceUnitDataHandler suDataHandler
+             * =this.getSUDataHandlerForEndpoint(serviceEndpoint); List<QName> operations =
+             * suDataHandler.getEndpointOperationsList(serviceEndpoint);
+             * 
+             * for ( QName operation : operations) { eptAndOperation = new
+             * EptAndOperation(edptName,operation.getLocalPart()); // Remove the ActivitiOperation in the map with the
+             * corresponding end-point and Operation ((ActivitiSE)
+             * this.component).removeActivitiOperation(eptAndOperation); logger.info("*** ept: "+
+             * eptAndOperation.getEptName() + " operation : "+ eptAndOperation.getOperationName());
+             * logger.info("          is removed from MAP eptOperationToActivitiOperation" ); }
+             */
+            // TODO Manage the undeployement of the process: be careful of multi SU deployement for the same process
+        } finally {
+            this.logger.fine("End ActivitiSuManager.doUndeploy()");
+        }
+    }
 
- 		
- /**        
- 		// Get the operation Name of the end point
- 		ServiceUnitDataHandler suDataHandler =this.getSUDataHandlerForEndpoint(serviceEndpoint);
- 		List<QName> operations = suDataHandler.getEndpointOperationsList(serviceEndpoint);
- 		
- 		for ( QName operation : operations) {
- 			eptAndOperation = new EptAndOperation(edptName,operation.getLocalPart());
- 			// Remove the ActivitiOperation in the map with the corresponding end-point and Operation
- 			((ActivitiSE) this.component).removeActivitiOperation(eptAndOperation);  	
- 			logger.info("*** ept: "+ eptAndOperation.getEptName() + " operation : "+ eptAndOperation.getOperationName());
- 			logger.info("          is removed from MAP eptOperationToActivitiOperation" );
- 		}
-*/   		
-		// TODO Manage the undeployement of the process: be careful of multi SU deployement for the same process
-        this.logger.info("*** End doUndeploy() in ActivitiSuManager");
-        this.logger.info("***********************");
-   }	
-
-    
 	/**
 	 * deploy in Activiti DB the process if it doesn't exist
 	 *    Process deployment is characterized in Activiti Database by processName / tenantId / categoryId / version
@@ -291,11 +278,11 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 			processes.add(new ProcessBPMN(processFileName,version));
 		}
         // Deploy the processes from the file bpmn20.xml
-        if (this.logger.isLoggable(Level.INFO)) {
-            this.logger.info("*** processes configuration");
-            this.logger.info("*** tenantId =" + tenantId);
-            this.logger.info("*** categoryId = " + categoryId);
-            this.logger.info("*** nb processBPMN = " + processes.size());
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("processes configuration");
+            this.logger.fine("tenantId =" + tenantId);
+            this.logger.fine("categoryId = " + categoryId);
+            this.logger.fine("nb processBPMN = " + processes.size());
 		}
 		
 		// deploy the processes
@@ -360,7 +347,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                          * model.setVersion( Integer.valueOf(process.version));
                          */
                         if (this.logger.isLoggable(Level.INFO))
-                            this.logger.info("*** process " + process.processFileName + " version: " + process.version
+                            this.logger.info("The BPMN process " + process.processFileName + " version: "
+                                    + process.version
                                     + " is succesfully deployed");
                     } finally {
                         try {
@@ -380,7 +368,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 			}
 			else {
                 if (this.logger.isLoggable(Level.INFO))
-                    this.logger.info("*** process: " + process.processFileName + " version: " + process.version
+                    this.logger.info("The BPMN process: " + process.processFileName + " version: " + process.version
                             + " is already deployed");
 				// Set processDefinition
                 final ProcessDefinition processDefinition = processDefinitionSearchList.get(0);
@@ -389,24 +377,25 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 		}
 
 		// Log the processDefinitionList
-        if (this.logger.isLoggable(Level.FINEST)) {
+        if (this.logger.isLoggable(Level.FINE)) {
+            int i = 0;
             for (final ProcessDefinition processDefinition : processDefinitions.values()) {
-                this.logger.finest("*** Process definition Id            = " + processDefinition.getId());
-                this.logger.finest("*** Process definition Category      = " + processDefinition.getCategory());
-                this.logger.finest("*** Process definition Name          = " + processDefinition.getName());
-                this.logger.finest("*** Process definition Key           = " + processDefinition.getKey());
-                this.logger.finest("*** Process definition Version       = " + processDefinition.getVersion());
-                this.logger.finest("*** Process definition Deployemnt Id = " + processDefinition.getDeploymentId());
-                this.logger.finest("*** Process definition ResourceName  = " + processDefinition.getResourceName());
-                this.logger.finest("*** Process definition TenantId      = " + processDefinition.getTenantId());
+                this.logger.fine("Process definition #" + i);
+                this.logger.fine("   - Id            = " + processDefinition.getId());
+                this.logger.fine("   - Category      = " + processDefinition.getCategory());
+                this.logger.fine("   - Name          = " + processDefinition.getName());
+                this.logger.fine("   - Key           = " + processDefinition.getKey());
+                this.logger.fine("   - Version       = " + processDefinition.getVersion());
+                this.logger.fine("   - Deployemnt Id = " + processDefinition.getDeploymentId());
+                this.logger.fine("   - ResourceName  = " + processDefinition.getResourceName());
+                this.logger.fine("   - TenantId      = " + processDefinition.getTenantId());
 			}
 		}
 		
 	    return processDefinitions;
     }
-    
-    
-    
+
+
 	/**
 	 * Read the Wsdl associated with the provides in order to get the EptOperation and ActivitiOperation mapping
 	 * Store the mapping in the eptOperationToActivitiOperation Maps

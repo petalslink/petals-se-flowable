@@ -137,11 +137,9 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
 	@Override
 	public void doInit() throws JBIException {
+        this.getLogger().fine("Start ActivitiSE.doInit()");
+
 		try {
-		
-	        this.getLogger().info("***********************");
-			this.getLogger().info("*** Start doInit() in ActivitiSE");
-	        
             // JDBC Driver
             final String jdbcDriverConfigured = this.getComponentExtensions().get(JDBC_DRIVER);
             final String jdbcDriver;
@@ -240,17 +238,17 @@ public class ActivitiSE extends AbstractServiceEngine {
 			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
             final String databaseSchemaUpdate = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
 
-            this.getLogger().info(" DB configuration - " + JDBC_DRIVER + " = " + jdbcDriver);
-            this.getLogger().info(" DB configuration - " + JDBC_URL + " = " + jdbcUrl);
-            this.getLogger().info(" DB configuration - " + JDBC_USERNAME + " = " + jdbcUsername);
-            this.getLogger().info(" DB configuration - " + JDBC_PASSWORD + " = " + jdbcPassword);
-            this.getLogger().info(
-                    " DB configuration - " + JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);
-            this.getLogger().info(" DB configuration - " + JDBC_MAX_IDLE_CONNECTIONS + " = " + jdbcMaxIdleConnections);
-            this.getLogger().info(" DB configuration - " + JDBC_MAX_CHECKOUT_TIME + " = " + jdbcMaxCheckoutTime);
-            this.getLogger().info(" DB configuration - " + JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
-            this.getLogger().info(" DB configuration - " + DATABASE_TYPE + " = " + databaseType);
-            this.getLogger().info(" DB configuration - " + DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
+            this.getLogger().config("DB configuration:");
+            this.getLogger().config("   - " + JDBC_DRIVER + " = " + jdbcDriver);
+            this.getLogger().config("   - " + JDBC_URL + " = " + jdbcUrl);
+            this.getLogger().config("   - " + JDBC_USERNAME + " = " + jdbcUsername);
+            this.getLogger().config("   - " + JDBC_PASSWORD + " = " + jdbcPassword);
+            this.getLogger().config("   - " + JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);
+            this.getLogger().config("   - " + JDBC_MAX_IDLE_CONNECTIONS + " = " + jdbcMaxIdleConnections);
+            this.getLogger().config("   - " + JDBC_MAX_CHECKOUT_TIME + " = " + jdbcMaxCheckoutTime);
+            this.getLogger().config("   - " + JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
+            this.getLogger().config("   - " + DATABASE_TYPE + " = " + databaseType);
+            this.getLogger().config("   - " + DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
 		    
 	        /* TODO Test Activiti database connection configuration */
 	        /* TODO Test the Database Schema Version
@@ -271,12 +269,11 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.pec.setJobExecutorActivate(false);
 
             this.activitiEngine = pec.buildProcessEngine();
-			
-			this.getLogger().info("*** End doInit() in ActivitiSE");
-	        this.getLogger().info("***********************");
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while creating the Activiti BPMN Engine.", e );
+        } finally {
+            this.getLogger().fine("End ActivitiSE.doInit()");
 		}
 	}
 
@@ -286,11 +283,9 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
 	@Override
 	public void doStart() throws JBIException {
-		try {
+        this.getLogger().fine("Start ActivitiSE.doStart()");
 
-	        this.getLogger().info("***********************");
-			this.getLogger().info("*** Start doStart() in ActivitiSE");
-	        
+        try {
 	        /* TODO Start Job Executor */
 			/*   For timers you can even dedicate one specifc machine which only runs the job executor.
 			 *   (or more than one to make them fault tolerant).
@@ -300,12 +295,11 @@ public class ActivitiSE extends AbstractServiceEngine {
 
 	        /* TODO Build Process Engine */
 	        
-			this.getLogger().info("*** End doStart() in ActivitiSE");
-	        this.getLogger().info("***********************");
-	        
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while starting the Activiti BPMN Engine.", e );
-		} 
+        } finally {
+            this.getLogger().fine("End ActivitiSE.doStart()");
+        }
 	}
 
 
@@ -314,18 +308,16 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
 	@Override
 	public void doStop() throws JBIException {
+        this.getLogger().fine("Start ActivitiSE.doStop()");
+
 		try {
-	        this.getLogger().info("***********************");
-			this.getLogger().info("*** Start doStop() in ActivitiSE");
-	        
 	        /* TODO STOP Job Executor */
 			/* TODO this.activitiEngine.standby(); */
-	        
-			this.getLogger().info("*** End doStop() in ActivitiSE");
-	        this.getLogger().info("***********************");
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while stopping the Activiti BPMN Engine.", e );
+        } finally {
+            this.getLogger().fine("End ActivitiSE.doStop()");
 		}
 	}
 
@@ -335,17 +327,16 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
 	@Override
 	public void doShutdown() throws JBIException {
+        this.getLogger().fine("Start ActivitiSE.doStart()");
+
 		try {
-	        this.getLogger().info("***********************");
-			this.getLogger().info("*** Start doStart() in ActivitiSE");
 	        
 			this.activitiEngine.close();
-	        
-			this.getLogger().info("*** End doStart() in ActivitiSE");
-	        this.getLogger().info("***********************");
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while shutdowning the Activiti BPMN Engine.", e );
+        } finally {
+            this.getLogger().fine("End ActivitiSE.doStart()");
 		}
 	}
 
