@@ -31,15 +31,17 @@
   <version>0-SNAPSHOT</version>
   <packaging>pom</packaging>
   
-  <dependencies>
-    <dependency>
-      <artifactId>petals-se-activitibpmn</artifactId>
-      <groupId>org.ow2.petals</groupId>
-      <scope>provided</scope>
-      <type>jbi-component</type>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
+  <dependencyManagement>
+   <dependencies>
+      <dependency>
+         <artifactId>petals-se-activitibpmn</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <scope>provided</scope>
+         <type>jbi-component</type>
+         <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+   </dependencies>
+</dependencyManagement>
   
   <build>
     <defaultGoal>install</defaultGoal>

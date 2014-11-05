@@ -36,6 +36,13 @@
     <!-- Skip dependency check for service unit. -->
     <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
   </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-activitibpmn</artifactId>
+      </dependency>
+   </dependencies>
   
   <build>
     <plugins>
