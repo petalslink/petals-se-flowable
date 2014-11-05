@@ -41,18 +41,18 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-activitibpmn</artifactId>
+         <type>jbi-component</type>
       </dependency>
    </dependencies>
-  
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.ow2.petals</groupId>
-        <artifactId>maven-petals-plugin</artifactId>
-	     <version>2.4.0-SNAPSHOT</version>
-      </plugin>
-    </plugins>
-  </build>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>maven-petals-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </build>
 
   <scm>
     <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
