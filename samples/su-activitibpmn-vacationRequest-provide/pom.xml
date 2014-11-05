@@ -41,6 +41,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-activitibpmn</artifactId>
+         <type>jbi-component</type>
       </dependency>
    </dependencies>
 
