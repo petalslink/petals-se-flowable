@@ -30,6 +30,8 @@
     <module>parent</module>
     <module>su-activitibpmn-vacationRequest-provide</module>
     <module>sa-activitibpmn-vacationRequest</module>
+    <module>su-SOAP-vacationRequest-consume</module>
+    <module>sa-SOAP-vacationRequest</module>
   </modules>
   
   <scm>
