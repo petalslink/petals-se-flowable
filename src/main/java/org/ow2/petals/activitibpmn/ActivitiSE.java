@@ -48,6 +48,7 @@ import javax.jbi.JBIException;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
+import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 

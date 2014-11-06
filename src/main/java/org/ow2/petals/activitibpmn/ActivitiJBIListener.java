@@ -20,13 +20,6 @@ package org.ow2.petals.activitibpmn;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,17 +30,13 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.activiti.bpmn.model.FormValue;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-import org.ow2.petals.activitibpmn.ActivitiSEConstants.BpmnActionType;
+import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 import com.ebmwebsourcing.easycommons.xml.Transformers;
 
@@ -199,22 +188,6 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         // @see org.ow2.petals.activitibpmn.ActivitiSE
                         final ActivitiOperation activitiOperation = ((ActivitiSE) this.component)
                                 .getActivitiOperations(eptAndOperation);
-                        final String processDefinitionId = activitiOperation.getProcessDefinitionId();
-                        final String bpmnAction = activitiOperation.getBpmnAction();
-                        final BpmnActionType bpmnActionType = activitiOperation.getBpmnActionType();
-                        final Properties bpmnProcessId = activitiOperation.getBpmnProcessId();
-                        final Properties bpmnUserId = activitiOperation.getBpmnUserId();
-                        final Properties bpmnVarInMsg = activitiOperation.getBpmnVarInMsg();
-                        final Properties outMsgBpmnVar = activitiOperation.getOutMsgBpmnVar();
-                        final Properties faultMsgBpmnVar = activitiOperation.getFaultMsgBpmnVar();
-                        final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType = activitiOperation
-                                .getBpmnVarType();
-
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("Activiti processDefId = " + processDefinitionId);
-                            logger.fine("Activiti Action (TaskId) = " + bpmnAction);
-                            logger.fine("Activiti ActionType = " + bpmnActionType);
-                        }
 
                         // Get the exchange data
                         final Document inMsgWsdl = exchange.getInMessageContentAsDocument();
@@ -227,197 +200,17 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         } finally {
                             Transformers.releaseTransformer(transformer);
                         }
-                        inMsgWsdl.getDocumentElement().normalize();
 
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine("*** inMsgWsdl = " + writer.toString());
                         }
 
-                        String varNameInMsg;
-                        String varValueInMsg;
-                        Node varNode;
-                        // Get the processId
-                        varNameInMsg = bpmnProcessId.getProperty("inMsg");
-                        String bpmnProcessIdValue = "";
-                        if (bpmnActionType == BpmnActionType.USER_TASK) { // ( varNameInMsg != null)
-                            varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su",
-                                    varNameInMsg).item(0);
-                            if (varNode == null) {
-                                throw new MessagingException(
-                                        "The bpmnProcessId is mandatory and must be given through the message variable: "
-                                                + varNameInMsg + " for the userTask: " + bpmnAction + " of process: "
-                                                + processDefinitionId + " !");
-                            } else {
-                                bpmnProcessIdValue = varNode.getTextContent().trim();
-                            }
+                        final String outputReply = activitiOperation.execute(inMsgWsdl, this.taskService,
+                                this.identityService, this.runTimeService);
 
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.fine("bpmnProcessId => InMsg = " + varNameInMsg + " - value = "
-                                        + bpmnProcessIdValue);
-                            }
-                        }
-
-                        // Get the userId
-                        varNameInMsg = bpmnUserId.getProperty("inMsg");
-                        String bpmnUserIdValue = "";
-                        varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su",
-                                varNameInMsg).item(0);
-                        if (varNode == null) {
-                            throw new MessagingException(
-                                    "The bpmnUserId is mandatory and must be given through the message variable: "
-                                            + varNameInMsg + " for the task: " + bpmnAction + " of process: "
-                                            + processDefinitionId + " !");
-                        }
- else {
-                            bpmnUserIdValue = varNode.getTextContent().trim();
-                        }
-
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("bpmnUserId => InMsg = " + varNameInMsg + " - value = " + bpmnUserIdValue);
-                        }
-
-                        // Get the bpmn variables
-                        final Map<String, Object> processVars = new HashMap<String, Object>();
-                        for (final String varBpmn : bpmnVarInMsg.stringPropertyNames()) {
-                            varNameInMsg = bpmnVarInMsg.getProperty(varBpmn);
-                            varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su",
-                                    varNameInMsg).item(0);
-                            // test if the process variable is required and value is not present
-                            if (varNode == null) {
-                                if (bpmnVarType.get(varBpmn).isRequired()) {
-                                    throw new MessagingException("The task: " + bpmnAction + " of process: "
-                                            + processDefinitionId + " required a value of bpmn variables: " + varBpmn
-                                            + " that must be given through the message variable: " + varNameInMsg
-                                            + " !");
-                                } else { // (! bpmnVarType.get(varBpmn).isRequired() )
-
-                                    if (logger.isLoggable(Level.FINEST)) {
-                                        logger.finest("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg
-                                                + " => no value");
-                                    }
-
-                                    continue;
-                                }
-                            }
-                            varValueInMsg = varNode.getTextContent().trim();
-                            if ((varValueInMsg == null) || (varValueInMsg.isEmpty())) {
-                                if (bpmnVarType.get(varBpmn).isRequired()) {
-                                    throw new MessagingException("The task: " + bpmnAction + " of process: "
-                                            + processDefinitionId + " required a value of bpmn variables: " + varBpmn
-                                            + " that must be given through the message variable: " + varNameInMsg
-                                            + " !");
-                                }
- else { // (! bpmnVarType.get(varBpmn).isRequired() )
-
-                                    if (logger.isLoggable(Level.FINE)) {
-                                        logger.fine("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg
-                                                + " => no value");
-                                    }
-                                    continue;
-                                }
-                            }
-
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.fine("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg + " => value: "
-                                        + varValueInMsg);
-                            }
-
-                            // Get the type of the bpmn variable
-                            final String varType = bpmnVarType.get(varBpmn).getType();
-                            // Put the value in Map of activiti variable in the right format
-                            if (varType.equals("string")) {
-                                processVars.put(varBpmn, varValueInMsg);
-                            } else if (varType.equals("long")) {
-                                try {
-                                    processVars.put(varBpmn, Long.valueOf(varValueInMsg));
-                                } catch (final NumberFormatException e) {
-                                    throw new MessagingException("The value of " + varNameInMsg + " must be a long !");
-                                }
-                            } else if (varType.equals("enum")) {
-                                boolean validValue = false;
-                                for (final FormValue enumValue : bpmnVarType.get(varBpmn).getFormValues()) {
-                                    if (varValueInMsg.equals(enumValue.getId())) {
-                                        validValue = true;
-                                    }
-                                }
-                                if (!validValue) {
-                                    throw new MessagingException("The value of " + varNameInMsg
-                                            + " does not belong to the enum of Activiti variable " + varNameInMsg
-                                            + " !");
-                                } else {
-                                    processVars.put(varBpmn, varValueInMsg);
-                                }
-                            } else if (varType.equals("date")) {
-                                try {
-                                    final SimpleDateFormat sdf = new SimpleDateFormat(bpmnVarType.get(varBpmn)
-                                            .getDatePattern());
-                                    processVars.put(varBpmn, (Date) sdf.parse(varValueInMsg));
-                                } catch (final ParseException e) {
-                                    throw new MessagingException("The value of " + varNameInMsg
-                                            + " must be a valid Date with date pattern "
-                                            + bpmnVarType.get(varBpmn).getDatePattern() + "!");
-                                }
-                            } else if (varType.equals("boolean")) {
-                                if (varValueInMsg.equalsIgnoreCase("true") || varValueInMsg.equalsIgnoreCase("false")) {
-                                    processVars.put(varBpmn, (Boolean) Boolean.valueOf(varValueInMsg));
-                                } else {
-                                    throw new MessagingException("The value of " + varNameInMsg
-                                            + " must be a boolean value \"true\" or \"false\" !");
-                                }
-                            }
-
-                        }
-
-                        // TODO test if user is authorized with identityLink
-                        // TODO why don't use FormService.submitTaskFormData(taskId, properties)
-
-                        if (bpmnActionType == BpmnActionType.START_EVENT) {
-                            // Start a new process instance
-                            // TODO Set the CategoryId (not automaticaly done, but automaticaly done for tenant_id ?)
-                            try {
-                                // TODO: How this works on concurrent requests. I think that it is not thread-safe ?
-                                this.identityService.setAuthenticatedUserId(bpmnUserIdValue);
-                                final ProcessInstance processInstance = this.runTimeService.startProcessInstanceById(
-                                        processDefinitionId, processVars);
-                                bpmnProcessIdValue = processInstance.getId();
-                            } finally {
-                                this.identityService.setAuthenticatedUserId(null);
-                            }
-    	        		
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.fine("*** NEW PROCESS INSTANCE started,  processId = " + bpmnProcessIdValue);
-                            }
-    	       			
-                        } else if (bpmnActionType == BpmnActionType.USER_TASK) {
-                            // Get the Task
-                            final List<Task> taskList = this.taskService.createTaskQuery()
-                                    .processInstanceId(bpmnProcessIdValue).taskDefinitionKey(bpmnAction).list();
-                            if ((taskList == null) || (taskList.size() == 0)) {
-                                throw new MessagingException("No tasks: " + bpmnAction + " for processInstance: "
-                                        + bpmnProcessIdValue + " was found.");
-                            }
-                            // Perform the user Task
-                            try {
-                                this.identityService.setAuthenticatedUserId(bpmnUserIdValue);
-                                this.taskService.complete(taskList.get(0).getId(), processVars);
-                            } finally {
-                                this.identityService.setAuthenticatedUserId(null);
-                            }
-            		}
-
-                        // Build the outMessage
-                        // TODO: The output should be compliant to the WSDL, not hard-coded
-                        // TODO: Don't build XML using StringBuilder. Because of encoding problems, prefer to use DOM or
-                        // equivalent
-                        final StringBuilder sb = new StringBuilder();
-                        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-                        sb.append("<su:numero xmlns:su=\"http://petals.ow2.org/se/Activitibpmn/1.0/su\">\n");
-                        sb.append("   <su:numeroDde>" + bpmnProcessIdValue + "</su:numeroDde>\n");
-                        // sb.append("   <requestId>12458</requestId>\n");
-                        sb.append("</su:numero>\n");
-                        // Keep the machine's default encoding
-                        exchange.setOutMessageContent(new ByteArrayInputStream(sb.toString().getBytes("UTF-8")));
-
+                        exchange.setOutMessageContent(new ByteArrayInputStream(outputReply.getBytes("UTF-8")));
+                    } else {
+                        // TODO: to do
             		}
 
                 } catch (final MessagingException e) {

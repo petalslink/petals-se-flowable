@@ -44,11 +44,13 @@ import org.activiti.engine.impl.util.io.InputStreamSource;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
-import org.ow2.petals.activitibpmn.ActivitiSEConstants.BpmnActionType;
 import org.ow2.petals.activitibpmn.exception.IncoherentProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.InvalidVersionDeclaredException;
 import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
+import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
+import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
+import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
@@ -311,7 +313,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 versionStr = extensions.get(ActivitiSEConstants.VERSION + nbProcesses);
                 if (nbProcesses == 1 && processFileName == null && versionStr == null) {
                     throw new NoProcessDefinitionDeclarationException();
-                } else {
+                } else if (processFileName != null && versionStr != null) {
                     this.registerEmbeddedProcessDefinition(processFileName, versionStr, embeddedProcessDefinitions);
                     nbProcesses++;
                 }
@@ -534,42 +536,26 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             final String processDefinitionId = processDefinitions.get(bpmnProcessKey).getId();
             // set the bpmnAction
             final String bpmnAction = ((Element) bpmnOperation).getAttribute("bpmnAction");
-            // set the bpmnActionType
-            final BpmnActionType bpmnActionType;
-            if (((Element) bpmnOperation).getAttribute("bpmnActionType").equalsIgnoreCase("startEvent")) {
-                bpmnActionType = BpmnActionType.START_EVENT;
-            } else if (((Element) bpmnOperation).getAttribute("bpmnActionType").equalsIgnoreCase("userTask")) {
-                bpmnActionType = BpmnActionType.USER_TASK;
-            } else {
-                throw new PEtALSCDKException("Malformed Wsdl: Unauthorized BpmnActionType :"
-                        + ((Element) bpmnOperation).getAttribute("bpmnActionType") + " in wsdl operation = "
-                        + ((Element) operation).getAttribute("name"));
-            }
 
-            // Get the node "bpmn:processId" and test it has always an InMsg attribute for bpmnActionType ==
-            // BpmnActionType.USER_TASK
+            // Get the node "bpmn:processId" and its message
             final Node processId = ((Element) operation).getElementsByTagNameNS(
                     "http://petals.ow2.org/se/Activitibpmn/1.0", "processId").item(0);
             final Properties bpmnProcessId = new Properties();
             if (processId != null) {
                 // set the processId properties
-                if (((Element) processId).getAttribute("inMsg") != null
-                        && ((Element) processId).getAttribute("inMsg") != "") {
-                    bpmnProcessId.put("inMsg", ((Element) processId).getAttribute("inMsg"));
-                } else {
-                    if (bpmnActionType == BpmnActionType.USER_TASK) {
-                        throw new PEtALSCDKException("Malformed Wsdl: bpmn:processId attribute inMsg is mandatory for "
-                                + "bpmnActionType =\"userTask\" in wsdl operation = "
-                                + ((Element) operation).getAttribute("name"));
-                    }
+                final String inMsgAttr = ((Element) processId).getAttribute("inMsg");
+                if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                    bpmnProcessId.put("inMsg", inMsgAttr);
                 }
-                if (((Element) processId).getAttribute("outMsg") != null
-                        && ((Element) processId).getAttribute("outMsg") != "") {
-                    bpmnProcessId.put("outMsg", ((Element) processId).getAttribute("outMsg"));
+
+                final String outMsgAttr = ((Element) processId).getAttribute("outMsg");
+                if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                    bpmnProcessId.put("outMsg", outMsgAttr);
                 }
-                if (((Element) processId).getAttribute("faultMsg") != null
-                        && ((Element) processId).getAttribute("faultMsg") != "") {
-                    bpmnProcessId.put("faultMsg", ((Element) processId).getAttribute("faultMsg"));
+
+                final String faultMsgAttr = ((Element) processId).getAttribute("faultMsg");
+                if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                    bpmnProcessId.put("faultMsg", faultMsgAttr);
                 }
             }
 
@@ -579,19 +565,19 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             final Properties bpmnUserId = new Properties();
             if (userId != null) {
                 // set the bpmnUserId properties
-                if (((Element) userId).getAttribute("inMsg") != null && ((Element) userId).getAttribute("inMsg") != "") {
-                    bpmnUserId.put("inMsg", ((Element) userId).getAttribute("inMsg"));
-                } else {
-                    throw new PEtALSCDKException("Malformed Wsdl: bpmn:userId attribute inMsg is mandatory "
-                            + " in wsdl operation = " + ((Element) operation).getAttribute("name"));
+                final String inMsgAttr = ((Element) userId).getAttribute("inMsg");
+                if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                    bpmnUserId.put("inMsg", inMsgAttr);
                 }
-                if (((Element) userId).getAttribute("outMsg") != null
-                        && ((Element) userId).getAttribute("outMsg") != "") {
-                    bpmnUserId.put("outMsg", ((Element) userId).getAttribute("outMsg"));
+
+                final String outMsgAttr = ((Element) userId).getAttribute("outMsg");
+                if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                    bpmnUserId.put("outMsg", outMsgAttr);
                 }
-                if (((Element) userId).getAttribute("faultMsg") != null
-                        && ((Element) userId).getAttribute("faultMsg") != "") {
-                    bpmnUserId.put("faultMsg", ((Element) userId).getAttribute("faultMsg"));
+
+                final String faultMsgAttr = ((Element) userId).getAttribute("faultMsg");
+                if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                    bpmnUserId.put("faultMsg", faultMsgAttr);
                 }
             }
 
@@ -605,34 +591,33 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             for (int k = 0; k < bpmnVariableList.getLength(); k++) {
                 final Node bpmnVariable = bpmnVariableList.item(k);
                 // test name declaration of variable
-                if (((Element) bpmnVariable).getAttribute("bpmn") == null) {
+                final String bpmnAttr = ((Element) bpmnVariable).getAttribute("bpmn");
+                if (bpmnAttr == null) {
                     throw new PEtALSCDKException(
                             "Malformed Wsdl: bpmn:variable declared with no bpmn name in wsdl:operation: "
                                     + eptAndOperation.getOperationName());
                 }
                 // test unicity of declared bpmnVariable
-                if (bpmnVarList.contains(((Element) bpmnVariable).getAttribute("bpmn"))) {
-                    throw new PEtALSCDKException("Malformed Wsdl: bpmn:variable bpmn = "
-                            + ((Element) bpmnVariable).getAttribute("bpmn") + " declared twice in wsdl:operation: "
-                            + eptAndOperation.getOperationName());
+                if (bpmnVarList.contains(bpmnAttr)) {
+                    throw new PEtALSCDKException("Malformed Wsdl: bpmn:variable bpmn = " + bpmnAttr
+                            + " declared twice in wsdl:operation: " + eptAndOperation.getOperationName());
                 }
                 // Add bpmnVariables in the bpmnVarList
-                bpmnVarList.add(((Element) bpmnVariable).getAttribute("bpmn"));
+                bpmnVarList.add(bpmnAttr);
                 // Add bpmnVariables
-                if (((Element) bpmnVariable).getAttribute("inMsg") != null
-                        && ((Element) bpmnVariable).getAttribute("inMsg") != "") {
-                    bpmnVarInMsg.put(((Element) bpmnVariable).getAttribute("bpmn"),
-                            ((Element) bpmnVariable).getAttribute("inMsg"));
+                final String inMsgAttr = ((Element) bpmnVariable).getAttribute("inMsg");
+                if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                    bpmnVarInMsg.put(bpmnAttr, inMsgAttr);
                 }
-                if (((Element) bpmnVariable).getAttribute("outMsg") != null
-                        && ((Element) bpmnVariable).getAttribute("outMsg") != "") {
-                    outMsgBpmnVar.put(((Element) bpmnVariable).getAttribute("outMsg"),
-                            ((Element) bpmnVariable).getAttribute("bpmn"));
+
+                final String outMsgAttr = ((Element) bpmnVariable).getAttribute("outMsg");
+                if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                    outMsgBpmnVar.put(outMsgAttr, bpmnAttr);
                 }
-                if (((Element) bpmnVariable).getAttribute("faultMsg") != null
-                        && ((Element) bpmnVariable).getAttribute("faultMsg") != "") {
-                    faultMsgBpmnVar.put(((Element) bpmnVariable).getAttribute("faultMsg"),
-                            ((Element) bpmnVariable).getAttribute("bpmn"));
+
+                final String faultMsgAttr = ((Element) bpmnVariable).getAttribute("faultMsg");
+                if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                    faultMsgBpmnVar.put(faultMsgAttr, bpmnAttr);
                 }
             }
 
@@ -644,7 +629,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             final List<org.activiti.bpmn.model.Process> processes = model.getProcesses();
             List<org.activiti.bpmn.model.FormProperty> formPropertyList = null;
             boolean found = false;
-            if (bpmnActionType == BpmnActionType.START_EVENT) {
+            final String bpmnActionType = ((Element) bpmnOperation).getAttribute("bpmnActionType");
+            if (StartEventOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
                 // search form Property for the Start Event: bpmnAction
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
@@ -657,7 +643,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                         }
                     }
                 }
-            } else if (bpmnActionType == BpmnActionType.USER_TASK) {
+            } else if (CompleteUserTaskOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
                 // search form Property for the User Task: bpmnAction
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
@@ -671,7 +657,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                     }
                 }
             } else {
-                this.logger.warning("Unsupported BPMN action type '" + bpmnActionType.name() + "'. Skipped");
+                this.logger.warning("Unsupported BPMN action type '" + bpmnActionType + "'. Skipped");
             }
             if (!found) {
                 throw new PEtALSCDKException("Malformed Wsdl: BpmnAction : " + bpmnAction
@@ -691,10 +677,21 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 }
             }
 
-            // Create an activitiOperation
-            final ActivitiOperation activitiOperation = new ActivitiOperation(processDefinitionId, bpmnProcessKey,
-                    bpmnAction, bpmnActionType, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
-                    faultMsgBpmnVar, bpmnVarType);
+            // create the right ActivitiOperation according to the bpmnActionType
+            final ActivitiOperation activitiOperation;
+            if (StartEventOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+                activitiOperation = new StartEventOperation(processDefinitionId, bpmnProcessKey, bpmnAction,
+                        bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar, bpmnVarType,
+                        this.logger);
+            } else if (CompleteUserTaskOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+                activitiOperation = new CompleteUserTaskOperation(processDefinitionId, bpmnProcessKey, bpmnAction,
+                        bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar, bpmnVarType,
+                        this.logger);
+            } else {
+                throw new PEtALSCDKException("Malformed Wsdl: Unauthorized BpmnActionType :" + bpmnActionType
+                        + " in wsdl operation = " + ((Element) operation).getAttribute("name"));
+            }
+
             // Store the ActivitiOperation in the map with the corresponding end-point and Operation
             ((ActivitiSE) this.component).registerActivitiOperation(eptAndOperation, activitiOperation);
         }

@@ -24,16 +24,7 @@ package org.ow2.petals.activitibpmn;
  */
 public final class ActivitiSEConstants {
 
-	 /**
-     * The Activiti Bpmn Action Type for
-     *   start event
-     *   user task
-     */
-    protected enum BpmnActionType {
-        START_EVENT, USER_TASK
-    };
-
-	 /**
+    /**
      * The SU parameter that defines the tenantId.
      */
     public static final String TENANT_ID = "tenant_id";
