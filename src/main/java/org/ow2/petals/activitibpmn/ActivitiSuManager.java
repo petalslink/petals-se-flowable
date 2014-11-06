@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
 
@@ -43,6 +45,10 @@ import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.ow2.petals.activitibpmn.ActivitiSEConstants.BpmnActionType;
+import org.ow2.petals.activitibpmn.exception.IncoherentProcessDefinitionDeclarationException;
+import org.ow2.petals.activitibpmn.exception.InvalidVersionDeclaredException;
+import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
+import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
 import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
@@ -61,14 +67,72 @@ import org.w3c.dom.NodeList;
  */
 public class ActivitiSuManager extends AbstractServiceUnitManager {
 
-	private RepositoryService repS;	
-	
-	private class ProcessBPMN {
-        public final String processFileName;
+    private RepositoryService repS;
 
-        public final String version;
+    /**
+     * The process definitions embedded into the service unit
+     * 
+     * @author Christophe DENEUX - Linagora
+     * 
+     */
+    private class EmbeddedProcessDefinitions {
+        /**
+         * The process definitions of the service unit
+         */
+        protected Set<EmbeddedProcessDefinition> processDefinitions = new HashSet<EmbeddedProcessDefinition>();
+
+        /**
+         * The tenant identifier of embedded processes
+         */
+        protected String tenantId;
+
+        /**
+         * The category identifier of embedded processes
+         */
+        protected String categoryId;
+
+        public EmbeddedProcessDefinitions(final String tenantId, final String categoryId) {
+            super();
+            this.tenantId = tenantId;
+            this.categoryId = categoryId;
+        }
+
+        /**
+         * <p>
+         * Log the embedded process definitions for debug purpose
+         * </p>
+         * <p>
+         * <b>Note</b>: For performance reasons, the caller is responsible to check the log level before to invoke this
+         * method.
+         * </p>
+         * 
+         * @param logger
+         *            The logger to use
+         */
+        public void debug(final Logger logger) {
+            logger.fine("Processes configuration");
+            logger.fine("tenantId: " + tenantId);
+            logger.fine("categoryId: " + categoryId);
+            logger.fine(this.processDefinitions.size() + " process(es):");
+            for (final EmbeddedProcessDefinition processDefinition : this.processDefinitions) {
+                logger.fine("   - file name: " + processDefinition.processFileName);
+                logger.fine("   - version: " + processDefinition.version);
+            }
+        }
+    }
+	
+    /**
+     * A process definition embedded into the service unit
+     * 
+     * @author Bertrand ESCUDIE - Linagora
+     * 
+     */
+    private class EmbeddedProcessDefinition {
+        protected final String processFileName;
+
+        protected final int version;
 		
-        public ProcessBPMN(final String processFileName, final String version) {
+        public EmbeddedProcessDefinition(final String processFileName, final int version) {
 			this.processFileName = processFileName;
 			this.version = version;
 		}
@@ -98,6 +162,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             this.logger.fine("Start ActivitiSuManager.doDeploy(SU =" + serviceUnitName + ")");
 		}
         // Get the Activiti RepositoryService
+        // TODO: What to do if repS is null ?
         if (this.repS == null) {
             this.repS = ((ActivitiSE) this.component).getProcessEngine().getRepositoryService();
         }
@@ -199,121 +264,158 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         }
     }
 
-	/**
-	 * deploy in Activiti DB the process if it doesn't exist
-	 *    Process deployment is characterized in Activiti Database by processName / tenantId / categoryId / version
-     *    tenantId allows to have several instance of the same process model in different contexts: different owner, assignee, group ....
-     *    categoryId allows to manage process lifeCycle: Dev, PreProd, Prod ...
-     *	  version allows to manage several versions 
-     *            The first time a process with a particular key is deployed, version 1 is assigned.
-     *            For all subsequent deployments of process definitions with the same key, the version will be set 1
-     *            higher then the maximum currently deployed version.
- 	 * 
-	 * @param provides - the provides that the SU expose
-	 * @param suRootPath path of the process file bpmn20.xml
-	 * @return a Map<String processKey,ProcessDefinition> of the corresponding processes described in the SU
-	 * @throws PEtALSCDKException 
-	 */
-    private Map<String, ProcessDefinition> deployActivitiProcess(final Provides provides, final String suRootPath)
-            throws PEtALSCDKException {
-	
-        // TODO: I'm not sure that a concurrent hash map is required, only one thread will instantiate it at a time.
-        // If the concurrency is required elsewhere, the map should be created at this place.
-        final Map<String, ProcessDefinition> processDefinitions = new ConcurrentHashMap<String, ProcessDefinition>();
+    private EmbeddedProcessDefinitions loadProcessDefinitions(final Provides provides) throws PEtALSCDKException {
 
-	    // Get the SU Data handler
+        // Get the SU Data handler
         final ServiceUnitDataHandler suDataHandler = this.getSUDataHandlerForProvides(provides);
         if (suDataHandler == null) {
-			throw new PEtALSCDKException( "Error while processing the JBI descriptor in the component. The SU data handler was null." );
+            throw new PEtALSCDKException(
+                    "Error while processing the JBI descriptor in the component. The SU data handler was null.");
         }
 
         // Get the extension configuration for the Activiti process(es) to be deployed from the SU jbi.xml
         final ConfigurationExtensions extensions = suDataHandler.getConfigurationExtensions(provides);
         if (extensions == null) {
-			throw new PEtALSCDKException( "Invalid JBI descriptor: it does not contain any component extension." );
+            throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain any component extension.");
         }
 
-		String tenantId = extensions.get(ActivitiSEConstants.TENANT_ID);
+        String tenantId = extensions.get(ActivitiSEConstants.TENANT_ID);
         if (tenantId == null) {
             // TODO: Improve the default value declaration
             tenantId = "myTenant"; // default value
         }
 
-		String categoryId = extensions.get(ActivitiSEConstants.CATEGORY_ID);
+        String categoryId = extensions.get(ActivitiSEConstants.CATEGORY_ID);
         if (categoryId == null) {
             // TODO: Improve the default value declaration
             categoryId = "myCategory"; // default value
         }
 
-		final Set<ProcessBPMN> processes = new HashSet<ProcessBPMN>();
-		String processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE);
-        if (processFileName != null && processFileName.trim().isEmpty()) {
-            throw new PEtALSCDKException("The '" + ActivitiSEConstants.PROCESS_FILE
-                    + "' parameter is not well defined or is empty.");
-        }
-		String version = extensions.get(ActivitiSEConstants.VERSION);
-        int nbProcesses = 1;
-		if ( processFileName == null || version == null ) {
-			// Several process description
-            // TODO: Multi-process definitions should be reviewed because no counter increment should be required, just
-            // a simple list
-            processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE + nbProcesses);
-            version = extensions.get(ActivitiSEConstants.VERSION + nbProcesses);
-			while ( !( processFileName == null || version == null ) ) {
-				processes.add(new ProcessBPMN(processFileName,version));
-				nbProcesses++;
-                processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE);
-                if (processFileName != null && processFileName.trim().isEmpty()) {
-                    throw new PEtALSCDKException("The '" + ActivitiSEConstants.PROCESS_FILE
-                            + "' parameter is not well defined or is empty.");
+        final EmbeddedProcessDefinitions embeddedProcessDefinitions = new EmbeddedProcessDefinitions(tenantId,
+                categoryId);
+
+        String processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE);
+        String versionStr = extensions.get(ActivitiSEConstants.VERSION);
+        if (processFileName == null && versionStr == null) {
+            // The SU does not contain an unique process definition, perhaps several process definitions
+
+            // TODO: Multi-process definitions should be reviewed because a wrapper tag is missing: The right writing
+            // style would be:
+            //    <process-definition>
+            //       <process_file>...</process_file>
+            //       <version>...</version>
+            //    </process-definition>
+            int nbProcesses = 1;
+            do {
+                processFileName = extensions.get(ActivitiSEConstants.PROCESS_FILE + nbProcesses);
+                versionStr = extensions.get(ActivitiSEConstants.VERSION + nbProcesses);
+                if (nbProcesses == 1 && processFileName == null && versionStr == null) {
+                    throw new NoProcessDefinitionDeclarationException();
+                } else {
+                    this.registerEmbeddedProcessDefinition(processFileName, versionStr, embeddedProcessDefinitions);
+                    nbProcesses++;
                 }
-                version = extensions.get(ActivitiSEConstants.VERSION);
- 			}
-            if (nbProcesses == 1) {
-				throw new PEtALSCDKException( "Invalid JBI descriptor: it does not contain any process description." );
-            }
-		}
-		else {
-			// One process description
-			processes.add(new ProcessBPMN(processFileName,version));
-		}
-        // Deploy the processes from the file bpmn20.xml
+            } while (processFileName != null && versionStr != null);
+        } else if (processFileName != null && versionStr != null) {
+            // One process description
+            this.registerEmbeddedProcessDefinition(processFileName, versionStr, embeddedProcessDefinitions);
+        } else {
+            throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
+        }
+
         if (this.logger.isLoggable(Level.FINE)) {
-            this.logger.fine("processes configuration");
-            this.logger.fine("tenantId =" + tenantId);
-            this.logger.fine("categoryId = " + categoryId);
-            this.logger.fine("nb processBPMN = " + processes.size());
-		}
-		
-		// deploy the processes
-        final Iterator<ProcessBPMN> iterator = processes.iterator();
+            embeddedProcessDefinitions.debug(this.logger);
+        }
+
+        return embeddedProcessDefinitions;
+    }
+
+    /**
+     * <p>
+     * Register an embedded process definition of the SU from its raw information
+     * </p>
+     * <p>
+     * Does nothing if <code>processFileName</code> and <code>versionStr</code> are <code>null</code> in the same time.
+     * </p>
+     * 
+     * @param processFileName
+     *            The file name of the process, as raw data read from the SU JBI descriptor. Not <code>null</code>.
+     * @param versionStr
+     *            The version of the process, as raw data read from the SU JBI descriptor. Not <code>null</code>.
+     * @throws PEtALSCDKException
+     *             A raw data of the SU JBI descriptor is invalid
+     */
+    private void registerEmbeddedProcessDefinition(final String processFileName, final String versionStr,
+            final EmbeddedProcessDefinitions embeddedProcessDefinitions) throws PEtALSCDKException {
+
+        if (processFileName != null && processFileName.trim().isEmpty()) {
+            throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
+        }
+
+        final int version;
+        if (versionStr != null && versionStr.trim().isEmpty()) {
+            throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
+        } else {
+            try {
+                version = Integer.parseInt(versionStr);
+            } catch (final NumberFormatException e) {
+                throw new InvalidVersionDeclaredException(processFileName, versionStr);
+            }
+        }
+
+        embeddedProcessDefinitions.processDefinitions.add(new EmbeddedProcessDefinition(processFileName, version));
+
+    }
+
+    /**
+     * deploy in Activiti DB the process if it doesn't exist Process deployment is characterized in Activiti Database by
+     * processName / tenantId / categoryId / version tenantId allows to have several instance of the same process model
+     * in different contexts: different owner, assignee, group .... categoryId allows to manage process lifeCycle: Dev,
+     * PreProd, Prod ... version allows to manage several versions The first time a process with a particular key is
+     * deployed, version 1 is assigned. For all subsequent deployments of process definitions with the same key, the
+     * version will be set 1 higher then the maximum currently deployed version.
+     * 
+     * @param provides
+     *            - the provides that the SU expose
+     * @param suRootPath
+     *            path of the process file bpmn20.xml
+     * @return a Map<String processKey,ProcessDefinition> of the corresponding processes described in the SU
+     * @throws PEtALSCDKException
+     */
+    private Map<String, ProcessDefinition> deployActivitiProcess(final Provides provides, final String suRootPath)
+            throws PEtALSCDKException {
+
+        final Map<String, ProcessDefinition> processDefinitionsDeployed = new HashMap<String, ProcessDefinition>();
+
+        // deploy the processes
+        final EmbeddedProcessDefinitions processDefinitions = this.loadProcessDefinitions(provides);
+        final Iterator<EmbeddedProcessDefinition> iterator = processDefinitions.processDefinitions.iterator();
 		while (iterator.hasNext() ){
-            final ProcessBPMN process = iterator.next();
-		    // Deploy the process from the file bpmn20.xml
+            final EmbeddedProcessDefinition process = iterator.next();
 			
-		    // Check that the process is not already deployed
-			// If it exist do not deploy it again then return it ProcessDefinition
-			// This allow to deploy the same SU (porcess.bpmn20.xml) on several Service Engine petals-se-activitibpmn
-			// to create several Petals service endpoint for the same process/tenantId/categoryId/version.
+            // Check that the process is not already deployed. If it exists do not deploy it again then returns its
+            // ProcessDefinition.
+            // This allow to deploy the same SU (process.bpmn20.xml) on several petals-se-activitibpmn for high
+            // availability, ie. to create several service endpoints for the same process/tenantId/categoryId/version on
+            // different Petals ESB container.
             final List<ProcessDefinition> processDefinitionSearchList = this.repS.createProcessDefinitionQuery()
                     .processDefinitionResourceName(process.processFileName)
-		    		    .processDefinitionCategory(categoryId).processDefinitionTenantId(tenantId)
-		    		    .processDefinitionVersion(Integer.valueOf(process.version)).list();
+                    .processDefinitionCategory(processDefinitions.categoryId)
+                    .processDefinitionTenantId(processDefinitions.tenantId).processDefinitionVersion(process.version)
+                    .list();
 	 		    
 		    if (processDefinitionSearchList == null || processDefinitionSearchList.size() == 0) {
                 final DeploymentBuilder db = this.repS.createDeployment();
 
-                // Characterize the deployment with processFileName / tenantId / CategoryId
+                // Characterize the deployment with processFileName / tenantId / categoryId
 				db.name(process.processFileName);
-				db.tenantId(tenantId);
-				db.category(categoryId);
+                db.tenantId(processDefinitions.tenantId);
+                db.category(processDefinitions.categoryId);
 
 				// add the process definition from file: file Name, file Path 
                 final File processFile = new File(suRootPath, process.processFileName);
-                final FileInputStream bpmnInputFile;
-				try {
-                    bpmnInputFile = new FileInputStream(processFile);
-
+                try {
+                    final FileInputStream bpmnInputFile = new FileInputStream(processFile);
                     try {
                         final InputStreamProvider bpmnInputStreamSource = new InputStreamSource(bpmnInputFile);
 
@@ -321,7 +423,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                         // that is indeed derived from the targetNameSpace of the bpmn20.xml file
                         final org.activiti.bpmn.model.BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(
                                 bpmnInputStreamSource, false, false);
-                        bpmnModel.setTargetNamespace(categoryId);
+                        bpmnModel.setTargetNamespace(processDefinitions.categoryId);
 
                         db.addBpmnModel(process.processFileName, bpmnModel);
 
@@ -336,7 +438,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                         // Set processDefinition
                         final ProcessDefinition processDefinition = this.repS.createProcessDefinitionQuery()
                                 .deploymentId(deployment.getId()).list().get(0);
-                        processDefinitions.put(processDefinition.getKey(), processDefinition);
+                        processDefinitionsDeployed.put(processDefinition.getKey(), processDefinition);
 
                         // TODO TO TEST Set Version of processDefinition
                         // TEST avec createNativeDeploymentQuery sur Deployment ce qui suit change la version du modele
@@ -360,9 +462,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                     }
 
 				} catch (final FileNotFoundException e) {
-                    throw new PEtALSCDKException(
-                            "An error occurred while starting the Activiti BPMN unable to find file: "
-                                    + processFile.getAbsolutePath(), e);
+                    throw new UnexistingProcessFileException(processFile.getAbsolutePath(), e);
                 }
 
 			}
@@ -372,14 +472,14 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                             + " is already deployed");
 				// Set processDefinition
                 final ProcessDefinition processDefinition = processDefinitionSearchList.get(0);
-				processDefinitions.put(processDefinition.getKey(), processDefinition);
+                processDefinitionsDeployed.put(processDefinition.getKey(), processDefinition);
 			}
 		}
 
 		// Log the processDefinitionList
         if (this.logger.isLoggable(Level.FINE)) {
             int i = 0;
-            for (final ProcessDefinition processDefinition : processDefinitions.values()) {
+            for (final ProcessDefinition processDefinition : processDefinitionsDeployed.values()) {
                 this.logger.fine("Process definition #" + i);
                 this.logger.fine("   - Id            = " + processDefinition.getId());
                 this.logger.fine("   - Category      = " + processDefinition.getCategory());
@@ -392,7 +492,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 			}
 		}
 		
-	    return processDefinitions;
+        return processDefinitionsDeployed;
     }
 
 
