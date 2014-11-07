@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<!-- ======================== DEFINITION ==================================== -->
+<wsdl:definitions name="demandeDeCongesService"
+   targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
+   xmlns:tns="http://petals.ow2.org/se/Activitibpmn/1.0/su" xmlns:bpmn="http://petals.ow2.org/se/Activitibpmn/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <!-- ======================== TYPES ========================================== -->
+   <wsdl:types>
+      <xsd:schema>
+         <xsd:import namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
+            schemaLocation="import-types.xsd" />
+      </xsd:schema>
+   </wsdl:types>
+   <!-- ======================== MESSAGES ======================================= -->
+   <wsdl:message name="demandeConges">
+      <wsdl:part name="parameters" element="tns:demande" />
+   </wsdl:message>
+   <wsdl:message name="numeroDemande">
+      <wsdl:part name="parameters" element="tns:numero" />
+   </wsdl:message>
+   <wsdl:message name="faute">
+      <wsdl:part name="parameters" element="tns:erreur" />
+   </wsdl:message>
+   <wsdl:message name="validationDdeConges">
+      <wsdl:part name="parameters" element="tns:validation" />
+   </wsdl:message>
+   <wsdl:message name="ajustementConges">
+      <wsdl:part name="parameters" element="tns:ajustement" />
+   </wsdl:message>
+   <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== -->
+   <wsdl:portType name="demandeDeConges">
+      <wsdl:operation name="demanderConges">
+         <wsdl:input message="tns:demandeConges" />
+         <wsdl:output message="tns:numeroDemande" />
+         <wsdl:fault message="tns:faute" />
+      </wsdl:operation>
+      <wsdl:operation name="validerDemande">
+         <wsdl:input message="tns:validationDdeConges" />
+         <wsdl:output message="tns:numeroDemande" />
+         <wsdl:fault message="tns:faute" />
+      </wsdl:operation>
+      <wsdl:operation name="ajusterDemande">
+         <wsdl:input message="tns:ajustementConges" />
+         <wsdl:output message="tns:numeroDemande" />
+         <wsdl:fault message="tns:faute" />
+      </wsdl:operation>
+   </wsdl:portType>
+
+</wsdl:definitions>

@@ -152,7 +152,7 @@ public class AnnotatedWsdlParserTest {
      * <p>
      * Expected results:
      * <ul>
-     * <li>No erroroccurs</li>
+     * <li>No error occurs</li>
      * <li>The expected annotated operation are retrieved</li>
      * </ul>
      * </p>
@@ -173,6 +173,75 @@ public class AnnotatedWsdlParserTest {
         final List<AnnotatedOperation> annotatedOperations = this.parser.parse(docWsdl);
         assertEquals(0, this.parser.getEncounteredErrors().size());
         assertEquals(3, annotatedOperations.size());
+        boolean op1_found = true;
+        boolean op2_found = true;
+        boolean op3_found = true;
+        for (final AnnotatedOperation annotatedoperation : annotatedOperations) {
+            if (annotatedoperation instanceof StartEventAnnotatedOperation
+                    && annotatedoperation.getWsdlOperationName().equals("demanderConges")) {
+
+            } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
+                    && annotatedoperation.getWsdlOperationName().equals("validerDemande")) {
+
+            } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
+                    && annotatedoperation.getWsdlOperationName().equals("ajusterDemande")) {
+            } else {
+                fail("Unexpected annotated operation");
+            }
+        }
+        assertTrue(op1_found);
+        assertTrue(op2_found);
+        assertTrue(op3_found);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a valid WSDL containing imports
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>No error occurs</li>
+     * <li>The expected annotated operation are retrieved</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void parse_WsdlValidWithImports() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/valid-with-imports.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        final List<AnnotatedOperation> annotatedOperations = this.parser.parse(docWsdl);
+        assertEquals(0, this.parser.getEncounteredErrors().size());
+        assertEquals(3, annotatedOperations.size());
+        boolean op1_found = true;
+        boolean op2_found = true;
+        boolean op3_found = true;
+        for (final AnnotatedOperation annotatedoperation : annotatedOperations) {
+            if (annotatedoperation instanceof StartEventAnnotatedOperation
+                    && annotatedoperation.getWsdlOperationName().equals("demanderConges")) {
+
+            } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
+                    && annotatedoperation.getWsdlOperationName().equals("validerDemande")) {
+
+            } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
+                    && annotatedoperation.getWsdlOperationName().equals("ajusterDemande")) {
+            } else {
+                fail("Unexpected annotated operation");
+            }
+        }
+        assertTrue(op1_found);
+        assertTrue(op2_found);
+        assertTrue(op3_found);
     }
 
 }
