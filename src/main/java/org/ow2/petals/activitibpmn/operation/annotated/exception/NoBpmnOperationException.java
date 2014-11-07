@@ -15,27 +15,22 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.activitibpmn.operation.exception;
+package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
-import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
-import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operation {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the user
- * identifier is required.
+ * No BPMN operation is defined in the WSDL
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoUserIdMappingException extends InvalidAnnotationException {
+public class NoBpmnOperationException extends InvalidAnnotationException {
 
-    private static final long serialVersionUID = -8468551099289581848L;
+    private static final long serialVersionUID = 4062096690326440564L;
 
-    private static final String MESSAGE = "The mapping defining the user identifier is required";
+    private static final String MESSAGE = "No BPMN operation declared in the WSDL";
 
-    public NoUserIdMappingException(final ActivitiOperation operation) {
-        super(operation, MESSAGE);
+    public NoBpmnOperationException() {
+        super(MESSAGE);
     }
-
 }

@@ -34,8 +34,7 @@ import org.activiti.bpmn.model.FormValue;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
-import org.ow2.petals.activitibpmn.operation.exception.InvalidAnnotationException;
-import org.ow2.petals.activitibpmn.operation.exception.NoUserIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -61,48 +60,25 @@ public abstract class ActivitiOperation {
 
     protected final Logger logger;
 
-    protected ActivitiOperation(final String processDefinitionId, final String processKey, final String bpmnAction,
-            final Properties bpmnProcessId, final Properties bpmnUserId, final Properties bpmnVarInMsg,
-            final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
-            final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType, final Logger logger)
-            throws InvalidAnnotationException {
-
-        this.verifyParameters(processDefinitionId, processKey, bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg,
-                outMsgBpmnVar, faultMsgBpmnVar, bpmnVarType);
+    protected ActivitiOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
+            final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType, final Logger logger) {
 
         this.processDefinitionId = processDefinitionId;
-        this.processKey = processKey;
-        this.bpmnAction = bpmnAction;
-        this.bpmnProcessId = bpmnProcessId;
-        this.bpmnUserId = bpmnUserId;
-        this.bpmnVarInMsg = bpmnVarInMsg;
-        this.outMsgBpmnVar = outMsgBpmnVar;
-        this.faultMsgBpmnVar = faultMsgBpmnVar;
+        this.processKey = annotatedOperation.getProcessIdentifier();
+        this.bpmnAction = annotatedOperation.getBpmnAction();
+        this.bpmnProcessId = annotatedOperation.getProcessInstanceIdHolder();
+        this.bpmnUserId = annotatedOperation.getUserIdHolder();
+        this.bpmnVarInMsg = annotatedOperation.getBpmnVarInMsg();
+        this.outMsgBpmnVar = annotatedOperation.getOutMsgBpmnVar();
+        this.faultMsgBpmnVar = annotatedOperation.getFaultMsgBpmnVar();
         this.bpmnVarType = bpmnVarType;
         this.logger = logger;
     }
 
     /**
-     * Verify that annotation read from the WSDL are valid for the operation, otherwise the exception
-     * {@link InvalidAnnotationException} is thrown.
-     */
-    protected void verifyParameters(final String processDefinitionId, final String processKey,
-            final String bpmnAction, final Properties bpmnProcessId, final Properties bpmnUserId,
-            final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
-            final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType) throws InvalidAnnotationException {
-
-        // The mapping defining the process instance id is required to complete a user task
-        final String userIdMapping = bpmnUserId.getProperty("inMsg");
-        if (userIdMapping == null || userIdMapping.isEmpty()) {
-            throw new NoUserIdMappingException(this);
-        }
-
-    }
-
-    /**
      * @return The name of the BPMN action
      */
-    public abstract String getName();
+    public abstract String getBpmnActionType();
 
     /**
      * Execute the operation
@@ -114,7 +90,7 @@ public abstract class ActivitiOperation {
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Activiti processDefId = " + processDefinitionId);
             logger.fine("Activiti Action (TaskId) = " + bpmnAction);
-            logger.fine("Activiti ActionType = " + this.getName());
+            logger.fine("Activiti ActionType = " + this.getBpmnActionType());
         }
 
         inMsgWsdl.getDocumentElement().normalize();

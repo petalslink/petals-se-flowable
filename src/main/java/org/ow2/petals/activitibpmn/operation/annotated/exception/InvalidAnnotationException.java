@@ -15,28 +15,25 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.activitibpmn.operation.exception;
+package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
-import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 
 /**
- * A WSDL annotation is invalid for the operation
+ * An error occurs about BPMN annotations
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class InvalidAnnotationException extends PEtALSCDKException {
+public abstract class InvalidAnnotationException extends PEtALSCDKException {
 
-    private static final long serialVersionUID = 4807726306653521594L;
+    private static final long serialVersionUID = -5070343353540572994L;
 
-    private static final String MESSAGE_PATTERN = "A WSDL annotation is invalid for the operation '%s': %s";
-
-    public InvalidAnnotationException(final ActivitiOperation operation, final String message) {
-        super(String.format(MESSAGE_PATTERN, operation.getName(), message));
+    public InvalidAnnotationException(final String message) {
+        super(message);
     }
 
-    public InvalidAnnotationException(final ActivitiOperation operation, final String message, final Throwable cause) {
-        super(String.format(MESSAGE_PATTERN, operation.getName(), message), cause);
+    public InvalidAnnotationException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

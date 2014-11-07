@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<!-- ======================== DEFINITION ==================================== --> 
+<wsdl:definitions
+	name="demandeDeCongesService"
+	targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
+		xmlns:tns="http://petals.ow2.org/se/Activitibpmn/1.0/su"
+		xmlns:bpmn="http://petals.ow2.org/se/Activitibpmn/1.0"
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+ 	   	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" >
+
+<!-- ======================== TYPES ========================================== --> 
+<wsdl:types>
+	<xsd:schema targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su" 
+	     		elementFormDefault="qualified" >
+    	<xsd:element name="demande">
+       		<xsd:complexType>
+       			<xsd:all>
+          			<xsd:element name="demandeur" minOccurs="1" maxOccurs="1" type="xsd:string" />
+         			<xsd:element name="nbJourDde" minOccurs="1" maxOccurs="1" type="xsd:long" />
+          			<xsd:element name="DateDebutDde" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
+         			<xsd:element name="motifDde" minOccurs="0" maxOccurs="1" type="xsd:string" />
+				</xsd:all>
+ 			</xsd:complexType>
+     	</xsd:element>
+
+     	<xsd:element name="numero">
+      		<xsd:complexType>
+       			<xsd:all>
+          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+				</xsd:all>
+			</xsd:complexType>
+     	</xsd:element>
+
+     	<xsd:element name="erreur">
+      		<xsd:complexType>
+       			<xsd:all>
+          			<xsd:element name="utilisateur" minOccurs="1" maxOccurs="1" type="xsd:string" />
+          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+          			<xsd:element name="message" minOccurs="1" maxOccurs="1" type="xsd:string" />
+				</xsd:all>
+			</xsd:complexType>
+     	</xsd:element>
+
+     	<xsd:element name="validation">
+       		<xsd:complexType>
+ 				<xsd:all>
+          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+          			<xsd:element name="valideur" minOccurs="1" maxOccurs="1"  type="xsd:string" />
+        			<xsd:element name="motifRefus" minOccurs="0" maxOccurs="1" type="xsd:string" />
+      	    		<xsd:element name="approbation" minOccurs="1" maxOccurs="1" >
+        	  			<xsd:simpleType>
+    						<xsd:restriction base="xsd:string">
+      							<xsd:enumeration id="Approuvee" value="true" />
+      							<xsd:enumeration id="Rejetee" value="false" />
+    						</xsd:restriction>
+	  					</xsd:simpleType>
+    	      		</xsd:element>  					
+				</xsd:all>
+			</xsd:complexType>
+     	</xsd:element>
+
+   		<xsd:element name="ajustement">
+       		<xsd:complexType>
+				<xsd:all>
+	          		<xsd:element name="numeroDdeInitiale" minOccurs="1" maxOccurs="1" type="xsd:string" />
+    	      		<xsd:element name="demandeur" minOccurs="1" maxOccurs="1" type="xsd:string" />
+        	 		<xsd:element name="nbJourNouvelleDde" minOccurs="1" maxOccurs="1" type="xsd:long" />
+          			<xsd:element name="DateDebutNouvelleDde" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
+         			<xsd:element name="motifNouvelleDde" minOccurs="0" maxOccurs="1" type="xsd:string" />
+  	       			<xsd:element name="soumettreModif" minOccurs="1" maxOccurs="1" >
+    	      			<xsd:simpleType>
+    						<xsd:restriction base="xsd:string">
+    		   					<xsd:enumeration id="Renvoyee" value="true" />
+     	 						<xsd:enumeration id="Annulee" value="false" />
+    						</xsd:restriction>
+  						</xsd:simpleType>
+          			</xsd:element>  					
+				</xsd:all>
+			</xsd:complexType>
+     	</xsd:element>
+
+ 	</xsd:schema>
+</wsdl:types>
+<!-- ======================== MESSAGES ======================================= --> 
+<wsdl:message name="demandeConges">
+	<wsdl:part name="parameters" element="tns:demande" />
+</wsdl:message>
+<wsdl:message name="numeroDemande">
+    <wsdl:part name="parameters" element="tns:numero" />
+</wsdl:message>
+<wsdl:message name="faute">
+    <wsdl:part name="parameters" element="tns:erreur" />
+</wsdl:message>
+<wsdl:message name="validationDdeConges">
+	<wsdl:part name="parameters" element="tns:validation" />
+</wsdl:message>
+<wsdl:message name="ajustementConges">
+    <wsdl:part name="parameters" element="tns:ajustement" />
+</wsdl:message>
+<!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== --> 
+<wsdl:portType name="demandeDeConges">
+	<wsdl:operation name="demanderConges">
+    	<wsdl:input message="tns:demandeConges" />
+     	<wsdl:output message="tns:numeroDemande" />
+     	<wsdl:fault message="tns:faute" />
+   </wsdl:operation>
+    <wsdl:operation name="validerDemande">
+      	<wsdl:input message="tns:validationDdeConges" />
+     	<wsdl:output message="tns:numeroDemande" />
+     	<wsdl:fault message="tns:faute" />
+	</wsdl:operation>
+    <wsdl:operation name="ajusterDemande">
+     	<wsdl:input message="tns:ajustementConges" />
+     	<wsdl:output message="tns:numeroDemande" />
+     	<wsdl:fault message="tns:faute" />
+	</wsdl:operation>
+</wsdl:portType>
+<!-- ======================== BINDINGS ======================================= --> 
+<wsdl:binding name="demandeDeCongesBinding" type="tns:demandeDeConges" 
+		xmlns:bpmn="http://petals.ow2.org/se/Activitibpmn/1.0" > 
+<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="demanderConges">
+      	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
+   	   	<bpmn:operation
+   	   		bpmnProcess="vacationRequest"
+			bpmnActionType="startEvent"
+ 			bpmnAction="request" />
+   	   	<bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
+   	   	<bpmn:userId inMsg="demandeur" faultMsg="utilisateur" />
+        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
+      	<bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
+      	<bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
+      	<wsdl:input>
+        	<soap:body use="literal" />
+      	</wsdl:input>
+      	<wsdl:output>
+        	<soap:body use="literal" />
+      	</wsdl:output>
+      	<wsdl:fault>
+        	<soap:body use="literal" />
+      	</wsdl:fault>
+	</wsdl:operation>
+    <wsdl:operation name="validerDemande">
+      	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
+  	   	<bpmn:operation 
+   	   		bpmnProcess="vacationRequest" 
+   	   		bpmnActionType="userTask" 
+   	   		bpmnAction="handleRequest" />
+   	   	<bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
+   	   	<bpmn:userId inMsg="valideur" faultMsg="utilisateur" />
+        <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
+        <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
+      	<wsdl:input>
+        	<soap:body use="literal" />
+      	</wsdl:input>
+      	<wsdl:output>
+        	<soap:body use="literal" />
+      	</wsdl:output>
+      	<wsdl:fault>
+        	<soap:body use="literal" />
+      	</wsdl:fault>
+	</wsdl:operation>
+    <wsdl:operation name="ajusterDemande">
+      	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/adjustVacationRequestTask" />
+  	   	<bpmn:operation 
+   	   		bpmnProcess="vacationRequest"
+   	   		bpmnActionType="userTask"
+   	   		bpmnAction="adjustVacationRequestTask"  />
+   	   	<bpmn:processId inMsg="numeroDdeInitiale" outMsg="numeroDde" faultMsg="numeroDde"/>
+   	   	<bpmn:userId inMsg="demandeur" faultMsg="utilisateur"/>
+        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourNouvelleDde" />
+      	<bpmn:variable bpmn="startDate" inMsg="DateDebutNouvelleDde" />
+      	<bpmn:variable bpmn="vacationMotivation" inMsg="motifNouvelleDde" />
+        <bpmn:variable bpmn="resendRequest" inMsg="soumettreModif" />
+      	<wsdl:input>
+        	<soap:body use="literal" />
+      	</wsdl:input>
+      	<wsdl:output>
+        	<soap:body use="literal" />
+      	</wsdl:output>
+      	<wsdl:fault>
+        	<soap:body use="literal" />
+      	</wsdl:fault>
+	</wsdl:operation>
+</wsdl:binding>
+<!-- ======================== SERVICE (SU jbi.xml service-name) ============== --> 
+<wsdl:service name="demandeDeCongesService">
+	<wsdl:port name="autogenerate" binding="tns:demandeDeCongesBinding">
+		<soap:address location="http://localhost:9003/demandeDeConges" />
+	</wsdl:port>
+</wsdl:service>
+
+</wsdl:definitions>

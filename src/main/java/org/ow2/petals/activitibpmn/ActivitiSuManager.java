@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -51,6 +50,10 @@ import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
 import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
 import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
 import org.ow2.petals.activitibpmn.operation.StartEventOperation;
+import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
+import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedWsdlParser;
+import org.ow2.petals.activitibpmn.operation.annotated.CompleteUserTaskAnnotatedOperation;
+import org.ow2.petals.activitibpmn.operation.annotated.StartEventAnnotatedOperation;
 import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
@@ -59,9 +62,6 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 
 /**
@@ -69,7 +69,7 @@ import org.w3c.dom.NodeList;
  */
 public class ActivitiSuManager extends AbstractServiceUnitManager {
 
-    private RepositoryService repS;
+    private RepositoryService repositoryService;
 
     /**
      * The process definitions embedded into the service unit
@@ -165,8 +165,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 		}
         // Get the Activiti RepositoryService
         // TODO: What to do if repS is null ?
-        if (this.repS == null) {
-            this.repS = ((ActivitiSE) this.component).getProcessEngine().getRepositoryService();
+        if (this.repositoryService == null) {
+            this.repositoryService = ((ActivitiSE) this.component).getProcessEngine().getRepositoryService();
         }
 		
 		// Check the JBI descriptor
@@ -400,14 +400,15 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             // This allow to deploy the same SU (process.bpmn20.xml) on several petals-se-activitibpmn for high
             // availability, ie. to create several service endpoints for the same process/tenantId/categoryId/version on
             // different Petals ESB container.
-            final List<ProcessDefinition> processDefinitionSearchList = this.repS.createProcessDefinitionQuery()
+            final List<ProcessDefinition> processDefinitionSearchList = this.repositoryService
+                    .createProcessDefinitionQuery()
                     .processDefinitionResourceName(process.processFileName)
                     .processDefinitionCategory(processDefinitions.categoryId)
                     .processDefinitionTenantId(processDefinitions.tenantId).processDefinitionVersion(process.version)
                     .list();
 	 		    
 		    if (processDefinitionSearchList == null || processDefinitionSearchList.size() == 0) {
-                final DeploymentBuilder db = this.repS.createDeployment();
+                final DeploymentBuilder db = this.repositoryService.createDeployment();
 
                 // Characterize the deployment with processFileName / tenantId / categoryId
 				db.name(process.processFileName);
@@ -438,7 +439,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                         final Deployment deployment = db.deploy();
 
                         // Set processDefinition
-                        final ProcessDefinition processDefinition = this.repS.createProcessDefinitionQuery()
+                        final ProcessDefinition processDefinition = this.repositoryService
+                                .createProcessDefinitionQuery()
                                 .deploymentId(deployment.getId()).list().get(0);
                         processDefinitionsDeployed.put(processDefinition.getKey(), processDefinition);
 
@@ -511,126 +513,34 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
     private void getActivitiOperationMapping(final Document wsdlDocument, final String edptName,
             final Map<String, ProcessDefinition> processDefinitions) throws PEtALSCDKException {
 
-        wsdlDocument.getDocumentElement().normalize();
-        // Get the node "wsdl:binding"
-        final Node binding = wsdlDocument.getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/", "binding").item(0);
-        // Get the list of nodes "wsdl:operation"
-        final NodeList operations = ((Element) binding).getElementsByTagNameNS("http://schemas.xmlsoap.org/wsdl/",
-                "operation");
+        final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
+        
+        for (final AnnotatedOperation annotatedOperation : annotatedWdslParser.parse(wsdlDocument)) {
+            
+            final String wsdlOperationName = annotatedOperation.getWsdlOperationName();
 
-        for (int j = 0; j < operations.getLength(); j++) {
-            final Node operation = operations.item(j);
-            // set the eptAndOperation
-            final EptAndOperation eptAndOperation = new EptAndOperation(edptName,
-                    ((Element) operation).getAttribute("name"));
-            // Get the node "bpmn:operation"
-            final Node bpmnOperation = ((Element) operation).getElementsByTagNameNS(
-                    "http://petals.ow2.org/se/Activitibpmn/1.0", "operation").item(0);
-            // set the bpmnProcessKey
-            final String bpmnProcessKey = ((Element) bpmnOperation).getAttribute("bpmnProcess");
-            // Test the bpmnProcess value with processKey of the Map processDefinitions and set processDefinitionId
+            //--------------------------------------------------------------
+            // Checks the WSDL BPMN annotations against process definitions
+            //--------------------------------------------------------------
+            
+            // The value of annotation 'process identifier' must be the one of a process definition
+            final String bpmnProcessKey = annotatedOperation.getProcessIdentifier();
             if (!processDefinitions.containsKey(bpmnProcessKey)) {
                 throw new PEtALSCDKException("Malformed Wsdl: business process Key = " + bpmnProcessKey
                         + " does not correspond to any Business Process file of the SU ");
             }
             final String processDefinitionId = processDefinitions.get(bpmnProcessKey).getId();
-            // set the bpmnAction
-            final String bpmnAction = ((Element) bpmnOperation).getAttribute("bpmnAction");
-
-            // Get the node "bpmn:processId" and its message
-            final Node processId = ((Element) operation).getElementsByTagNameNS(
-                    "http://petals.ow2.org/se/Activitibpmn/1.0", "processId").item(0);
-            final Properties bpmnProcessId = new Properties();
-            if (processId != null) {
-                // set the processId properties
-                final String inMsgAttr = ((Element) processId).getAttribute("inMsg");
-                if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
-                    bpmnProcessId.put("inMsg", inMsgAttr);
-                }
-
-                final String outMsgAttr = ((Element) processId).getAttribute("outMsg");
-                if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
-                    bpmnProcessId.put("outMsg", outMsgAttr);
-                }
-
-                final String faultMsgAttr = ((Element) processId).getAttribute("faultMsg");
-                if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
-                    bpmnProcessId.put("faultMsg", faultMsgAttr);
-                }
-            }
-
-            // Get the node "bpmn:userId" and test it has always an InMsg attribute
-            final Node userId = ((Element) operation).getElementsByTagNameNS(
-                    "http://petals.ow2.org/se/Activitibpmn/1.0", "userId").item(0);
-            final Properties bpmnUserId = new Properties();
-            if (userId != null) {
-                // set the bpmnUserId properties
-                final String inMsgAttr = ((Element) userId).getAttribute("inMsg");
-                if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
-                    bpmnUserId.put("inMsg", inMsgAttr);
-                }
-
-                final String outMsgAttr = ((Element) userId).getAttribute("outMsg");
-                if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
-                    bpmnUserId.put("outMsg", outMsgAttr);
-                }
-
-                final String faultMsgAttr = ((Element) userId).getAttribute("faultMsg");
-                if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
-                    bpmnUserId.put("faultMsg", faultMsgAttr);
-                }
-            }
-
-            // Get the list of nodes "bpmn:variable"
-            final NodeList bpmnVariableList = ((Element) operation).getElementsByTagNameNS(
-                    "http://petals.ow2.org/se/Activitibpmn/1.0", "variable");
-            final Properties bpmnVarInMsg = new Properties();
-            final Properties outMsgBpmnVar = new Properties();
-            final Properties faultMsgBpmnVar = new Properties();
-            final Set<String> bpmnVarList = new HashSet<String>();
-            for (int k = 0; k < bpmnVariableList.getLength(); k++) {
-                final Node bpmnVariable = bpmnVariableList.item(k);
-                // test name declaration of variable
-                final String bpmnAttr = ((Element) bpmnVariable).getAttribute("bpmn");
-                if (bpmnAttr == null) {
-                    throw new PEtALSCDKException(
-                            "Malformed Wsdl: bpmn:variable declared with no bpmn name in wsdl:operation: "
-                                    + eptAndOperation.getOperationName());
-                }
-                // test unicity of declared bpmnVariable
-                if (bpmnVarList.contains(bpmnAttr)) {
-                    throw new PEtALSCDKException("Malformed Wsdl: bpmn:variable bpmn = " + bpmnAttr
-                            + " declared twice in wsdl:operation: " + eptAndOperation.getOperationName());
-                }
-                // Add bpmnVariables in the bpmnVarList
-                bpmnVarList.add(bpmnAttr);
-                // Add bpmnVariables
-                final String inMsgAttr = ((Element) bpmnVariable).getAttribute("inMsg");
-                if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
-                    bpmnVarInMsg.put(bpmnAttr, inMsgAttr);
-                }
-
-                final String outMsgAttr = ((Element) bpmnVariable).getAttribute("outMsg");
-                if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
-                    outMsgBpmnVar.put(outMsgAttr, bpmnAttr);
-                }
-
-                final String faultMsgAttr = ((Element) bpmnVariable).getAttribute("faultMsg");
-                if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
-                    faultMsgBpmnVar.put(faultMsgAttr, bpmnAttr);
-                }
-            }
-
+            
             // get the bpmn variable types from BpmnModel
-            final BpmnModel model = this.repS.getBpmnModel(processDefinitionId);
+            final BpmnModel model = this.repositoryService.getBpmnModel(processDefinitionId);
             // getting list process from model including tasks
             // TODO: I'm not sure that the concurrent hash map is required. A simple HashMap sould be sufficient
             final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType = new ConcurrentHashMap<String, org.activiti.bpmn.model.FormProperty>();
             final List<org.activiti.bpmn.model.Process> processes = model.getProcesses();
             List<org.activiti.bpmn.model.FormProperty> formPropertyList = null;
             boolean found = false;
-            final String bpmnActionType = ((Element) bpmnOperation).getAttribute("bpmnActionType");
-            if (StartEventOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+            final String bpmnAction = annotatedOperation.getBpmnAction();
+            if (annotatedOperation instanceof StartEventAnnotatedOperation) {
                 // search form Property for the Start Event: bpmnAction
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
@@ -643,7 +553,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                         }
                     }
                 }
-            } else if (CompleteUserTaskOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+            } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
                 // search form Property for the User Task: bpmnAction
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
@@ -657,7 +567,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                     }
                 }
             } else {
-                this.logger.warning("Unsupported BPMN action type '" + bpmnActionType + "'. Skipped");
+                // TODO: The deployment should be aborted
+                this.logger.warning("Unsupported BPMN action type '" + annotatedOperation.getBpmnActionType() + "'. Skipped");
             }
             if (!found) {
                 throw new PEtALSCDKException("Malformed Wsdl: BpmnAction : " + bpmnAction
@@ -669,6 +580,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                     bpmnVarType.put(formPropertie.getId(), formPropertie);
                 }
             }
+            
+            final Set<String> bpmnVarList = annotatedOperation.getBpmnVarList();
             // TODO test the existence of the declared bpmn:variables
             for (final String bpmnVar : bpmnVarList) {
                 if (!bpmnVarType.containsKey(bpmnVar)) {
@@ -679,20 +592,21 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
             // create the right ActivitiOperation according to the bpmnActionType
             final ActivitiOperation activitiOperation;
-            if (StartEventOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
-                activitiOperation = new StartEventOperation(processDefinitionId, bpmnProcessKey, bpmnAction,
-                        bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar, bpmnVarType,
+            if (annotatedOperation instanceof StartEventAnnotatedOperation) {
+                activitiOperation = new StartEventOperation(annotatedOperation, processDefinitionId, bpmnVarType,
                         this.logger);
-            } else if (CompleteUserTaskOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
-                activitiOperation = new CompleteUserTaskOperation(processDefinitionId, bpmnProcessKey, bpmnAction,
-                        bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar, bpmnVarType,
+            } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
+                activitiOperation = new CompleteUserTaskOperation(annotatedOperation, processDefinitionId, bpmnVarType,
                         this.logger);
             } else {
-                throw new PEtALSCDKException("Malformed Wsdl: Unauthorized BpmnActionType :" + bpmnActionType
-                        + " in wsdl operation = " + ((Element) operation).getAttribute("name"));
+                // This case is a bug case, as the annotated operation is known by the parser, it must be supported here. 
+                throw new PEtALSCDKException("BUG !!!: Unknown annotated operation: name = " + wsdlOperationName
+                        + ", type = " + annotatedOperation.getClass().getSimpleName());
             }
-
+            
+            
             // Store the ActivitiOperation in the map with the corresponding end-point and Operation
+            final EptAndOperation eptAndOperation = new EptAndOperation(edptName, wsdlOperationName);
             ((ActivitiSE) this.component).registerActivitiOperation(eptAndOperation, activitiOperation);
         }
 

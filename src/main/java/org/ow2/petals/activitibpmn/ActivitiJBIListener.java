@@ -171,6 +171,8 @@ public class ActivitiJBIListener extends AbstractJBIListener {
 
                         // Get the eptName and Operation
                         String eptName = exchange.getEndpointName();
+                        // TODO: Caution: the namespace must be used, the local part is not sufficient to identify an
+                        // operation
                         String operationName = exchange.getOperationName();
                         // Set eptAndoperation
                         EptAndOperation eptAndOperation = new EptAndOperation(eptName, operationName);

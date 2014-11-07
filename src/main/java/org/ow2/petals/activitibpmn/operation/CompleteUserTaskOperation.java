@@ -19,7 +19,6 @@ package org.ow2.petals.activitibpmn.operation;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,8 +29,8 @@ import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
-import org.ow2.petals.activitibpmn.operation.exception.InvalidAnnotationException;
-import org.ow2.petals.activitibpmn.operation.exception.NoProcessIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
+import org.ow2.petals.activitibpmn.operation.annotated.CompleteUserTaskAnnotatedOperation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -44,31 +43,9 @@ import org.w3c.dom.Node;
  */
 public class CompleteUserTaskOperation extends ActivitiOperation {
 
-    public static final String BPMN_ACTION_TYPE = "userTask";
-
-    public CompleteUserTaskOperation(final String processDefinitionId, final String processKey, final String bpmnAction,
-            final Properties bpmnProcessId, final Properties bpmnUserId, final Properties bpmnVarInMsg,
-            final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
-            final Map<String, FormProperty> bpmnVarType, final Logger logger) throws InvalidAnnotationException {
-        super(processDefinitionId, processKey, bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
-                faultMsgBpmnVar, bpmnVarType, logger);
-    }
-
-    @Override
-    protected void verifyParameters(final String processDefinitionId, final String processKey, final String bpmnAction,
-            final Properties bpmnProcessId, final Properties bpmnUserId, final Properties bpmnVarInMsg,
-            final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
-            final Map<String, FormProperty> bpmnVarType) throws InvalidAnnotationException {
-        
-        super.verifyParameters(processDefinitionId, processKey, bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg,
-                outMsgBpmnVar, faultMsgBpmnVar, bpmnVarType);
-
-        // The mapping defining the process instance id is required to complete a user task
-        final String processInstanceIdMapping = bpmnProcessId.getProperty("inMsg");
-        if (processInstanceIdMapping == null || processInstanceIdMapping.isEmpty()) {
-            throw new NoProcessIdMappingException(this);
-        }
-
+    public CompleteUserTaskOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
+            final Map<String, FormProperty> bpmnVarType, final Logger logger) {
+        super(annotatedOperation, processDefinitionId, bpmnVarType, logger);
     }
 
     @Override
@@ -113,8 +90,8 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
     }
 
     @Override
-    public String getName() {
-        return BPMN_ACTION_TYPE;
+    public String getBpmnActionType() {
+        return CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE;
     }
 
 }
