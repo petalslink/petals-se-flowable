@@ -37,6 +37,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -63,6 +64,46 @@ public class AnnotatedWsdlParserTest {
         } finally {
             inputStream.close();
         }
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL that does not contain binding
+     * </p>
+     * <p>
+     * Expected results: An error occurs about missing binding
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithoutBinding() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/abstract-import.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        assertEquals(0, this.parser.parse(docWsdl).size());
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(2, encounteredErrors.size());
+        boolean noWsdlBindingExceptionCounter = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof NoWsdlBindingException) {
+                noWsdlBindingExceptionCounter = true;
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(noWsdlBindingExceptionCounter);
+        assertTrue(noBpmnOperationExceptionFound);
     }
 
     /**

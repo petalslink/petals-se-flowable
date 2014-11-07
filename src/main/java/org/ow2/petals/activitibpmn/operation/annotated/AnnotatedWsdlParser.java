@@ -31,6 +31,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableNameMissingException;
 import org.w3c.dom.Document;
@@ -110,132 +111,139 @@ public class AnnotatedWsdlParser {
         annotatedWsdl.getDocumentElement().normalize();
 
         // Get the node "wsdl:binding"
-        final Node binding = annotatedWsdl.getElementsByTagNameNS(SCHEMA_WSDL, "binding").item(0);
-        // Get the list of nodes "wsdl:operation"
-        final NodeList wsdlOperations = ((Element) binding).getElementsByTagNameNS(SCHEMA_WSDL, "operation");
+        final NodeList bindings = annotatedWsdl.getElementsByTagNameNS(SCHEMA_WSDL, "binding");
+        if (bindings.getLength() == 0) {
+            final InvalidAnnotationException ex = new NoWsdlBindingException();
+            this.encounteredErrors.add(ex);
+            this.logger.log(Level.WARNING, ex.getMessage(), ex);
+        } else {
+            final Node binding = bindings.item(0);
+            // Get the list of nodes "wsdl:operation"
+            final NodeList wsdlOperations = ((Element) binding).getElementsByTagNameNS(SCHEMA_WSDL, "operation");
 
-        for (int j = 0; j < wsdlOperations.getLength(); j++) {
-            try {
-                final Node wsdlOperation = wsdlOperations.item(j);
-                // TODO: The namespace of the operation should be included in the operation name
-                final String wsdlOperationName = ((Element) wsdlOperation).getAttribute("name");
+            for (int j = 0; j < wsdlOperations.getLength(); j++) {
+                try {
+                    final Node wsdlOperation = wsdlOperations.item(j);
+                    // TODO: The namespace of the operation should be included in the operation name
+                    final String wsdlOperationName = ((Element) wsdlOperation).getAttribute("name");
 
-                // Get the node "bpmn:operation"
-                final NodeList bpmnOperations = ((Element) wsdlOperation).getElementsByTagNameNS(
-                        SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_OPERATION);
-                if (bpmnOperations.getLength() == 0) {
-                    throw new NoBpmnOperationDefinedException(wsdlOperationName);
+                    // Get the node "bpmn:operation"
+                    final NodeList bpmnOperations = ((Element) wsdlOperation).getElementsByTagNameNS(
+                            SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_OPERATION);
+                    if (bpmnOperations.getLength() == 0) {
+                        throw new NoBpmnOperationDefinedException(wsdlOperationName);
+                    }
+                    if (bpmnOperations.getLength() > 1) {
+                        throw new MultipleBpmnOperationDefinedException(wsdlOperationName);
+                    }
+                    final Node bpmnOperation = bpmnOperations.item(0);
+                    // get the bpmnProcessKey
+                    final String bpmnProcessKey = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_PROCESS_ID);
+
+                    // get the bpmnAction
+                    final String bpmnAction = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION);
+
+                    // get the bpmnActionType
+                    final String bpmnActionType = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION_TYPE);
+
+                    // Get the node "bpmn:processId" and its message
+                    final Node processId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
+                            BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
+                    final Properties bpmnProcessId = new Properties();
+                    if (processId != null) {
+                        // set the processId properties
+                        final String inMsgAttr = ((Element) processId).getAttribute("inMsg");
+                        if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                            bpmnProcessId.put("inMsg", inMsgAttr);
+                        }
+
+                        final String outMsgAttr = ((Element) processId).getAttribute("outMsg");
+                        if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                            bpmnProcessId.put("outMsg", outMsgAttr);
+                        }
+
+                        final String faultMsgAttr = ((Element) processId).getAttribute("faultMsg");
+                        if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                            bpmnProcessId.put("faultMsg", faultMsgAttr);
+                        }
+                    }
+
+                    // Get the node "bpmn:userId" and test it has always an InMsg attribute
+                    final Node userId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
+                            BPMN_ANNOTATION_USER_ID_HOLDER).item(0);
+                    final Properties bpmnUserId = new Properties();
+                    if (userId != null) {
+                        // set the bpmnUserId properties
+                        final String inMsgAttr = ((Element) userId).getAttribute("inMsg");
+                        if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                            bpmnUserId.put("inMsg", inMsgAttr);
+                        }
+
+                        final String outMsgAttr = ((Element) userId).getAttribute("outMsg");
+                        if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                            bpmnUserId.put("outMsg", outMsgAttr);
+                        }
+
+                        final String faultMsgAttr = ((Element) userId).getAttribute("faultMsg");
+                        if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                            bpmnUserId.put("faultMsg", faultMsgAttr);
+                        }
+                    }
+
+                    // Get the list of nodes "bpmn:variable"
+                    final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(
+                            SCHEMA_BPMN_ANNOTATIONS, "variable");
+                    final Properties bpmnVarInMsg = new Properties();
+                    final Properties outMsgBpmnVar = new Properties();
+                    final Properties faultMsgBpmnVar = new Properties();
+                    final Set<String> bpmnVarList = new HashSet<String>();
+                    for (int k = 0; k < bpmnVariableList.getLength(); k++) {
+                        final Node bpmnVariable = bpmnVariableList.item(k);
+                        // test name declaration of variable
+                        final String bpmnAttr = ((Element) bpmnVariable).getAttribute("bpmn");
+                        if (bpmnAttr == null) {
+                            throw new VariableNameMissingException(wsdlOperationName);
+                        }
+                        // test unicity of declared bpmnVariable
+                        if (bpmnVarList.contains(bpmnAttr)) {
+                            throw new DuplicatedVariableException(wsdlOperationName, bpmnAttr);
+                        }
+                        // Add bpmnVariables in the bpmnVarList
+                        bpmnVarList.add(bpmnAttr);
+                        // Add bpmnVariables
+                        final String inMsgAttr = ((Element) bpmnVariable).getAttribute("inMsg");
+                        if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                            bpmnVarInMsg.put(bpmnAttr, inMsgAttr);
+                        }
+
+                        final String outMsgAttr = ((Element) bpmnVariable).getAttribute("outMsg");
+                        if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                            outMsgBpmnVar.put(outMsgAttr, bpmnAttr);
+                        }
+
+                        final String faultMsgAttr = ((Element) bpmnVariable).getAttribute("faultMsg");
+                        if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                            faultMsgBpmnVar.put(faultMsgAttr, bpmnAttr);
+                        }
+                    }
+
+                    final AnnotatedOperation annotatedOperation;
+                    if (StartEventAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+                        annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
+                                bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar,
+                                bpmnVarList);
+                    } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+                        annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
+                                bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar,
+                                bpmnVarList);
+                    } else {
+                        throw new UnsupportedBpmnActionTypeException(wsdlOperationName, bpmnAction);
+                    }
+                    annotatedOperations.add(annotatedOperation);
+                } catch (final InvalidAnnotationForOperationException e) {
+                    this.encounteredErrors.add(e);
+                    this.logger.log(Level.WARNING, e.getMessage(), e);
                 }
-                if (bpmnOperations.getLength() > 1) {
-                    throw new MultipleBpmnOperationDefinedException(wsdlOperationName);
-                }
-                final Node bpmnOperation = bpmnOperations.item(0);
-                // get the bpmnProcessKey
-                final String bpmnProcessKey = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_PROCESS_ID);
-
-                // get the bpmnAction
-                final String bpmnAction = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION);
-
-                // get the bpmnActionType
-                final String bpmnActionType = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION_TYPE);
-
-                // Get the node "bpmn:processId" and its message
-                final Node processId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
-                        BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
-                final Properties bpmnProcessId = new Properties();
-                if (processId != null) {
-                    // set the processId properties
-                    final String inMsgAttr = ((Element) processId).getAttribute("inMsg");
-                    if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
-                        bpmnProcessId.put("inMsg", inMsgAttr);
-                    }
-
-                    final String outMsgAttr = ((Element) processId).getAttribute("outMsg");
-                    if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
-                        bpmnProcessId.put("outMsg", outMsgAttr);
-                    }
-
-                    final String faultMsgAttr = ((Element) processId).getAttribute("faultMsg");
-                    if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
-                        bpmnProcessId.put("faultMsg", faultMsgAttr);
-                    }
-                }
-
-                // Get the node "bpmn:userId" and test it has always an InMsg attribute
-                final Node userId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
-                        BPMN_ANNOTATION_USER_ID_HOLDER).item(0);
-                final Properties bpmnUserId = new Properties();
-                if (userId != null) {
-                    // set the bpmnUserId properties
-                    final String inMsgAttr = ((Element) userId).getAttribute("inMsg");
-                    if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
-                        bpmnUserId.put("inMsg", inMsgAttr);
-                    }
-
-                    final String outMsgAttr = ((Element) userId).getAttribute("outMsg");
-                    if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
-                        bpmnUserId.put("outMsg", outMsgAttr);
-                    }
-
-                    final String faultMsgAttr = ((Element) userId).getAttribute("faultMsg");
-                    if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
-                        bpmnUserId.put("faultMsg", faultMsgAttr);
-                    }
-                }
-
-                // Get the list of nodes "bpmn:variable"
-                final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(
-                        SCHEMA_BPMN_ANNOTATIONS, "variable");
-                final Properties bpmnVarInMsg = new Properties();
-                final Properties outMsgBpmnVar = new Properties();
-                final Properties faultMsgBpmnVar = new Properties();
-                final Set<String> bpmnVarList = new HashSet<String>();
-                for (int k = 0; k < bpmnVariableList.getLength(); k++) {
-                    final Node bpmnVariable = bpmnVariableList.item(k);
-                    // test name declaration of variable
-                    final String bpmnAttr = ((Element) bpmnVariable).getAttribute("bpmn");
-                    if (bpmnAttr == null) {
-                        throw new VariableNameMissingException(wsdlOperationName);
-                    }
-                    // test unicity of declared bpmnVariable
-                    if (bpmnVarList.contains(bpmnAttr)) {
-                        throw new DuplicatedVariableException(wsdlOperationName, bpmnAttr);
-                    }
-                    // Add bpmnVariables in the bpmnVarList
-                    bpmnVarList.add(bpmnAttr);
-                    // Add bpmnVariables
-                    final String inMsgAttr = ((Element) bpmnVariable).getAttribute("inMsg");
-                    if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
-                        bpmnVarInMsg.put(bpmnAttr, inMsgAttr);
-                    }
-
-                    final String outMsgAttr = ((Element) bpmnVariable).getAttribute("outMsg");
-                    if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
-                        outMsgBpmnVar.put(outMsgAttr, bpmnAttr);
-                    }
-
-                    final String faultMsgAttr = ((Element) bpmnVariable).getAttribute("faultMsg");
-                    if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
-                        faultMsgBpmnVar.put(faultMsgAttr, bpmnAttr);
-                    }
-                }
-
-                final AnnotatedOperation annotatedOperation;
-                if (StartEventAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
-                    annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
-                            bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar,
-                            bpmnVarList);
-                } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
-                    annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
-                            bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar,
-                            bpmnVarList);
-                } else {
-                    throw new UnsupportedBpmnActionTypeException(wsdlOperationName, bpmnAction);
-                }
-                annotatedOperations.add(annotatedOperation);
-            } catch (final InvalidAnnotationForOperationException e) {
-                this.encounteredErrors.add(e);
-                this.logger.log(Level.WARNING, e.getMessage(), e);
             }
         }
 
