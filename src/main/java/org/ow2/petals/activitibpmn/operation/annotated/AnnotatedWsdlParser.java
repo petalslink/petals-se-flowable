@@ -49,7 +49,7 @@ public class AnnotatedWsdlParser {
 
     private static final String SCHEMA_WSDL = "http://schemas.xmlsoap.org/wsdl/";
 
-    private static final String SCHEMA_BPMN_ANNOTATIONS = "http://petals.ow2.org/se/Activitibpmn/1.0";
+    private static final String SCHEMA_BPMN_ANNOTATIONS = "http://petals.ow2.org/se/bpmn/annotations/1.0";
 
     /**
      * Local part of the annotation tag associated to the definition of a BPMN operation
