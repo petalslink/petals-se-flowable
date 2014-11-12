@@ -64,6 +64,14 @@ public abstract class AnnotatedOperation {
     private final Set<String> bpmnVarList;
 
     /**
+     * <p>
+     * Create an annotated operation.
+     * </p>
+     * 
+     * <p>
+     * <b>Note</b>: If the user identifier placeholder is null or empty, the error {@link NoUserIdMappingException} will
+     * be thrown.
+     * 
      * @param wsdlOperationName
      *            The WSDL operation containing the current annotations
      * @param processIdentifier
@@ -71,6 +79,7 @@ public abstract class AnnotatedOperation {
      * @param bpmnAction
      * @param processInstanceIdHolder
      * @param userIdHolder
+     *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
      * @param bpmnVarInMsg
      * @param outMsgBpmnVar
      * @param faultMsgBpmnVar
@@ -106,7 +115,7 @@ public abstract class AnnotatedOperation {
     protected void verifyAnnotationCoherence() throws InvalidAnnotationForOperationException {
 
         // The mapping defining the process instance id is required to complete a user task
-        final String userIdMapping = userIdHolder.getProperty("inMsg");
+        final String userIdMapping = this.userIdHolder.getProperty("inMsg");
         if (userIdMapping == null || userIdMapping.isEmpty()) {
             throw new NoUserIdMappingException(this.wsdlOperationName);
         }

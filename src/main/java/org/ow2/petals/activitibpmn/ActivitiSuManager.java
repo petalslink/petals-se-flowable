@@ -54,6 +54,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedWsdlParser;
 import org.ow2.petals.activitibpmn.operation.annotated.CompleteUserTaskAnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.annotated.StartEventAnnotatedOperation;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
@@ -515,9 +516,17 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
         
-        for (final AnnotatedOperation annotatedOperation : annotatedWdslParser.parse(wsdlDocument)) {
+        final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument);
+        // Log all WSDL errors before to process each annotated operations
+        if (this.logger.isLoggable(Level.WARNING)) {
+            for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {
+                this.logger.warning(encounteredError.getMessage());
+            }
+        }
+        for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
             
             final String wsdlOperationName = annotatedOperation.getWsdlOperationName();
+            this.logger.fine("Processing WSDL annotated operation: " + wsdlOperationName);
 
             //--------------------------------------------------------------
             // Checks the WSDL BPMN annotations against process definitions
