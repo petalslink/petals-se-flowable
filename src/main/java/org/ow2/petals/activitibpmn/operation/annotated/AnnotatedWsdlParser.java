@@ -153,17 +153,17 @@ public class AnnotatedWsdlParser {
                     if (processId != null) {
                         // set the processId properties
                         final String inMsgAttr = ((Element) processId).getAttribute("inMsg");
-                        if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                        if (inMsgAttr != null) {
                             bpmnProcessId.put("inMsg", inMsgAttr);
                         }
 
                         final String outMsgAttr = ((Element) processId).getAttribute("outMsg");
-                        if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                        if (outMsgAttr != null) {
                             bpmnProcessId.put("outMsg", outMsgAttr);
                         }
 
                         final String faultMsgAttr = ((Element) processId).getAttribute("faultMsg");
-                        if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                        if (faultMsgAttr != null) {
                             bpmnProcessId.put("faultMsg", faultMsgAttr);
                         }
                     }
@@ -175,17 +175,17 @@ public class AnnotatedWsdlParser {
                     if (userId != null) {
                         // set the bpmnUserId properties
                         final String inMsgAttr = ((Element) userId).getAttribute("inMsg");
-                        if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
+                        if (inMsgAttr != null) {
                             bpmnUserId.put("inMsg", inMsgAttr);
                         }
 
                         final String outMsgAttr = ((Element) userId).getAttribute("outMsg");
-                        if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
+                        if (outMsgAttr != null) {
                             bpmnUserId.put("outMsg", outMsgAttr);
                         }
 
                         final String faultMsgAttr = ((Element) userId).getAttribute("faultMsg");
-                        if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
+                        if (faultMsgAttr != null) {
                             bpmnUserId.put("faultMsg", faultMsgAttr);
                         }
                     }
@@ -242,14 +242,12 @@ public class AnnotatedWsdlParser {
                     annotatedOperations.add(annotatedOperation);
                 } catch (final InvalidAnnotationForOperationException e) {
                     this.encounteredErrors.add(e);
-                    this.logger.log(Level.WARNING, e.getMessage(), e);
                 }
             }
         }
 
         if (annotatedOperations.size() == 0) {
             final InvalidAnnotationException noAnnotatedOperationEx = new NoBpmnOperationException();
-            this.logger.log(Level.WARNING, noAnnotatedOperationEx.getMessage(), noAnnotatedOperationEx);
             this.encounteredErrors.add(noAnnotatedOperationEx);
         }
 

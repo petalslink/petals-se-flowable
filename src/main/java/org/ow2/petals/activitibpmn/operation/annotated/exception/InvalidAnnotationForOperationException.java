@@ -30,12 +30,26 @@ public abstract class InvalidAnnotationForOperationException extends InvalidAnno
 
     private static final String MESSAGE_PATTERN = "A WSDL annotation is invalid for the operation '%s': %s";
 
+    /**
+     * Name of the WSDL operation for which an error occurs
+     */
+    private final String wsdlOperationName;
+
     public InvalidAnnotationForOperationException(final String wsdlOperationName, final String message) {
         super(String.format(MESSAGE_PATTERN, wsdlOperationName, message));
+        this.wsdlOperationName = wsdlOperationName;
     }
 
     public InvalidAnnotationForOperationException(final String wsdlOperationName, final String message,
             final Throwable cause) {
         super(String.format(MESSAGE_PATTERN, wsdlOperationName, message), cause);
+        this.wsdlOperationName = wsdlOperationName;
+    }
+
+    /**
+     * @return The name of the WSDL operation for which an error occurs
+     */
+    public String getWsdlOperationName() {
+        return this.wsdlOperationName;
     }
 }

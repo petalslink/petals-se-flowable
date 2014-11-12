@@ -516,17 +516,17 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
         
-        final List<AnnotatedOperation> anotatedOperations = annotatedWdslParser.parse(wsdlDocument);
+        final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument);
         // Log all WSDL errors before to process each annotated operations
         if (this.logger.isLoggable(Level.WARNING)) {
             for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {
                 this.logger.warning(encounteredError.getMessage());
             }
         }
-        for (final AnnotatedOperation annotatedOperation : anotatedOperations) {
+        for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
             
             final String wsdlOperationName = annotatedOperation.getWsdlOperationName();
-            this.logger.fine("Processing WSDL anotated operation: " + wsdlOperationName);
+            this.logger.fine("Processing WSDL annotated operation: " + wsdlOperationName);
 
             //--------------------------------------------------------------
             // Checks the WSDL BPMN annotations against process definitions

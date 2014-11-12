@@ -37,7 +37,9 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -111,7 +113,8 @@ public class AnnotatedWsdlParserTest {
      * Check the parser against a WSDL that does not contain BPMN annotation
      * </p>
      * <p>
-     * Expected results: An error occurs about missing annotations
+     * Expected results: An error occurs about missing annotations for each wsdl operations, and an error occurs about
+     * no annotated operation found.
      * </p>
      */
     @Test
@@ -283,6 +286,193 @@ public class AnnotatedWsdlParserTest {
         assertTrue(op1_found);
         assertTrue(op2_found);
         assertTrue(op3_found);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the BPMN action type is unknown.
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the unknown BPMN action type.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithUnknownBpmnAction() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/unknown-bpmn-action-type.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        assertEquals(0, this.parser.parse(docWsdl).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(2, encounteredErrors.size());
+        boolean unknownBpmnActionTypeExceptionFound = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof UnsupportedBpmnActionTypeException) {
+                unknownBpmnActionTypeExceptionFound = true;
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(unknownBpmnActionTypeExceptionFound);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the user identifier place holder is as following
+     * for the BPMN actions 'userTask' and 'startEvent':
+     * <ul>
+     * <li>tag missing (ie. no XML tag user id),</li>
+     * <li>placeholder missing (ie. no XML attribute IN msg),</li>
+     * <li>empty (ie. the XML attribute IN msg is empty).</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results: An error occurs about a missing or empty user id placeholder for both BPMN actions, and an
+     * error occurs about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithUserIdPlaceHolderMissing() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/missing-and-empty-user-id.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        assertEquals(0, this.parser.parse(docWsdl).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(7, encounteredErrors.size());
+        boolean missingTagUserIdMappingOp1 = false;
+        boolean missingTagUserIdMappingOp2 = false;
+        boolean missingAttrUserIdMappingOp1 = false;
+        boolean missingAttrUserIdMappingOp2 = false;
+        boolean emptyUserIdMappingOp1 = false;
+        boolean emptyUserIdMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof NoUserIdMappingException) {
+                if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("demanderConges_missingTag")) {
+                    missingTagUserIdMappingOp1 = true;
+                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_missingTag")) {
+                    missingTagUserIdMappingOp2 = true;
+                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
+                        "demanderConges_missingAttr")) {
+                    missingAttrUserIdMappingOp1 = true;
+                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_missingAttr")) {
+                    missingAttrUserIdMappingOp2 = true;
+                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("demanderConges_empty")) {
+                    emptyUserIdMappingOp1 = true;
+                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("validerDemande_empty")) {
+                    emptyUserIdMappingOp2 = true;
+                } else {
+                    fail("Unexpected operation: " + ((NoUserIdMappingException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(missingTagUserIdMappingOp1);
+        assertTrue(missingTagUserIdMappingOp2);
+        assertTrue(missingAttrUserIdMappingOp1);
+        assertTrue(missingAttrUserIdMappingOp2);
+        assertTrue(emptyUserIdMappingOp1);
+        assertTrue(emptyUserIdMappingOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the process instance identifier place holder is
+     * as following for the BPMN actions 'userTask' and 'startEvent':
+     * <ul>
+     * <li>tag missing (ie. no XML tag process instance id),</li>
+     * <li>for BPMN action 'startEvent':
+     * <ul>
+     * <li>placeholder missing (ie. no XML attribute OUT msg),</li>
+     * <li>empty (ie. the XML attribute OUT msg is empty).</li>
+     * </ul>
+     * </li>
+     * <li>for BPMN action 'userTask':
+     * <ul>
+     * <li>placeholder missing (ie. no XML attribute IN msg),</li>
+     * <li>empty (ie. the XML attribute IN msg is empty).</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>an error occurs about a missing or empty process instance id placeholder for BPMN action 'userTask',</li>
+     * <li>no error occurs for BPMN action 'startEvent'</li>
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithProcessInstanceIdPlaceHolderMissing() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/missing-and-empty-process-instance-id.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        // The process instance id is not mandatory in output for BPMN action 'startEvent'
+        assertEquals(3, this.parser.parse(docWsdl).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean missingTagProcessInstanceIdMappingIn = false;
+        boolean missingAttrProcessInstanceIdMappingIn = false;
+        boolean emptyProcessInstanceIdMappingIn = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof NoUserIdMappingException) {
+                if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_missingTag")) {
+                    missingTagProcessInstanceIdMappingIn = true;
+                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_missingAttr")) {
+                    missingAttrProcessInstanceIdMappingIn = true;
+                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("validerDemande_empty")) {
+                    emptyProcessInstanceIdMappingIn = true;
+                } else {
+                    fail("Unexpected operation: " + ((NoUserIdMappingException) exception).getWsdlOperationName());
+                }
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(missingTagProcessInstanceIdMappingIn);
+        assertTrue(missingAttrProcessInstanceIdMappingIn);
+        assertTrue(emptyProcessInstanceIdMappingIn);
     }
 
 }
