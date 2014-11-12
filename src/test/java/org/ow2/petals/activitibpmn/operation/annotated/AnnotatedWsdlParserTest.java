@@ -37,6 +37,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
@@ -454,14 +455,16 @@ public class AnnotatedWsdlParserTest {
         boolean missingAttrProcessInstanceIdMappingIn = false;
         boolean emptyProcessInstanceIdMappingIn = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
-            if (exception instanceof NoUserIdMappingException) {
-                if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
+            if (exception instanceof NoProcessIdMappingException) {
+                if (((NoProcessIdMappingException) exception).getWsdlOperationName()
+                        .equals(
                         "validerDemande_missingTag")) {
                     missingTagProcessInstanceIdMappingIn = true;
-                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
+                } else if (((NoProcessIdMappingException) exception).getWsdlOperationName().equals(
                         "validerDemande_missingAttr")) {
                     missingAttrProcessInstanceIdMappingIn = true;
-                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("validerDemande_empty")) {
+                } else if (((NoProcessIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_empty")) {
                     emptyProcessInstanceIdMappingIn = true;
                 } else {
                     fail("Unexpected operation: " + ((NoUserIdMappingException) exception).getWsdlOperationName());
