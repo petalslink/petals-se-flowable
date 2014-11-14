@@ -17,9 +17,6 @@
  */
 package org.ow2.petals.activitibpmn.operation;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
+import javax.xml.bind.DatatypeConverter;
 
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.bpmn.model.FormValue;
@@ -177,12 +175,9 @@ public abstract class ActivitiOperation {
                 }
             } else if (varType.equals("date")) {
                 try {
-                    final SimpleDateFormat sdf = new SimpleDateFormat(bpmnVarType.get(varBpmn).getDatePattern());
-                    processVars.put(varBpmn, (Date) sdf.parse(varValueInMsg));
-                } catch (final ParseException e) {
-                    throw new MessagingException("The value of " + varNameInMsg
-                            + " must be a valid Date with date pattern " + bpmnVarType.get(varBpmn).getDatePattern()
-                            + "!");
+                    processVars.put(varBpmn, DatatypeConverter.parseDateTime(varValueInMsg).getTime());
+                } catch (final IllegalArgumentException e) {
+                    throw new MessagingException("The value of " + varNameInMsg + " must be a valid date !");
                 }
             } else if (varType.equals("boolean")) {
                 if (varValueInMsg.equalsIgnoreCase("true") || varValueInMsg.equalsIgnoreCase("false")) {
