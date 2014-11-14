@@ -114,16 +114,81 @@
         <groupId>org.easymock</groupId>
         <artifactId>easymock</artifactId>
       </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-junit</artifactId>
+         <!-- TODO: To move in the parent POM when all components will use it for unit tests -->
+         <version>1.0.0-SNAPSHOT</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-junit-external-resources</artifactId>
+         <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Activiti comes with a newer version of SLF4J, we use it -->
+               <groupId>org.slf4j</groupId>
+               <artifactId>slf4j-api</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- Activiti comes with a newer version of SLF4J, we use it -->
+               <groupId>org.slf4j</groupId>
+               <artifactId>slf4j-jdk14</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <!-- Activiti comes with a version of SLF4J newer than the one provided by petals-junit-external-resources, we use it -->
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+         <version>1.7.6</version>
+      </dependency>
 	</dependencies>
-	
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.jvnet.jaxb2.maven2</groupId>
+            <artifactId>maven-jaxb2-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>generate</id>
+                  <goals>
+                     <goal>generate</goal>
+                  </goals>
+                  <phase>process-test-resources</phase>
+                  <configuration>
+                     <schemaDirectory>${basedir}/src/test/resources/su/</schemaDirectory>
+                     <schemaIncludes>
+                        <include>valid/vacationRequest.wsdl</include>
+                     </schemaIncludes>
+                     <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>add-test-source</id>
+                  <phase>generate-test-sources</phase>
+                  <goals>
+                     <goal>add-test-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>${project.build.directory}/generated-test-sources/xjc
+                        </source>
+                     </sources>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
    
    <repositories>
       <repository>
