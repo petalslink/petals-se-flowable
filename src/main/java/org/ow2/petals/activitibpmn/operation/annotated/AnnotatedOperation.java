@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.xml.xpath.XPathExpression;
 
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 
 /**
@@ -105,8 +106,6 @@ public abstract class AnnotatedOperation {
         this.outMsgBpmnVar = outMsgBpmnVar;
         this.faultMsgBpmnVar = faultMsgBpmnVar;
         this.bpmnVarList = bpmnVarList;
-
-        this.verifyAnnotationCoherence();
     }
 
     /**
@@ -116,14 +115,29 @@ public abstract class AnnotatedOperation {
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    protected void verifyAnnotationCoherence() throws InvalidAnnotationForOperationException {
+    public void verifyAnnotationCoherence() throws InvalidAnnotationForOperationException {
+
+        // The process definition identifier is required
+        if (this.processDefinitionId == null || this.processDefinitionId.trim().isEmpty()) {
+            throw new NoProcessDefinitionIdMappingException(this.getWsdlOperationName());
+        }
 
         // The mapping defining the user id is required to complete a user task
         if (this.userIdHolder == null) {
             throw new NoUserIdMappingException(this.wsdlOperationName);
         }
 
+        this.doAnnotationCoherenceCheck();
+
     }
+
+    /**
+     * Entry point to extend checks about annotation coherence
+     * 
+     * @throws InvalidAnnotationForOperationException
+     *             The annotated operation is incoherent.
+     */
+    public abstract void doAnnotationCoherenceCheck() throws InvalidAnnotationForOperationException;
 
     /**
      * @return The WSDL operation containing the current annotations

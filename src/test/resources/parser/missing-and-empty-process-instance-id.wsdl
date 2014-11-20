@@ -129,8 +129,8 @@
 <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="demanderConges_missingTag">
       	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
-   	   	<bpmn:operation
-   	   		bpmnProcess="vacationRequest"
+   	   <bpmn:operation
+   	   		processDefinitionId="vacationRequest"
 			      bpmnActionType="startEvent"
  			      bpmnAction="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
@@ -150,8 +150,8 @@
 	</wsdl:operation>
     <wsdl:operation name="validerDemande_missingTag">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
-  	   	<bpmn:operation 
-   	   		bpmnProcess="vacationRequest" 
+  	   	<bpmn:operation
+               processDefinitionId="vacationRequest"
    	   		bpmnActionType="userTask" 
    	   		bpmnAction="handleRequest" />
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
@@ -169,10 +169,10 @@
 	</wsdl:operation>
     <wsdl:operation name="demanderConges_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
-            <bpmn:operation
-               bpmnProcess="vacationRequest"
-         bpmnActionType="startEvent"
-         bpmnAction="request" />
+         <bpmn:operation
+               processDefinitionId="vacationRequest"
+               bpmnActionType="startEvent"
+               bpmnAction="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
@@ -190,8 +190,8 @@
    </wsdl:operation>
     <wsdl:operation name="validerDemande_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
-         <bpmn:operation 
-               bpmnProcess="vacationRequest" 
+         <bpmn:operation
+               processDefinitionId="vacationRequest"
                bpmnActionType="userTask" 
                bpmnAction="handleRequest" />
          <bpmn:processInstanceId />
@@ -210,10 +210,10 @@
    </wsdl:operation>
     <wsdl:operation name="demanderConges_empty">
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
-            <bpmn:operation
-               bpmnProcess="vacationRequest"
-         bpmnActionType="startEvent"
-         bpmnAction="request" />
+         <bpmn:operation
+               processDefinitionId="vacationRequest"
+               bpmnActionType="startEvent"
+               bpmnAction="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
@@ -231,8 +231,8 @@
    </wsdl:operation>
     <wsdl:operation name="validerDemande_empty">
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
-         <bpmn:operation 
-               bpmnProcess="vacationRequest" 
+         <bpmn:operation
+               processDefinitionId="vacationRequest"
                bpmnActionType="userTask" 
                bpmnAction="handleRequest" />
          <bpmn:processInstanceId></bpmn:processInstanceId>

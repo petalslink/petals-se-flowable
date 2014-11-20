@@ -67,9 +67,9 @@ public class AnnotatedWsdlParser {
     private static final String BPMN_ANNOTATION_OPERATION = "operation";
 
     /**
-     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} to the definition of the process identifier
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the process definition identifier
      */
-    private static final String BPMN_ANNOTATION_PROCESS_ID = "bpmnProcess";
+    private static final String BPMN_ANNOTATION_PROCESS_DEFINITION_ID = "processDefinitionId";
 
     private static final String BPMN_ANNOTATION_ACTION = "bpmnAction";
 
@@ -147,8 +147,10 @@ public class AnnotatedWsdlParser {
                         throw new MultipleBpmnOperationDefinedException(wsdlOperationName);
                     }
                     final Node bpmnOperation = bpmnOperations.item(0);
-                    // get the bpmnProcessKey
-                    final String bpmnProcessKey = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_PROCESS_ID);
+
+                    // get the process definition identifier
+                    final String processDefinitionKey = ((Element) bpmnOperation)
+                            .getAttribute(BPMN_ANNOTATION_PROCESS_DEFINITION_ID);
 
                     // get the bpmnAction
                     final String bpmnAction = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION);
@@ -234,20 +236,23 @@ public class AnnotatedWsdlParser {
                         }
                     }
 
+                    // Create the annotated operation from annotations read into the WSDL
                     final AnnotatedOperation annotatedOperation;
                     if (StartEventAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
-                        annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
+                        annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
                                 bpmnAction, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
-                                faultMsgBpmnVar,
-                                bpmnVarList);
+                                faultMsgBpmnVar, bpmnVarList);
                     } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
-                        annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
-                                bpmnAction, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
-                                faultMsgBpmnVar,
-                                bpmnVarList);
+                        annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName,
+                                processDefinitionKey, bpmnAction, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg,
+                                outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
                     } else {
                         throw new UnsupportedBpmnActionTypeException(wsdlOperationName, bpmnAction);
                     }
+
+                    // Check the coherence of the annotated operation (ie. coherence of annotations of the operation)
+                    annotatedOperation.verifyAnnotationCoherence();
+
                     annotatedOperations.add(annotatedOperation);
                 } catch (final InvalidAnnotationForOperationException e) {
                     this.encounteredErrors.add(e);

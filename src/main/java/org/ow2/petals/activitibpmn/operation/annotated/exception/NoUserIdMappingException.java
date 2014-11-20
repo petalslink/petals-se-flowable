@@ -21,7 +21,7 @@ import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
 import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operation {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the user
+ * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the user
  * identifier is required.
  * 
  * @author Christophe DENEUX - Linagora

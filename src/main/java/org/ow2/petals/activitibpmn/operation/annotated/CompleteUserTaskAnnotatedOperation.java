@@ -69,9 +69,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     }
 
     @Override
-    protected void verifyAnnotationCoherence() throws InvalidAnnotationForOperationException {
-
-        super.verifyAnnotationCoherence();
+    public void doAnnotationCoherenceCheck() throws InvalidAnnotationForOperationException {
 
         // The mapping defining the process instance id is required to complete a user task
         final XPathExpression processInstanceIdHolder = this.getProcessInstanceIdHolder();

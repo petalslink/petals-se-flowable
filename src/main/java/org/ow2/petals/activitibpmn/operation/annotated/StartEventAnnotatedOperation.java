@@ -54,12 +54,17 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    public StartEventAnnotatedOperation(final String wsdlOperationName, final String processIdentifier,
+    public StartEventAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
             final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processIdentifier, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
+        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
                 outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
+    }
+
+    @Override
+    public void doAnnotationCoherenceCheck() throws InvalidAnnotationForOperationException {
+        // NOP
     }
 
     @Override

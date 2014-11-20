@@ -70,7 +70,7 @@ public class StartEventOperation extends ActivitiOperation {
         try {
             // TODO: How this works on concurrent requests. I think that it is not thread-safe ?
             identityService.setAuthenticatedUserId(bpmnUserId);
-            // TODO: How to manage process definition having several start event ?
+            // TODO: Create a unit test with inexisting processDefinition. An error should occur when deploying the SU
             final ProcessInstance processInstance = runtimeService.startProcessInstanceById(this.processDefinitionId,
                     processVars);
             bpmnProcessIdValue = processInstance.getId();

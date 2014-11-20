@@ -38,6 +38,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
@@ -368,8 +369,8 @@ public class AnnotatedWsdlParserTest {
         assertEquals(7, encounteredErrors.size());
         boolean missingTagUserIdMappingOp1 = false;
         boolean missingTagUserIdMappingOp2 = false;
-        boolean missingAttrUserIdMappingOp1 = false;
-        boolean missingAttrUserIdMappingOp2 = false;
+        boolean tagNoSetUserIdMappingOp1 = false;
+        boolean tagNoSetUserIdMappingOp2 = false;
         boolean emptyUserIdMappingOp1 = false;
         boolean emptyUserIdMappingOp2 = false;
         boolean noBpmnOperationExceptionFound = false;
@@ -382,10 +383,10 @@ public class AnnotatedWsdlParserTest {
                     missingTagUserIdMappingOp2 = true;
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
                         "demanderConges_missingValue")) {
-                    missingAttrUserIdMappingOp1 = true;
+                    tagNoSetUserIdMappingOp1 = true;
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
                         "validerDemande_missingValue")) {
-                    missingAttrUserIdMappingOp2 = true;
+                    tagNoSetUserIdMappingOp2 = true;
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("demanderConges_empty")) {
                     emptyUserIdMappingOp1 = true;
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("validerDemande_empty")) {
@@ -402,8 +403,8 @@ public class AnnotatedWsdlParserTest {
         }
         assertTrue(missingTagUserIdMappingOp1);
         assertTrue(missingTagUserIdMappingOp2);
-        assertTrue(missingAttrUserIdMappingOp1);
-        assertTrue(missingAttrUserIdMappingOp2);
+        assertTrue(tagNoSetUserIdMappingOp1);
+        assertTrue(tagNoSetUserIdMappingOp2);
         assertTrue(emptyUserIdMappingOp1);
         assertTrue(emptyUserIdMappingOp2);
         assertTrue(noBpmnOperationExceptionFound);
@@ -509,7 +510,7 @@ public class AnnotatedWsdlParserTest {
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(3, encounteredErrors.size());
         boolean missingTagProcessInstanceIdMappingIn = false;
-        boolean missingAttrProcessInstanceIdMappingIn = false;
+        boolean tagNoSetProcessInstanceIdMappingIn = false;
         boolean emptyProcessInstanceIdMappingIn = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoProcessInstanceIdMappingException) {
@@ -519,7 +520,7 @@ public class AnnotatedWsdlParserTest {
                     missingTagProcessInstanceIdMappingIn = true;
                 } else if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName().equals(
                         "validerDemande_missingValue")) {
-                    missingAttrProcessInstanceIdMappingIn = true;
+                    tagNoSetProcessInstanceIdMappingIn = true;
                 } else if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName().equals(
                         "validerDemande_empty")) {
                     emptyProcessInstanceIdMappingIn = true;
@@ -532,7 +533,7 @@ public class AnnotatedWsdlParserTest {
             }
         }
         assertTrue(missingTagProcessInstanceIdMappingIn);
-        assertTrue(missingAttrProcessInstanceIdMappingIn);
+        assertTrue(tagNoSetProcessInstanceIdMappingIn);
         assertTrue(emptyProcessInstanceIdMappingIn);
     }
 
@@ -567,6 +568,74 @@ public class AnnotatedWsdlParserTest {
         final InvalidAnnotationException exception = encounteredErrors.get(0);
         assertTrue(exception instanceof ProcessInstanceIdMappingExpressionException);
         assertEquals("validerDemande", ((ProcessInstanceIdMappingExpressionException) exception).getWsdlOperationName());
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the process definition identifier is as following
+     * for the BPMN actions 'userTask' and 'startEvent':
+     * <ul>
+     * <li>attribute missing (ie. no attribute in the XML tag 'operation'),</li>
+     * <li>empty attribute(ie. the XML attribute is empty).</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results: An error occurs about a missing or empty process definition id for both BPMN actions, and an
+     * error occurs about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithProcessDefinitionIdMissing() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/missing-and-empty-process-definition-id.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        assertEquals(0, this.parser.parse(docWsdl).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(5, encounteredErrors.size());
+        boolean missingAttrMappingOp1 = false;
+        boolean missingAttrMappingOp2 = false;
+        boolean emptyAttrMappingOp1 = false;
+        boolean emptyAttrMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof NoProcessDefinitionIdMappingException) {
+                if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
+                        "demanderConges_missingAttr")) {
+                    missingAttrMappingOp1 = true;
+                } else if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_missingAttr")) {
+                    missingAttrMappingOp2 = true;
+                } else if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
+                        "demanderConges_emptyAttr")) {
+                    emptyAttrMappingOp1 = true;
+                } else if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_emptyAttr")) {
+                    emptyAttrMappingOp2 = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(missingAttrMappingOp1);
+        assertTrue(missingAttrMappingOp2);
+        assertTrue(emptyAttrMappingOp1);
+        assertTrue(emptyAttrMappingOp2);
+        assertTrue(noBpmnOperationExceptionFound);
     }
 
 }
