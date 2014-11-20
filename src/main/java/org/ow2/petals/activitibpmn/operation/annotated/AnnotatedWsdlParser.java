@@ -25,14 +25,21 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedVariableException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.UserIdMappingExpressionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableNameMissingException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -109,6 +116,7 @@ public class AnnotatedWsdlParser {
         final List<AnnotatedOperation> annotatedOperations = new ArrayList<AnnotatedOperation>();
 
         annotatedWsdl.getDocumentElement().normalize();
+        final XPathFactory xpathFactory = XPathFactory.newInstance();
 
         // Get the node "wsdl:binding"
         final NodeList bindings = annotatedWsdl.getElementsByTagNameNS(SCHEMA_WSDL, "binding");
@@ -168,26 +176,24 @@ public class AnnotatedWsdlParser {
                         }
                     }
 
-                    // Get the node "bpmn:userId" and test it has always an InMsg attribute
+                    // Get the node "bpmn:userId"
                     final Node userId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
                             BPMN_ANNOTATION_USER_ID_HOLDER).item(0);
-                    final Properties bpmnUserId = new Properties();
+                    final XPathExpression bpmnUserId;
                     if (userId != null) {
-                        // set the bpmnUserId properties
-                        final String inMsgAttr = ((Element) userId).getAttribute("inMsg");
-                        if (inMsgAttr != null) {
-                            bpmnUserId.put("inMsg", inMsgAttr);
+                        final String xpathExpr = userId.getTextContent();
+                        if (xpathExpr.trim().isEmpty()) {
+                            throw new NoUserIdMappingException(wsdlOperationName);
+                        } else {
+                            final XPath xpath = xpathFactory.newXPath();
+                            try {
+                                bpmnUserId = xpath.compile(xpathExpr);
+                            } catch (final XPathExpressionException e) {
+                                throw new UserIdMappingExpressionException(wsdlOperationName, e);
+                            }
                         }
-
-                        final String outMsgAttr = ((Element) userId).getAttribute("outMsg");
-                        if (outMsgAttr != null) {
-                            bpmnUserId.put("outMsg", outMsgAttr);
-                        }
-
-                        final String faultMsgAttr = ((Element) userId).getAttribute("faultMsg");
-                        if (faultMsgAttr != null) {
-                            bpmnUserId.put("faultMsg", faultMsgAttr);
-                        }
+                    } else {
+                        bpmnUserId = null;
                     }
 
                     // Get the list of nodes "bpmn:variable"

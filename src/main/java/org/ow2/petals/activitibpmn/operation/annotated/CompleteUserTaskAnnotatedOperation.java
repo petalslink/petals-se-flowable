@@ -20,6 +20,8 @@ package org.ow2.petals.activitibpmn.operation.annotated;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.xpath.XPathExpression;
+
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessIdMappingException;
 
@@ -35,7 +37,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     public static final String BPMN_ACTION_TYPE = "userTask";
 
     public CompleteUserTaskAnnotatedOperation(final String wsdlOperationName, final String processIdentifier,
-            final String bpmnAction, final Properties processInstanceIdHolder, final Properties userIdHolder,
+            final String bpmnAction, final Properties processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processIdentifier, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,

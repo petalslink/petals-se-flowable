@@ -76,27 +76,6 @@
 				</xsd:all>
 			</xsd:complexType>
      	</xsd:element>
-
-   		<xsd:element name="ajustement">
-       		<xsd:complexType>
-				<xsd:all>
-	          		<xsd:element name="numeroDdeInitiale" minOccurs="1" maxOccurs="1" type="xsd:string" />
-    	      		<xsd:element name="demandeur" minOccurs="1" maxOccurs="1" type="xsd:string" />
-        	 		<xsd:element name="nbJourNouvelleDde" minOccurs="1" maxOccurs="1" type="xsd:long" />
-          			<xsd:element name="DateDebutNouvelleDde" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
-         			<xsd:element name="motifNouvelleDde" minOccurs="0" maxOccurs="1" type="xsd:string" />
-  	       			<xsd:element name="soumettreModif" minOccurs="1" maxOccurs="1" >
-    	      			<xsd:simpleType>
-    						<xsd:restriction base="xsd:string">
-    		   					<xsd:enumeration id="Renvoyee" value="true" />
-     	 						<xsd:enumeration id="Annulee" value="false" />
-    						</xsd:restriction>
-  						</xsd:simpleType>
-          			</xsd:element>  					
-				</xsd:all>
-			</xsd:complexType>
-     	</xsd:element>
-
  	</xsd:schema>
 </wsdl:types>
 <!-- ======================== MESSAGES ======================================= --> 
@@ -112,9 +91,6 @@
 <wsdl:message name="validationDdeConges">
 	<wsdl:part name="parameters" element="tns:validation" />
 </wsdl:message>
-<wsdl:message name="ajustementConges">
-    <wsdl:part name="parameters" element="tns:ajustement" />
-</wsdl:message>
 <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== --> 
 <wsdl:portType name="demandeDeConges">
 	<wsdl:operation name="demanderConges">
@@ -124,11 +100,6 @@
    </wsdl:operation>
     <wsdl:operation name="validerDemande">
       	<wsdl:input message="tns:validationDdeConges" />
-     	<wsdl:output message="tns:numeroDemande" />
-     	<wsdl:fault message="tns:faute" />
-	</wsdl:operation>
-    <wsdl:operation name="ajusterDemande">
-     	<wsdl:input message="tns:ajustementConges" />
      	<wsdl:output message="tns:numeroDemande" />
      	<wsdl:fault message="tns:faute" />
 	</wsdl:operation>
@@ -143,7 +114,7 @@
 			bpmnActionType="startEvent"
  			bpmnAction="request" />
    	   	<bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
-            <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
+            <bpmn:userId>/[local-name()='demande']/[local-name()='demandeur']</bpmn:userId>
         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
       	<bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
       	<bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
@@ -164,31 +135,9 @@
    	   		bpmnActionType="userTask" 
    	   		bpmnAction="handleRequest" />
    	   	<bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
-            <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
+            <bpmn:userId>/[local-name()='validation']/[local-name()='valideur']</bpmn:userId>
         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
-      	<wsdl:input>
-        	<soap:body use="literal" />
-      	</wsdl:input>
-      	<wsdl:output>
-        	<soap:body use="literal" />
-      	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
-	</wsdl:operation>
-    <wsdl:operation name="ajusterDemande">
-      	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/adjustVacationRequestTask" />
-  	   	<bpmn:operation 
-   	   		bpmnProcess="vacationRequest"
-   	   		bpmnActionType="userTask"
-   	   		bpmnAction="adjustVacationRequestTask"  />
-   	   	<bpmn:processId inMsg="numeroDdeInitiale" outMsg="numeroDde" faultMsg="numeroDde"/>
-            <bpmn:userId>/*[local-name()='ajustement']/*[local-name()='demandeur']</bpmn:userId>
-        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourNouvelleDde" />
-      	<bpmn:variable bpmn="startDate" inMsg="DateDebutNouvelleDde" />
-      	<bpmn:variable bpmn="vacationMotivation" inMsg="motifNouvelleDde" />
-        <bpmn:variable bpmn="resendRequest" inMsg="soumettreModif" />
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>

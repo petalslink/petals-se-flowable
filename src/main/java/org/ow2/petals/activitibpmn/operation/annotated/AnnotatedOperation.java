@@ -20,6 +20,8 @@ package org.ow2.petals.activitibpmn.operation.annotated;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.xpath.XPathExpression;
+
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 
@@ -53,7 +55,7 @@ public abstract class AnnotatedOperation {
      * The place holder of the incoming request containing the user identifier with which the BPMN operation must be
      * executed
      */
-    private final Properties userIdHolder;
+    private final XPathExpression userIdHolder;
 
     private final Properties bpmnVarInMsg;
 
@@ -88,7 +90,7 @@ public abstract class AnnotatedOperation {
      *             The annotated operation is incoherent.
      */
     protected AnnotatedOperation(final String wsdlOperationName, final String processIdentifier,
-            final String bpmnAction, final Properties processInstanceIdHolder, final Properties userIdHolder,
+            final String bpmnAction, final Properties processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
         super();
@@ -114,9 +116,8 @@ public abstract class AnnotatedOperation {
      */
     protected void verifyAnnotationCoherence() throws InvalidAnnotationForOperationException {
 
-        // The mapping defining the process instance id is required to complete a user task
-        final String userIdMapping = this.userIdHolder.getProperty("inMsg");
-        if (userIdMapping == null || userIdMapping.isEmpty()) {
+        // The mapping defining the user id is required to complete a user task
+        if (this.userIdHolder == null) {
             throw new NoUserIdMappingException(this.wsdlOperationName);
         }
 
@@ -166,7 +167,7 @@ public abstract class AnnotatedOperation {
     /**
      * @return the userIdHolder
      */
-    public Properties getUserIdHolder() {
+    public XPathExpression getUserIdHolder() {
         return this.userIdHolder;
     }
 

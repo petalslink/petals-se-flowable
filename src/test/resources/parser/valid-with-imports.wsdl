@@ -34,7 +34,7 @@
          <bpmn:operation bpmnProcess="vacationRequest"
             bpmnActionType="startEvent" bpmnAction="request" />
          <bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
-         <bpmn:userId inMsg="demandeur" faultMsg="utilisateur" />
+         <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
          <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
          <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
@@ -55,7 +55,7 @@
             bpmnActionType="userTask" bpmnAction="handleRequest" />
          <bpmn:processId inMsg="numeroDde" outMsg="numeroDde"
             faultMsg="numeroDde" />
-         <bpmn:userId inMsg="valideur" faultMsg="utilisateur" />
+        <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
          <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
          <wsdl:input>
@@ -75,7 +75,7 @@
             bpmnActionType="userTask" bpmnAction="adjustVacationRequestTask" />
          <bpmn:processId inMsg="numeroDdeInitiale"
             outMsg="numeroDde" faultMsg="numeroDde" />
-         <bpmn:userId inMsg="demandeur" faultMsg="utilisateur" />
+        <bpmn:userId>/*[local-name()='ajustement']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourNouvelleDde" />
          <bpmn:variable bpmn="startDate" inMsg="DateDebutNouvelleDde" />
          <bpmn:variable bpmn="vacationMotivation" inMsg="motifNouvelleDde" />

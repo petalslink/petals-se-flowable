@@ -34,6 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.ow2.petals.activitibpmn.ActivitiSuManagerTest;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
@@ -41,6 +42,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessIdMapp
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.UserIdMappingExpressionException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -388,7 +390,8 @@ public class AnnotatedWsdlParserTest {
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("validerDemande_empty")) {
                     emptyUserIdMappingOp2 = true;
                 } else {
-                    fail("Unexpected operation: " + ((NoUserIdMappingException) exception).getWsdlOperationName());
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -402,6 +405,59 @@ public class AnnotatedWsdlParserTest {
         assertTrue(missingAttrUserIdMappingOp2);
         assertTrue(emptyUserIdMappingOp1);
         assertTrue(emptyUserIdMappingOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the user identifier place holder is set to an
+     * invalid XPATH expression for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the invalid expression of the user id placeholder for both BPMN actions,
+     * and an error occurs about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithUserIdPlaceHolderInvalidExpr() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/invalid-user-id.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        assertEquals(0, this.parser.parse(docWsdl).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean invalidUserIdMappingOp1 = false;
+        boolean invalidUserIdMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof UserIdMappingExpressionException) {
+                if (((UserIdMappingExpressionException) exception).getWsdlOperationName().equals("demanderConges")) {
+                    invalidUserIdMappingOp1 = true;
+                } else if (((UserIdMappingExpressionException) exception).getWsdlOperationName().equals(
+                        "validerDemande")) {
+                    invalidUserIdMappingOp2 = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(invalidUserIdMappingOp1);
+        assertTrue(invalidUserIdMappingOp2);
         assertTrue(noBpmnOperationExceptionFound);
     }
 

@@ -18,17 +18,12 @@
 package org.ow2.petals.activitibpmn;
 
 import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
@@ -36,9 +31,6 @@ import org.activiti.engine.TaskService;
 import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
-import org.w3c.dom.Document;
-
-import com.ebmwebsourcing.easycommons.xml.Transformers;
 
 
 /**
@@ -190,24 +182,10 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         // @see org.ow2.petals.activitibpmn.ActivitiSE
                         final ActivitiOperation activitiOperation = ((ActivitiSE) this.component)
                                 .getActivitiOperations(eptAndOperation);
-
-                        // Get the exchange data
-                        final Document inMsgWsdl = exchange.getInMessageContentAsDocument();
-                        final DOMSource domSource = new DOMSource(inMsgWsdl);
-                        final StringWriter writer = new StringWriter();
-                        final StreamResult result = new StreamResult(writer);
-                        final Transformer transformer = Transformers.takeTransformer();
-                        try {
-                            transformer.transform(domSource, result);
-                        } finally {
-                            Transformers.releaseTransformer(transformer);
+                        if (activitiOperation == null) {
+                            throw new MessagingException("No BPMN operation found matching the exchange");
                         }
-
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("*** inMsgWsdl = " + writer.toString());
-                        }
-
-                        final String outputReply = activitiOperation.execute(inMsgWsdl, this.taskService,
+                        final String outputReply = activitiOperation.execute(exchange, this.taskService,
                                 this.identityService, this.runTimeService);
 
                         exchange.setOutMessageContent(new ByteArrayInputStream(outputReply.getBytes("UTF-8")));
@@ -218,8 +196,6 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                 } catch (final MessagingException e) {
                     finalException = e;
                 } catch (final UnsupportedEncodingException e) {
-                    finalException = e;
-                } catch (final TransformerException e) {
                     finalException = e;
                 }
 

@@ -45,6 +45,7 @@ import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.ow2.petals.activitibpmn.exception.IncoherentProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.InvalidVersionDeclaredException;
+import org.ow2.petals.activitibpmn.exception.NoAnnotatedOperationDeclarationException;
 import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
 import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
@@ -522,6 +523,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {
                 this.logger.warning(encounteredError.getMessage());
             }
+        }
+        if (annotatedOperations.size() == 0) {
+            // No annotated operation was correctly read from the WSDL, or no annotated operation is declared in the WSDL
+            throw new NoAnnotatedOperationDeclarationException();
         }
         for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
             

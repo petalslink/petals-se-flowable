@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.activitibpmn;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -319,27 +318,6 @@ public class ActivitiSuManagerTest {
                         MY_PROCESS_FILE).getAbsolutePath())));
     }
 
-    @Test
-    public void deploy_OneProcessDefinition_Valid() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
-
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
-        final String suName = "one-process-definition-valid";
-        final File suRootPath = this.tempFolder.newFolder(suName);
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension("1") });
-
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
-
-        assertFalse("The deployment fails: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-    }
-
     /**
      * <p>
      * Try do deploy an invalid SU containing multiple process declarations where:
@@ -529,32 +507,6 @@ public class ActivitiSuManagerTest {
                 result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
         assertTrue("Unexpected error: " + result, result.contains(String.format(
                 IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "", version2)));
-    }
-
-    @Test
-    public void deploy_MultipleProcessDefinition_Valid() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
-
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
-        final String suName = "multiple-process-definition-valid";
-        final File suRootPath = this.tempFolder.newFolder(suName);
-        final String version1 = "1";
-        final String version2 = "2";
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)),
-                        this.createVersionExtension(version1),
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_2ND_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension(version2) });
-
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
-
-        assertFalse("The deployment fails: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
     }
 
     private ActivitiSuManager createActivitiSuManager() throws CDKJBIDescriptorException, SecurityException,
