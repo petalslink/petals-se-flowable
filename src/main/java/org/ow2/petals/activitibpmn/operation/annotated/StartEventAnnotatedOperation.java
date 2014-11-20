@@ -35,8 +35,27 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
 
     public static final String BPMN_ACTION_TYPE = "startEvent";
 
+    /**
+     * 
+     * @param wsdlOperationName
+     *            The WSDL operation containing the current annotations
+     * @param processDefinitionId
+     *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param bpmnAction
+     * @param processInstanceIdHolder
+     *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
+     *            <code>null</code>.
+     * @param userIdHolder
+     *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param bpmnVarInMsg
+     * @param outMsgBpmnVar
+     * @param faultMsgBpmnVar
+     * @param bpmnVarList
+     * @throws InvalidAnnotationForOperationException
+     *             The annotated operation is incoherent.
+     */
     public StartEventAnnotatedOperation(final String wsdlOperationName, final String processIdentifier,
-            final String bpmnAction, final Properties processInstanceIdHolder, final XPathExpression userIdHolder,
+            final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processIdentifier, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,

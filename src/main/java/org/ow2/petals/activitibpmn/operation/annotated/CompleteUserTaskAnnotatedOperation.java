@@ -23,7 +23,7 @@ import java.util.Set;
 import javax.xml.xpath.XPathExpression;
 
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
-import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 
 /**
  * The BPMN operation 'complete user task' extracted from WDSL according to BPMN annotations. This operation is used to
@@ -36,11 +36,30 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
 
     public static final String BPMN_ACTION_TYPE = "userTask";
 
-    public CompleteUserTaskAnnotatedOperation(final String wsdlOperationName, final String processIdentifier,
-            final String bpmnAction, final Properties processInstanceIdHolder, final XPathExpression userIdHolder,
+    /**
+     * 
+     * @param wsdlOperationName
+     *            The WSDL operation containing the current annotations
+     * @param processDefinitionId
+     *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param bpmnAction
+     * @param processInstanceIdHolder
+     *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
+     *            <code>null</code>.
+     * @param userIdHolder
+     *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param bpmnVarInMsg
+     * @param outMsgBpmnVar
+     * @param faultMsgBpmnVar
+     * @param bpmnVarList
+     * @throws InvalidAnnotationForOperationException
+     *             The annotated operation is incoherent.
+     */
+    public CompleteUserTaskAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
+            final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processIdentifier, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
+        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
                 outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
     }
 
@@ -55,9 +74,9 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
         super.verifyAnnotationCoherence();
 
         // The mapping defining the process instance id is required to complete a user task
-        final String processInstanceIdMapping = this.getProcessInstanceIdHolder().getProperty("inMsg");
-        if (processInstanceIdMapping == null || processInstanceIdMapping.isEmpty()) {
-            throw new NoProcessIdMappingException(this.getWsdlOperationName());
+        final XPathExpression processInstanceIdHolder = this.getProcessInstanceIdHolder();
+        if (processInstanceIdHolder == null) {
+            throw new NoProcessInstanceIdMappingException(this.getWsdlOperationName());
         }
 
     }

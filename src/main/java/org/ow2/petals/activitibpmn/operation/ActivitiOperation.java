@@ -61,7 +61,7 @@ public abstract class ActivitiOperation {
 
     protected final String bpmnAction;
 
-    protected final Properties bpmnProcessId;
+    protected final XPathExpression proccesInstanceIdXPathExpr;
 
     protected final XPathExpression userIdXPathExpr;
 
@@ -75,14 +75,22 @@ public abstract class ActivitiOperation {
 
     protected final Logger logger;
 
+    /**
+     * @param annotatedOperation
+     *            Annotations of the operation to create
+     * @param processDefinitionId
+     *            The process definition identifier to associate to the operation to create
+     * @param bpmnVarType
+     * @param logger
+     */
     protected ActivitiOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
             final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType, final Logger logger) {
 
         this.wsdlOperationName = annotatedOperation.getWsdlOperationName();
         this.processDefinitionId = processDefinitionId;
-        this.processKey = annotatedOperation.getProcessIdentifier();
+        this.processKey = annotatedOperation.getProcessDefinitionId();
         this.bpmnAction = annotatedOperation.getBpmnAction();
-        this.bpmnProcessId = annotatedOperation.getProcessInstanceIdHolder();
+        this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();
         this.userIdXPathExpr = annotatedOperation.getUserIdHolder();
         this.bpmnVarInMsg = annotatedOperation.getBpmnVarInMsg();
         this.outMsgBpmnVar = annotatedOperation.getOutMsgBpmnVar();
@@ -136,8 +144,8 @@ public abstract class ActivitiOperation {
                 throw new NoUserIdValueException(this.wsdlOperationName);
             }
 
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("bpmnUserId => InMsg = " + userId);
+            if (this.logger.isLoggable(Level.FINE)) {
+                this.logger.fine("User identifier value: " + userId);
             }
         } catch (final XPathExpressionException e) {
             throw new OperationProcessingException(this.wsdlOperationName, e);
@@ -224,7 +232,7 @@ public abstract class ActivitiOperation {
             }
         }
 
-        final String bpmnProcessIdValue = this.doExecute(inMsgWsdl, taskService, identityService, runtimeService,
+        final String bpmnProcessIdValue = this.doExecute(domSource, taskService, identityService, runtimeService,
                 userId, processVars);
 
         // Build the outMessage
@@ -244,7 +252,8 @@ public abstract class ActivitiOperation {
     
     /**
      * 
-     * @param inMsgWsdl
+     * @param domSource
+     *            The incoming XML payload
      * @param taskService
      * @param identityService
      * @param runtimeService
@@ -254,7 +263,7 @@ public abstract class ActivitiOperation {
      * @return
      * @throws MessagingException
      */
-    protected abstract String doExecute(final Document inMsgWsdl, final TaskService taskService,
+    protected abstract String doExecute(final DOMSource domSource, final TaskService taskService,
             final IdentityService identityService, final RuntimeService runtimeService, final String userId,
             final Map<String, Object> processVars)
             throws MessagingException;
@@ -268,11 +277,6 @@ public abstract class ActivitiOperation {
             logger.log(logLevel, "  - processDefinitionId = " + this.processDefinitionId);
             logger.log(logLevel, "  - processKey = " + this.processKey);
             logger.log(logLevel, "  - bpmnAction = " + this.bpmnAction);
-            logger.log(
-                    logLevel,
-                    "  - bpmnProcessId: InMsg = " + this.bpmnProcessId.getProperty("inMsg") + " | outMsg = "
-                            + this.bpmnProcessId.getProperty("outMsg") + " | faultMsg = "
-                            + this.bpmnProcessId.getProperty("faultMsg"));
             for (final Entry<Object, Object> entry : this.bpmnVarInMsg.entrySet()) {
                 final String key = (String) entry.getKey();
                 logger.log(logLevel, "  - bpmnVar => inMsg: " + key + " => " + entry.getValue());
@@ -312,10 +316,6 @@ public abstract class ActivitiOperation {
 
     public String getBpmnAction() {
         return this.bpmnAction;
-    }
-
-    public Properties getBpmnProcessId() {
-        return this.bpmnProcessId;
     }
 
     public Properties getBpmnVarInMsg() {

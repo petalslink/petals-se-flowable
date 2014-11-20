@@ -140,11 +140,10 @@
       	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
    	   	<bpmn:operation
    	   		bpmnProcess="vacationRequest"
-			bpmnActionType="startEvent"
- 			bpmnAction="request" />
-   	   	<bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
-            <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
+			      bpmnActionType="startEvent"
+ 			      bpmnAction="request" />
+   	   <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
+         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
       	<bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
       	<bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
       	<wsdl:input>
@@ -163,10 +162,10 @@
    	   		bpmnProcess="vacationRequest" 
    	   		bpmnActionType="userTask" 
    	   		bpmnAction="handleRequest" />
-   	   	<bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
-            <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-        <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-        <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
+   	   <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
+         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
+         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -183,12 +182,12 @@
    	   		bpmnProcess="vacationRequest"
    	   		bpmnActionType="userTask"
    	   		bpmnAction="adjustVacationRequestTask"  />
-   	   	<bpmn:processId inMsg="numeroDdeInitiale" outMsg="numeroDde" faultMsg="numeroDde"/>
-            <bpmn:userId>/*[local-name()='ajustement']/*[local-name()='demandeur']</bpmn:userId>
-        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourNouvelleDde" />
+         <bpmn:processInstanceId>/*[local-name()='ajustement']/*[local-name()='numeroDdeInitiale']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='ajustement']/*[local-name()='demandeur']</bpmn:userId>
+         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourNouvelleDde" />
       	<bpmn:variable bpmn="startDate" inMsg="DateDebutNouvelleDde" />
       	<bpmn:variable bpmn="vacationMotivation" inMsg="motifNouvelleDde" />
-        <bpmn:variable bpmn="resendRequest" inMsg="soumettreModif" />
+         <bpmn:variable bpmn="resendRequest" inMsg="soumettreModif" />
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>

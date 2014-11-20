@@ -22,6 +22,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
+import javax.xml.transform.dom.DOMSource;
 
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.engine.IdentityService;
@@ -30,7 +31,6 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.annotated.StartEventAnnotatedOperation;
-import org.w3c.dom.Document;
 
 /**
  * The operation to create a new instance of a process
@@ -41,6 +41,14 @@ import org.w3c.dom.Document;
  */
 public class StartEventOperation extends ActivitiOperation {
 
+    /**
+     * @param annotatedOperation
+     *            Annotations of the operation to create
+     * @param processDefinitionId
+     *            The process definition identifier to associate to the operation to create
+     * @param bpmnVarType
+     * @param logger
+     */
     public StartEventOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
             final Map<String, FormProperty> bpmnVarType, final Logger logger) {
         super(annotatedOperation, processDefinitionId, bpmnVarType, logger);
@@ -52,7 +60,7 @@ public class StartEventOperation extends ActivitiOperation {
     }
 
     @Override
-    protected String doExecute(final Document inMsgWsdl, final TaskService taskService,
+    protected String doExecute(final DOMSource domSource, final TaskService taskService,
             final IdentityService identityService, final RuntimeService runtimeService, final String bpmnUserId,
             final Map<String, Object> processVars) throws MessagingException {
 
@@ -70,8 +78,8 @@ public class StartEventOperation extends ActivitiOperation {
             identityService.setAuthenticatedUserId(null);
         }
 
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("*** NEW PROCESS INSTANCE started,  processId = " + bpmnProcessIdValue);
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("*** NEW PROCESS INSTANCE started,  processId = " + bpmnProcessIdValue);
         }
 
         return bpmnProcessIdValue;

@@ -538,7 +538,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             //--------------------------------------------------------------
             
             // The value of annotation 'process identifier' must be the one of a process definition
-            final String bpmnProcessKey = annotatedOperation.getProcessIdentifier();
+            final String bpmnProcessKey = annotatedOperation.getProcessDefinitionId();
             if (!processDefinitions.containsKey(bpmnProcessKey)) {
                 throw new PEtALSCDKException("Malformed Wsdl: business process Key = " + bpmnProcessKey
                         + " does not correspond to any Business Process file of the SU ");

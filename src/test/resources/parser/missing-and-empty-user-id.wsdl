@@ -103,12 +103,12 @@
      	<wsdl:output message="tns:numeroDemande" />
      	<wsdl:fault message="tns:faute" />
 	</wsdl:operation>
-   <wsdl:operation name="demanderConges_missingAttr">
+   <wsdl:operation name="demanderConges_missingValue">
       <wsdl:input message="tns:demandeConges" />
       <wsdl:output message="tns:numeroDemande" />
       <wsdl:fault message="tns:faute" />
    </wsdl:operation>
-    <wsdl:operation name="validerDemande_missingAttr">
+    <wsdl:operation name="validerDemande_missingValue">
          <wsdl:input message="tns:validationDdeConges" />
       <wsdl:output message="tns:numeroDemande" />
       <wsdl:fault message="tns:faute" />
@@ -166,7 +166,7 @@
         	<soap:body use="literal" />
       	</wsdl:fault>
 	</wsdl:operation>
-    <wsdl:operation name="demanderConges_missingAttr">
+    <wsdl:operation name="demanderConges_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
             <bpmn:operation
                bpmnProcess="vacationRequest"
@@ -187,7 +187,7 @@
          <soap:body use="literal" />
          </wsdl:fault>
    </wsdl:operation>
-    <wsdl:operation name="validerDemande_missingAttr">
+    <wsdl:operation name="validerDemande_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
          <bpmn:operation 
                bpmnProcess="vacationRequest" 

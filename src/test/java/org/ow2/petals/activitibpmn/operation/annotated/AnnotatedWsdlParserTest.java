@@ -38,9 +38,10 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
-import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessInstanceIdMappingExpressionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UserIdMappingExpressionException;
 import org.w3c.dom.Document;
@@ -380,10 +381,10 @@ public class AnnotatedWsdlParserTest {
                         "validerDemande_missingTag")) {
                     missingTagUserIdMappingOp2 = true;
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
-                        "demanderConges_missingAttr")) {
+                        "demanderConges_missingValue")) {
                     missingAttrUserIdMappingOp1 = true;
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_missingAttr")) {
+                        "validerDemande_missingValue")) {
                     missingAttrUserIdMappingOp2 = true;
                 } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("demanderConges_empty")) {
                     emptyUserIdMappingOp1 = true;
@@ -511,19 +512,20 @@ public class AnnotatedWsdlParserTest {
         boolean missingAttrProcessInstanceIdMappingIn = false;
         boolean emptyProcessInstanceIdMappingIn = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
-            if (exception instanceof NoProcessIdMappingException) {
-                if (((NoProcessIdMappingException) exception).getWsdlOperationName()
+            if (exception instanceof NoProcessInstanceIdMappingException) {
+                if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName()
                         .equals(
                         "validerDemande_missingTag")) {
                     missingTagProcessInstanceIdMappingIn = true;
-                } else if (((NoProcessIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_missingAttr")) {
+                } else if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_missingValue")) {
                     missingAttrProcessInstanceIdMappingIn = true;
-                } else if (((NoProcessIdMappingException) exception).getWsdlOperationName().equals(
+                } else if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName().equals(
                         "validerDemande_empty")) {
                     emptyProcessInstanceIdMappingIn = true;
                 } else {
-                    fail("Unexpected operation: " + ((NoUserIdMappingException) exception).getWsdlOperationName());
+                    fail("Unexpected operation: "
+                            + ((NoProcessInstanceIdMappingException) exception).getWsdlOperationName());
                 }
             } else {
                 fail("Unexpected error: " + exception.getClass());
@@ -532,6 +534,39 @@ public class AnnotatedWsdlParserTest {
         assertTrue(missingTagProcessInstanceIdMappingIn);
         assertTrue(missingAttrProcessInstanceIdMappingIn);
         assertTrue(emptyProcessInstanceIdMappingIn);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the process instance identifier place holder is
+     * set to an invalid XPATH expression for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the invalid expression of the process instance id placeholder for BPMN
+     * action 'userTask' only because the process instance identifier is unneeded for BPMN action 'startEvent'.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithProcessInstanceIdPlaceHolderInvalidExpr() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/invalid-process-instance-id.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        assertEquals(1, this.parser.parse(docWsdl).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(1, encounteredErrors.size());
+        final InvalidAnnotationException exception = encounteredErrors.get(0);
+        assertTrue(exception instanceof ProcessInstanceIdMappingExpressionException);
+        assertEquals("validerDemande", ((ProcessInstanceIdMappingExpressionException) exception).getWsdlOperationName());
     }
 
 }

@@ -103,12 +103,12 @@
      	<wsdl:output message="tns:numeroDemande" />
      	<wsdl:fault message="tns:faute" />
 	</wsdl:operation>
-   <wsdl:operation name="demanderConges_missingAttr">
+   <wsdl:operation name="demanderConges_missingValue">
       <wsdl:input message="tns:demandeConges" />
       <wsdl:output message="tns:numeroDemande" />
       <wsdl:fault message="tns:faute" />
    </wsdl:operation>
-    <wsdl:operation name="validerDemande_missingAttr">
+    <wsdl:operation name="validerDemande_missingValue">
          <wsdl:input message="tns:validationDdeConges" />
       <wsdl:output message="tns:numeroDemande" />
       <wsdl:fault message="tns:faute" />
@@ -131,10 +131,11 @@
       	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
    	   	<bpmn:operation
    	   		bpmnProcess="vacationRequest"
-			bpmnActionType="startEvent"
- 			bpmnAction="request" />
+			      bpmnActionType="startEvent"
+ 			      bpmnAction="request" />
+         <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
+         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
       	<bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
       	<bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
       	<wsdl:input>
@@ -153,9 +154,9 @@
    	   		bpmnProcess="vacationRequest" 
    	   		bpmnActionType="userTask" 
    	   		bpmnAction="handleRequest" />
-        <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-        <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-        <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
+         <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
+         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
+         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -166,15 +167,15 @@
         	<soap:body use="literal" />
       	</wsdl:fault>
 	</wsdl:operation>
-    <wsdl:operation name="demanderConges_missingAttr">
+    <wsdl:operation name="demanderConges_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
             <bpmn:operation
                bpmnProcess="vacationRequest"
          bpmnActionType="startEvent"
          bpmnAction="request" />
-            <bpmn:processId />
+         <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
+         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
          <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
          <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
          <wsdl:input>
@@ -187,16 +188,16 @@
          <soap:body use="literal" />
          </wsdl:fault>
    </wsdl:operation>
-    <wsdl:operation name="validerDemande_missingAttr">
+    <wsdl:operation name="validerDemande_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
          <bpmn:operation 
                bpmnProcess="vacationRequest" 
                bpmnActionType="userTask" 
                bpmnAction="handleRequest" />
-            <bpmn:processId />
-        <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-        <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-        <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
+         <bpmn:processInstanceId />
+         <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
+         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
+         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
          <wsdl:input>
          <soap:body use="literal" />
          </wsdl:input>
@@ -213,9 +214,9 @@
                bpmnProcess="vacationRequest"
          bpmnActionType="startEvent"
          bpmnAction="request" />
-            <bpmn:processId outMsg="" />
+         <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-        <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
+         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
          <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
          <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
          <wsdl:input>
@@ -234,10 +235,10 @@
                bpmnProcess="vacationRequest" 
                bpmnActionType="userTask" 
                bpmnAction="handleRequest" />
-            <bpmn:processId inMsg="" />
-        <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-        <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-        <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
+         <bpmn:processInstanceId></bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
+         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
+         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
          <wsdl:input>
          <soap:body use="literal" />
          </wsdl:input>

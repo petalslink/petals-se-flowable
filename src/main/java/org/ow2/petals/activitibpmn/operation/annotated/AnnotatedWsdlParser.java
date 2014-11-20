@@ -36,8 +36,10 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessInstanceIdMappingExpressionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UserIdMappingExpressionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableNameMissingException;
@@ -79,7 +81,7 @@ public class AnnotatedWsdlParser {
     /**
      * Local part of the annotation tag associated to the place holder containing the process instance identifier
      */
-    private static final String BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER = "processId";
+    private static final String BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER = "processInstanceId";
 
     /**
      * Local part of the annotation tag associated to the place holder containing the user identifier
@@ -155,25 +157,24 @@ public class AnnotatedWsdlParser {
                     final String bpmnActionType = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION_TYPE);
 
                     // Get the node "bpmn:processId" and its message
-                    final Node processId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
+                    final Node processInstanceId = ((Element) wsdlOperation).getElementsByTagNameNS(
+                            SCHEMA_BPMN_ANNOTATIONS,
                             BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
-                    final Properties bpmnProcessId = new Properties();
-                    if (processId != null) {
-                        // set the processId properties
-                        final String inMsgAttr = ((Element) processId).getAttribute("inMsg");
-                        if (inMsgAttr != null) {
-                            bpmnProcessId.put("inMsg", inMsgAttr);
+                    final XPathExpression bpmnProcessInstanceId;
+                    if (processInstanceId != null) {
+                        final String xpathExpr = processInstanceId.getTextContent();
+                        if (xpathExpr.trim().isEmpty()) {
+                            throw new NoProcessInstanceIdMappingException(wsdlOperationName);
+                        } else {
+                            final XPath xpath = xpathFactory.newXPath();
+                            try {
+                                bpmnProcessInstanceId = xpath.compile(xpathExpr);
+                            } catch (final XPathExpressionException e) {
+                                throw new ProcessInstanceIdMappingExpressionException(wsdlOperationName, e);
+                            }
                         }
-
-                        final String outMsgAttr = ((Element) processId).getAttribute("outMsg");
-                        if (outMsgAttr != null) {
-                            bpmnProcessId.put("outMsg", outMsgAttr);
-                        }
-
-                        final String faultMsgAttr = ((Element) processId).getAttribute("faultMsg");
-                        if (faultMsgAttr != null) {
-                            bpmnProcessId.put("faultMsg", faultMsgAttr);
-                        }
+                    } else {
+                        bpmnProcessInstanceId = null;
                     }
 
                     // Get the node "bpmn:userId"
@@ -236,11 +237,13 @@ public class AnnotatedWsdlParser {
                     final AnnotatedOperation annotatedOperation;
                     if (StartEventAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
                         annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
-                                bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar,
+                                bpmnAction, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
+                                faultMsgBpmnVar,
                                 bpmnVarList);
                     } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
                         annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName, bpmnProcessKey,
-                                bpmnAction, bpmnProcessId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar, faultMsgBpmnVar,
+                                bpmnAction, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
+                                faultMsgBpmnVar,
                                 bpmnVarList);
                     } else {
                         throw new UnsupportedBpmnActionTypeException(wsdlOperationName, bpmnAction);
