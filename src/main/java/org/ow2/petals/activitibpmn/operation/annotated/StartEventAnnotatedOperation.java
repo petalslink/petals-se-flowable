@@ -20,6 +20,8 @@ package org.ow2.petals.activitibpmn.operation.annotated;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.xpath.XPathExpression;
+
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 
 /**
@@ -31,19 +33,43 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
  */
 public class StartEventAnnotatedOperation extends AnnotatedOperation {
 
-    public static final String BPMN_ACTION_TYPE = "startEvent";
+    public static final String BPMN_ACTION = "startEvent";
 
-    public StartEventAnnotatedOperation(final String wsdlOperationName, final String processIdentifier,
-            final String bpmnAction, final Properties processInstanceIdHolder, final Properties userIdHolder,
+    /**
+     * 
+     * @param wsdlOperationName
+     *            The WSDL operation containing the current annotations
+     * @param processDefinitionId
+     *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param actionId
+     * @param processInstanceIdHolder
+     *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
+     *            <code>null</code>.
+     * @param userIdHolder
+     *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param bpmnVarInMsg
+     * @param outMsgBpmnVar
+     * @param faultMsgBpmnVar
+     * @param bpmnVarList
+     * @throws InvalidAnnotationForOperationException
+     *             The annotated operation is incoherent.
+     */
+    public StartEventAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
+            final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processIdentifier, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
+        super(wsdlOperationName, processDefinitionId, actionId, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
                 outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
     }
 
     @Override
-    public String getBpmnActionType() {
-        return BPMN_ACTION_TYPE;
+    public void doAnnotationCoherenceCheck() throws InvalidAnnotationForOperationException {
+        // NOP
+    }
+
+    @Override
+    public String getAction() {
+        return BPMN_ACTION;
     }
 
 }

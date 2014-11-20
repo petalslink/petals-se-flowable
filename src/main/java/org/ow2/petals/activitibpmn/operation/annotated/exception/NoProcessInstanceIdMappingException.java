@@ -20,19 +20,19 @@ package org.ow2.petals.activitibpmn.operation.annotated.exception;
 import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
 
 /**
- * For the operation {@link CompleteUserTaskOperation}, the mapping defining the process instance identifier is
+ * For the operations {@link CompleteUserTaskOperation}, the mapping defining the process instance identifier is
  * required.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoProcessIdMappingException extends InvalidAnnotationForOperationException {
+public class NoProcessInstanceIdMappingException extends InvalidAnnotationForOperationException {
     
     private static final long serialVersionUID = 8720662930284014745L;
 
     private static final String MESSAGE = "The mapping defining the process instance identifier is required";
 
-    public NoProcessIdMappingException(final String wsdlOperationName) {
+    public NoProcessInstanceIdMappingException(final String wsdlOperationName) {
         super(wsdlOperationName, MESSAGE);
     }
 

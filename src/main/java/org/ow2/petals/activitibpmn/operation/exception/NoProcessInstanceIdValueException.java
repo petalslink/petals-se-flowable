@@ -15,25 +15,23 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.activitibpmn.operation.annotated.exception;
+package org.ow2.petals.activitibpmn.operation.exception;
 
 import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the user
- * identifier is required.
+ * For the operation {@link CompleteUserTaskOperation}, a process instance identifier is required.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoUserIdMappingException extends InvalidAnnotationForOperationException {
+public class NoProcessInstanceIdValueException extends OperationProcessingException {
 
-    private static final long serialVersionUID = -8468551099289581848L;
+    private static final long serialVersionUID = 5318980517059515822L;
 
-    private static final String MESSAGE = "The mapping defining the user identifier is required";
+    private static final String MESSAGE = "Process instance identifier is missing or empty in the incoming request !";
 
-    public NoUserIdMappingException(final String wsdlOperationName) {
+    public NoProcessInstanceIdValueException(final String wsdlOperationName) {
         super(wsdlOperationName, MESSAGE);
     }
 

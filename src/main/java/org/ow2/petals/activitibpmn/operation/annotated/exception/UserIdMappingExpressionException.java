@@ -17,24 +17,22 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
-import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
+import javax.xml.xpath.XPathExpressionException;
 
 /**
- * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the user
- * identifier is required.
+ * The expression defining the user identifier is invalid.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoUserIdMappingException extends InvalidAnnotationForOperationException {
+public class UserIdMappingExpressionException extends InvalidAnnotationForOperationException {
 
-    private static final long serialVersionUID = -8468551099289581848L;
+    private static final long serialVersionUID = -3861399468834588277L;
 
-    private static final String MESSAGE = "The mapping defining the user identifier is required";
+    private static final String MESSAGE_PATTERN = "The mapping defining the user identifier is invalid: %s";
 
-    public NoUserIdMappingException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public UserIdMappingExpressionException(final String wsdlOperationName, final XPathExpressionException cause) {
+        super(wsdlOperationName, String.format(MESSAGE_PATTERN, cause.getMessage()), cause);
     }
 
 }

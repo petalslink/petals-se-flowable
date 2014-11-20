@@ -23,6 +23,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.xpath.XPathExpressionException;
 
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.engine.IdentityService;
@@ -31,8 +33,8 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.annotated.CompleteUserTaskAnnotatedOperation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
+import org.ow2.petals.activitibpmn.operation.exception.NoProcessInstanceIdValueException;
+import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingException;
 
 /**
  * The operation to complete the user task of process instance
@@ -43,40 +45,47 @@ import org.w3c.dom.Node;
  */
 public class CompleteUserTaskOperation extends ActivitiOperation {
 
+    /**
+     * @param annotatedOperation
+     *            Annotations of the operation to create
+     * @param processDefinitionId
+     *            The process definition identifier to associate to the operation to create
+     * @param bpmnVarType
+     * @param logger
+     */
     public CompleteUserTaskOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
             final Map<String, FormProperty> bpmnVarType, final Logger logger) {
         super(annotatedOperation, processDefinitionId, bpmnVarType, logger);
     }
 
     @Override
-    protected String doExecute(final Document inMsgWsdl, final TaskService taskService,
+    protected String doExecute(final DOMSource domSource, final TaskService taskService,
             final IdentityService identityService, final RuntimeService runtimeService, final String bpmnUserId,
             final Map<String, Object> processVars)
             throws MessagingException {
 
-        // Get the processId
-        final String varNameInMsg = this.bpmnProcessId.getProperty("inMsg");
-        final String bpmnProcessIdValue;
-        final Node varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su",
-                varNameInMsg).item(0);
-        if (varNode == null) {
-            throw new MessagingException(
-                    "The bpmnProcessId is mandatory and must be given through the message variable: " + varNameInMsg
-                            + " for the userTask: " + bpmnAction + " of process: " + processDefinitionId + " !");
-        } else {
-            bpmnProcessIdValue = varNode.getTextContent().trim();
-        }
+        // Get the process instance identifier
+        final String processInstanceId;
+        try {
+            processInstanceId = this.proccesInstanceIdXPathExpr.evaluate(domSource);
+            if (processInstanceId == null || processInstanceId.trim().isEmpty()) {
+                throw new NoProcessInstanceIdValueException(this.wsdlOperationName);
+            }
 
-        if (this.logger.isLoggable(Level.FINE)) {
-            this.logger.fine("bpmnProcessId => InMsg = " + varNameInMsg + " - value = " + bpmnProcessIdValue);
+            if (this.logger.isLoggable(Level.FINE)) {
+                this.logger.fine("Process instance identifier value: " + processInstanceId);
+            }
+        } catch (final XPathExpressionException e) {
+            throw new OperationProcessingException(this.wsdlOperationName, e);
         }
 
         // Get the task
-        final List<Task> taskList = taskService.createTaskQuery().processInstanceId(bpmnProcessIdValue)
-                .taskDefinitionKey(bpmnAction).list();
+        final List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId)
+                .taskDefinitionKey(this.actionId).list();
         if ((taskList == null) || (taskList.size() == 0)) {
-            throw new MessagingException("No tasks: " + bpmnAction + " for processInstance: " + bpmnProcessIdValue
-                    + " was found.");
+            // This error should not occur because this check has been done when deploying the SU
+            throw new MessagingException("No tasks: " + this.actionId + " for process instance id: "
+                    + processInstanceId + " was found.");
         }
         // Perform the user Task
         try {
@@ -86,12 +95,12 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
             identityService.setAuthenticatedUserId(null);
         }
 
-        return bpmnProcessIdValue;
+        return processInstanceId;
     }
 
     @Override
-    public String getBpmnActionType() {
-        return CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE;
+    public String getAction() {
+        return CompleteUserTaskAnnotatedOperation.BPMN_ACTION;
     }
 
 }

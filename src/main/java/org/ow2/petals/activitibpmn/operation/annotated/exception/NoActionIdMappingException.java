@@ -21,19 +21,19 @@ import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
 import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the user
- * identifier is required.
+ * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the
+ * action identifier is required.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoUserIdMappingException extends InvalidAnnotationForOperationException {
+public class NoActionIdMappingException extends InvalidAnnotationForOperationException {
 
-    private static final long serialVersionUID = -8468551099289581848L;
+    private static final long serialVersionUID = 1229263822984773374L;
 
-    private static final String MESSAGE = "The mapping defining the user identifier is required";
+    private static final String MESSAGE = "The mapping defining the action identifier is required";
 
-    public NoUserIdMappingException(final String wsdlOperationName) {
+    public NoActionIdMappingException(final String wsdlOperationName) {
         super(wsdlOperationName, MESSAGE);
     }
 

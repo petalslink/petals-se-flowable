@@ -93,47 +93,27 @@
 </wsdl:message>
 <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== --> 
 <wsdl:portType name="demandeDeConges">
-	<wsdl:operation name="demanderConges_missingTag">
+	<wsdl:operation name="demanderConges">
     	<wsdl:input message="tns:demandeConges" />
      	<wsdl:output message="tns:numeroDemande" />
      	<wsdl:fault message="tns:faute" />
    </wsdl:operation>
-    <wsdl:operation name="validerDemande_missingTag">
+    <wsdl:operation name="validerDemande">
       	<wsdl:input message="tns:validationDdeConges" />
      	<wsdl:output message="tns:numeroDemande" />
      	<wsdl:fault message="tns:faute" />
 	</wsdl:operation>
-   <wsdl:operation name="demanderConges_missingValue">
-      <wsdl:input message="tns:demandeConges" />
-      <wsdl:output message="tns:numeroDemande" />
-      <wsdl:fault message="tns:faute" />
-   </wsdl:operation>
-    <wsdl:operation name="validerDemande_missingValue">
-         <wsdl:input message="tns:validationDdeConges" />
-      <wsdl:output message="tns:numeroDemande" />
-      <wsdl:fault message="tns:faute" />
-   </wsdl:operation>
-   <wsdl:operation name="demanderConges_empty">
-      <wsdl:input message="tns:demandeConges" />
-      <wsdl:output message="tns:numeroDemande" />
-      <wsdl:fault message="tns:faute" />
-   </wsdl:operation>
-    <wsdl:operation name="validerDemande_empty">
-         <wsdl:input message="tns:validationDdeConges" />
-      <wsdl:output message="tns:numeroDemande" />
-      <wsdl:fault message="tns:faute" />
-   </wsdl:operation>
 </wsdl:portType>
 <!-- ======================== BINDINGS ======================================= --> 
 <wsdl:binding name="demandeDeCongesBinding" type="tns:demandeDeConges" > 
 <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
-    <wsdl:operation name="demanderConges_missingTag">
+    <wsdl:operation name="demanderConges">
       	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
    	   <bpmn:operation
    	   		processDefinitionId="vacationRequest"
 			      action="startEvent"
  			      actionId="request" />
-         <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
+   	   <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
       	<bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
@@ -148,12 +128,13 @@
         	<soap:body use="literal" />
       	</wsdl:fault>
 	</wsdl:operation>
-    <wsdl:operation name="validerDemande_missingTag">
+    <wsdl:operation name="validerDemande">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
   	   	<bpmn:operation
                processDefinitionId="vacationRequest"
    	   		action="userTask" 
    	   		actionId="handleRequest" />
+   	   <bpmn:processInstanceId>/[local-name()='validation']/[local-name()='numeroDde']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
          <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
@@ -167,88 +148,6 @@
         	<soap:body use="literal" />
       	</wsdl:fault>
 	</wsdl:operation>
-    <wsdl:operation name="demanderConges_missingValue">
-         <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
-         <bpmn:operation
-               processDefinitionId="vacationRequest"
-               action="startEvent"
-               actionId="request" />
-         <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
-         <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
-         <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
-         <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
-         <wsdl:input>
-         <soap:body use="literal" />
-         </wsdl:input>
-         <wsdl:output>
-         <soap:body use="literal" />
-         </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
-   </wsdl:operation>
-    <wsdl:operation name="validerDemande_missingValue">
-         <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
-         <bpmn:operation
-               processDefinitionId="vacationRequest"
-               action="userTask" 
-               actionId="handleRequest" />
-         <bpmn:processInstanceId />
-         <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
-         <wsdl:input>
-         <soap:body use="literal" />
-         </wsdl:input>
-         <wsdl:output>
-         <soap:body use="literal" />
-         </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
-   </wsdl:operation>
-    <wsdl:operation name="demanderConges_empty">
-         <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
-         <bpmn:operation
-               processDefinitionId="vacationRequest"
-               action="startEvent"
-               actionId="request" />
-         <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
-         <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
-         <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
-         <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
-         <wsdl:input>
-         <soap:body use="literal" />
-         </wsdl:input>
-         <wsdl:output>
-         <soap:body use="literal" />
-         </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
-   </wsdl:operation>
-    <wsdl:operation name="validerDemande_empty">
-         <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
-         <bpmn:operation
-               processDefinitionId="vacationRequest"
-               action="userTask" 
-               actionId="handleRequest" />
-         <bpmn:processInstanceId></bpmn:processInstanceId>
-         <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
-         <wsdl:input>
-         <soap:body use="literal" />
-         </wsdl:input>
-         <wsdl:output>
-         <soap:body use="literal" />
-         </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
-   </wsdl:operation>
 </wsdl:binding>
 <!-- ======================== SERVICE (SU jbi.xml service-name) ============== --> 
 <wsdl:service name="demandeDeCongesService">

@@ -45,6 +45,7 @@ import org.activiti.engine.repository.DeploymentBuilder;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.ow2.petals.activitibpmn.exception.IncoherentProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.InvalidVersionDeclaredException;
+import org.ow2.petals.activitibpmn.exception.NoAnnotatedOperationDeclarationException;
 import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
 import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
@@ -523,6 +524,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 this.logger.warning(encounteredError.getMessage());
             }
         }
+        if (annotatedOperations.size() == 0) {
+            // No annotated operation was correctly read from the WSDL, or no annotated operation is declared in the WSDL
+            throw new NoAnnotatedOperationDeclarationException();
+        }
         for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
             
             final String wsdlOperationName = annotatedOperation.getWsdlOperationName();
@@ -533,7 +538,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             //--------------------------------------------------------------
             
             // The value of annotation 'process identifier' must be the one of a process definition
-            final String bpmnProcessKey = annotatedOperation.getProcessIdentifier();
+            final String bpmnProcessKey = annotatedOperation.getProcessDefinitionId();
             if (!processDefinitions.containsKey(bpmnProcessKey)) {
                 throw new PEtALSCDKException("Malformed Wsdl: business process Key = " + bpmnProcessKey
                         + " does not correspond to any Business Process file of the SU ");
@@ -548,13 +553,13 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             final List<org.activiti.bpmn.model.Process> processes = model.getProcesses();
             List<org.activiti.bpmn.model.FormProperty> formPropertyList = null;
             boolean found = false;
-            final String bpmnAction = annotatedOperation.getBpmnAction();
+            final String bpmnActionId = annotatedOperation.getActionId();
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
                 // search form Property for the Start Event: bpmnAction
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
                         // search the Start Event: bpmnAction
-                        if ((flowElt instanceof StartEvent) && (flowElt.getId().equals(bpmnAction))) {
+                        if ((flowElt instanceof StartEvent) && (flowElt.getId().equals(bpmnActionId))) {
                             StartEvent startEvent = (StartEvent) flowElt;
                             formPropertyList = startEvent.getFormProperties();
                             found = true;
@@ -567,7 +572,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
                         // search the Start Event: bpmnAction
-                        if ((flowElt instanceof UserTask) && (flowElt.getId().equals(bpmnAction))) {
+                        if ((flowElt instanceof UserTask) && (flowElt.getId().equals(bpmnActionId))) {
                             UserTask userTask = (UserTask) flowElt;
                             formPropertyList = userTask.getFormProperties();
                             found = true;
@@ -577,10 +582,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 }
             } else {
                 // TODO: The deployment should be aborted
-                this.logger.warning("Unsupported BPMN action type '" + annotatedOperation.getBpmnActionType() + "'. Skipped");
+                this.logger.warning("Unsupported BPMN action type '" + annotatedOperation.getAction() + "'. Skipped");
             }
             if (!found) {
-                throw new PEtALSCDKException("Malformed Wsdl: BpmnAction : " + bpmnAction
+                throw new PEtALSCDKException("Malformed Wsdl: BpmnAction : " + bpmnActionId
                         + ", does not exist in Activiti process : " + processDefinitionId);
             }
             if (formPropertyList != null && formPropertyList.size() > 0) {

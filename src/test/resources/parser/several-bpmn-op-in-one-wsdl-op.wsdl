@@ -153,12 +153,12 @@
       <wsdl:operation name="demanderConges">
          <soap:operation
             soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
-         <bpmn:operation bpmnProcess="vacationRequest"
-            bpmnActionType="startEvent" bpmnAction="request" />
-         <bpmn:operation bpmnProcess="vacationRequest_2"
-            bpmnActionType="startEvent" bpmnAction="request" />
-         <bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
-         <bpmn:userId inMsg="demandeur" faultMsg="utilisateur" />
+         <bpmn:operation processDefinitionId="vacationRequest"
+            action="startEvent" actionId="request" />
+         <bpmn:operation processDefinitionId="vacationRequest_2"
+            action="startEvent" actionId="request" />
+         <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
          <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
          <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />

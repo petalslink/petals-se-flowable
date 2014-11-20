@@ -20,7 +20,11 @@ package org.ow2.petals.activitibpmn.operation.annotated;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.xml.xpath.XPathExpression;
+
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoActionIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 
 /**
@@ -39,21 +43,24 @@ public abstract class AnnotatedOperation {
     /**
      * The BPMN process identifier associated to the BPMN operation.
      */
-    private final String processIdentifier;
+    private final String processDefinitionId;
 
-    private final String bpmnAction;
+    /**
+     * The task identifier on which the action must be realize on the BPMN process side
+     */
+    private final String actionId;
 
     /**
      * The place holder of the incoming request containing the process instance identifier on which the BPMN operation
      * must be executed
      */
-    private final Properties processInstanceIdHolder;
+    private final XPathExpression processInstanceIdHolder;
 
     /**
      * The place holder of the incoming request containing the user identifier with which the BPMN operation must be
      * executed
      */
-    private final Properties userIdHolder;
+    private final XPathExpression userIdHolder;
 
     private final Properties bpmnVarInMsg;
 
@@ -74,10 +81,13 @@ public abstract class AnnotatedOperation {
      * 
      * @param wsdlOperationName
      *            The WSDL operation containing the current annotations
-     * @param processIdentifier
-     *            The BPMN process identifier associated to the BPMN operation. Not <code>null</code>.
-     * @param bpmnAction
+     * @param processDefinitionId
+     *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param actionId
+     *            The task identifier on which the action must be realize on the BPMN process side
      * @param processInstanceIdHolder
+     *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
+     *            <code>null</code>.
      * @param userIdHolder
      *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
      * @param bpmnVarInMsg
@@ -87,22 +97,21 @@ public abstract class AnnotatedOperation {
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    protected AnnotatedOperation(final String wsdlOperationName, final String processIdentifier,
-            final String bpmnAction, final Properties processInstanceIdHolder, final Properties userIdHolder,
+    protected AnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
+            final String actionId,
+            final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
         super();
         this.wsdlOperationName = wsdlOperationName;
-        this.processIdentifier = processIdentifier;
-        this.bpmnAction = bpmnAction;
+        this.processDefinitionId = processDefinitionId;
+        this.actionId = actionId;
         this.processInstanceIdHolder = processInstanceIdHolder;
         this.userIdHolder = userIdHolder;
         this.bpmnVarInMsg = bpmnVarInMsg;
         this.outMsgBpmnVar = outMsgBpmnVar;
         this.faultMsgBpmnVar = faultMsgBpmnVar;
         this.bpmnVarList = bpmnVarList;
-
-        this.verifyAnnotationCoherence();
     }
 
     /**
@@ -112,15 +121,34 @@ public abstract class AnnotatedOperation {
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    protected void verifyAnnotationCoherence() throws InvalidAnnotationForOperationException {
+    public void verifyAnnotationCoherence() throws InvalidAnnotationForOperationException {
 
-        // The mapping defining the process instance id is required to complete a user task
-        final String userIdMapping = this.userIdHolder.getProperty("inMsg");
-        if (userIdMapping == null || userIdMapping.isEmpty()) {
+        // The process definition identifier is required
+        if (this.processDefinitionId == null || this.processDefinitionId.trim().isEmpty()) {
+            throw new NoProcessDefinitionIdMappingException(this.getWsdlOperationName());
+        }
+
+        // The action identifier is required
+        if (this.actionId == null || this.actionId.trim().isEmpty()) {
+            throw new NoActionIdMappingException(this.getWsdlOperationName());
+        }
+
+        // The mapping defining the user id is required to complete a user task
+        if (this.userIdHolder == null) {
             throw new NoUserIdMappingException(this.wsdlOperationName);
         }
 
+        this.doAnnotationCoherenceCheck();
+
     }
+
+    /**
+     * Entry point to extend checks about annotation coherence
+     * 
+     * @throws InvalidAnnotationForOperationException
+     *             The annotated operation is incoherent.
+     */
+    public abstract void doAnnotationCoherenceCheck() throws InvalidAnnotationForOperationException;
 
     /**
      * @return The WSDL operation containing the current annotations
@@ -130,24 +158,23 @@ public abstract class AnnotatedOperation {
     }
 
     /**
-     * @return The BPMN process identifier associated to the BPMN operation
+     * @return The BPMN process definition identifier associated to the BPMN operation
      */
-    public String getProcessIdentifier() {
-        return this.processIdentifier;
+    public String getProcessDefinitionId() {
+        return this.processDefinitionId;
     }
 
     /**
-     * @return the bpmnAction
+     * @return The task identifier on which the action must be realize on the BPMN process side
      */
-    public String getBpmnAction() {
-        return this.bpmnAction;
+    public String getActionId() {
+        return this.actionId;
     }
 
     /**
-     * @return The BPM action type of this BPMN operation
-     * @return
+     * @return The action to realize on the BPMN process side
      */
-    public abstract String getBpmnActionType();
+    public abstract String getAction();
 
     /**
      * @return the bpmnVarList
@@ -157,16 +184,16 @@ public abstract class AnnotatedOperation {
     }
 
     /**
-     * @return the processInstanceIdHolder
+     * @return The placeholder of BPMN process instance identifier associated to the BPMN operation.
      */
-    public Properties getProcessInstanceIdHolder() {
+    public XPathExpression getProcessInstanceIdHolder() {
         return this.processInstanceIdHolder;
     }
 
     /**
-     * @return the userIdHolder
+     * @return The placeholder of BPMN user identifier associated to the BPMN operation.
      */
-    public Properties getUserIdHolder() {
+    public XPathExpression getUserIdHolder() {
         return this.userIdHolder;
     }
 

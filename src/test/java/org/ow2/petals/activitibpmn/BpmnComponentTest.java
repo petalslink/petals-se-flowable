@@ -44,6 +44,8 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.activitibpmn.operation.exception.NoProcessInstanceIdValueException;
+import org.ow2.petals.activitibpmn.operation.exception.NoUserIdValueException;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
@@ -167,7 +169,8 @@ public class BpmnComponentTest {
      * Check the message processing where:
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
-     * <li>a 2nd valid request is sent to complete the waiting user task.</li> </ul>
+     * <li>a 2nd valid request is sent to complete the waiting user task.</li>
+     * </ol>
      * </p>
      * <p>
      * Expected results:
@@ -228,6 +231,351 @@ public class BpmnComponentTest {
         final Numero response_2 = (Numero) responseObj_2;
         assertEquals(response_1.getNumeroDde(), response_2.getNumeroDde());
         // TODO: Add a check against Activiti
+    }
+
+    /**
+     * <p>
+     * Check the message processing where a request is sent to create a new process instance, where:
+     * <ul>
+     * <li>the user identifier is missing into the incoming payload.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>a fault is returned to the caller</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void startEventRequest_NoUserIdValue() throws Exception {
+
+        // Create the 1st valid request
+        final Demande request = new Demande();
+        request.setNbJourDde(10);
+        request.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request.setMotifDde("hollidays");
+
+        // Send the request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request)), null));
+
+        // Assert the response of the request
+        final ResponseMessage responseMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault = responseMsg.getFault();
+        assertNotNull("No fault returns", fault);
+        final String faultStr = SourceHelper.toString(fault);
+        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        assertNull("XML payload in response", responseMsg.getPayload());
+    }
+
+    /**
+     * <p>
+     * Check the message processing where a request is sent to create a new process instance, where:
+     * <ul>
+     * <li>the user identifier is empty into the incoming payload.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>a fault is returned to the caller</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void startEventRequest_EmptyUserIdValue() throws Exception {
+
+        // Create the 1st valid request
+        final Demande request = new Demande();
+        request.setDemandeur("");
+        request.setNbJourDde(10);
+        request.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request.setMotifDde("hollidays");
+
+        // Send the request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request)), null));
+
+        // Assert the response of the request
+        final ResponseMessage responseMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault = responseMsg.getFault();
+        assertNotNull("No fault returns", fault);
+        final String faultStr = SourceHelper.toString(fault);
+        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        assertNull("XML payload in response", responseMsg.getPayload());
+    }
+
+    /**
+     * <p>
+     * Check the message processing where:
+     * <ol>
+     * <li>a first valid request is sent to create a new process instance,</li>
+     * <li>a 2nd request is sent to complete the waiting user task where the user identifier is missing.</li>
+     * </ol>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>on the first request, the process instance is correctly created,</li>
+     * <li>on the 2nd request, a fault is returned.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void userTaskRequest_NoUserIdValue() throws Exception {
+
+        // Create the 1st valid request
+        final Demande request_1 = new Demande();
+        request_1.setDemandeur("demandeur");
+        request_1.setNbJourDde(10);
+        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setMotifDde("hollidays");
+
+        // Send the 1st valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_1)), null));
+
+        // Assert the response of the 1st valid request
+        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Create the 2nd valid request
+        final Validation request_2 = new Validation();
+        request_2.setNumeroDde(response_1.getNumeroDde());
+        request_2.setApprobation(Boolean.TRUE.toString());
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_2)), null));
+
+        // Assert the response of the 2nd valid request
+        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_2 = responseMsg_2.getFault();
+        assertNotNull("No fault returns", fault_2);
+        final String faultStr = SourceHelper.toString(fault_2);
+        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        assertNull("XML payload in response", responseMsg_2.getPayload());
+        // TODO: Add a check against Activiti to verify that the user task is not complete
+    }
+
+    /**
+     * <p>
+     * Check the message processing where:
+     * <ol>
+     * <li>a first valid request is sent to create a new process instance,</li>
+     * <li>a 2nd request is sent to complete the waiting user task where the user identifier is empty.</li>
+     * </ol>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>on the first request, the process instance is correctly created,</li>
+     * <li>on the 2nd request, a fault is returned.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void userTaskRequest_EmptyUserIdValue() throws Exception {
+
+        // Create the 1st valid request
+        final Demande request_1 = new Demande();
+        request_1.setDemandeur("demandeur");
+        request_1.setNbJourDde(10);
+        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setMotifDde("hollidays");
+
+        // Send the 1st valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_1)), null));
+
+        // Assert the response of the 1st valid request
+        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Create the 2nd valid request
+        final Validation request_2 = new Validation();
+        request_2.setValideur("");
+        request_2.setNumeroDde(response_1.getNumeroDde());
+        request_2.setApprobation(Boolean.TRUE.toString());
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_2)), null));
+
+        // Assert the response of the 2nd valid request
+        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_2 = responseMsg_2.getFault();
+        assertNotNull("No fault returns", fault_2);
+        final String faultStr = SourceHelper.toString(fault_2);
+        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        assertNull("XML payload in response", responseMsg_2.getPayload());
+        // TODO: Add a check against Activiti to verify that the user task is not complete
+    }
+
+    /**
+     * <p>
+     * Check the message processing where:
+     * <ol>
+     * <li>a first valid request is sent to create a new process instance,</li>
+     * <li>a 2nd request is sent to complete the waiting user task where the process instance identifier is missing.</li>
+     * </ol>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>on the first request, the process instance is correctly created,</li>
+     * <li>on the 2nd request, a fault is returned.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void userTaskRequest_NoProcessInstanceIdValue() throws Exception {
+
+        // Create the 1st valid request
+        final Demande request_1 = new Demande();
+        request_1.setDemandeur("demandeur");
+        request_1.setNbJourDde(10);
+        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setMotifDde("hollidays");
+
+        // Send the 1st valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_1)), null));
+
+        // Assert the response of the 1st valid request
+        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Create the 2nd valid request
+        final Validation request_2 = new Validation();
+        request_2.setValideur("valideur");
+        request_2.setApprobation(Boolean.TRUE.toString());
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_2)), null));
+
+        // Assert the response of the 2nd valid request
+        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_2 = responseMsg_2.getFault();
+        assertNotNull("No fault returns", fault_2);
+        final String faultStr = SourceHelper.toString(fault_2);
+        assertTrue("Unexpected fault", faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
+        assertNull("XML payload in response", responseMsg_2.getPayload());
+        // TODO: Add a check against Activiti to verify that the user task is not complete
+    }
+
+    /**
+     * <p>
+     * Check the message processing where:
+     * <ol>
+     * <li>a first valid request is sent to create a new process instance,</li>
+     * <li>a 2nd request is sent to complete the waiting user task where the process instance identifier is empty.</li>
+     * </ol>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>on the first request, the process instance is correctly created,</li>
+     * <li>on the 2nd request, a fault is returned.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void userTaskRequest_EmptyProcessInstanceIdValue() throws Exception {
+
+        // Create the 1st valid request
+        final Demande request_1 = new Demande();
+        request_1.setDemandeur("demandeur");
+        request_1.setNbJourDde(10);
+        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setMotifDde("hollidays");
+
+        // Send the 1st valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_1)), null));
+
+        // Assert the response of the 1st valid request
+        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Create the 2nd valid request
+        final Validation request_2 = new Validation();
+        request_2.setValideur("demandeur");
+        request_2.setNumeroDde("");
+        request_2.setApprobation(Boolean.TRUE.toString());
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_2)), null));
+
+        // Assert the response of the 2nd valid request
+        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_2 = responseMsg_2.getFault();
+        assertNotNull("No fault returns", fault_2);
+        final String faultStr = SourceHelper.toString(fault_2);
+        assertTrue("Unexpected fault", faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
+        assertNull("XML payload in response", responseMsg_2.getPayload());
+        // TODO: Add a check against Activiti to verify that the user task is not complete
     }
 
     /**
