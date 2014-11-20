@@ -59,7 +59,10 @@ public abstract class ActivitiOperation {
 
     protected final String processKey;
 
-    protected final String bpmnAction;
+    /**
+     * The task identifier on which the action must be realize on the BPMN process side
+     */
+    protected final String actionId;
 
     protected final XPathExpression proccesInstanceIdXPathExpr;
 
@@ -89,7 +92,7 @@ public abstract class ActivitiOperation {
         this.wsdlOperationName = annotatedOperation.getWsdlOperationName();
         this.processDefinitionId = processDefinitionId;
         this.processKey = annotatedOperation.getProcessDefinitionId();
-        this.bpmnAction = annotatedOperation.getBpmnAction();
+        this.actionId = annotatedOperation.getActionId();
         this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();
         this.userIdXPathExpr = annotatedOperation.getUserIdHolder();
         this.bpmnVarInMsg = annotatedOperation.getBpmnVarInMsg();
@@ -100,9 +103,9 @@ public abstract class ActivitiOperation {
     }
 
     /**
-     * @return The name of the BPMN action
+     * @return The action to realize on the BPMN process side (ie, the name of the BPMN action)
      */
-    public abstract String getBpmnActionType();
+    public abstract String getAction();
 
     /**
      * Execute the operation
@@ -130,8 +133,8 @@ public abstract class ActivitiOperation {
 
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Activiti processDefId = " + processDefinitionId);
-            logger.fine("Activiti Action (TaskId) = " + bpmnAction);
-            logger.fine("Activiti ActionType = " + this.getBpmnActionType());
+            logger.fine("Activiti Action = " + this.getClass().getSimpleName());
+            logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
         }
 
         inMsgWsdl.getDocumentElement().normalize();
@@ -161,7 +164,8 @@ public abstract class ActivitiOperation {
             // test if the process variable is required and value is not present
             if (varNode == null) {
                 if (bpmnVarType.get(varBpmn).isRequired()) {
-                    throw new MessagingException("The task: " + bpmnAction + " of process: " + processDefinitionId
+                    throw new MessagingException("The task: " + this.getClass().getSimpleName() + " of process: "
+                            + this.processDefinitionId
                             + " required a value of bpmn variables: " + varBpmn
                             + " that must be given through the message variable: " + varNameInMsg + " !");
                 } else { // (! bpmnVarType.get(varBpmn).isRequired() )
@@ -176,7 +180,8 @@ public abstract class ActivitiOperation {
             final String varValueInMsg = varNode.getTextContent().trim();
             if ((varValueInMsg == null) || (varValueInMsg.isEmpty())) {
                 if (bpmnVarType.get(varBpmn).isRequired()) {
-                    throw new MessagingException("The task: " + bpmnAction + " of process: " + processDefinitionId
+                    throw new MessagingException("The task: " + this.getClass().getSimpleName() + " of process: "
+                            + this.processDefinitionId
                             + " required a value of bpmn variables: " + varBpmn
                             + " that must be given through the message variable: " + varNameInMsg + " !");
                 } else { // (! bpmnVarType.get(varBpmn).isRequired() )
@@ -275,8 +280,8 @@ public abstract class ActivitiOperation {
         if (logger.isLoggable(logLevel)) {
             logger.log(logLevel, "operation '" + this.getClass().getSimpleName() + "':");
             logger.log(logLevel, "  - processDefinitionId = " + this.processDefinitionId);
-            logger.log(logLevel, "  - processKey = " + this.processKey);
-            logger.log(logLevel, "  - bpmnAction = " + this.bpmnAction);
+            logger.log(logLevel, "  - processInstanceId = " + this.processKey);
+            logger.log(logLevel, "  - action = " + this.getClass().getSimpleName());
             for (final Entry<Object, Object> entry : this.bpmnVarInMsg.entrySet()) {
                 final String key = (String) entry.getKey();
                 logger.log(logLevel, "  - bpmnVar => inMsg: " + key + " => " + entry.getValue());
@@ -296,9 +301,10 @@ public abstract class ActivitiOperation {
                 logger.log(logLevel, "      - bpmn variable : " + key + " - Name = " + value.getName() + " - Type = "
                         + value.getType());
                 if (value.getType().equals("enum")) {
-                    for (final FormValue enumValue : value.getFormValues())
+                    for (final FormValue enumValue : value.getFormValues()) {
                         logger.log(logLevel, "        |------  enum value Id = " + enumValue.getId() + " - Value = "
                                 + enumValue.getName());
+                    }
                 } else if (value.getType().equals("date")) {
                     logger.log(logLevel, "        |------  Date pattern = " + value.getDatePattern());
                 }
@@ -312,10 +318,6 @@ public abstract class ActivitiOperation {
 
     public String getProcessKey() {
         return this.processKey;
-    }
-
-    public String getBpmnAction() {
-        return this.bpmnAction;
     }
 
     public Properties getBpmnVarInMsg() {

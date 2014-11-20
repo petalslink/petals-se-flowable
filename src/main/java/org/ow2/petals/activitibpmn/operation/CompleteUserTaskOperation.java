@@ -81,10 +81,11 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
 
         // Get the task
         final List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(this.bpmnAction).list();
+                .taskDefinitionKey(this.actionId).list();
         if ((taskList == null) || (taskList.size() == 0)) {
-            throw new MessagingException("No tasks: " + bpmnAction + " for process instance id: " + processInstanceId
-                    + " was found.");
+            // This error should not occur because this check has been done when deploying the SU
+            throw new MessagingException("No tasks: " + this.actionId + " for process instance id: "
+                    + processInstanceId + " was found.");
         }
         // Perform the user Task
         try {
@@ -98,8 +99,8 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
     }
 
     @Override
-    public String getBpmnActionType() {
-        return CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE;
+    public String getAction() {
+        return CompleteUserTaskAnnotatedOperation.BPMN_ACTION;
     }
 
 }

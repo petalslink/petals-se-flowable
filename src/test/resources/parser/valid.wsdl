@@ -140,8 +140,8 @@
       	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
    	   <bpmn:operation
    	   		processDefinitionId="vacationRequest"
-			      bpmnActionType="startEvent"
- 			      bpmnAction="request" />
+			      action="startEvent"
+ 			      actionId="request" />
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
       	<bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
@@ -160,8 +160,8 @@
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
   	   	<bpmn:operation
                processDefinitionId="vacationRequest"
-   	   		bpmnActionType="userTask" 
-   	   		bpmnAction="handleRequest" />
+   	   		action="userTask" 
+   	   		actionId="handleRequest" />
          <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
@@ -180,8 +180,8 @@
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/adjustVacationRequestTask" />
   	   	<bpmn:operation
                processDefinitionId="vacationRequest"
-   	   		bpmnActionType="userTask"
-   	   		bpmnAction="adjustVacationRequestTask"  />
+   	   		action="userTask"
+   	   		actionId="adjustVacationRequestTask"  />
    	   <bpmn:processInstanceId>/*[local-name()='ajustement']/*[local-name()='numeroDdeInitiale']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='ajustement']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourNouvelleDde" />

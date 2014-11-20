@@ -120,8 +120,8 @@
     <wsdl:operation name="demanderConges_missingAttr">
       	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
    	   <bpmn:operation
-			      bpmnActionType="startEvent"
- 			      bpmnAction="request" />
+			      action="startEvent"
+ 			      actionId="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
@@ -140,8 +140,8 @@
     <wsdl:operation name="validerDemande_missingAttr">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
   	   	<bpmn:operation
-   	   		bpmnActionType="userTask" 
-   	   		bpmnAction="handleRequest" />
+   	   		action="userTask" 
+   	   		actionId="handleRequest" />
          <bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
@@ -160,8 +160,8 @@
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
          <bpmn:operation
                processDefinitionId=""
-               bpmnActionType="startEvent"
-               bpmnAction="request" />
+               action="startEvent"
+               actionId="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
@@ -181,8 +181,8 @@
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
          <bpmn:operation
                processDefinitionId=""
-               bpmnActionType="userTask" 
-               bpmnAction="handleRequest" />
+               action="userTask" 
+               actionId="handleRequest" />
          <bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />

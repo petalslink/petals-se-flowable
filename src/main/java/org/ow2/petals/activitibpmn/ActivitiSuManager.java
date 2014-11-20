@@ -553,13 +553,13 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             final List<org.activiti.bpmn.model.Process> processes = model.getProcesses();
             List<org.activiti.bpmn.model.FormProperty> formPropertyList = null;
             boolean found = false;
-            final String bpmnAction = annotatedOperation.getBpmnAction();
+            final String bpmnActionId = annotatedOperation.getActionId();
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
                 // search form Property for the Start Event: bpmnAction
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
                         // search the Start Event: bpmnAction
-                        if ((flowElt instanceof StartEvent) && (flowElt.getId().equals(bpmnAction))) {
+                        if ((flowElt instanceof StartEvent) && (flowElt.getId().equals(bpmnActionId))) {
                             StartEvent startEvent = (StartEvent) flowElt;
                             formPropertyList = startEvent.getFormProperties();
                             found = true;
@@ -572,7 +572,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 outerloop: for (final org.activiti.bpmn.model.Process process : processes) {
                     for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
                         // search the Start Event: bpmnAction
-                        if ((flowElt instanceof UserTask) && (flowElt.getId().equals(bpmnAction))) {
+                        if ((flowElt instanceof UserTask) && (flowElt.getId().equals(bpmnActionId))) {
                             UserTask userTask = (UserTask) flowElt;
                             formPropertyList = userTask.getFormProperties();
                             found = true;
@@ -582,10 +582,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 }
             } else {
                 // TODO: The deployment should be aborted
-                this.logger.warning("Unsupported BPMN action type '" + annotatedOperation.getBpmnActionType() + "'. Skipped");
+                this.logger.warning("Unsupported BPMN action type '" + annotatedOperation.getAction() + "'. Skipped");
             }
             if (!found) {
-                throw new PEtALSCDKException("Malformed Wsdl: BpmnAction : " + bpmnAction
+                throw new PEtALSCDKException("Malformed Wsdl: BpmnAction : " + bpmnActionId
                         + ", does not exist in Activiti process : " + processDefinitionId);
             }
             if (formPropertyList != null && formPropertyList.size() > 0) {

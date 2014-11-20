@@ -34,7 +34,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstan
  */
 public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
 
-    public static final String BPMN_ACTION_TYPE = "userTask";
+    public static final String BPMN_ACTION = "userTask";
 
     /**
      * 
@@ -64,8 +64,8 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     }
 
     @Override
-    public String getBpmnActionType() {
-        return BPMN_ACTION_TYPE;
+    public String getAction() {
+        return BPMN_ACTION;
     }
 
     @Override

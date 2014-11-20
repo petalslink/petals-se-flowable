@@ -33,7 +33,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotati
  */
 public class StartEventAnnotatedOperation extends AnnotatedOperation {
 
-    public static final String BPMN_ACTION_TYPE = "startEvent";
+    public static final String BPMN_ACTION = "startEvent";
 
     /**
      * 
@@ -41,7 +41,7 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
      *            The WSDL operation containing the current annotations
      * @param processDefinitionId
      *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
-     * @param bpmnAction
+     * @param actionId
      * @param processInstanceIdHolder
      *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
      *            <code>null</code>.
@@ -55,10 +55,10 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
      *             The annotated operation is incoherent.
      */
     public StartEventAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
-            final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
+            final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
             final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
+        super(wsdlOperationName, processDefinitionId, actionId, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
                 outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
     }
 
@@ -68,8 +68,8 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
     }
 
     @Override
-    public String getBpmnActionType() {
-        return BPMN_ACTION_TYPE;
+    public String getAction() {
+        return BPMN_ACTION;
     }
 
 }

@@ -71,12 +71,17 @@ public class AnnotatedWsdlParser {
      */
     private static final String BPMN_ANNOTATION_PROCESS_DEFINITION_ID = "processDefinitionId";
 
-    private static final String BPMN_ANNOTATION_ACTION = "bpmnAction";
+    /**
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the action to realize on the process
+     * side
+     */
+    private static final String BPMN_ANNOTATION_ACTION = "action";
 
     /**
-     * Local part of the annotation tag associated to the action type to do on BPMN engine
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the identifier of the step on which
+     * the action will be realized
      */
-    private static final String BPMN_ANNOTATION_ACTION_TYPE = "bpmnActionType";
+    private static final String BPMN_ANNOTATION_ACTION_ID = "actionId";
 
     /**
      * Local part of the annotation tag associated to the place holder containing the process instance identifier
@@ -152,11 +157,12 @@ public class AnnotatedWsdlParser {
                     final String processDefinitionKey = ((Element) bpmnOperation)
                             .getAttribute(BPMN_ANNOTATION_PROCESS_DEFINITION_ID);
 
-                    // get the bpmnAction
-                    final String bpmnAction = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION);
+                    // get the action to do
+                    final String action = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION);
 
-                    // get the bpmnActionType
-                    final String bpmnActionType = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION_TYPE);
+                    // get the task identifier on which the action must be done
+                    // TODO: Create a unit test where the action identifier does not exist in the process definition
+                    final String actionId = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION_ID);
 
                     // Get the node "bpmn:processId" and its message
                     final Node processInstanceId = ((Element) wsdlOperation).getElementsByTagNameNS(
@@ -238,16 +244,16 @@ public class AnnotatedWsdlParser {
 
                     // Create the annotated operation from annotations read into the WSDL
                     final AnnotatedOperation annotatedOperation;
-                    if (StartEventAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+                    if (StartEventAnnotatedOperation.BPMN_ACTION.equals(action)) {
                         annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
-                                bpmnAction, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
+                                actionId, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
                                 faultMsgBpmnVar, bpmnVarList);
-                    } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION_TYPE.equals(bpmnActionType)) {
+                    } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION.equals(action)) {
                         annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName,
-                                processDefinitionKey, bpmnAction, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg,
+                                processDefinitionKey, actionId, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg,
                                 outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
                     } else {
-                        throw new UnsupportedBpmnActionTypeException(wsdlOperationName, bpmnAction);
+                        throw new UnsupportedBpmnActionTypeException(wsdlOperationName, action);
                     }
 
                     // Check the coherence of the annotated operation (ie. coherence of annotations of the operation)

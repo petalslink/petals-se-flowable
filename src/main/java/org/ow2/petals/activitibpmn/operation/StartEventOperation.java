@@ -55,8 +55,8 @@ public class StartEventOperation extends ActivitiOperation {
     }
 
     @Override
-    public String getBpmnActionType() {
-        return StartEventAnnotatedOperation.BPMN_ACTION_TYPE;
+    public String getAction() {
+        return StartEventAnnotatedOperation.BPMN_ACTION;
     }
 
     @Override

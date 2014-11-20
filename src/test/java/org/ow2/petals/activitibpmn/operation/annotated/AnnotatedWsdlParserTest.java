@@ -36,6 +36,7 @@ import org.ow2.petals.activitibpmn.ActivitiSuManagerTest;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoActionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessDefinitionIdMappingException;
@@ -619,6 +620,74 @@ public class AnnotatedWsdlParserTest {
                         "demanderConges_emptyAttr")) {
                     emptyAttrMappingOp1 = true;
                 } else if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_emptyAttr")) {
+                    emptyAttrMappingOp2 = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(missingAttrMappingOp1);
+        assertTrue(missingAttrMappingOp2);
+        assertTrue(emptyAttrMappingOp1);
+        assertTrue(emptyAttrMappingOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the action identifier is as following for the
+     * BPMN actions 'userTask' and 'startEvent':
+     * <ul>
+     * <li>attribute missing (ie. no attribute in the XML tag 'operation'),</li>
+     * <li>empty attribute(ie. the XML attribute is empty).</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results: An error occurs about a missing or empty action id for both BPMN actions, and an error occurs
+     * about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithActionIdMissing() throws SAXException, IOException {
+
+        final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream("parser/missing-and-empty-action-id.wsdl");
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        final Document docWsdl;
+        try {
+            docWsdl = docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+
+        assertEquals(0, this.parser.parse(docWsdl).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(5, encounteredErrors.size());
+        boolean missingAttrMappingOp1 = false;
+        boolean missingAttrMappingOp2 = false;
+        boolean emptyAttrMappingOp1 = false;
+        boolean emptyAttrMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof NoActionIdMappingException) {
+                if (((NoActionIdMappingException) exception).getWsdlOperationName()
+                        .equals("demanderConges_missingAttr")) {
+                    missingAttrMappingOp1 = true;
+                } else if (((NoActionIdMappingException) exception).getWsdlOperationName().equals(
+                        "validerDemande_missingAttr")) {
+                    missingAttrMappingOp2 = true;
+                } else if (((NoActionIdMappingException) exception).getWsdlOperationName().equals(
+                        "demanderConges_emptyAttr")) {
+                    emptyAttrMappingOp1 = true;
+                } else if (((NoActionIdMappingException) exception).getWsdlOperationName().equals(
                         "validerDemande_emptyAttr")) {
                     emptyAttrMappingOp2 = true;
                 } else {
