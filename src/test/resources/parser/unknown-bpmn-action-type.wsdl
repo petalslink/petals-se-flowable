@@ -16,16 +16,6 @@
  along with this program/library; If not, see <http://www.gnu.org/licenses/>
  for the GNU Lesser General Public License version 2.1.
 -->
-<!-- Copyright (c) 2014 Linagora This program/library is free software: you 
-   can redistribute it and/or modify it under the terms of the GNU Lesser General 
-   Public License as published by the Free Software Foundation, either version 
-   2.1 of the License, or (at your option) any later version. This program/library 
-   is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
-   without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
-   PURPOSE. See the GNU Lesser General Public License for more details. You 
-   should have received a copy of the GNU Lesser General Public License along 
-   with this program/library; If not, see <http://www.gnu.org/licenses/> for 
-   the GNU Lesser General Public License version 2.1. -->
 <!-- ======================== DEFINITION ==================================== -->
 <wsdl:definitions name="demandeDeCongesService"
    targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
@@ -157,9 +147,15 @@
             action="unknown-action-type" actionId="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
-         <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
-         <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
+         <bpmn:variable name="numberOfDays">
+            /*[local-name()='demande']/*[local-name()='nbJourDde']
+         </bpmn:variable>
+         <bpmn:variable name="startDate">
+            /*[local-name()='demande']/*[local-name()='DateDebutDde']
+         </bpmn:variable>
+         <bpmn:variable name="vacationMotivation">
+            /*[local-name()='demande']/*[local-name()='motifDde']
+         </bpmn:variable>
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>

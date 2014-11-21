@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.transform.dom.DOMSource;
 
-import org.activiti.bpmn.model.FormProperty;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
@@ -44,14 +43,10 @@ public class StartEventOperation extends ActivitiOperation {
     /**
      * @param annotatedOperation
      *            Annotations of the operation to create
-     * @param processDefinitionId
-     *            The process definition identifier to associate to the operation to create
-     * @param bpmnVarType
      * @param logger
      */
-    public StartEventOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
-            final Map<String, FormProperty> bpmnVarType, final Logger logger) {
-        super(annotatedOperation, processDefinitionId, bpmnVarType, logger);
+    public StartEventOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
+        super(annotatedOperation, logger);
     }
 
     @Override
@@ -70,9 +65,12 @@ public class StartEventOperation extends ActivitiOperation {
         try {
             // TODO: How this works on concurrent requests. I think that it is not thread-safe ?
             identityService.setAuthenticatedUserId(bpmnUserId);
-            // TODO: Create a unit test with inexisting processDefinition. An error should occur when deploying the SU
-            final ProcessInstance processInstance = runtimeService.startProcessInstanceById(this.processDefinitionId,
-                    processVars);
+
+            // We use RuntimeService.startProcessInstanceById() to be able to create a process instance from the given
+            // process version.
+            // TODO: Create a unit test where the process was undeployed without undeploying the service unit
+            final ProcessInstance processInstance = runtimeService.startProcessInstanceById(
+                    this.deployedProcessDefinitionId, processVars);
             bpmnProcessIdValue = processInstance.getId();
         } finally {
             identityService.setAuthenticatedUserId(null);

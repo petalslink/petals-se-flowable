@@ -124,9 +124,15 @@
  			      actionId="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
-      	<bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
-      	<bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
+         <bpmn:variable name="numberOfDays">
+            /*[local-name()='demande']/*[local-name()='nbJourDde']
+         </bpmn:variable>
+         <bpmn:variable name="startDate">
+            /*[local-name()='demande']/*[local-name()='DateDebutDde']
+         </bpmn:variable>
+         <bpmn:variable name="vacationMotivation">
+            /*[local-name()='demande']/*[local-name()='motifDde']
+         </bpmn:variable>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -144,8 +150,12 @@
    	   		actionId="handleRequest" />
          <bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
+         <bpmn:variable name="vacationApproved">
+            /*[local-name()='validation']/*[local-name()='approbation']
+         </bpmn:variable>
+         <bpmn:variable name="managerMotivation">
+            /*[local-name()='validation']/*[local-name()='motifRefus']
+         </bpmn:variable>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -164,9 +174,15 @@
                actionId="request" />
          <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
-         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourDde" />
-         <bpmn:variable bpmn="startDate" inMsg="DateDebutDde" />
-         <bpmn:variable bpmn="vacationMotivation" inMsg="motifDde" />
+         <bpmn:variable name="numberOfDays">
+            /*[local-name()='demande']/*[local-name()='nbJourDde']
+         </bpmn:variable>
+         <bpmn:variable name="startDate">
+            /*[local-name()='demande']/*[local-name()='DateDebutDde']
+         </bpmn:variable>
+         <bpmn:variable name="vacationMotivation">
+            /*[local-name()='demande']/*[local-name()='motifDde']
+         </bpmn:variable>
          <wsdl:input>
          <soap:body use="literal" />
          </wsdl:input>
@@ -185,8 +201,12 @@
                actionId="handleRequest" />
          <bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
-         <bpmn:variable bpmn="vacationApproved" inMsg="approbation" />
-         <bpmn:variable bpmn="managerMotivation" inMsg="motifRefus" />
+         <bpmn:variable name="vacationApproved">
+            /*[local-name()='demande']/*[local-name()='approbation']
+         </bpmn:variable>
+         <bpmn:variable name="managerMotivation">
+            /*[local-name()='demande']/*[local-name()='motifRefus']
+         </bpmn:variable>
          <wsdl:input>
          <soap:body use="literal" />
          </wsdl:input>

@@ -24,15 +24,23 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 
+import org.activiti.bpmn.converter.BpmnXMLConverter;
+import org.activiti.bpmn.converter.util.InputStreamProvider;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.engine.impl.util.io.InputStreamSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.ow2.petals.activitibpmn.ActivitiSuManagerTest;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.ActionIdNotFoundInModelException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedVariableException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
@@ -42,10 +50,17 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperation
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoVariableMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessDefinitionIdDuplicatedInModelException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessDefinitionIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessInstanceIdMappingExpressionException;
-import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.RequiredVariableMissingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UserIdMappingExpressionException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableMappingExpressionException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableNameMissingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableNotFoundInModelException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -75,6 +90,46 @@ public class AnnotatedWsdlParserTest {
     }
 
     /**
+     * Read a WSDL as {@link Document} from a resource file
+     * 
+     * @param resourceName
+     *            Name of the resource file
+     * @return The WSDL as {@link Document}
+     */
+    private Document readWsdlDocument(final String resourceName) throws SAXException, IOException {
+        final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+        assertNotNull("WSDL not found", is);
+        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
+        try {
+            return docBuilder.parse(is);
+        } finally {
+            DocumentBuilders.releaseDocumentBuilder(docBuilder);
+        }
+    }
+
+    /**
+     * Read BPMN model from a resource file
+     * 
+     * @param resourceName
+     *            Name of the resource file
+     * @return The BPMN model
+     */
+    private BpmnModel readBpmnModel(final String resourceName) throws SAXException, IOException {
+        final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
+        assertNotNull("Process definition file not found", is);
+        try {
+            final InputStreamProvider bpmnInputStreamSource = new InputStreamSource(is);
+            return new BpmnXMLConverter().convertToBpmnModel(bpmnInputStreamSource, false, false);
+        } finally {
+            try {
+                is.close();
+            } catch (final IOException e) {
+                this.logger.log(Level.WARNING, "Unable to close BPMN definition file ''. Error skiped !", e);
+            }
+        }
+    }
+
+    /**
      * <p>
      * Check the parser against a WSDL that does not contain binding
      * </p>
@@ -85,18 +140,10 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithoutBinding() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/abstract-import.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/abstract-import.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(2, encounteredErrors.size());
         boolean noWsdlBindingExceptionCounter = false;
@@ -126,18 +173,10 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithoutBpmnAnnotations() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/withoutBpmnAnnotation.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/withoutBpmnAnnotation.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(4, encounteredErrors.size());
         int multipleBpmnOperationDefinedExceptionCounter = 0;
@@ -166,18 +205,10 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithWsdlOpWithMultipleBpmnOp() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/several-bpmn-op-in-one-wsdl-op.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/several-bpmn-op-in-one-wsdl-op.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(2, encounteredErrors.size());
         boolean multipleBpmnOperationDefinedExceptionFound = false;
@@ -210,17 +241,9 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlValid() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("parser/valid.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        final List<AnnotatedOperation> annotatedOperations = this.parser.parse(docWsdl);
+        final List<AnnotatedOperation> annotatedOperations = this.parser.parse(this
+.readWsdlDocument("parser/valid.wsdl"),
+                Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")));
         assertEquals(0, this.parser.getEncounteredErrors().size());
         assertEquals(3, annotatedOperations.size());
         boolean op1_found = true;
@@ -259,18 +282,9 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlValidWithImports() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/valid-with-imports.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        final List<AnnotatedOperation> annotatedOperations = this.parser.parse(docWsdl);
+        final List<AnnotatedOperation> annotatedOperations = this.parser.parse(this
+.readWsdlDocument("parser/valid-with-imports.wsdl"),
+                Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")));
         assertEquals(0, this.parser.getEncounteredErrors().size());
         assertEquals(3, annotatedOperations.size());
         boolean op1_found = true;
@@ -305,25 +319,17 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithUnknownBpmnAction() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/unknown-bpmn-action-type.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/unknown-bpmn-action-type.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(2, encounteredErrors.size());
         boolean unknownBpmnActionTypeExceptionFound = false;
         boolean noBpmnOperationExceptionFound = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
-            if (exception instanceof UnsupportedBpmnActionTypeException) {
+            if (exception instanceof UnsupportedActionException) {
                 unknownBpmnActionTypeExceptionFound = true;
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -353,18 +359,10 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithUserIdPlaceHolderMissing() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/missing-and-empty-user-id.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/missing-and-empty-user-id.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(7, encounteredErrors.size());
@@ -424,18 +422,10 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithUserIdPlaceHolderInvalidExpr() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/invalid-user-id.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/invalid-user-id.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(3, encounteredErrors.size());
@@ -494,19 +484,12 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithProcessInstanceIdPlaceHolderMissing() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/missing-and-empty-process-instance-id.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
         // The process instance id is not mandatory in output for BPMN action 'startEvent'
-        assertEquals(3, this.parser.parse(docWsdl).size());
+        assertEquals(
+                3,
+                this.parser.parse(this.readWsdlDocument("parser/missing-and-empty-process-instance-id.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")))
+                .size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(3, encounteredErrors.size());
@@ -551,18 +534,10 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithProcessInstanceIdPlaceHolderInvalidExpr() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/invalid-process-instance-id.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(1, this.parser.parse(docWsdl).size());
+        assertEquals(
+                1,
+                this.parser.parse(this.readWsdlDocument("parser/invalid-process-instance-id.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(1, encounteredErrors.size());
@@ -588,18 +563,11 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithProcessDefinitionIdMissing() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/missing-and-empty-process-definition-id.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/missing-and-empty-process-definition-id.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")))
+                .size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(5, encounteredErrors.size());
@@ -656,18 +624,10 @@ public class AnnotatedWsdlParserTest {
     @Test
     public void parse_WsdlWithActionIdMissing() throws SAXException, IOException {
 
-        final InputStream is = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("parser/missing-and-empty-action-id.wsdl");
-        assertNotNull("WSDL not found", is);
-        final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
-        final Document docWsdl;
-        try {
-            docWsdl = docBuilder.parse(is);
-        } finally {
-            DocumentBuilders.releaseDocumentBuilder(docBuilder);
-        }
-
-        assertEquals(0, this.parser.parse(docWsdl).size());
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/missing-and-empty-action-id.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
         assertEquals(5, encounteredErrors.size());
@@ -707,4 +667,393 @@ public class AnnotatedWsdlParserTest {
         assertTrue(noBpmnOperationExceptionFound);
     }
 
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the variable place holder is set to an invalid
+     * XPATH expression for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the invalid expression of the variable placeholder for both BPMN actions,
+     * and an error occurs about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithVariablePlaceHolderInvalidExpr() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/invalid-variable-placeholder.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean invalidVariableMappingOp1 = false;
+        boolean invalidVariableMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof VariableMappingExpressionException) {
+                final VariableMappingExpressionException expectedException = (VariableMappingExpressionException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    invalidVariableMappingOp1 = true;
+                    assertEquals("numberOfDays", expectedException.getVariableName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    invalidVariableMappingOp2 = true;
+                    assertEquals("vacationApproved", expectedException.getVariableName());
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(invalidVariableMappingOp1);
+        assertTrue(invalidVariableMappingOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the variable place holder is as following for the
+     * BPMN actions 'userTask' and 'startEvent':
+     * <ul>
+     * <li>variable tag missing (ie. no XML tag user id),</li>
+     * <li>variable name is missing,</li>
+     * <li>variable name is empty,</li>
+     * <li>variable placeholder is missing,</li>
+     * <li>variable placeholder is empty.</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results: An error occurs about a missing or empty variable placeholder for both BPMN actions, and an
+     * error occurs about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithVariablePlaceHolderMissing() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/missing-and-empty-variable-expression.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")))
+                .size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(11, encounteredErrors.size());
+        boolean missingTagVariableMappingOp1 = false;
+        boolean missingTagVariableMappingOp2 = false;
+        boolean missingVariableNameMappingOp1 = false;
+        boolean missingVariableNameMappingOp2 = false;
+        boolean emptyVariableNameMappingOp1 = false;
+        boolean emptyVariableNameMappingOp2 = false;
+        boolean missingVariablePlaceholderMappingOp1 = false;
+        boolean missingVariablePlaceholderMappingOp2 = false;
+        boolean emptyVariablePlaceholderMappingOp1 = false;
+        boolean emptyVariablePlaceholderMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof RequiredVariableMissingException) {
+                final RequiredVariableMissingException expectedException = (RequiredVariableMissingException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges_missingVariableTag")) {
+                    missingTagVariableMappingOp1 = true;
+                    assertEquals("numberOfDays", expectedException.getVariableName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingVariableTag")) {
+                    missingTagVariableMappingOp2 = true;
+                    assertEquals("vacationApproved", expectedException.getVariableName());
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof VariableNameMissingException) {
+                final VariableNameMissingException expectedException = (VariableNameMissingException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges_missingVariableName")) {
+                    missingVariableNameMappingOp1 = true;
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingVariableName")) {
+                    missingVariableNameMappingOp2 = true;
+                } else if (expectedException.getWsdlOperationName().equals("demanderConges_emptyVariableName")) {
+                    emptyVariableNameMappingOp1 = true;
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_emptyVariableName")) {
+                    emptyVariableNameMappingOp2 = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoVariableMappingException) {
+                final NoVariableMappingException expectedException = (NoVariableMappingException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges_noVariableContent")) {
+                    missingVariablePlaceholderMappingOp1 = true;
+                    assertEquals("numberOfDays", expectedException.getVariableName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_noVariableContent")) {
+                    missingVariablePlaceholderMappingOp2 = true;
+                    assertEquals("vacationApproved", expectedException.getVariableName());
+                } else if (expectedException.getWsdlOperationName().equals("demanderConges_emptyVariableContent")) {
+                    emptyVariablePlaceholderMappingOp1 = true;
+                    assertEquals("numberOfDays", expectedException.getVariableName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_emptyVariableContent")) {
+                    emptyVariablePlaceholderMappingOp2 = true;
+                    assertEquals("vacationApproved", expectedException.getVariableName());
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(missingTagVariableMappingOp1);
+        assertTrue(missingTagVariableMappingOp2);
+        assertTrue(missingVariableNameMappingOp1);
+        assertTrue(missingVariableNameMappingOp2);
+        assertTrue(emptyVariableNameMappingOp1);
+        assertTrue(emptyVariableNameMappingOp2);
+        assertTrue(missingVariablePlaceholderMappingOp1);
+        assertTrue(missingVariablePlaceholderMappingOp2);
+        assertTrue(emptyVariablePlaceholderMappingOp1);
+        assertTrue(emptyVariablePlaceholderMappingOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the process definition identifier does not exist
+     * into the BPMN model for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the unexisting process definition identifier for both BPMN actions
+     * 'startEvent' and 'userTask'.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithUnexistingProcessDefinitionId() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/process-definition-id-not-found-in-model.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean unexistingProcessDefinitionIdOp1 = false;
+        boolean unexistingProcessDefinitionIdOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof ProcessDefinitionIdNotFoundInModelException) {
+                final ProcessDefinitionIdNotFoundInModelException expectedException = (ProcessDefinitionIdNotFoundInModelException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    unexistingProcessDefinitionIdOp1 = true;
+                    assertEquals("unexistingProcessDefinitionId", expectedException.getProcessDefinitionId());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    unexistingProcessDefinitionIdOp2 = true;
+                    assertEquals("unexistingProcessDefinitionId", expectedException.getProcessDefinitionId());
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(unexistingProcessDefinitionIdOp1);
+        assertTrue(unexistingProcessDefinitionIdOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the process definition identifier is declared in
+     * several BPMN models for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the duplicated process definition identifiers for both BPMN actions
+     * 'startEvent' and 'userTask'.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithDuplicatedProcessDefinitionId() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(
+                        this.readWsdlDocument("parser/valid.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"),
+                                this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(4, encounteredErrors.size());
+        boolean unexistingProcessDefinitionIdOp1 = false;
+        boolean unexistingProcessDefinitionIdOp2 = false;
+        boolean unexistingProcessDefinitionIdOp3 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof ProcessDefinitionIdDuplicatedInModelException) {
+                final ProcessDefinitionIdDuplicatedInModelException expectedException = (ProcessDefinitionIdDuplicatedInModelException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    unexistingProcessDefinitionIdOp1 = true;
+                    assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    unexistingProcessDefinitionIdOp2 = true;
+                    assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
+                } else if (expectedException.getWsdlOperationName().equals("ajusterDemande")) {
+                    unexistingProcessDefinitionIdOp3 = true;
+                    assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(unexistingProcessDefinitionIdOp1);
+        assertTrue(unexistingProcessDefinitionIdOp2);
+        assertTrue(unexistingProcessDefinitionIdOp3);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but the action identifier does not exist into the
+     * BPMN model for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the unexisting action identifier for both BPMN actions 'startEvent' and
+     * 'userTask'.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithUnexistingActionId() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/action-id-not-found-in-model.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean unexistingActionIdOp1 = false;
+        boolean unexistingActionIdOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof ActionIdNotFoundInModelException) {
+                final ActionIdNotFoundInModelException expectedException = (ActionIdNotFoundInModelException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    unexistingActionIdOp1 = true;
+                    assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
+                    assertEquals("unexisting-request", expectedException.getActionId());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    unexistingActionIdOp2 = true;
+                    assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
+                    assertEquals("unexisting-handleRequest", expectedException.getActionId());
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(unexistingActionIdOp1);
+        assertTrue(unexistingActionIdOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but a variable declaration is duplicated for the BPMN
+     * actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the variable duplication for both BPMN actions, and an error occurs about
+     * no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithDuplicatedVariables() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/duplicated-variables.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean duplicatedVariableMappingOp1 = false;
+        boolean duplicatedVariableMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof DuplicatedVariableException) {
+                final DuplicatedVariableException expectedException = ((DuplicatedVariableException) exception);
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    duplicatedVariableMappingOp1 = true;
+                    assertEquals("numberOfDays", expectedException.getVariableName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    duplicatedVariableMappingOp2 = true;
+                    assertEquals("vacationApproved", expectedException.getVariableName());
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(duplicatedVariableMappingOp1);
+        assertTrue(duplicatedVariableMappingOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but a variable declared does not exist into the BPMN
+     * model for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the unexisting variable for both BPMN actions 'startEvent' and
+     * 'userTask'.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithUnexistingVariable() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/variable-not-found-in-model.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml"))).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean unexistingActionIdOp1 = false;
+        boolean unexistingActionIdOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof VariableNotFoundInModelException) {
+                final VariableNotFoundInModelException expectedException = (VariableNotFoundInModelException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    unexistingActionIdOp1 = true;
+                    assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
+                    assertEquals("unexisting-variable-1", expectedException.getVariableName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    unexistingActionIdOp2 = true;
+                    assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
+                    assertEquals("unexisting-variable-2", expectedException.getVariableName());
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(unexistingActionIdOp1);
+        assertTrue(unexistingActionIdOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
 }

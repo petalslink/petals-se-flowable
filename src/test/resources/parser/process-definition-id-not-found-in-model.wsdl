@@ -110,7 +110,7 @@
     <wsdl:operation name="demanderConges">
       	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
    	   <bpmn:operation
-   	   		processDefinitionId="vacationRequest"
+   	   		processDefinitionId="unexistingProcessDefinitionId"
 			      action="startEvent"
  			      actionId="request" />
    	   <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
@@ -137,10 +137,10 @@
     <wsdl:operation name="validerDemande">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
   	   	<bpmn:operation
-               processDefinitionId="vacationRequest"
+               processDefinitionId="unexistingProcessDefinitionId"
    	   		action="userTask" 
    	   		actionId="handleRequest" />
-   	   <bpmn:processInstanceId>/[local-name()='validation']/[local-name()='numeroDde']</bpmn:processInstanceId>
+   	   <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable name="vacationApproved">
             /*[local-name()='validation']/*[local-name()='approbation']

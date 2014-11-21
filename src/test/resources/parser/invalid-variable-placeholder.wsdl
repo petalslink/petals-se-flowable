@@ -112,16 +112,16 @@
    	   <bpmn:operation
    	   		processDefinitionId="vacationRequest"
 			      action="startEvent"
- 			      actionId="request" />
-   	   <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
+		         actionId="request" />
+   	   <bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable name="numberOfDays">
-            /*[local-name()='demande']/*[local-name()='nbJourDde']
+            /[local-name()='demande']/[local-name()='nbJourDde']
          </bpmn:variable>
-      	<bpmn:variable name="startDate">
+         <bpmn:variable name="startDate">
             /*[local-name()='demande']/*[local-name()='DateDebutDde']
          </bpmn:variable>
-      	<bpmn:variable name="vacationMotivation">
+         <bpmn:variable name="vacationMotivation">
             /*[local-name()='demande']/*[local-name()='motifDde']
          </bpmn:variable>
       	<wsdl:input>
@@ -140,10 +140,10 @@
                processDefinitionId="vacationRequest"
    	   		action="userTask" 
    	   		actionId="handleRequest" />
-   	   <bpmn:processInstanceId>/[local-name()='validation']/[local-name()='numeroDde']</bpmn:processInstanceId>
+   	   <bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable name="vacationApproved">
-            /*[local-name()='validation']/*[local-name()='approbation']
+            /[local-name()='validation']/[local-name()='approbation']
          </bpmn:variable>
          <bpmn:variable name="managerMotivation">
             /*[local-name()='validation']/*[local-name()='motifRefus']

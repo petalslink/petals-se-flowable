@@ -112,7 +112,7 @@
    	   <bpmn:operation
    	   		processDefinitionId="vacationRequest"
 			      action="startEvent"
- 			      actionId="request" />
+ 			      actionId="unexisting-request" />
    	   <!-- bpmn:processInstanceId is not required for action 'startEvent' -->
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable name="numberOfDays">
@@ -139,8 +139,8 @@
   	   	<bpmn:operation
                processDefinitionId="vacationRequest"
    	   		action="userTask" 
-   	   		actionId="handleRequest" />
-   	   <bpmn:processInstanceId>/[local-name()='validation']/[local-name()='numeroDde']</bpmn:processInstanceId>
+   	   		actionId="unexisting-handleRequest" />
+   	   <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable name="vacationApproved">
             /*[local-name()='validation']/*[local-name()='approbation']

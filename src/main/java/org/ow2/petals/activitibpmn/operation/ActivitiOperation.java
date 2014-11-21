@@ -21,7 +21,6 @@ import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -44,7 +43,6 @@ import org.ow2.petals.activitibpmn.operation.exception.NoUserIdValueException;
 import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
 
 import com.ebmwebsourcing.easycommons.xml.Transformers;
 
@@ -55,26 +53,40 @@ public abstract class ActivitiOperation {
      */
     protected final String wsdlOperationName;
 
+    /**
+     * The process definition identifier
+     */
     protected final String processDefinitionId;
 
-    protected final String processKey;
+    /**
+     * The identifier of the deployed process definition, different from the process definition identifier.
+     */
+    protected String deployedProcessDefinitionId = null;
 
     /**
      * The task identifier on which the action must be realize on the BPMN process side
      */
     protected final String actionId;
 
+    /**
+     * The compiled XPath expression of the process instance identifier placeholder
+     */
     protected final XPathExpression proccesInstanceIdXPathExpr;
 
+    /**
+     * The compiled XPath expression of the user identifier placeholder
+     */
     protected final XPathExpression userIdXPathExpr;
 
-    protected final Properties bpmnVarInMsg;
+    /**
+     * The definition of variables of the operation
+     */
+    protected final Map<String, XPathExpression> variables;
 
-    protected final Properties outMsgBpmnVar;
-
-    protected final Properties faultMsgBpmnVar;
-
-    protected final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType;
+    /**
+     * Types of variables
+     */
+    protected final Map<String, FormProperty> variableTypes;
 
     protected final Logger logger;
 
@@ -83,23 +95,26 @@ public abstract class ActivitiOperation {
      *            Annotations of the operation to create
      * @param processDefinitionId
      *            The process definition identifier to associate to the operation to create
-     * @param bpmnVarType
      * @param logger
      */
-    protected ActivitiOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
-            final Map<String, org.activiti.bpmn.model.FormProperty> bpmnVarType, final Logger logger) {
+    protected ActivitiOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
 
         this.wsdlOperationName = annotatedOperation.getWsdlOperationName();
-        this.processDefinitionId = processDefinitionId;
-        this.processKey = annotatedOperation.getProcessDefinitionId();
+        this.processDefinitionId = annotatedOperation.getProcessDefinitionId();
         this.actionId = annotatedOperation.getActionId();
         this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();
         this.userIdXPathExpr = annotatedOperation.getUserIdHolder();
-        this.bpmnVarInMsg = annotatedOperation.getBpmnVarInMsg();
-        this.outMsgBpmnVar = annotatedOperation.getOutMsgBpmnVar();
-        this.faultMsgBpmnVar = annotatedOperation.getFaultMsgBpmnVar();
-        this.bpmnVarType = bpmnVarType;
+        this.variables = annotatedOperation.getVariables();
+        this.variableTypes = annotatedOperation.getVariableTypes();
         this.logger = logger;
+    }
+
+    /**
+     * @param deployedProcessDefinitionId
+     *            The identifier of the deployed process definition, different from the process definition identifier.
+     */
+    public void setDeployedProcessDefinitionId(final String deployedProcessDefinitionId) {
+        this.deployedProcessDefinitionId = deployedProcessDefinitionId;
     }
 
     /**
@@ -155,90 +170,77 @@ public abstract class ActivitiOperation {
         }
 
         // Get the bpmn variables
-        final Map<String, Object> processVars = new HashMap<String, Object>();
-        for (final String varBpmn : bpmnVarInMsg.stringPropertyNames()) {
-            String varNameInMsg = bpmnVarInMsg.getProperty(varBpmn);
-            Node varNode = inMsgWsdl.getElementsByTagNameNS("http://petals.ow2.org/se/Activitibpmn/1.0/su",
-                    varNameInMsg)
-                    .item(0);
-            // test if the process variable is required and value is not present
-            if (varNode == null) {
-                if (bpmnVarType.get(varBpmn).isRequired()) {
-                    throw new MessagingException("The task: " + this.getClass().getSimpleName() + " of process: "
-                            + this.processDefinitionId
-                            + " required a value of bpmn variables: " + varBpmn
-                            + " that must be given through the message variable: " + varNameInMsg + " !");
-                } else { // (! bpmnVarType.get(varBpmn).isRequired() )
-
-                    if (logger.isLoggable(Level.FINEST)) {
-                        logger.finest("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg + " => no value");
+        final Map<String, Object> variableValue = new HashMap<String, Object>();
+        for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
+            final String variableName = variable.getKey();
+            try {
+                final String variableValueAsStr = variable.getValue().evaluate(domSource);
+                if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
+                    if (this.variableTypes.get(variableName).isRequired()) {
+                        throw new MessagingException("The task: " + this.getClass().getSimpleName() + " of process: "
+                                + this.processDefinitionId + " required the variable: " + variableName);
+                    } else {
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("variable: " + variableName + "=> no value");
+                        }
                     }
-
-                    continue;
-                }
-            }
-            final String varValueInMsg = varNode.getTextContent().trim();
-            if ((varValueInMsg == null) || (varValueInMsg.isEmpty())) {
-                if (bpmnVarType.get(varBpmn).isRequired()) {
-                    throw new MessagingException("The task: " + this.getClass().getSimpleName() + " of process: "
-                            + this.processDefinitionId
-                            + " required a value of bpmn variables: " + varBpmn
-                            + " that must be given through the message variable: " + varNameInMsg + " !");
-                } else { // (! bpmnVarType.get(varBpmn).isRequired() )
-
+                } else {
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg + " => no value");
+                        logger.fine("variable: " + variableName + "=> value: " + variableValueAsStr);
                     }
-                    continue;
-                }
-            }
 
-            if (logger.isLoggable(Level.FINE)) {
-                logger.fine("bpmnVar: " + varBpmn + "=> InMsg: " + varNameInMsg + " => value: " + varValueInMsg);
-            }
-
-            // Get the type of the bpmn variable
-            final String varType = bpmnVarType.get(varBpmn).getType();
-            // Put the value in Map of activiti variable in the right format
-            if (varType.equals("string")) {
-                processVars.put(varBpmn, varValueInMsg);
-            } else if (varType.equals("long")) {
-                try {
-                    processVars.put(varBpmn, Long.valueOf(varValueInMsg));
-                } catch (final NumberFormatException e) {
-                    throw new MessagingException("The value of " + varNameInMsg + " must be a long !");
-                }
-            } else if (varType.equals("enum")) {
-                boolean validValue = false;
-                for (final FormValue enumValue : bpmnVarType.get(varBpmn).getFormValues()) {
-                    if (varValueInMsg.equals(enumValue.getId())) {
-                        validValue = true;
+                    // Get the type of the bpmn variable
+                    final FormProperty variableProperties = this.variableTypes.get(variableName);
+                    final String varType = variableProperties.getType();
+                    // Put the value in Map of activiti variable in the right format
+                    if (varType.equals("string")) {
+                        variableValue.put(variableName, variableValueAsStr);
+                    } else if (varType.equals("long")) {
+                        try {
+                            variableValue.put(variableName, Long.valueOf(variableValueAsStr));
+                        } catch (final NumberFormatException e) {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + "' must be a long ! Current value is: " + variableValueAsStr);
+                        }
+                    } else if (varType.equals("enum")) {
+                        boolean validValue = false;
+                        for (final FormValue enumValue : variableProperties.getFormValues()) {
+                            if (variableValueAsStr.equals(enumValue.getId())) {
+                                validValue = true;
+                            }
+                        }
+                        if (!validValue) {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + " does not belong to the enum of Activiti variable ! Current value is: "
+                                    + variableValueAsStr);
+                        } else {
+                            variableValue.put(variableName, variableValueAsStr);
+                        }
+                    } else if (varType.equals("date")) {
+                        try {
+                            variableValue.put(variableName, DatatypeConverter.parseDateTime(variableValueAsStr)
+                                    .getTime());
+                        } catch (final IllegalArgumentException e) {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + "' must be a valid date ! Current value is: " + variableValueAsStr);
+                        }
+                    } else if (varType.equals("boolean")) {
+                        if (variableValueAsStr.equalsIgnoreCase("true") || variableValueAsStr.equalsIgnoreCase("false")) {
+                            variableValue.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
+                        } else {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
+                                    + variableValueAsStr);
+                        }
                     }
                 }
-                if (!validValue) {
-                    throw new MessagingException("The value of " + varNameInMsg
-                            + " does not belong to the enum of Activiti variable " + varNameInMsg + " !");
-                } else {
-                    processVars.put(varBpmn, varValueInMsg);
-                }
-            } else if (varType.equals("date")) {
-                try {
-                    processVars.put(varBpmn, DatatypeConverter.parseDateTime(varValueInMsg).getTime());
-                } catch (final IllegalArgumentException e) {
-                    throw new MessagingException("The value of " + varNameInMsg + " must be a valid date !");
-                }
-            } else if (varType.equals("boolean")) {
-                if (varValueInMsg.equalsIgnoreCase("true") || varValueInMsg.equalsIgnoreCase("false")) {
-                    processVars.put(varBpmn, (Boolean) Boolean.valueOf(varValueInMsg));
-                } else {
-                    throw new MessagingException("The value of " + varNameInMsg
-                            + " must be a boolean value \"true\" or \"false\" !");
-                }
+            } catch (final XPathExpressionException e) {
+                throw new OperationProcessingException(this.wsdlOperationName, e);
             }
         }
 
         final String bpmnProcessIdValue = this.doExecute(domSource, taskService, identityService, runtimeService,
-                userId, processVars);
+                userId, variableValue);
 
         // Build the outMessage
         // TODO: The output should be compliant to the WSDL, not hard-coded
@@ -280,22 +282,13 @@ public abstract class ActivitiOperation {
         if (logger.isLoggable(logLevel)) {
             logger.log(logLevel, "operation '" + this.getClass().getSimpleName() + "':");
             logger.log(logLevel, "  - processDefinitionId = " + this.processDefinitionId);
-            logger.log(logLevel, "  - processInstanceId = " + this.processKey);
+            logger.log(logLevel, "  - processInstanceId => compiled XPath expression");
             logger.log(logLevel, "  - action = " + this.getClass().getSimpleName());
-            for (final Entry<Object, Object> entry : this.bpmnVarInMsg.entrySet()) {
-                final String key = (String) entry.getKey();
-                logger.log(logLevel, "  - bpmnVar => inMsg: " + key + " => " + entry.getValue());
-            }
-            for (final Entry<Object, Object> entry : this.outMsgBpmnVar.entrySet()) {
-                final String key = (String) entry.getKey();
-                logger.log(logLevel, "  - outMsg => bpmnVar: " + key + " => " + entry.getValue());
-            }
-            for (final Entry<Object, Object> entry : this.faultMsgBpmnVar.entrySet()) {
-                final String key = (String) entry.getKey();
-                logger.log(logLevel, "  - faultMsg => bpmnVar: " + key + " => " + entry.getValue());
+            for (final String variableName : this.variables.keySet()) {
+                logger.log(logLevel, "  - variable => name: " + variableName + " => compiled XPath expression");
             }
             logger.log(logLevel, "  - Activiti variable types");
-            for (final Entry<String, FormProperty> entry : this.bpmnVarType.entrySet()) {
+            for (final Entry<String, FormProperty> entry : this.variableTypes.entrySet()) {
                 final String key = entry.getKey();
                 final FormProperty value = entry.getValue();
                 logger.log(logLevel, "      - bpmn variable : " + key + " - Name = " + value.getName() + " - Type = "
@@ -316,24 +309,11 @@ public abstract class ActivitiOperation {
         return this.processDefinitionId;
     }
 
-    public String getProcessKey() {
-        return this.processKey;
-    }
-
-    public Properties getBpmnVarInMsg() {
-        return this.bpmnVarInMsg;
-    }
-
-    public Properties getOutMsgBpmnVar() {
-        return this.outMsgBpmnVar;
-    }
-
-    public Properties getFaultMsgBpmnVar() {
-        return this.faultMsgBpmnVar;
-    }
-
-    public Map<String, org.activiti.bpmn.model.FormProperty> getBpmnVarType() {
-        return this.bpmnVarType;
+    /**
+     * @return The WSDL operation name associated to this {@link ActivitiOperation}
+     */
+    public String getWsdlOperationName() {
+        return this.wsdlOperationName;
     }
 
 }

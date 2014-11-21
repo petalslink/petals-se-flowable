@@ -19,18 +19,18 @@ package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
 
 /**
- * The BPMN action type declared as annotation in the WSDL is unsupported.
+ * The BPMN action declared as annotation in the WSDL is unsupported.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class UnsupportedBpmnActionTypeException extends InvalidAnnotationForOperationException {
+public class UnsupportedActionException extends InvalidAnnotationForOperationException {
     
     private static final long serialVersionUID = -8531353608611323491L;
 
-    private static final String MESSAGE_PATTERN = "The BPMN action type '%s' is not supported";
+    private static final String MESSAGE_PATTERN = "The BPMN action '%s' is not supported";
 
-    public UnsupportedBpmnActionTypeException(final String wsdlOperationName, final String notSupportedBpmnActionType) {
+    public UnsupportedActionException(final String wsdlOperationName, final String notSupportedBpmnActionType) {
         super(wsdlOperationName, String.format(MESSAGE_PATTERN, notSupportedBpmnActionType));
     }
 }

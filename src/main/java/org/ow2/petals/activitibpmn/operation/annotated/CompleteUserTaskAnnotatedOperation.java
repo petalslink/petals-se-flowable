@@ -17,11 +17,15 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated;
 
-import java.util.Properties;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 import javax.xml.xpath.XPathExpression;
 
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.FormProperty;
+import org.activiti.bpmn.model.UserTask;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.ActionIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 
@@ -48,19 +52,16 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
      *            <code>null</code>.
      * @param userIdHolder
      *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
-     * @param bpmnVarInMsg
-     * @param outMsgBpmnVar
-     * @param faultMsgBpmnVar
-     * @param bpmnVarList
+     * @param variables
+     *            The definition of variables of the operation
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
     public CompleteUserTaskAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
             final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Properties bpmnVarInMsg, final Properties outMsgBpmnVar, final Properties faultMsgBpmnVar,
-            final Set<String> bpmnVarList) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, bpmnVarInMsg,
-                outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
+            final Map<String, XPathExpression> variables)
+            throws InvalidAnnotationForOperationException {
+        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, variables);
     }
 
     @Override
@@ -69,7 +70,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     }
 
     @Override
-    public void doAnnotationCoherenceCheck() throws InvalidAnnotationForOperationException {
+    public void doAnnotationCoherenceCheck(final BpmnModel model) throws InvalidAnnotationForOperationException {
 
         // The mapping defining the process instance id is required to complete a user task
         final XPathExpression processInstanceIdHolder = this.getProcessInstanceIdHolder();
@@ -77,6 +78,30 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
             throw new NoProcessInstanceIdMappingException(this.getWsdlOperationName());
         }
 
+        // The mapping defining the action identifier must be declared in the process definition
+        boolean isActionIdFound = false;
+        List<FormProperty> formPropertyList = null;
+        outerloop: for (final org.activiti.bpmn.model.Process process : model.getProcesses()) {
+            for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
+                // search the Start Event: bpmnAction
+                if ((flowElt instanceof UserTask) && (flowElt.getId().equals(this.getActionId()))) {
+                    UserTask userTask = (UserTask) flowElt;
+                    formPropertyList = userTask.getFormProperties();
+                    isActionIdFound = true;
+                    break outerloop;
+                }
+            }
+        }
+        if (!isActionIdFound) {
+            throw new ActionIdNotFoundInModelException(this.getWsdlOperationName(), this.getActionId(),
+                    this.getProcessDefinitionId());
+        } else {
+            if (formPropertyList != null && formPropertyList.size() > 0) {
+                for (final FormProperty formPropertie : formPropertyList) {
+                    this.getVariableTypes().put(formPropertie.getId(), formPropertie);
+                }
+            }
+        }
     }
 
 }

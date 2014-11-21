@@ -26,7 +26,6 @@ import javax.jbi.messaging.MessagingException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.activiti.bpmn.model.FormProperty;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
@@ -48,14 +47,10 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
     /**
      * @param annotatedOperation
      *            Annotations of the operation to create
-     * @param processDefinitionId
-     *            The process definition identifier to associate to the operation to create
-     * @param bpmnVarType
      * @param logger
      */
-    public CompleteUserTaskOperation(final AnnotatedOperation annotatedOperation, final String processDefinitionId,
-            final Map<String, FormProperty> bpmnVarType, final Logger logger) {
-        super(annotatedOperation, processDefinitionId, bpmnVarType, logger);
+    public CompleteUserTaskOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
+        super(annotatedOperation, logger);
     }
 
     @Override

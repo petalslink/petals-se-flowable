@@ -38,4 +38,8 @@ public class ProcessDefinitionDeclarationException extends PEtALSCDKException {
     public ProcessDefinitionDeclarationException(final String message, final Throwable cause) {
         super(String.format(MESSAGE_PATTERN, message), cause);
     }
+
+    public ProcessDefinitionDeclarationException(final Throwable cause) {
+        super(String.format(MESSAGE_PATTERN, cause.getMessage()), cause);
+    }
 }

@@ -506,7 +506,7 @@ public class BpmnComponentTest {
         final Source fault_2 = responseMsg_2.getFault();
         assertNotNull("No fault returns", fault_2);
         final String faultStr = SourceHelper.toString(fault_2);
-        assertTrue("Unexpected fault", faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
+        assertTrue("Unexpected fault: " + faultStr, faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg_2.getPayload());
         // TODO: Add a check against Activiti to verify that the user task is not complete
     }
@@ -573,7 +573,7 @@ public class BpmnComponentTest {
         final Source fault_2 = responseMsg_2.getFault();
         assertNotNull("No fault returns", fault_2);
         final String faultStr = SourceHelper.toString(fault_2);
-        assertTrue("Unexpected fault", faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
+        assertTrue("Unexpected fault: " + faultStr, faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg_2.getPayload());
         // TODO: Add a check against Activiti to verify that the user task is not complete
     }

@@ -18,10 +18,9 @@
 package org.ow2.petals.activitibpmn.operation.annotated;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +29,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.activiti.bpmn.model.BpmnModel;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedVariableException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
@@ -38,10 +38,12 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperation
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoVariableMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessInstanceIdMappingExpressionException;
-import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedBpmnActionTypeException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UserIdMappingExpressionException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableMappingExpressionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableNameMissingException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -93,6 +95,16 @@ public class AnnotatedWsdlParser {
      */
     private static final String BPMN_ANNOTATION_USER_ID_HOLDER = "userId";
 
+    /**
+     * Local part of the annotation tag associated a to variable
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE = "variable";
+
+    /**
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE} containing the variable name
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE_NAME = "name";
+
     private final Logger logger;
 
     /**
@@ -114,9 +126,11 @@ public class AnnotatedWsdlParser {
      * 
      * @param annotatedWsdl
      *            The WSDL to parse containing BPMN annotation
+     * @param bpmnModels
+     *            BPMN models embedded into the service unit
      * @return For each operation of the WSDL, the associated annotated operation is returned.
      */
-    public List<AnnotatedOperation> parse(final Document annotatedWsdl) {
+    public List<AnnotatedOperation> parse(final Document annotatedWsdl, final List<BpmnModel> bpmnModels) {
 
         this.encounteredErrors.clear();
 
@@ -161,13 +175,11 @@ public class AnnotatedWsdlParser {
                     final String action = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION);
 
                     // get the task identifier on which the action must be done
-                    // TODO: Create a unit test where the action identifier does not exist in the process definition
                     final String actionId = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION_ID);
 
                     // Get the node "bpmn:processId" and its message
                     final Node processInstanceId = ((Element) wsdlOperation).getElementsByTagNameNS(
-                            SCHEMA_BPMN_ANNOTATIONS,
-                            BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
+                            SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
                     final XPathExpression bpmnProcessInstanceId;
                     if (processInstanceId != null) {
                         final String xpathExpr = processInstanceId.getTextContent();
@@ -207,57 +219,53 @@ public class AnnotatedWsdlParser {
 
                     // Get the list of nodes "bpmn:variable"
                     final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(
-                            SCHEMA_BPMN_ANNOTATIONS, "variable");
-                    final Properties bpmnVarInMsg = new Properties();
-                    final Properties outMsgBpmnVar = new Properties();
-                    final Properties faultMsgBpmnVar = new Properties();
-                    final Set<String> bpmnVarList = new HashSet<String>();
+                            SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_VARIABLE);
+                    final Map<String, XPathExpression> bpmnOperationVariables = new HashMap<String, XPathExpression>();
                     for (int k = 0; k < bpmnVariableList.getLength(); k++) {
                         final Node bpmnVariable = bpmnVariableList.item(k);
                         // test name declaration of variable
-                        final String bpmnAttr = ((Element) bpmnVariable).getAttribute("bpmn");
-                        if (bpmnAttr == null) {
+                        final String bpmnVariableName = ((Element) bpmnVariable)
+                                .getAttribute(BPMN_ANNOTATION_VARIABLE_NAME);
+                        if (bpmnVariableName == null || bpmnVariableName.trim().isEmpty()) {
                             throw new VariableNameMissingException(wsdlOperationName);
                         }
-                        // test unicity of declared bpmnVariable
-                        if (bpmnVarList.contains(bpmnAttr)) {
-                            throw new DuplicatedVariableException(wsdlOperationName, bpmnAttr);
-                        }
-                        // Add bpmnVariables in the bpmnVarList
-                        bpmnVarList.add(bpmnAttr);
-                        // Add bpmnVariables
-                        final String inMsgAttr = ((Element) bpmnVariable).getAttribute("inMsg");
-                        if (inMsgAttr != null && !inMsgAttr.isEmpty()) {
-                            bpmnVarInMsg.put(bpmnAttr, inMsgAttr);
+                        // test unicity of declared variable for the operation
+                        if (bpmnOperationVariables.containsKey(bpmnVariableName)) {
+                            throw new DuplicatedVariableException(wsdlOperationName, bpmnVariableName);
                         }
 
-                        final String outMsgAttr = ((Element) bpmnVariable).getAttribute("outMsg");
-                        if (outMsgAttr != null && !outMsgAttr.isEmpty()) {
-                            outMsgBpmnVar.put(outMsgAttr, bpmnAttr);
+                        final XPathExpression bpmnVariableXPath;
+                        final String xpathExpr = bpmnVariable.getTextContent();
+                        if (xpathExpr.trim().isEmpty()) {
+                            throw new NoVariableMappingException(wsdlOperationName, bpmnVariableName);
+                        } else {
+                            final XPath xpath = xpathFactory.newXPath();
+                            try {
+                                bpmnVariableXPath = xpath.compile(xpathExpr);
+                            } catch (final XPathExpressionException e) {
+                                throw new VariableMappingExpressionException(wsdlOperationName, bpmnVariableName, e);
+                            }
                         }
 
-                        final String faultMsgAttr = ((Element) bpmnVariable).getAttribute("faultMsg");
-                        if (faultMsgAttr != null && !faultMsgAttr.isEmpty()) {
-                            faultMsgBpmnVar.put(faultMsgAttr, bpmnAttr);
-                        }
+                        bpmnOperationVariables.put(bpmnVariableName, bpmnVariableXPath);
                     }
 
                     // Create the annotated operation from annotations read into the WSDL
                     final AnnotatedOperation annotatedOperation;
                     if (StartEventAnnotatedOperation.BPMN_ACTION.equals(action)) {
                         annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
-                                actionId, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg, outMsgBpmnVar,
-                                faultMsgBpmnVar, bpmnVarList);
+                                actionId, bpmnProcessInstanceId, bpmnUserId, bpmnOperationVariables);
                     } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION.equals(action)) {
                         annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName,
-                                processDefinitionKey, actionId, bpmnProcessInstanceId, bpmnUserId, bpmnVarInMsg,
-                                outMsgBpmnVar, faultMsgBpmnVar, bpmnVarList);
+                                processDefinitionKey, actionId, bpmnProcessInstanceId, bpmnUserId,
+                                bpmnOperationVariables);
                     } else {
-                        throw new UnsupportedBpmnActionTypeException(wsdlOperationName, action);
+                        throw new UnsupportedActionException(wsdlOperationName, action);
                     }
 
-                    // Check the coherence of the annotated operation (ie. coherence of annotations of the operation)
-                    annotatedOperation.verifyAnnotationCoherence();
+                    // Check the coherence of the annotated operation (ie. coherence of annotations of the operation
+                    // against process definitions)
+                    annotatedOperation.verifyAnnotationCoherence(bpmnModels);
 
                     annotatedOperations.add(annotatedOperation);
                 } catch (final InvalidAnnotationForOperationException e) {

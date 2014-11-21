@@ -17,33 +17,36 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
+import javax.xml.xpath.XPathExpressionException;
 
 /**
- * A BPMN variable is declared twice through annotations into an operation.
+ * The expression defining a variable is invalid.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class DuplicatedVariableException extends InvalidAnnotationForOperationException {
-    
-    private static final long serialVersionUID = 7158488122207016560L;
+public class VariableMappingExpressionException extends InvalidAnnotationForOperationException {
 
-    private static final String MESSAGE_PATTERN = "The BPMN variable '%s' is declared twice";
+    private static final long serialVersionUID = 718914773820362365L;
+
+    private static final String MESSAGE_PATTERN = "The mapping defining the expression of the variable '%s' is invalid: %s";
 
     /**
-     * The name of the duplicated variable
+     * Name of the variable having an invalid expression
      */
     private final String variableName;
 
-    public DuplicatedVariableException(final String wsdlOperationName, final String variableName) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName));
+    public VariableMappingExpressionException(final String wsdlOperationName, final String variableName,
+            final XPathExpressionException cause) {
+        super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName, cause.getMessage()), cause);
         this.variableName = variableName;
     }
 
     /**
-     * @return The name of the duplicated variable
+     * @return The name of the variable having an invalid expression
      */
     public String getVariableName() {
         return this.variableName;
     }
+
 }

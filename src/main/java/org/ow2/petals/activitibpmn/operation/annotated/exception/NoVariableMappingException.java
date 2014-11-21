@@ -17,31 +17,34 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
+import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
+import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * A BPMN variable is declared twice through annotations into an operation.
+ * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, a variable was declared, so the
+ * expression defining its value is required.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class DuplicatedVariableException extends InvalidAnnotationForOperationException {
-    
-    private static final long serialVersionUID = 7158488122207016560L;
+public class NoVariableMappingException extends InvalidAnnotationForOperationException {
 
-    private static final String MESSAGE_PATTERN = "The BPMN variable '%s' is declared twice";
+    private static final long serialVersionUID = 5211435875004463971L;
+
+    private static final String MESSAGE_PATTERN = "The expression defining the value of the variable '%s' is required";
 
     /**
-     * The name of the duplicated variable
+     * The name of the variable for which the expression defining its value is missing.
      */
     private final String variableName;
 
-    public DuplicatedVariableException(final String wsdlOperationName, final String variableName) {
+    public NoVariableMappingException(final String wsdlOperationName, final String variableName) {
         super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName));
         this.variableName = variableName;
     }
 
     /**
-     * @return The name of the duplicated variable
+     * @return The name of the variable for which the expression defining its value is missing
      */
     public String getVariableName() {
         return this.variableName;
