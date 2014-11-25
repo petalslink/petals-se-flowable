@@ -17,9 +17,9 @@
  */
 package org.ow2.petals.activitibpmn;
 
-
 /**
  * The component class of the Activiti BPMN Service Engine related constants.
+ * 
  * @author Bertrand Escudie - Linagora
  */
 public final class ActivitiSEConstants {
@@ -152,4 +152,8 @@ public final class ActivitiSEConstants {
 		public static final String DATABASE_SCHEMA_UPDATE = "database_schema_update";
 		
 	}
+
+    private ActivitiSEConstants() {
+        // Utility class => No constructor
+    }
 }

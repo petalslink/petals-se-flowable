@@ -334,9 +334,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
                 // TODO manage the assignee according with su jbi descriptor
 
-                if (this.logger.isLoggable(Level.FINE))
+                if (this.logger.isLoggable(Level.FINE)) {
                     this.logger.fine("The BPMN process " + processFileName + " version: " + version
                             + " is succesfully read");
+                }
 
                 return new EmbeddedProcessDefinition(processFileName, version, tenantId, categoryId, bpmnModel);
 
@@ -418,15 +419,17 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 processDefinition = repositoryService.createProcessDefinitionQuery()
                         .deploymentId(deployment.getId()).list().get(0);
 
-                if (this.logger.isLoggable(Level.INFO))
+                if (this.logger.isLoggable(Level.INFO)) {
                     this.logger.info("The BPMN process " + process.getProcessFileName() + " version: "
                             + process.getVersion() + " is succesfully deployed.");
+                }
 
 			}
 			else {
-                if (this.logger.isLoggable(Level.INFO))
+                if (this.logger.isLoggable(Level.INFO)) {
                     this.logger.info("The BPMN process: " + process.getProcessFileName() + " version: "
                             + process.getVersion() + " is already deployed");
+                }
 				// Set processDefinition
                 processDefinition = processDefinitionSearchList.get(0);
 			}

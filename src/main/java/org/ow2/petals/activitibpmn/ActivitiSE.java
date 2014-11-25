@@ -63,7 +63,6 @@ public class ActivitiSE extends AbstractServiceEngine {
 	 * The Activiti BPMN Engine.
 	 */
 	private ProcessEngine activitiEngine;
-	private ProcessEngineConfiguration pec;
 	
 	/**
 	 * @return the Activiti Engine
@@ -255,16 +254,17 @@ public class ActivitiSE extends AbstractServiceEngine {
 	        /* TODO Set the non set value with default value */
 
 			/* Create an Activiti ProcessEngine with database configuration */
-            this.pec = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
-            this.pec.setJdbcDriver(jdbcDriver);
-            this.pec.setJdbcUrl(jdbcUrl);
-            this.pec.setJdbcUsername(jdbcUsername).setJdbcPassword(jdbcPassword);
-            this.pec.setJdbcMaxActiveConnections(jdbcMaxActiveConnections);
-            this.pec.setJdbcMaxIdleConnections(jdbcMaxIdleConnections);
-            this.pec.setJdbcMaxCheckoutTime(jdbcMaxCheckoutTime);
-            this.pec.setJdbcMaxWaitTime(jdbcMaxWaitTime);
-            this.pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
-            this.pec.setJobExecutorActivate(false);
+            final ProcessEngineConfiguration pec = ProcessEngineConfiguration
+                    .createStandaloneProcessEngineConfiguration();
+            pec.setJdbcDriver(jdbcDriver);
+            pec.setJdbcUrl(jdbcUrl);
+            pec.setJdbcUsername(jdbcUsername).setJdbcPassword(jdbcPassword);
+            pec.setJdbcMaxActiveConnections(jdbcMaxActiveConnections);
+            pec.setJdbcMaxIdleConnections(jdbcMaxIdleConnections);
+            pec.setJdbcMaxCheckoutTime(jdbcMaxCheckoutTime);
+            pec.setJdbcMaxWaitTime(jdbcMaxWaitTime);
+            pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
+            pec.setJobExecutorActivate(false);
 
             this.activitiEngine = pec.buildProcessEngine();
 

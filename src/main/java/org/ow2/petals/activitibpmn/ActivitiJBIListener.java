@@ -31,15 +31,16 @@ import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 /**
  * Listens to messages incoming from inside Petals.
  * <p>
- * This class is in charge of processing messages coming from a Petals
- * consumer. These messages can be requests (in messages) or acknowledgments (ACK).
+ * This class is in charge of processing messages coming from a Petals consumer. These messages can be requests (in
+ * messages) or acknowledgments (ACK).
  * </p>
  * <p>
- * Depending on the invoked operation, the message exchange pattern (MEP) and
- * the component's logic, this class may build and send a response.
+ * Depending on the invoked operation, the message exchange pattern (MEP) and the component's logic, this class may
+ * build and send a response.
  * </p>
  * 
- * @author bescudie
+ * @author Bertrand ESCUDIE - Linagora
+ * @author Christophe DENEUX - Linagora
  */
 public class ActivitiJBIListener extends AbstractJBIListener {
 	
@@ -68,8 +69,9 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                 try {
                     // Get the InMessage
                     final NormalizedMessage normalizedMessage = exchange.getInMessage();
-                    if (logger.isLoggable(Level.FINE))
+                    if (logger.isLoggable(Level.FINE)) {
                         logger.fine("normalizedMessage = " + normalizedMessage.toString());
+                    }
 
                     // Provider role
                     if (exchange.isProviderRole()) {
@@ -86,12 +88,12 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         // TODO Validate Message
 
                         // Get the eptName and Operation
-                        String eptName = exchange.getEndpointName();
+                        final String eptName = exchange.getEndpointName();
                         // TODO: Caution: the namespace must be used, the local part is not sufficient to identify an
                         // operation
-                        String operationName = exchange.getOperationName();
+                        final String operationName = exchange.getOperationName();
                         // Set eptAndoperation
-                        EptAndOperation eptAndOperation = new EptAndOperation(eptName, operationName);
+                        final EptAndOperation eptAndOperation = new EptAndOperation(eptName, operationName);
 
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine(logHint + " was received and is started to be processed.");

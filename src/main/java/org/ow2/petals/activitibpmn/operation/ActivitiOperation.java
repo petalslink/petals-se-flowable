@@ -299,7 +299,6 @@ public abstract class ActivitiOperation {
             final Result result = new StreamResult(baos);
             // TODO: Improve the empty document to avoid to create it each time
             outputTransformer.transform(new DOMSource(DocumentBuilders.newDocument()), result);
-            System.out.println(new String(baos.toByteArray()));
             return new StreamSource(new ByteArrayInputStream(baos.toByteArray()));
         } catch (final TransformerException e) {
             throw new OperationProcessingException(this.wsdlOperationName, e);

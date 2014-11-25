@@ -127,11 +127,6 @@ public class AnnotatedWsdlParser {
      */
     private static final String BPMN_ANNOTATION_OUTPUT = "output";
 
-    /**
-     * Local part of the attribute of {@link #BPMN_ANNOTATION_OUTPUT} containing the XSLT-stylesheet name
-     */
-    private static final String BPMN_ANNOTATION_OUTPUT_XSL = "xsl";
-
     private final Logger logger;
 
     /**
