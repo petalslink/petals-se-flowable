@@ -17,12 +17,9 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
-import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, a variable was declared, so the
- * expression defining its value is required.
+ * A variable was declared for the given WSDL binding operation, so the expression defining its value is required.
  * 
  * @author Christophe DENEUX - Linagora
  * 

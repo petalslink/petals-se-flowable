@@ -18,20 +18,34 @@
 package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
 
+
 /**
- * The annotation defining the user identifier is required for the given WSDL binding operation.
+ * The output XSLT style-sheet declared with annotations is invalid.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoUserIdMappingException extends InvalidAnnotationForOperationException {
+public class InvalidOutputXslException extends InvalidAnnotationForOperationException {
 
-    private static final long serialVersionUID = -8468551099289581848L;
+    private static final long serialVersionUID = 7366083908530355735L;
 
-    private static final String MESSAGE = "The annotation defining the user identifier is required";
+    private static final String MESSAGE_PATTERN = "The output XSLT-stylesheet '%s' declared with annotations is invalid: %s. See previous errors logged.";
 
-    public NoUserIdMappingException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    /**
+     * The output XSLT style-sheet that does not exist
+     */
+    private final String xslFileName;
+
+    public InvalidOutputXslException(final String wsdlOperationName, final String xslFileName, final Throwable cause) {
+        super(wsdlOperationName, String.format(MESSAGE_PATTERN, xslFileName, cause.getMessage()), cause);
+        this.xslFileName = xslFileName;
+    }
+
+    /**
+     * @return The output XSLT style-sheet that does not exist
+     */
+    public String getXslFileName() {
+        return this.xslFileName;
     }
 
 }

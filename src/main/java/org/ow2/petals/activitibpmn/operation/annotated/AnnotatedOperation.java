@@ -22,12 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FormProperty;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoActionIdMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoOutputMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessDefinitionIdDuplicatedInModelException;
@@ -81,6 +83,11 @@ public abstract class AnnotatedOperation {
     private final Map<String, FormProperty> variableTypes = new HashMap<String, FormProperty>();
 
     /**
+     * The output XSLT style-sheet compiled
+     */
+    private final Templates outputTemplate;
+
+    /**
      * <p>
      * Create an annotated operation.
      * </p>
@@ -103,12 +110,14 @@ public abstract class AnnotatedOperation {
      *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
      * @param variables
      *            The definition of variables of the operation
+     * @param outputTemplate
+     *            The output XSLT style-sheet compiled
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
     protected AnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
             final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables)
+            final Map<String, XPathExpression> variables, final Templates outputTemplate)
             throws InvalidAnnotationForOperationException {
         super();
         this.wsdlOperationName = wsdlOperationName;
@@ -117,6 +126,7 @@ public abstract class AnnotatedOperation {
         this.processInstanceIdHolder = processInstanceIdHolder;
         this.userIdHolder = userIdHolder;
         this.variables = variables;
+        this.outputTemplate = outputTemplate;
     }
 
     /**
@@ -158,9 +168,14 @@ public abstract class AnnotatedOperation {
             throw new NoActionIdMappingException(this.getWsdlOperationName());
         }
 
-        // The mapping defining the user id is required to complete a user task
+        // The mapping defining the user id is required
         if (this.userIdHolder == null) {
             throw new NoUserIdMappingException(this.wsdlOperationName);
+        }
+        
+        // The mapping defining the output XSLT style-sheet is required
+        if (this.outputTemplate == null) {
+            throw new NoOutputMappingException(wsdlOperationName);
         }
 
         this.doAnnotationCoherenceCheck(modelContainingProcessDefinitionId);
@@ -180,7 +195,6 @@ public abstract class AnnotatedOperation {
                 throw new RequiredVariableMissingException(this.wsdlOperationName, variableName);
             }
         }
-
     }
 
     /**
@@ -254,4 +268,10 @@ public abstract class AnnotatedOperation {
         return this.variableTypes;
     }
 
+    /**
+     * @return The output XSLT style-sheet compiled
+     */
+    public Templates getOutputTemplate() {
+        return this.outputTemplate;
+    }
 }

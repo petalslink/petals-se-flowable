@@ -42,13 +42,14 @@
  			</xsd:complexType>
      	</xsd:element>
 
-     	<xsd:element name="numero">
-      		<xsd:complexType>
-       			<xsd:all>
-          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
-				</xsd:all>
-			</xsd:complexType>
-     	</xsd:element>
+      <xsd:element name="numero">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+               <xsd:element ref="beans:xsl-parameter" minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
 
      	<xsd:element name="erreur">
       		<xsd:complexType>
@@ -97,6 +98,24 @@
 				</xsd:all>
 			</xsd:complexType>
      	</xsd:element>
+      
+      <xsd:element name="xsl-parameter">
+         <xsd:complexType>
+            <xsd:simpleContent>
+               <xsd:extension base="xsd:string">
+                  <xsd:attribute name="name" type="xsd:string"/>
+               </xsd:extension>
+            </xsd:simpleContent>
+         </xsd:complexType>
+      </xsd:element>
+
+      <xsd:element name="ackResponse">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element ref="beans:xsl-parameter" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
 
  	</xsd:schema>
 </wsdl:types>
@@ -113,6 +132,9 @@
 <wsdl:message name="validationDdeConges">
 	<wsdl:part name="parameters" element="beans:validation" />
 </wsdl:message>
+<wsdl:message name="validationAck">
+   <wsdl:part name="parameters" element="beans:ackResponse" />
+</wsdl:message>
 <wsdl:message name="ajustementConges">
     <wsdl:part name="parameters" element="beans:ajustement" />
 </wsdl:message>
@@ -124,8 +146,8 @@
      	<wsdl:fault message="tns:faute" />
    </wsdl:operation>
     <wsdl:operation name="validerDemande">
-      	<wsdl:input message="tns:validationDdeConges" />
-     	<wsdl:output message="tns:numeroDemande" />
+      <wsdl:input message="tns:validationDdeConges" />
+     	<wsdl:output message="tns:validationAck" />
      	<wsdl:fault message="tns:faute" />
 	</wsdl:operation>
     <wsdl:operation name="ajusterDemande">
@@ -153,6 +175,7 @@
          <bpmn:variable name="vacationMotivation">
             /*[local-name()='demande']/*[local-name()='motifDde']
          </bpmn:variable>
+         <bpmn:output>demanderCongesResponse.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -177,6 +200,7 @@
          <bpmn:variable name="managerMotivation">
             /*[local-name()='validation']/*[local-name()='motifRefus']
          </bpmn:variable>
+         <bpmn:output>validerDemandeResponse.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -195,10 +219,19 @@
    	   		actionId="adjustVacationRequestTask"  />
          <bpmn:processInstanceId>/*[local-name()='ajustement']/*[local-name()='numeroDdeInitiale']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='ajustement']/*[local-name()='demandeur']</bpmn:userId>
-         <bpmn:variable bpmn="numberOfDays" inMsg="nbJourNouvelleDde" />
-      	<bpmn:variable bpmn="startDate" inMsg="DateDebutNouvelleDde" />
-      	<bpmn:variable bpmn="vacationMotivation" inMsg="motifNouvelleDde" />
-         <bpmn:variable bpmn="resendRequest" inMsg="soumettreModif" />
+         <bpmn:variable name="numberOfDays">
+            /*[local-name()='ajustement']/*[local-name()='nbJourNouvelleDde']
+         </bpmn:variable>
+         <bpmn:variable name="startDate">
+            /*[local-name()='ajustement']/*[local-name()='DateDebutNouvelleDde']
+         </bpmn:variable>
+         <bpmn:variable name="vacationMotivation">
+            /*[local-name()='ajustement']/*[local-name()='motifNouvelleDde']
+         </bpmn:variable>
+         <bpmn:variable name="resendRequest">
+            /*[local-name()='ajustement']/*[local-name()='soumettreModif']
+         </bpmn:variable>
+         <bpmn:output>ajusterDemandeResponse.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>

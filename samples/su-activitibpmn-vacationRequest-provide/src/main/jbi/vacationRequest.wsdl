@@ -152,6 +152,7 @@
          <bpmn:variable name="vacationMotivation">
             /*[local-name()='demande']/*[local-name()='motifDde']
          </bpmn:variable>
+         <bpmn:output>demanderCongesResponse.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -176,6 +177,7 @@
          <bpmn:variable name="managerMotivation">
             /*[local-name()='validation']/*[local-name()='motifRefus']
          </bpmn:variable>
+         <bpmn:output>validerDemandeResponse.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -206,6 +208,7 @@
          <bpmn:variable name="resendRequest">
             /*[local-name()='ajustement']/*[local-name()='soumettreModif']
          </bpmn:variable>
+         <bpmn:output>ajusterDemandeResponse.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>

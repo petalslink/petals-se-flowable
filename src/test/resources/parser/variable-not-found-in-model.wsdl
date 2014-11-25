@@ -127,6 +127,7 @@
          <bpmn:variable name="unexisting-variable-1">
             /*[local-name()='demande']/*[local-name()='nbJourDde']
          </bpmn:variable>
+         <bpmn:output>valid.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -154,6 +155,7 @@
          <bpmn:variable name="unexisting-variable-2">
             /*[local-name()='demande']/*[local-name()='nbJourDde']
          </bpmn:variable>
+         <bpmn:output>valid.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>

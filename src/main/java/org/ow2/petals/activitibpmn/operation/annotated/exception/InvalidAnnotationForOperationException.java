@@ -28,7 +28,7 @@ public abstract class InvalidAnnotationForOperationException extends InvalidAnno
 
     private static final long serialVersionUID = 4807726306653521594L;
 
-    private static final String MESSAGE_PATTERN = "A WSDL annotation is invalid for the operation '%s': %s";
+    private static final String MESSAGE_PATTERN = "A WSDL annotation is invalid for the binding operation '%s': %s";
 
     /**
      * Name of the WSDL operation for which an error occurs

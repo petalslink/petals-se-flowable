@@ -17,11 +17,9 @@
  */
 package org.ow2.petals.activitibpmn.operation.exception;
 
-import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operation {@link CompleteUserTaskOperation} and {@link StartEventOperation}, a user identifier is required.
+ * The value of the user identifier is required in the incoming request.
  * 
  * @author Christophe DENEUX - Linagora
  * 

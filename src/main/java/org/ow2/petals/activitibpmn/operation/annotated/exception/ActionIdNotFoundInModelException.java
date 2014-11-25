@@ -17,12 +17,9 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
-import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the action
- * identifier identifier is required.
+ * The annotation defining the action identifier identifier is required for the given WSDL binding operation.
  * 
  * @author Christophe DENEUX - Linagora
  * 
@@ -31,7 +28,7 @@ public class ActionIdNotFoundInModelException extends InvalidAnnotationForOperat
 
     private static final long serialVersionUID = -3175460203224153888L;
 
-    private static final String MESSAGE_PATTERN = "The mapping defining the action identifier is set to a value '%s' that does not exist into the process definition '%s'";
+    private static final String MESSAGE_PATTERN = "The annotation defining the action identifier is set to a value '%s' that does not exist into the process definition '%s'";
 
     /**
      * The action identifier that does not exist in the BPMN model

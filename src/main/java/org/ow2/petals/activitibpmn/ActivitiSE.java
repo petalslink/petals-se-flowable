@@ -133,10 +133,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 	}
 	
 	
-    /**
-     * {@inheritDoc}
-     */
-	@Override
+    @Override
 	public void doInit() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doInit()");
 
@@ -279,10 +276,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 	}
 
 
-    /**
-     * {@inheritDoc}
-     */
-	@Override
+    @Override
 	public void doStart() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStart()");
 
@@ -304,10 +298,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 	}
 
 
-    /**
-     * {@inheritDoc}
-     */
-	@Override
+    @Override
 	public void doStop() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStop()");
 
@@ -323,10 +314,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 	}
 
 
-    /**
-     * {@inheritDoc}
-     */
-	@Override
+    @Override
 	public void doShutdown() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStart()");
 
@@ -341,10 +329,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 		}
 	}
 
-    /**
-     * {@inheritDoc}
-     */
-	@Override
+    @Override
 	protected AbstractServiceUnitManager createServiceUnitManager() {
 		return new ActivitiSuManager(this);
 	}

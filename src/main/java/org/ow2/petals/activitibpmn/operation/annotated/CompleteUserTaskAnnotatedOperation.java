@@ -20,6 +20,7 @@ package org.ow2.petals.activitibpmn.operation.annotated;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
 import org.activiti.bpmn.model.BpmnModel;
@@ -54,14 +55,17 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
      *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
      * @param variables
      *            The definition of variables of the operation
+     * @param outputTemplate
+     *            The output XSLT style-sheet compiled
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
     public CompleteUserTaskAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
             final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables)
+            final Map<String, XPathExpression> variables, final Templates outputTemplate)
             throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, variables);
+        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, variables,
+                outputTemplate);
     }
 
     @Override
@@ -85,7 +89,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
             for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
                 // search the Start Event: bpmnAction
                 if ((flowElt instanceof UserTask) && (flowElt.getId().equals(this.getActionId()))) {
-                    UserTask userTask = (UserTask) flowElt;
+                    final UserTask userTask = (UserTask) flowElt;
                     formPropertyList = userTask.getFormProperties();
                     isActionIdFound = true;
                     break outerloop;

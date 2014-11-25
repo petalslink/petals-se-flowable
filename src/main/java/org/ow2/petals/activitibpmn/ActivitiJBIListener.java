@@ -17,17 +17,12 @@
  */
 package org.ow2.petals.activitibpmn;
 
-import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
 
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
 import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
@@ -47,49 +42,6 @@ import org.ow2.petals.component.framework.listener.AbstractJBIListener;
  * @author bescudie
  */
 public class ActivitiJBIListener extends AbstractJBIListener {
-
-    /**
-     * The IdentityService of the ProcessEngine.
-     * <p>
-     * This IdentityService is initialized once <br />
-     * </p>
-     */
-	private IdentityService identityService; 
-
-    /**
-     * The RuntimeService of the ProcessEngine.
-     * <p>
-     * This RuntimeService is initialized once <br />
-     * </p>
-     */
-	private RuntimeService runTimeService; 
-    /**
-     * The TaskService of the ProcessEngine.
-     * <p>
-     * This TaskService is initialized once <br />
-     * </p>
-     */
-	private TaskService taskService; 
-
-	/**
-     * The FormService of the ProcessEngine.
-     * <p>
-     * This FormService is initialized once <br />
-     * </p>
-     */
-//	private FormService formService; 
-	
-	
-    /**
-     * The TaskService of the ProcessEngine.
-     * <p>
-     * This TaskService is initialized once <br />
-     * </p>
-     */
-//	private TaskService taskService; 
-
-//	private RepositoryService repositoryService; 
-	
 	
     /**
      * A prefix to use for logged messages.
@@ -99,34 +51,6 @@ public class ActivitiJBIListener extends AbstractJBIListener {
      * </p>
      */
     private String logHint;
-
-    /**
-     * {@inheritDoc}
-     */
-    public void init() {
-        if (this.component instanceof ActivitiSE) {
-            final ActivitiSE activitiComp = (ActivitiSE) this.component;
-
-            // Initialize the identityService if necessary
-            if (this.identityService == null) {
-                this.identityService = activitiComp.getProcessEngine().getIdentityService();
-            }
-            // Initialize the runTimeService if necessary
-            if (this.runTimeService == null) {
-                this.runTimeService = activitiComp.getProcessEngine().getRuntimeService();
-            }
-            // Initialize the taskService if necessary
-            if (this.taskService == null) {
-                this.taskService = activitiComp.getProcessEngine().getTaskService();
-            }
-            // Initialize the repositoryService if necessary
-            // if ( this.repositoryService == null) { this.repositoryService =
-            // activitiComp.getProcessEngine().getRepositoryService(); }
-            // Initialize the formService if necessary
-            // if ( this.formService == null) { this.formService = activitiComp.getProcessEngine().getFormService(); }
-        }
-
-    }
 
     /**
      * {@inheritDoc}
@@ -185,17 +109,13 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         if (activitiOperation == null) {
                             throw new MessagingException("No BPMN operation found matching the exchange");
                         }
-                        final String outputReply = activitiOperation.execute(exchange, this.taskService,
-                                this.identityService, this.runTimeService);
 
-                        exchange.setOutMessageContent(new ByteArrayInputStream(outputReply.getBytes("UTF-8")));
+                        exchange.setOutMessageContent(activitiOperation.execute(exchange));
                     } else {
                         // TODO: to do
             		}
 
                 } catch (final MessagingException e) {
-                    finalException = e;
-                } catch (final UnsupportedEncodingException e) {
                     finalException = e;
                 }
 

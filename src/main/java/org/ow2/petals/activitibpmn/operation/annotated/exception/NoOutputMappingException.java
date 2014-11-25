@@ -15,22 +15,22 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.activitibpmn.operation.exception;
+package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
 
 /**
- * The value of the process instance identifier is required in the incoming request.
+ * The annotation defining the operation output is required for the given WSDL binding operation.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoProcessInstanceIdValueException extends OperationProcessingException {
+public class NoOutputMappingException extends InvalidAnnotationForOperationException {
 
-    private static final long serialVersionUID = 5318980517059515822L;
+    private static final long serialVersionUID = 1694880832993253995L;
 
-    private static final String MESSAGE = "Process instance identifier is missing or empty in the incoming request !";
+    private static final String MESSAGE = "The annotation defining the operation output is required";
 
-    public NoProcessInstanceIdValueException(final String wsdlOperationName) {
+    public NoOutputMappingException(final String wsdlOperationName) {
         super(wsdlOperationName, MESSAGE);
     }
 

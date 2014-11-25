@@ -17,12 +17,9 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
-import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
 
 /**
- * For the operations {@link CompleteUserTaskOperation} and {@link StartEventOperation}, the mapping defining the
- * process definition identifier is required.
+ * The annotation defining the process definition identifier is required for the given WSDL binding operation.
  * 
  * @author Christophe DENEUX - Linagora
  * 
@@ -31,7 +28,7 @@ public class NoProcessDefinitionIdMappingException extends InvalidAnnotationForO
 
     private static final long serialVersionUID = 2632230733685316615L;
 
-    private static final String MESSAGE = "The mapping defining the process definition identifier is required";
+    private static final String MESSAGE = "The annotation defining the process definition identifier is required";
 
     public NoProcessDefinitionIdMappingException(final String wsdlOperationName) {
         super(wsdlOperationName, MESSAGE);

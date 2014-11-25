@@ -127,6 +127,7 @@
          <bpmn:variable name="vacationMotivation">
             /*[local-name()='demande']/*[local-name()='motifDde']
          </bpmn:variable>
+         <bpmn:output>valid.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>
@@ -154,6 +155,7 @@
          <bpmn:variable name="managerMotivation">
             /*[local-name()='validation']/*[local-name()='motifRefus']
          </bpmn:variable>
+         <bpmn:output>valid.xsl</bpmn:output>
       	<wsdl:input>
         	<soap:body use="literal" />
       	</wsdl:input>

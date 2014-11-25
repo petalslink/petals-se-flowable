@@ -18,15 +18,16 @@
 package org.ow2.petals.activitibpmn.operation;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
+import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.annotated.StartEventAnnotatedOperation;
@@ -41,12 +42,29 @@ import org.ow2.petals.activitibpmn.operation.annotated.StartEventAnnotatedOperat
 public class StartEventOperation extends ActivitiOperation {
 
     /**
+     * The identity service of the BPMN engine
+     */
+    private final IdentityService identityService;
+
+    /**
+     * The runtime service of the BPMN engine
+     */
+    private final RuntimeService runtimeService;
+
+    /**
      * @param annotatedOperation
      *            Annotations of the operation to create
+     * @param identityService
+     *            The identity service of the BPMN engine
+     * @param runtimeService
+     *            The runtime service of the BPMN engine
      * @param logger
      */
-    public StartEventOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
+    public StartEventOperation(final AnnotatedOperation annotatedOperation, final IdentityService identityService,
+            final RuntimeService runtimeService, final Logger logger) {
         super(annotatedOperation, logger);
+        this.identityService = identityService;
+        this.runtimeService = runtimeService;
     }
 
     @Override
@@ -55,32 +73,52 @@ public class StartEventOperation extends ActivitiOperation {
     }
 
     @Override
-    protected String doExecute(final DOMSource domSource, final TaskService taskService,
-            final IdentityService identityService, final RuntimeService runtimeService, final String bpmnUserId,
-            final Map<String, Object> processVars) throws MessagingException {
+    protected void doExecute(final DOMSource domSource, final String bpmnUserId,
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
+            throws MessagingException {
 
         // Start a new process instance
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)
         final String bpmnProcessIdValue;
         try {
             // TODO: How this works on concurrent requests. I think that it is not thread-safe ?
-            identityService.setAuthenticatedUserId(bpmnUserId);
+            this.identityService.setAuthenticatedUserId(bpmnUserId);
 
             // We use RuntimeService.startProcessInstanceById() to be able to create a process instance from the given
             // process version.
             // TODO: Create a unit test where the process was undeployed without undeploying the service unit
-            final ProcessInstance processInstance = runtimeService.startProcessInstanceById(
+            final ProcessInstance createdProcessInstance = this.runtimeService.startProcessInstanceById(
                     this.deployedProcessDefinitionId, processVars);
-            bpmnProcessIdValue = processInstance.getId();
+            bpmnProcessIdValue = createdProcessInstance.getId();
         } finally {
-            identityService.setAuthenticatedUserId(null);
+            this.identityService.setAuthenticatedUserId(null);
         }
 
         if (this.logger.isLoggable(Level.FINE)) {
             this.logger.fine("*** NEW PROCESS INSTANCE started,  processId = " + bpmnProcessIdValue);
         }
 
-        return bpmnProcessIdValue;
+        // To prepare the output response, we add named value dedicated to this operation:
+        // - process instance variables
+        // - the identifier of the created process instance
+        // TODO: Are process instance variables different from the provided variables 'processVars' ? If no, don't
+        // retrieve them and use directly 'processVars'
+        final ProcessInstance retrievedProcessInstance = this.runtimeService.createProcessInstanceQuery()
+                .processInstanceId(bpmnProcessIdValue).includeProcessVariables().singleResult();
+        if (retrievedProcessInstance == null) {
+            throw new MessagingException(String.format(
+                    "The just create process instance '%s' is not found for the process definition '%s'.",
+                    bpmnProcessIdValue, this.deployedProcessDefinitionId));
+        }
+        for (final Entry<String, Object> processVariable : retrievedProcessInstance.getProcessVariables().entrySet()) {
+            outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS,
+                    processVariable.getKey()), this.convertBpmnVariableValueToXslParam(processVariable.getValue()));
+
+        }
+        outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
+                SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID), bpmnProcessIdValue);
+        outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
+                SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), bpmnUserId);
     }
 
 }

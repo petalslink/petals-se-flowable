@@ -17,6 +17,12 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,22 +30,33 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.activiti.bpmn.model.BpmnModel;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedOutputMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedVariableException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidOutputXslException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoOutputMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoVariableMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoWsdlBindingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.OutputXslNotFoundException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessInstanceIdMappingExpressionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.UserIdMappingExpressionException;
@@ -105,6 +122,16 @@ public class AnnotatedWsdlParser {
      */
     private static final String BPMN_ANNOTATION_VARIABLE_NAME = "name";
 
+    /**
+     * Local part of the annotation tag associated a the output
+     */
+    private static final String BPMN_ANNOTATION_OUTPUT = "output";
+
+    /**
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OUTPUT} containing the XSLT-stylesheet name
+     */
+    private static final String BPMN_ANNOTATION_OUTPUT_XSL = "xsl";
+
     private final Logger logger;
 
     /**
@@ -112,8 +139,28 @@ public class AnnotatedWsdlParser {
      */
     private final List<InvalidAnnotationException> encounteredErrors = new ArrayList<InvalidAnnotationException>();
 
+    private final ErrorListener transformerFactoryErrorListener;
+
     public AnnotatedWsdlParser(final Logger logger) {
         this.logger = logger;
+        this.transformerFactoryErrorListener = new ErrorListener() {
+            @Override
+            public void warning(final TransformerException exception) throws TransformerException {
+                AnnotatedWsdlParser.this.logger.warning(exception.getMessageAndLocation());
+            }
+
+            @Override
+            public void fatalError(final TransformerException exception) throws TransformerException {
+                AnnotatedWsdlParser.this.logger.severe(exception.getMessageAndLocation());
+                throw exception;
+            }
+
+            @Override
+            public void error(final TransformerException exception) throws TransformerException {
+                AnnotatedWsdlParser.this.logger.severe(exception.getMessageAndLocation());
+                throw exception;
+            }
+        };
     }
 
     /**
@@ -130,7 +177,8 @@ public class AnnotatedWsdlParser {
      *            BPMN models embedded into the service unit
      * @return For each operation of the WSDL, the associated annotated operation is returned.
      */
-    public List<AnnotatedOperation> parse(final Document annotatedWsdl, final List<BpmnModel> bpmnModels) {
+    public List<AnnotatedOperation> parse(final Document annotatedWsdl, final List<BpmnModel> bpmnModels,
+            final String suRootPath) {
 
         this.encounteredErrors.clear();
 
@@ -250,15 +298,33 @@ public class AnnotatedWsdlParser {
                         bpmnOperationVariables.put(bpmnVariableName, bpmnVariableXPath);
                     }
 
+                    // Get the output "bpmn:output"
+                    final NodeList bpmnOutputs = ((Element) wsdlOperation).getElementsByTagNameNS(
+                            SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_OUTPUT);
+                    final Templates bpmnOutputTemplate;
+                    if (bpmnOutputs.getLength() == 1) {
+                        final Node bpmnOutput = bpmnOutputs.item(0);
+                        final String bpmnOutputStr = bpmnOutput.getTextContent();
+                        if (bpmnOutputStr == null || bpmnOutputStr.isEmpty()) {
+                            throw new NoOutputMappingException(wsdlOperationName);
+                        } else {
+                            bpmnOutputTemplate = this.readXsl(bpmnOutputStr, suRootPath, wsdlOperationName);
+                        }
+                    } else if (bpmnOutputs.getLength() == 0) {
+                        bpmnOutputTemplate = null;
+                    } else {
+                        throw new DuplicatedOutputMappingException(wsdlOperationName);
+                    }
+
                     // Create the annotated operation from annotations read into the WSDL
                     final AnnotatedOperation annotatedOperation;
                     if (StartEventAnnotatedOperation.BPMN_ACTION.equals(action)) {
                         annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
-                                actionId, bpmnProcessInstanceId, bpmnUserId, bpmnOperationVariables);
+                                actionId, bpmnProcessInstanceId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate);
                     } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION.equals(action)) {
                         annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName,
                                 processDefinitionKey, actionId, bpmnProcessInstanceId, bpmnUserId,
-                                bpmnOperationVariables);
+                                bpmnOperationVariables, bpmnOutputTemplate);
                     } else {
                         throw new UnsupportedActionException(wsdlOperationName, action);
                     }
@@ -280,6 +346,69 @@ public class AnnotatedWsdlParser {
         }
 
         return annotatedOperations;
+    }
+
+    /**
+     * Read an XSLT style-sheet from the classloader
+     * 
+     * @param xslFileName
+     *            The XSLT style-sheet URL
+     * @param suRootPath
+     *            The root directory of the service unit
+     * @param wsdlOperationName
+     *            The WSDL binding operation of the XSL to read
+     * @return The XSLT style-sheet compiled
+     * @throws InvalidOutputXslException
+     *             The XSLT style-sheet read is invalid
+     * @throws OutputXslNotFoundException
+     *             The XSLT style-sheet was not found
+     */
+    private Templates readXsl(final String xslFileName, final String suRootPath, final String wsdlOperationName)
+            throws InvalidOutputXslException, OutputXslNotFoundException {
+
+        final URL xslUrl;
+        // Try to get the XSL from classloader
+        final URL xslUrlClassloader = Thread.currentThread().getContextClassLoader().getResource(xslFileName);
+        if (xslUrlClassloader == null) {
+            // Try to get the XSL from SU root path
+            final File xslFile = new File(suRootPath, xslFileName);
+            if (!xslFile.exists()) {
+                throw new OutputXslNotFoundException(wsdlOperationName, xslFileName);
+            } else {
+                try {
+                    xslUrl = xslFile.toURI().toURL();
+                } catch (final MalformedURLException e) {
+                    // This exception should never occur
+                    throw new InvalidOutputXslException(wsdlOperationName, xslFileName, e);
+                }
+            }
+
+        } else {
+            xslUrl = xslUrlClassloader;
+        }
+
+        // Compile the XSLT style-sheet
+        final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        try {
+            final InputStream isXsl = xslUrl.openStream();
+            try {
+                final Source fileSource = new StreamSource(isXsl, xslUrl.toURI().toASCIIString());
+                transformerFactory.setErrorListener(this.transformerFactoryErrorListener);
+                return transformerFactory.newTemplates(fileSource);
+            } catch (final TransformerConfigurationException e) {
+                throw new InvalidOutputXslException(wsdlOperationName, xslFileName, e);
+            } catch (final URISyntaxException e) {
+                throw new InvalidOutputXslException(wsdlOperationName, xslFileName, e);
+            } finally {
+                try {
+                    isXsl.close();
+                } catch (final IOException e) {
+                    // NOP
+                }
+            }
+        } catch (final IOException e) {
+            throw new InvalidOutputXslException(wsdlOperationName, xslFileName, e);
+        }
     }
 
     /**

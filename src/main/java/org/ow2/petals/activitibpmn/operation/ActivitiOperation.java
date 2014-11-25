@@ -17,7 +17,11 @@
  */
 package org.ow2.petals.activitibpmn.operation;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.StringWriter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,27 +30,55 @@ import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.namespace.QName;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.bpmn.model.FormValue;
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.exception.NoUserIdValueException;
 import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.w3c.dom.Document;
 
+import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
 import com.ebmwebsourcing.easycommons.xml.Transformers;
 
 public abstract class ActivitiOperation {
+
+    /**
+     * Namespace of special parameters for the output XSLT style-sheet
+     */
+    protected static final String SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS = "http://petals.ow2.org/se/bpmn/output-params/1.0/special";
+
+    /**
+     * Local part of the special parameter name about the process instance identifier for the output XSLT style-sheet
+     */
+    protected static final String SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID = "processInstanceId";
+
+    /**
+     * Local part of the special parameter name about the user identifier for the output XSLT style-sheet
+     */
+    protected static final String SCHEMA_OUTPUT_XSLT_PARAM_USER_ID = "userId";
+
+    /**
+     * Namespace of process instance parameters for the output XSLT style-sheet
+     */
+    protected static final String SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS = "http://petals.ow2.org/se/bpmn/output-params/1.0/process-instance";
+
+    /**
+     * Namespace of task parameters for the output XSLT style-sheet
+     */
+    protected static final String SCHEMA_OUTPUT_XSLT_TASK_PARAMS = "http://petals.ow2.org/se/bpmn/output-params/1.0/task";
 
     /**
      * The WSDL operation name associated to this {@link ActivitiOperation}
@@ -88,6 +120,11 @@ public abstract class ActivitiOperation {
      */
     protected final Map<String, FormProperty> variableTypes;
 
+    /**
+     * The output XSLT style-sheet compiled
+     */
+    private final Templates outputTemplate;
+
     protected final Logger logger;
 
     /**
@@ -106,6 +143,7 @@ public abstract class ActivitiOperation {
         this.userIdXPathExpr = annotatedOperation.getUserIdHolder();
         this.variables = annotatedOperation.getVariables();
         this.variableTypes = annotatedOperation.getVariableTypes();
+        this.outputTemplate = annotatedOperation.getOutputTemplate();
         this.logger = logger;
     }
 
@@ -125,31 +163,29 @@ public abstract class ActivitiOperation {
     /**
      * Execute the operation
      */
-    public final String execute(final Exchange exchange, final TaskService taskService,
-            final IdentityService identityService, final RuntimeService runtimeService)
-            throws MessagingException {
+    public final Source execute(final Exchange exchange) throws MessagingException {
 
         final Document inMsgWsdl = exchange.getInMessageContentAsDocument();
         final DOMSource domSource = new DOMSource(inMsgWsdl);
-        final StringWriter writer = new StringWriter();
-        final StreamResult result = new StreamResult(writer);
-        final Transformer transformer = Transformers.takeTransformer();
-        try {
-            transformer.transform(domSource, result);
-        } catch (final TransformerException e) {
-            throw new MessagingException(e);
-        } finally {
-            Transformers.releaseTransformer(transformer);
-        }
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("*** inMsgWsdl = " + writer.toString());
+
+        if (this.logger.isLoggable(Level.FINE)) {
+            final StringWriter writer = new StringWriter();
+            final StreamResult result = new StreamResult(writer);
+            final Transformer transformer = Transformers.takeTransformer();
+            try {
+                transformer.transform(domSource, result);
+            } catch (final TransformerException e) {
+                throw new MessagingException(e);
+            } finally {
+                Transformers.releaseTransformer(transformer);
+            }
+            this.logger.fine("*** inMsgWsdl = " + writer.toString());
         }
 
-
-        if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Activiti processDefId = " + processDefinitionId);
-            logger.fine("Activiti Action = " + this.getClass().getSimpleName());
-            logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("Activiti processDefId = " + processDefinitionId);
+            this.logger.fine("Activiti Action = " + this.getClass().getSimpleName());
+            this.logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
         }
 
         inMsgWsdl.getDocumentElement().normalize();
@@ -170,7 +206,7 @@ public abstract class ActivitiOperation {
         }
 
         // Get the bpmn variables
-        final Map<String, Object> variableValue = new HashMap<String, Object>();
+        final Map<String, Object> variableValues = new HashMap<String, Object>();
         for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
             final String variableName = variable.getKey();
             try {
@@ -194,10 +230,10 @@ public abstract class ActivitiOperation {
                     final String varType = variableProperties.getType();
                     // Put the value in Map of activiti variable in the right format
                     if (varType.equals("string")) {
-                        variableValue.put(variableName, variableValueAsStr);
+                        variableValues.put(variableName, variableValueAsStr);
                     } else if (varType.equals("long")) {
                         try {
-                            variableValue.put(variableName, Long.valueOf(variableValueAsStr));
+                            variableValues.put(variableName, Long.valueOf(variableValueAsStr));
                         } catch (final NumberFormatException e) {
                             throw new MessagingException("The value of the variable '" + variableName
                                     + "' must be a long ! Current value is: " + variableValueAsStr);
@@ -214,11 +250,11 @@ public abstract class ActivitiOperation {
                                     + " does not belong to the enum of Activiti variable ! Current value is: "
                                     + variableValueAsStr);
                         } else {
-                            variableValue.put(variableName, variableValueAsStr);
+                            variableValues.put(variableName, variableValueAsStr);
                         }
                     } else if (varType.equals("date")) {
                         try {
-                            variableValue.put(variableName, DatatypeConverter.parseDateTime(variableValueAsStr)
+                            variableValues.put(variableName, DatatypeConverter.parseDateTime(variableValueAsStr)
                                     .getTime());
                         } catch (final IllegalArgumentException e) {
                             throw new MessagingException("The value of the variable '" + variableName
@@ -226,7 +262,7 @@ public abstract class ActivitiOperation {
                         }
                     } else if (varType.equals("boolean")) {
                         if (variableValueAsStr.equalsIgnoreCase("true") || variableValueAsStr.equalsIgnoreCase("false")) {
-                            variableValue.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
+                            variableValues.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
                         } else {
                             throw new MessagingException("The value of the variable '" + variableName
                                     + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
@@ -239,40 +275,50 @@ public abstract class ActivitiOperation {
             }
         }
 
-        final String bpmnProcessIdValue = this.doExecute(domSource, taskService, identityService, runtimeService,
-                userId, variableValue);
+        final Map<QName, String> xslParameters = new HashMap<QName, String>();
+        this.doExecute(domSource, userId, variableValues, xslParameters);
 
-        // Build the outMessage
-        // TODO: The output should be compliant to the WSDL, not hard-coded
-        // TODO: Don't build XML using StringBuilder. Because of encoding problems, prefer to use DOM or
-        // equivalent
-        final StringBuilder sb = new StringBuilder();
-        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        sb.append("<su:numero xmlns:su=\"http://petals.ow2.org/se/Activitibpmn/1.0/su\">\n");
-        sb.append("   <su:numeroDde>" + bpmnProcessIdValue + "</su:numeroDde>\n");
-        // sb.append("   <requestId>12458</requestId>\n");
-        sb.append("</su:numero>\n");
-        // Keep the machine's default encoding
+        try {
+            // TODO: For performance reasons, check that it is not needed to introduce a pool of transformers to avoid
+            // to create a transformer on each request
+            final Transformer outputTransformer = this.outputTemplate.newTransformer();
 
-        return sb.toString();
+            // We prepare the parameters to set to the XSL transformer:
+            if (this.logger.isLoggable(Level.INFO)) {
+                this.logger.info("XSL Parameters:");
+                for (final Entry<QName, String> variable : xslParameters.entrySet()) {
+                    this.logger.info("\t- " + variable.getKey().toString() + " => " + variable.getValue());
+                }
+            }
+            for (final Entry<QName, String> variable : xslParameters.entrySet()) {
+                outputTransformer.setParameter(variable.getKey().toString(), variable.getValue());
+            }
+
+            // Create the output through the XSL transformation
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final Result result = new StreamResult(baos);
+            // TODO: Improve the empty document to avoid to create it each time
+            outputTransformer.transform(new DOMSource(DocumentBuilders.newDocument()), result);
+            System.out.println(new String(baos.toByteArray()));
+            return new StreamSource(new ByteArrayInputStream(baos.toByteArray()));
+        } catch (final TransformerException e) {
+            throw new OperationProcessingException(this.wsdlOperationName, e);
+        }
     }
     
     /**
      * 
      * @param domSource
      *            The incoming XML payload
-     * @param taskService
-     * @param identityService
-     * @param runtimeService
      * @param userId
      *            The user identifier
      * @param processVars
-     * @return
+     * @param outputNamedValues
+     *            The output named values to generate response
      * @throws MessagingException
      */
-    protected abstract String doExecute(final DOMSource domSource, final TaskService taskService,
-            final IdentityService identityService, final RuntimeService runtimeService, final String userId,
-            final Map<String, Object> processVars)
+    protected abstract void doExecute(final DOMSource domSource, final String userId,
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
             throws MessagingException;
 
     /**
@@ -314,6 +360,27 @@ public abstract class ActivitiOperation {
      */
     public String getWsdlOperationName() {
         return this.wsdlOperationName;
+    }
+
+    /**
+     * Convert a BPMN variable value to a XSL parameter value
+     * 
+     * @param bpmnVariableValue
+     *            A BPMN variable value
+     * @return The XSL parameter value
+     */
+    protected String convertBpmnVariableValueToXslParam(final Object bpmnVariableValue) {
+
+        final String xslParamValue;
+        if (bpmnVariableValue instanceof Date) {
+            final Calendar calendar = Calendar.getInstance();
+            calendar.setTime((Date) bpmnVariableValue);
+            xslParamValue = DatatypeConverter.printDateTime(calendar);
+        } else {
+            xslParamValue = bpmnVariableValue.toString();
+        }
+
+        return xslParamValue;
     }
 
 }

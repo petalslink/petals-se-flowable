@@ -19,16 +19,19 @@ package org.ow2.petals.activitibpmn.operation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
+import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
-import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.annotated.CompleteUserTaskAnnotatedOperation;
@@ -45,18 +48,36 @@ import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingExcept
 public class CompleteUserTaskOperation extends ActivitiOperation {
 
     /**
+     * The identity service of the BPMN engine
+     */
+    private final IdentityService identityService;
+
+    /**
+     * The task service of the BPMN engine
+     */
+    private final TaskService taskService;
+
+    /**
+     * The history service of the BPMN engine
+     */
+    private final HistoryService historyService;
+
+    /**
      * @param annotatedOperation
      *            Annotations of the operation to create
      * @param logger
      */
-    public CompleteUserTaskOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
+    public CompleteUserTaskOperation(final AnnotatedOperation annotatedOperation, final TaskService taskService,
+            final IdentityService identityService, final HistoryService historyService, final Logger logger) {
         super(annotatedOperation, logger);
+        this.identityService = identityService;
+        this.taskService = taskService;
+        this.historyService = historyService;
     }
 
     @Override
-    protected String doExecute(final DOMSource domSource, final TaskService taskService,
-            final IdentityService identityService, final RuntimeService runtimeService, final String bpmnUserId,
-            final Map<String, Object> processVars)
+    protected void doExecute(final DOMSource domSource, final String bpmnUserId,
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
             throws MessagingException {
 
         // Get the process instance identifier
@@ -75,22 +96,54 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         }
 
         // Get the task
-        final List<Task> taskList = taskService.createTaskQuery().processInstanceId(processInstanceId)
+        final List<Task> taskList = this.taskService.createTaskQuery().processInstanceId(processInstanceId)
                 .taskDefinitionKey(this.actionId).list();
         if ((taskList == null) || (taskList.size() == 0)) {
-            // This error should not occur because this check has been done when deploying the SU
-            throw new MessagingException("No tasks: " + this.actionId + " for process instance id: "
-                    + processInstanceId + " was found.");
-        }
-        // Perform the user Task
-        try {
-            identityService.setAuthenticatedUserId(bpmnUserId);
-            taskService.complete(taskList.get(0).getId(), processVars);
-        } finally {
-            identityService.setAuthenticatedUserId(null);
+            throw new MessagingException(String.format(
+                    "The task '%s' is not a current user task to complete for the process instance '%s'.",
+                    this.actionId, processInstanceId));
         }
 
-        return processInstanceId;
+        // Perform the user Task
+        final Task taskToComplete = taskList.get(0);
+        try {
+            this.identityService.setAuthenticatedUserId(bpmnUserId);
+            this.taskService.complete(taskToComplete.getId(), processVars);
+        } finally {
+            this.identityService.setAuthenticatedUserId(null);
+        }
+
+        // To prepare the output response, we add named value dedicated to this operation:
+        // - task local variables
+        // - process instance variables
+        // - the identifier of the process instance
+        // As the task is completed, it is retrieved from the history.
+        // TODO: Are task local variables different from the provided variables 'processVars' ? If no, don't retrieve
+        // them and use directly 'processVars'
+        final HistoricTaskInstance executedTask = this.historyService.createHistoricTaskInstanceQuery()
+                .taskId(taskToComplete.getId()).includeProcessVariables().includeTaskLocalVariables().singleResult();
+        if (executedTask == null) {
+            throw new MessagingException(String.format(
+                    "The just completed task '%s' is not found in the history for the process instance '%s'.",
+                    this.actionId,
+                    processInstanceId));
+        }
+        for (final Entry<String, Object> processVariable : executedTask.getTaskLocalVariables().entrySet()) {
+            // TODO: Create unit test for these task local variables
+            outputNamedValues.put(
+                    new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_TASK_PARAMS, processVariable.getKey()),
+                    this.convertBpmnVariableValueToXslParam(processVariable.getValue()));
+
+        }
+        for (final Entry<String, Object> processVariable : executedTask.getProcessVariables().entrySet()) {
+            outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS,
+                    processVariable.getKey()), this.convertBpmnVariableValueToXslParam(processVariable.getValue()));
+
+        }
+        outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
+                SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID), processInstanceId);
+        outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
+                SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), bpmnUserId);
     }
 
     @Override

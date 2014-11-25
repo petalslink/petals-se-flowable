@@ -68,8 +68,6 @@ import org.w3c.dom.Document;
  * @author Bertrand ESCUDIE - Linagora
  */
 public class ActivitiSuManager extends AbstractServiceUnitManager {
-
-    private RepositoryService repositoryService;
 	
     /**
 	 * Default constructor.
@@ -80,6 +78,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         if (this.logger.isLoggable(Level.FINE)) {
             this.logger.fine("Start ActivitiSuManager.ActivitiSUManager()");
 		}
+
         if (this.logger.isLoggable(Level.FINE)) {
             this.logger.fine("End ActivitiSuManager.ActivitiSUManager()");
 		}
@@ -91,13 +90,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         if (this.logger.isLoggable(Level.FINE)) {
             this.logger.fine("Start ActivitiSuManager.doDeploy(SU =" + serviceUnitName + ")");
         }
-        // Get the Activiti RepositoryService
-        // TODO: What to do if repS is null ?
-        // TODO: this.repositoryService should be initialized when initializing the service unit manager
-        if (this.repositoryService == null) {
-            this.repositoryService = ((ActivitiSE) this.component).getProcessEngine().getRepositoryService();
-        }
-		
+
 		// Check the JBI descriptor
 		if( jbiDescriptor == null || jbiDescriptor.getServices() == null
                 || jbiDescriptor.getServices().getProvides() == null
@@ -121,15 +114,30 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 			throw new PEtALSCDKException( "Invalid JBI descriptor: the 'provides' section is invalid." );
         }
 
+        // Get the SU Data handler
+        final ServiceUnitDataHandler suDataHandler = this.getSUDataHandlerForProvides(provides);
+        if (suDataHandler == null) {
+            throw new PEtALSCDKException(
+                    "Error while processing the JBI descriptor in the component. The SU data handler was null.");
+        }
+
+        // Get the extension configuration for the Activiti process(es) to be deployed from the SU jbi.xml
+        final ConfigurationExtensions extensions = suDataHandler.getConfigurationExtensions(provides);
+        if (extensions == null) {
+            throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain any component extension.");
+        }
+
         // Read BPMN models from files of the service-unit
-        final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels = this.readBpmnModels(provides);
+        final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels = this.readBpmnModels(extensions,
+                suDataHandler.getInstallRoot());
 
         // Create processing operations
         final List<BpmnModel> bpmnModels = new ArrayList<BpmnModel>(embeddedBpmnModels.size());
         for (final EmbeddedProcessDefinition embeddedBpmnModel : embeddedBpmnModels.values()) {
             bpmnModels.add(embeddedBpmnModel.getModel());
         }
-        final List<ActivitiOperation> operations = this.createProcessingOperations(serviceUnitName, bpmnModels);
+        final List<ActivitiOperation> operations = this.createProcessingOperations(serviceUnitName, bpmnModels,
+                suDataHandler.getInstallRoot());
         
         // Deploy processes from the BPMN models into the BPMN engine
         this.deployBpmnModels(embeddedBpmnModels, operations);
@@ -212,28 +220,15 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      * </p>
      * 
      * @return The map of embedded process definition containing. The map key is the process file name.
-     * @param provides
-     *            The section 'provides' of the service unit
+     * @param extensions
+     *            The configuration extensions of the service unit. Not <code>null</code>.
+     * @param suRootPath
+     *            The root directory of the service unit. Not <code>null</code>.
      * @throws ProcessDefinitionDeclarationException
      *             A raw data of the SU JBI descriptor is invalid
-     * @throws PEtALSCDKException
-     *             An error occurs processing the JBI descriptor
      */
-    private Map<String, EmbeddedProcessDefinition> readBpmnModels(final Provides provides)
-            throws ProcessDefinitionDeclarationException, PEtALSCDKException {
-
-        // Get the SU Data handler
-        final ServiceUnitDataHandler suDataHandler = this.getSUDataHandlerForProvides(provides);
-        if (suDataHandler == null) {
-            throw new PEtALSCDKException(
-                    "Error while processing the JBI descriptor in the component. The SU data handler was null.");
-        }
-
-        // Get the extension configuration for the Activiti process(es) to be deployed from the SU jbi.xml
-        final ConfigurationExtensions extensions = suDataHandler.getConfigurationExtensions(provides);
-        if (extensions == null) {
-            throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain any component extension.");
-        }
+    private Map<String, EmbeddedProcessDefinition> readBpmnModels(final ConfigurationExtensions extensions,
+            final String suRootPath) throws ProcessDefinitionDeclarationException {
 
         String tenantId = extensions.get(ActivitiSEConstants.TENANT_ID);
         if (tenantId == null) {
@@ -268,19 +263,15 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 if (nbProcesses == 1 && processFileName == null && versionStr == null) {
                     throw new NoProcessDefinitionDeclarationException();
                 } else if (processFileName != null && versionStr != null) {
-                    bpmnModels.put(
-                            processFileName,
-                            this.readBpmnModel(processFileName, versionStr, tenantId, categoryId,
-                                    suDataHandler.getInstallRoot()));
+                    bpmnModels.put(processFileName,
+                            this.readBpmnModel(processFileName, versionStr, tenantId, categoryId, suRootPath));
                     nbProcesses++;
                 }
             } while (processFileName != null && versionStr != null);
         } else if (processFileName != null && versionStr != null) {
             // One process description
-            bpmnModels.put(
-                    processFileName,
-                    this.readBpmnModel(processFileName, versionStr, tenantId, categoryId,
-                            suDataHandler.getInstallRoot()));
+            bpmnModels.put(processFileName,
+                    this.readBpmnModel(processFileName, versionStr, tenantId, categoryId, suRootPath));
         } else {
             throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
         }
@@ -401,7 +392,9 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             // This allow to deploy the same SU (process.bpmn20.xml) on several petals-se-activitibpmn for high
             // availability, ie. to create several service endpoints for the same process/tenantId/categoryId/version on
             // different Petals ESB container.
-            final List<ProcessDefinition> processDefinitionSearchList = this.repositoryService
+            final RepositoryService repositoryService = ((ActivitiSE) this.component).getProcessEngine()
+                    .getRepositoryService();
+            final List<ProcessDefinition> processDefinitionSearchList = repositoryService
                     .createProcessDefinitionQuery().processDefinitionResourceName(process.getProcessFileName())
                     .processDefinitionCategory(process.getCategoryId())
                     .processDefinitionTenantId(process.getTenantId()).processDefinitionVersion(process.getVersion())
@@ -409,7 +402,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
             final ProcessDefinition processDefinition;
 		    if (processDefinitionSearchList == null || processDefinitionSearchList.size() == 0) {
-                final DeploymentBuilder db = this.repositoryService.createDeployment();
+                final DeploymentBuilder db = repositoryService.createDeployment();
 
                 // Characterize the deployment with processFileName / tenantId / categoryId
                 db.name(process.getProcessFileName());
@@ -422,7 +415,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
                 // Do not use db.enableDuplicateFiltering(); with management of tenantId and CategoryId
                 final Deployment deployment = db.deploy();
-                processDefinition = this.repositoryService.createProcessDefinitionQuery()
+                processDefinition = repositoryService.createProcessDefinitionQuery()
                         .deploymentId(deployment.getId()).list().get(0);
 
                 if (this.logger.isLoggable(Level.INFO))
@@ -467,20 +460,21 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      *            The service unit name, required to retrieve the WSDL
      * @param bpmnModels
      *            The BPMN models embedded into the service unit
+     * @param suRootPath
+     *            The root directory of the service unit. Not <code>null</code>.
      * @return The list of {@link ActivitiOperation} created from WSDL
      * @throws ProcessDefinitionDeclarationException
      *             An error was detected about annotations
      */
     private List<ActivitiOperation> createProcessingOperations(final String serviceUnitName,
-            final List<BpmnModel> bpmnModels)
-            throws ProcessDefinitionDeclarationException {
+            final List<BpmnModel> bpmnModels, final String suRootPath) throws ProcessDefinitionDeclarationException {
 
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
         
         final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
         final Document wsdlDocument = this.getServiceDescription(serviceEndpoint);
-        final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser
-                .parse(wsdlDocument, bpmnModels);
+        final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
+                suRootPath);
         // Log all WSDL errors before to process each annotated operations
         if (this.logger.isLoggable(Level.WARNING)) {
             for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {
@@ -502,9 +496,14 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
             // create the right ActivitiOperation according to the bpmnActionType
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
-                operations.add(new StartEventOperation(annotatedOperation, this.logger));
+                operations.add(new StartEventOperation(annotatedOperation, ((ActivitiSE) this.component)
+                        .getProcessEngine().getIdentityService(), ((ActivitiSE) this.component).getProcessEngine()
+                        .getRuntimeService(), this.logger));
             } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
-                operations.add(new CompleteUserTaskOperation(annotatedOperation, this.logger));
+                operations.add(new CompleteUserTaskOperation(annotatedOperation, ((ActivitiSE) this.component)
+                        .getProcessEngine().getTaskService(), ((ActivitiSE) this.component).getProcessEngine()
+                        .getIdentityService(), ((ActivitiSE) this.component).getProcessEngine().getHistoryService(),
+                        this.logger));
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported
                 // here.

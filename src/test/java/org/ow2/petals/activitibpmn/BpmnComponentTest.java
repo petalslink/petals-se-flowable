@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +32,7 @@ import java.util.GregorianCalendar;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -55,9 +57,11 @@ import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.Servic
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTestBuilder;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
+import org.ow2.petals.se.activitibpmn._1_0.su.AckResponse;
 import org.ow2.petals.se.activitibpmn._1_0.su.Demande;
 import org.ow2.petals.se.activitibpmn._1_0.su.Numero;
 import org.ow2.petals.se.activitibpmn._1_0.su.Validation;
+import org.ow2.petals.se.activitibpmn._1_0.su.XslParameter;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.ebmwebsourcing.easycommons.xml.SourceHelper;
@@ -86,7 +90,8 @@ public class BpmnComponentTest {
 
     static {
         try {
-            JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class);
+            JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
+                    AckResponse.class);
             BpmnComponentTest.unmarshaller = context.createUnmarshaller();
             BpmnComponentTest.marshaller = context.createMarshaller();
             BpmnComponentTest.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -145,6 +150,21 @@ public class BpmnComponentTest {
                         "http://petals.ow2.org/samples/se-bpmn", "demandeDeCongesService"), "testEndpointName",
                 ServiceType.PROVIDE, wsdlUrl);
 
+        final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("su/valid/demanderCongesResponse.xsl");
+        assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
+        BpmnComponentTest.serviceConfiguration.addResource(demanderCongesResponseXslUrl);
+
+        final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("su/valid/validerDemandeResponse.xsl");
+        assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
+        BpmnComponentTest.serviceConfiguration.addResource(validerDemandeResponseXslUrl);
+
+        final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("su/valid/ajusterDemandeResponse.xsl");
+        assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
+        BpmnComponentTest.serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
+
         final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("su/valid/vacationRequest.bpmn20.xml");
         assertNotNull("BPMN file not found", bpmnUrl);
@@ -185,10 +205,16 @@ public class BpmnComponentTest {
 
         // Create the 1st valid request
         final Demande request_1 = new Demande();
-        request_1.setDemandeur("demandeur");
-        request_1.setNbJourDde(10);
-        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
-        request_1.setMotifDde("hollidays");
+        final String demandeur = "demandeur";
+        request_1.setDemandeur(demandeur);
+        final int numberOfDays = 10;
+        request_1.setNbJourDde(numberOfDays);
+        final GregorianCalendar now = new GregorianCalendar();
+        final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
+                now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
+        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
+        final String motivation = "hollidays";
+        request_1.setMotifDde(motivation);
 
         // Send the 1st valid request
         BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
@@ -206,11 +232,46 @@ public class BpmnComponentTest {
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
+        {
+            assertEquals(5, response_1.getXslParameter().size());
+            boolean userFound = false;
+            boolean employeeFound = false;
+            boolean numberOfDaysFound = false;
+            boolean startDateFound = false;
+            boolean motivationFound = false;
+            for (final XslParameter xslParameter : response_1.getXslParameter()) {
+                if ("user-id".equals(xslParameter.getName().toString())) {
+                    userFound = true;
+                    assertEquals(demandeur, xslParameter.getValue());
+                } else if ("employeeName".equals(xslParameter.getName().toString())) {
+                    employeeFound = true;
+                    assertEquals(demandeur, xslParameter.getValue());
+                } else if ("numberOfDays".equals(xslParameter.getName().toString())) {
+                    numberOfDaysFound = true;
+                    assertEquals(numberOfDays, Integer.parseInt(xslParameter.getValue()));
+                } else if ("startDate".equals(xslParameter.getName().toString())) {
+                    startDateFound = true;
+                    // Don't use 'assertEquals' because time zones can be different
+                    assertTrue(startDate.compareTo(DatatypeConverter.parseDate(xslParameter.getValue())) == 0);
+                } else if ("vacationMotivation".equals(xslParameter.getName().toString())) {
+                    motivationFound = true;
+                    assertEquals(motivation, xslParameter.getValue());
+                } else {
+                    fail("Unexpected xsl parameter: " + xslParameter.getName().toString());
+                }
+            }
+            assertTrue(userFound);
+            assertTrue(employeeFound);
+            assertTrue(numberOfDaysFound);
+            assertTrue(startDateFound);
+            assertTrue(motivationFound);
+        }
         // TODO: Add a check to verify that the process instance exists in Activiti
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
-        request_2.setValideur("valideur");
+        final String valideur = "valideur";
+        request_2.setValideur(valideur);
         request_2.setNumeroDde(response_1.getNumeroDde());
         request_2.setApprobation(Boolean.TRUE.toString());
 
@@ -227,9 +288,52 @@ public class BpmnComponentTest {
         assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
         assertNotNull("No XML payload in response", responseMsg_2.getPayload());
         final Object responseObj_2 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_2.getPayload());
-        assertTrue(responseObj_2 instanceof Numero);
-        final Numero response_2 = (Numero) responseObj_2;
-        assertEquals(response_1.getNumeroDde(), response_2.getNumeroDde());
+        assertTrue(responseObj_2 instanceof AckResponse);
+        final AckResponse response_2 = (AckResponse) responseObj_2;
+        {
+            assertEquals(7, response_2.getXslParameter().size());
+            boolean userFound = false;
+            boolean processInstanceIdFound = false;
+            boolean employeeFound = false;
+            boolean numberOfDaysFound = false;
+            boolean startDateFound = false;
+            boolean approvedFound = false;
+            boolean motivationFound = false;
+            for (final XslParameter xslParameter : response_2.getXslParameter()) {
+                if ("process-instance-id".equals(xslParameter.getName().toString())) {
+                    processInstanceIdFound = true;
+                    assertEquals(response_1.getNumeroDde(), xslParameter.getValue());
+                } else if ("user-id".equals(xslParameter.getName().toString())) {
+                    userFound = true;
+                    assertEquals(valideur, xslParameter.getValue());
+                } else if ("employeeName".equals(xslParameter.getName().toString())) {
+                    employeeFound = true;
+                    assertEquals(demandeur, xslParameter.getValue());
+                } else if ("numberOfDays".equals(xslParameter.getName().toString())) {
+                    numberOfDaysFound = true;
+                    assertEquals(numberOfDays, Integer.parseInt(xslParameter.getValue()));
+                } else if ("startDate".equals(xslParameter.getName().toString())) {
+                    startDateFound = true;
+                    // Don't use 'assertEquals' because time zones can be different
+                    assertTrue(startDate.compareTo(DatatypeConverter.parseDate(xslParameter.getValue())) == 0);
+                } else if ("vacationApproved".equals(xslParameter.getName().toString())) {
+                    approvedFound = true;
+                    assertEquals(Boolean.TRUE.toString(), xslParameter.getValue());
+                } else if ("vacationMotivation".equals(xslParameter.getName().toString())) {
+                    motivationFound = true;
+                    assertEquals(motivation, xslParameter.getValue());
+                } else {
+                    fail("Unexpected xsl parameter: " + xslParameter.getName().toString());
+                }
+            }
+            assertTrue(userFound);
+            assertTrue(processInstanceIdFound);
+            assertTrue(employeeFound);
+            assertTrue(numberOfDaysFound);
+            assertTrue(startDateFound);
+            assertTrue(approvedFound);
+            assertTrue(motivationFound);
+        }
         // TODO: Add a check against Activiti
     }
 
