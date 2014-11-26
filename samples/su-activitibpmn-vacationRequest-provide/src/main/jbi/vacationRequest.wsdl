@@ -40,11 +40,13 @@
 				</xsd:all>
  			</xsd:complexType>
      	</xsd:element>
+      
+      <xsd:element name="numeroDde" type="xsd:string" />
 
      	<xsd:element name="numero">
       		<xsd:complexType>
        			<xsd:all>
-          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+          			<xsd:element ref="tns:numeroDde" minOccurs="1" maxOccurs="1" />
 				</xsd:all>
 			</xsd:complexType>
      	</xsd:element>
@@ -53,7 +55,7 @@
       		<xsd:complexType>
        			<xsd:all>
           			<xsd:element name="utilisateur" minOccurs="1" maxOccurs="1" type="xsd:string" />
-          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+          			<xsd:element ref="tns:numeroDde" minOccurs="1" maxOccurs="1" />
           			<xsd:element name="message" minOccurs="1" maxOccurs="1" type="xsd:string" />
 				</xsd:all>
 			</xsd:complexType>
@@ -62,7 +64,7 @@
      	<xsd:element name="validation">
        		<xsd:complexType>
  				<xsd:all>
-          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+          			<xsd:element ref="tns:numeroDde" minOccurs="1" maxOccurs="1" />
           			<xsd:element name="valideur" minOccurs="1" maxOccurs="1"  type="xsd:string" />
         			<xsd:element name="motifRefus" minOccurs="0" maxOccurs="1" type="xsd:string" />
       	    		<xsd:element name="approbation" minOccurs="1" maxOccurs="1" >
@@ -96,6 +98,22 @@
 				</xsd:all>
 			</xsd:complexType>
      	</xsd:element>
+      
+      <xsd:element name="numeroDemandeInconnu">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element ref="tns:numeroDde" minOccurs="1" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
+      
+      <xsd:element name="demandeDejaValidee">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element ref="tns:numeroDde" minOccurs="1" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
 
  	</xsd:schema>
 </wsdl:types>
@@ -115,22 +133,28 @@
 <wsdl:message name="ajustementConges">
     <wsdl:part name="parameters" element="tns:ajustement" />
 </wsdl:message>
+<wsdl:message name="numeroDemandeInconnu">
+    <wsdl:part name="fault" element="tns:numeroDemandeInconnu" /> 
+</wsdl:message>
+<wsdl:message name="demandeDejaValidee">
+    <wsdl:part name="fault" element="tns:demandeDejaValidee" /> 
+</wsdl:message>
 <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== --> 
 <wsdl:portType name="demandeDeConges">
 	<wsdl:operation name="demanderConges">
     	<wsdl:input message="tns:demandeConges" />
      	<wsdl:output message="tns:numeroDemande" />
-     	<wsdl:fault message="tns:faute" />
    </wsdl:operation>
     <wsdl:operation name="validerDemande">
       	<wsdl:input message="tns:validationDdeConges" />
      	<wsdl:output message="tns:numeroDemande" />
-     	<wsdl:fault message="tns:faute" />
+      <wsdl:fault message="tns:demandeDejaValidee" name="demandeDejaValidee"/>
+      <wsdl:fault message="tns:numeroDemandeInconnu" name="numeroDemandeInconnu"/>
 	</wsdl:operation>
     <wsdl:operation name="ajusterDemande">
      	<wsdl:input message="tns:ajustementConges" />
      	<wsdl:output message="tns:numeroDemande" />
-     	<wsdl:fault message="tns:faute" />
+      <wsdl:fault message="tns:numeroDemandeInconnu" name="numeroDemandeInconnu"/>
 	</wsdl:operation>
 </wsdl:portType>
 <!-- ======================== BINDINGS ======================================= --> 
@@ -154,14 +178,11 @@
          </bpmn:variable>
          <bpmn:output>demanderCongesResponse.xsl</bpmn:output>
       	<wsdl:input>
-        	<soap:body use="literal" />
+        	   <soap:body use="literal" />
       	</wsdl:input>
       	<wsdl:output>
-        	<soap:body use="literal" />
+        	   <soap:body use="literal" />
       	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
 	</wsdl:operation>
     <wsdl:operation name="validerDemande">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
@@ -179,14 +200,19 @@
          </bpmn:variable>
          <bpmn:output>validerDemandeResponse.xsl</bpmn:output>
       	<wsdl:input>
-        	<soap:body use="literal" />
+        	   <soap:body use="literal" />
       	</wsdl:input>
       	<wsdl:output>
-        	<soap:body use="literal" />
+        	   <soap:body use="literal" />
       	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
+         <wsdl:fault name="numeroDemandeInconnu">
+            <bpmn:fault name="ProcessInstanceNotFoundException">numeroDemandeInconnu.xsl</bpmn:fault>
+            <soap:fault name="numeroDemandeInconnu" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="demandeDejaValidee">
+            <bpmn:fault name="TaskCompletedException">demandeDejaValidee.xsl</bpmn:fault>
+            <soap:fault name="demandeDejaValidee" use="literal" />
+         </wsdl:fault>
 	</wsdl:operation>
     <wsdl:operation name="ajusterDemande">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/adjustVacationRequestTask" />
@@ -210,14 +236,15 @@
          </bpmn:variable>
          <bpmn:output>ajusterDemandeResponse.xsl</bpmn:output>
       	<wsdl:input>
-        	<soap:body use="literal" />
+        	   <soap:body use="literal" />
       	</wsdl:input>
       	<wsdl:output>
-        	<soap:body use="literal" />
+        	   <soap:body use="literal" />
       	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
+         <wsdl:fault name="numeroDemandeInconnu">
+            <bpmn:fault name="ProcessInstanceNotFoundException">numeroDemandeInconnu.xsl</bpmn:fault>
+            <soap:fault name="numeroDemandeInconnu" use="literal" />
+         </wsdl:fault>
 	</wsdl:operation>
 </wsdl:binding>
 <!-- ======================== SERVICE (SU jbi.xml service-name) ============== --> 

@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.NoUserIdMapping
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessDefinitionIdDuplicatedInModelException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ProcessDefinitionIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.RequiredVariableMissingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedMappedExceptionNameException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.VariableNotFoundInModelException;
 
 /**
@@ -88,6 +90,12 @@ public abstract class AnnotatedOperation {
     private final Templates outputTemplate;
 
     /**
+     * The XSLT style-sheet compiled associated to WSDL faults. The key is the class simple name of the exception
+     * associated to the fault.
+     */
+    private final Map<String, Templates> faultTemplates;
+
+    /**
      * <p>
      * Create an annotated operation.
      * </p>
@@ -112,13 +120,15 @@ public abstract class AnnotatedOperation {
      *            The definition of variables of the operation
      * @param outputTemplate
      *            The output XSLT style-sheet compiled
+     * @param faultTemplates
+     *            The XSLT style-sheet compiled associated to WSDL faults
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
     protected AnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
             final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate)
-            throws InvalidAnnotationForOperationException {
+            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+            final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super();
         this.wsdlOperationName = wsdlOperationName;
         this.processDefinitionId = processDefinitionId;
@@ -127,6 +137,7 @@ public abstract class AnnotatedOperation {
         this.userIdHolder = userIdHolder;
         this.variables = variables;
         this.outputTemplate = outputTemplate;
+        this.faultTemplates = faultTemplates;
     }
 
     /**
@@ -195,7 +206,23 @@ public abstract class AnnotatedOperation {
                 throw new RequiredVariableMissingException(this.wsdlOperationName, variableName);
             }
         }
+
+        // Check supported fault mapping
+        final List<String> mappedExceptionNames = this.getMappedExceptionNames();
+        for (final String faultName : this.getFaultTemplates().keySet()) {
+            if (!mappedExceptionNames.contains(faultName)) {
+                throw new UnsupportedMappedExceptionNameException(this.wsdlOperationName, faultName);
+            }
+        }
     }
+
+    private List<String> getMappedExceptionNames() {
+        final List<String> mappedExceptionNames = new ArrayList<String>();
+        this.addMappedExceptionNames(mappedExceptionNames);
+        return mappedExceptionNames;
+    }
+
+    protected abstract void addMappedExceptionNames(final List<String> mappedExceptionNames);
 
     /**
      * <p>
@@ -273,5 +300,12 @@ public abstract class AnnotatedOperation {
      */
     public Templates getOutputTemplate() {
         return this.outputTemplate;
+    }
+
+    /**
+     * @return The XSLT style-sheet compiled associated to WSDL faults
+     */
+    public Map<String, Templates> getFaultTemplates() {
+        return this.faultTemplates;
     }
 }

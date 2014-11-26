@@ -56,15 +56,17 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
      *            The definition of variables of the operation
      * @param outputTemplate
      *            The output XSLT style-sheet compiled
+     * @param faultTemplates
+     *            The XSLT style-sheet compiled associated to WSDL faults
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
     public StartEventAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
             final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate)
-            throws InvalidAnnotationForOperationException {
+            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+            final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processDefinitionId, actionId, processInstanceIdHolder, userIdHolder, variables,
-                outputTemplate);
+                outputTemplate, faultTemplates);
     }
 
     @Override
@@ -100,6 +102,11 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
     @Override
     public String getAction() {
         return BPMN_ACTION;
+    }
+
+    @Override
+    protected void addMappedExceptionNames(final List<String> mappedExceptionNames) {
+        // TODO Auto-generated method stub
     }
 
 }

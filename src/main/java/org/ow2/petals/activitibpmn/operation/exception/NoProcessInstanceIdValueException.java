@@ -17,6 +17,11 @@
  */
 package org.ow2.petals.activitibpmn.operation.exception;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.namespace.QName;
+
 
 /**
  * The value of the process instance identifier is required in the incoming request.
@@ -24,7 +29,7 @@ package org.ow2.petals.activitibpmn.operation.exception;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoProcessInstanceIdValueException extends OperationProcessingException {
+public class NoProcessInstanceIdValueException extends OperationProcessingFault {
 
     private static final long serialVersionUID = 5318980517059515822L;
 
@@ -32,6 +37,12 @@ public class NoProcessInstanceIdValueException extends OperationProcessingExcept
 
     public NoProcessInstanceIdValueException(final String wsdlOperationName) {
         super(wsdlOperationName, MESSAGE);
+    }
+
+    @Override
+    public Map<QName, String> getXslParameters() {
+        final Map<QName, String> xslParameters = new HashMap<QName, String>();
+        return xslParameters;
     }
 
 }

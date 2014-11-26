@@ -42,15 +42,20 @@ import org.activiti.engine.impl.util.io.InputStreamSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ActionIdNotFoundInModelException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedFaultMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedOutputMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.DuplicatedVariableException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.FaultXslNotFoundException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidFaultXslException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidOutputXslException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.MultipleBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoActionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationDefinedException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoBpmnOperationException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoFaultMappingException;
+import org.ow2.petals.activitibpmn.operation.annotated.exception.NoFaultNameMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoOutputMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
@@ -1079,8 +1084,8 @@ public class AnnotatedWsdlParserTest {
      * XSL style-sheet for the BPMN actions 'userTask' and 'startEvent'
      * </p>
      * <p>
-     * Expected results: An error occurs about the invalid expression of the user id placeholder for both BPMN actions,
-     * and an error occurs about no valid annotated operation found.
+     * Expected results: An error occurs about the invalid output XSLT style-sheet for both BPMN actions, and an error
+     * occurs about no valid annotated operation found.
      * </p>
      */
     @Test
@@ -1123,11 +1128,11 @@ public class AnnotatedWsdlParserTest {
     /**
      * <p>
      * Check the parser against a WSDL containing BPMN annotations but the output XSLT style-sheet does not exist in the
-     * service unitl for the BPMN actions 'userTask' and 'startEvent'
+     * service unit for the BPMN actions 'userTask' and 'startEvent'
      * </p>
      * <p>
-     * Expected results: An error occurs about the unexisting process definition identifier for both BPMN actions
-     * 'startEvent' and 'userTask'.
+     * Expected results: An error occurs about the unexisting output XSLT style-sheet for both BPMN actions 'startEvent'
+     * and 'userTask'.
      * </p>
      */
     @Test
@@ -1273,6 +1278,247 @@ public class AnnotatedWsdlParserTest {
         }
         assertTrue(duplicatedOutputXslOp1);
         assertTrue(duplicatedOutputXslOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but a fault XSLT style-sheet is as following for the
+     * BPMN actions 'userTask' and 'startEvent':
+     * <ul>
+     * <li>tag missing (ie. no XML tag about the fault XSLT style-sheet),</li>
+     * <li>the mapped exception attribute is missing,</li>
+     * <li>the mapped exception attribute is empty,</li>
+     * <li>the value is missing (ie. the content of the XML tag about the fault XSLT style-sheet is missing),</li>
+     * <li>the value is empty (ie. the content of XML tag about the fault XSLT style-sheet is empty).</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results: An error occurs about a missing or empty fault XSLT style-sheet for both BPMN actions, and an
+     * error occurs about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithFaultXslMissing() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/missing-and-empty-fault-xsl.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")), SU_ROOT_PATH).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(11, encounteredErrors.size());
+        boolean missingTagFaultXslOp1 = false;
+        boolean missingTagFaultXslOp2 = false;
+        boolean missingAttrFaultXslOp1 = false;
+        boolean missingAttrFaultXslOp2 = false;
+        boolean emptyAttrFaultXslOp1 = false;
+        boolean emptyAttrFaultXslOp2 = false;
+        boolean missingTagValueFaultXslOp1 = false;
+        boolean missingTagValueFaultXslOp2 = false;
+        boolean emptyFaultXslOp1 = false;
+        boolean emptyFaultXslOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof NoFaultMappingException) {
+                final NoFaultMappingException expectedException = (NoFaultMappingException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges_missingTag")) {
+                    missingTagFaultXslOp1 = true;
+                    assertEquals("demandeFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingTag")) {
+                    missingTagFaultXslOp2 = true;
+                    assertEquals("vacationFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("demanderConges_missingValue")) {
+                    missingTagValueFaultXslOp1 = true;
+                    assertEquals("demandeFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingValue")) {
+                    missingTagValueFaultXslOp2 = true;
+                    assertEquals("vacationFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("demanderConges_empty")) {
+                    emptyFaultXslOp1 = true;
+                    assertEquals("demandeFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_empty")) {
+                    emptyFaultXslOp2 = true;
+                    assertEquals("vacationFault", expectedException.getWsdlFault());
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoFaultNameMappingException) {
+                final NoFaultNameMappingException expectedException = (NoFaultNameMappingException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges_missingAttr")) {
+                    missingAttrFaultXslOp1 = true;
+                    assertEquals("demandeFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingAttr")) {
+                    missingAttrFaultXslOp2 = true;
+                    assertEquals("vacationFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("demanderConges_emptyAttr")) {
+                    emptyAttrFaultXslOp1 = true;
+                    assertEquals("demandeFault", expectedException.getWsdlFault());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande_emptyAttr")) {
+                    emptyAttrFaultXslOp2 = true;
+                    assertEquals("vacationFault", expectedException.getWsdlFault());
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(missingTagFaultXslOp1);
+        assertTrue(missingTagFaultXslOp2);
+        assertTrue(missingAttrFaultXslOp1);
+        assertTrue(missingAttrFaultXslOp2);
+        assertTrue(emptyAttrFaultXslOp1);
+        assertTrue(emptyAttrFaultXslOp2);
+        assertTrue(missingTagValueFaultXslOp1);
+        assertTrue(missingTagValueFaultXslOp2);
+        assertTrue(emptyFaultXslOp1);
+        assertTrue(emptyFaultXslOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but a fault XSLT style-sheet is declared more than
+     * once for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the duplicated fault XSLT style-sheets for both BPMN actions 'startEvent'
+     * and 'userTask'.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithDuplicatedFaultXsl() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/duplicated-fault-xsl.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")), SU_ROOT_PATH).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean duplicatedFaultXslOp1 = false;
+        boolean duplicatedFaultXslOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof DuplicatedFaultMappingException) {
+                final DuplicatedFaultMappingException expectedException = (DuplicatedFaultMappingException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    duplicatedFaultXslOp1 = true;
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    duplicatedFaultXslOp2 = true;
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(duplicatedFaultXslOp1);
+        assertTrue(duplicatedFaultXslOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but a fault XSLT style-sheet does not exist in the
+     * service unit for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the unexisting fault XSLT style-sheet for both BPMN actions 'startEvent'
+     * and 'userTask'.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithUnexistingFaultXslId() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/fault-xsl-not-found.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")), SU_ROOT_PATH).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean unexistingFaultXslOp1 = false;
+        boolean unexistingFaultXslOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof FaultXslNotFoundException) {
+                final FaultXslNotFoundException expectedException = (FaultXslNotFoundException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    unexistingFaultXslOp1 = true;
+                    assertEquals("demandeFault", expectedException.getWsdlFault());
+                    assertEquals("unexisting.xsl", expectedException.getXslFileName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    unexistingFaultXslOp2 = true;
+                    assertEquals("vacationFault", expectedException.getWsdlFault());
+                    assertEquals("unexisting.xsl", expectedException.getXslFileName());
+                } else {
+                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(unexistingFaultXslOp1);
+        assertTrue(unexistingFaultXslOp2);
+        assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations but a fault XSLT style-sheet is set to an invalid XSL
+     * style-sheet for the BPMN actions 'userTask' and 'startEvent'
+     * </p>
+     * <p>
+     * Expected results: An error occurs about the invalid fault XSLT style-sheet for both BPMN actions, and an error
+     * occurs about no valid annotated operation found.
+     * </p>
+     */
+    @Test
+    public void parse_WsdlWithFaultXslInvalidExpr() throws SAXException, IOException {
+
+        assertEquals(
+                0,
+                this.parser.parse(this.readWsdlDocument("parser/invalid-fault-xsl.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")), SU_ROOT_PATH).size());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(3, encounteredErrors.size());
+        boolean invalidFaultXsltMappingOp1 = false;
+        boolean invalidFaultXsltMappingOp2 = false;
+        boolean noBpmnOperationExceptionFound = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof InvalidFaultXslException) {
+                final InvalidFaultXslException expectedException = (InvalidFaultXslException) exception;
+                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                    invalidFaultXsltMappingOp1 = true;
+                    assertEquals("demandeFault", expectedException.getWsdlFault());
+                    assertEquals("invalid.xsl", expectedException.getXslFileName());
+                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                    invalidFaultXsltMappingOp2 = true;
+                    assertEquals("vacationFault", expectedException.getWsdlFault());
+                    assertEquals("invalid.xsl", expectedException.getXslFileName());
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                }
+            } else if (exception instanceof NoBpmnOperationException) {
+                noBpmnOperationExceptionFound = true;
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(invalidFaultXsltMappingOp1);
+        assertTrue(invalidFaultXsltMappingOp2);
         assertTrue(noBpmnOperationExceptionFound);
     }
 }

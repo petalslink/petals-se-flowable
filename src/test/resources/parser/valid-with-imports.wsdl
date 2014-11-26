@@ -50,9 +50,6 @@
          <wsdl:output>
             <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-            <soap:body use="literal" />
-         </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="validerDemande">
          <soap:operation
@@ -74,8 +71,9 @@
          <wsdl:output>
             <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-            <soap:body use="literal" />
+         <wsdl:fault name="demandeDejaValidee">
+            <bpmn:fault name="TaskCompletedException">valid.xsl</bpmn:fault>
+            <soap:fault name="demandeDejaValidee" use="literal" />
          </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="ajusterDemande">
@@ -104,8 +102,9 @@
          <wsdl:output>
             <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-            <soap:body use="literal" />
+         <wsdl:fault name="demandeDejaValidee">
+            <bpmn:fault name="TaskCompletedException">valid.xsl</bpmn:fault>
+            <soap:fault name="demandeDejaValidee" use="literal" />
          </wsdl:fault>
       </wsdl:operation>
    </wsdl:binding>

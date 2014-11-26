@@ -59,7 +59,9 @@ import org.ow2.petals.component.framework.junit.rule.ComponentUnderTestBuilder;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 import org.ow2.petals.se.activitibpmn._1_0.su.AckResponse;
 import org.ow2.petals.se.activitibpmn._1_0.su.Demande;
+import org.ow2.petals.se.activitibpmn._1_0.su.DemandeDejaValidee;
 import org.ow2.petals.se.activitibpmn._1_0.su.Numero;
+import org.ow2.petals.se.activitibpmn._1_0.su.NumeroDemandeInconnu;
 import org.ow2.petals.se.activitibpmn._1_0.su.Validation;
 import org.ow2.petals.se.activitibpmn._1_0.su.XslParameter;
 
@@ -91,7 +93,7 @@ public class BpmnComponentTest {
     static {
         try {
             JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
-                    AckResponse.class);
+                    AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class);
             BpmnComponentTest.unmarshaller = context.createUnmarshaller();
             BpmnComponentTest.marshaller = context.createMarshaller();
             BpmnComponentTest.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -165,6 +167,16 @@ public class BpmnComponentTest {
         assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
         BpmnComponentTest.serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
 
+        final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("su/valid/numeroDemandeInconnu.xsl");
+        assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
+        BpmnComponentTest.serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
+
+        final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
+                .getResource("su/valid/demandeDejaValidee.xsl");
+        assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
+        BpmnComponentTest.serviceConfiguration.addResource(demandeDejaValideeXslUrl);
+
         final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("su/valid/vacationRequest.bpmn20.xml");
         assertNotNull("BPMN file not found", bpmnUrl);
@@ -189,14 +201,17 @@ public class BpmnComponentTest {
      * Check the message processing where:
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
-     * <li>a 2nd valid request is sent to complete the waiting user task.</li>
+     * <li>a 2nd valid request is sent to complete the waiting user task,</li>
+     * <li>a 3rd valid request is sent to complete again the user task already completed by the 2nd request.</li>
      * </ol>
      * </p>
      * <p>
      * Expected results:
      * <ul>
      * <li>on the first request, the process instance is correctly created,</li>
-     * <li>on the 2nd request, the user task is ended.</li>
+     * <li>on the 2nd request, the user task is ended,</li>
+     * <li>on the 3rd request, the right business fault associated to a user task already completed is returned because
+     * the process instance is finished.</li>
      * </ul>
      * </p>
      */
@@ -334,7 +349,30 @@ public class BpmnComponentTest {
             assertTrue(approvedFound);
             assertTrue(motivationFound);
         }
-        // TODO: Add a check against Activiti
+        // TODO: Add a check against Activiti to verify that the process instance is finished
+
+        // Create the 3rd request
+        final Validation request_3 = new Validation();
+        request_3.setValideur(valideur);
+        request_3.setNumeroDde(response_1.getNumeroDde());
+        request_3.setApprobation(Boolean.TRUE.toString());
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_3)), null));
+
+        // Assert the response of the 3rd valid request
+        final ResponseMessage responseMsg_3 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        assertNull("XML payload in response", responseMsg_3.getPayload());
+        final Source fault_3 = responseMsg_3.getFault();
+        assertNotNull("No fault returns", fault_3);
+        final Object responseObj_3 = BpmnComponentTest.unmarshaller.unmarshal(fault_3);
+        assertTrue(responseObj_3 instanceof DemandeDejaValidee);
+        final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
+        assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
     }
 
     /**
@@ -680,6 +718,151 @@ public class BpmnComponentTest {
         assertTrue("Unexpected fault: " + faultStr, faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg_2.getPayload());
         // TODO: Add a check against Activiti to verify that the user task is not complete
+    }
+
+    /**
+     * <p>
+     * Check the message processing where:
+     * <ol>
+     * <li>a valid request is sent to complete the waiting user task where the process instance identifier does not
+     * exist on the BPMN engine side.</li>
+     * </ol>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>the right business fault associated to a process instance identifier not found is returned.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void userTaskRequest_ProcessInstanceIdNotFound() throws Exception {
+
+        // Create the valid request
+        final Validation request = new Validation();
+        request.setValideur("demandeur");
+        final String unknownProcessInstanceId = "unknown-processInstanceId";
+        request.setNumeroDde(unknownProcessInstanceId);
+        request.setApprobation(Boolean.TRUE.toString());
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request)), null));
+
+        // Assert the response of the valid request
+        final ResponseMessage responseMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        assertNull("XML payload in response", responseMsg.getPayload());
+        final Source fault = responseMsg.getFault();
+        assertNotNull("No fault returns", fault);
+        final Object responseObj = BpmnComponentTest.unmarshaller.unmarshal(fault);
+        assertTrue(responseObj instanceof NumeroDemandeInconnu);
+        final NumeroDemandeInconnu response = (NumeroDemandeInconnu) responseObj;
+        assertEquals(unknownProcessInstanceId, response.getNumeroDde());
+    }
+
+    /**
+     * <p>
+     * Check the message processing where:
+     * <ol>
+     * <li>a first valid request is sent to create a new process instance,</li>
+     * <li>a 2nd valid request is sent to complete the waiting user task,</li>
+     * <li>a 3rd valid request is sent to complete again the user task already completed by the 2nd request.</li>
+     * </ol>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>on the first request, the process instance is correctly created,</li>
+     * <li>on the 2nd request, the user task is ended,</li>
+     * <li>on the 3rd request, the right business fault associated to a user task already completed is returned because
+     * the user task is already completed.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void userTaskRequest_TaskCompletedFault() throws Exception {
+
+        // Create the 1st valid request
+        final Demande request_1 = new Demande();
+        final String demandeur = "demandeur";
+        request_1.setDemandeur(demandeur);
+        final int numberOfDays = 10;
+        request_1.setNbJourDde(numberOfDays);
+        final GregorianCalendar now = new GregorianCalendar();
+        final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
+                now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
+        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
+        final String motivation = "hollidays";
+        request_1.setMotifDde(motivation);
+
+        // Send the 1st valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_1)), null));
+
+        // Assert the response of the 1st valid request
+        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Create the 2nd valid request
+        final Validation request_2 = new Validation();
+        final String valideur = "valideur";
+        request_2.setValideur(valideur);
+        request_2.setNumeroDde(response_1.getNumeroDde());
+        request_2.setApprobation(Boolean.FALSE.toString());
+        request_2.setMotifRefus("To not finished the process and be able to try to complete again the user task");
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_2)), null));
+
+        // Assert the response of the 2nd valid request
+        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        final Source fault_2 = responseMsg_2.getFault();
+        assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
+        assertNotNull("No XML payload in response", responseMsg_2.getPayload());
+        final Object responseObj_2 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_2.getPayload());
+        assertTrue(responseObj_2 instanceof AckResponse);
+        final AckResponse response_2 = (AckResponse) responseObj_2;
+        // TODO: Add a check against Activiti to verify that the process instance is not finished
+
+        // Create the 3rd request
+        final Validation request_3 = new Validation();
+        request_3.setValideur(valideur);
+        request_3.setNumeroDde(response_1.getNumeroDde());
+        request_3.setApprobation(Boolean.TRUE.toString());
+
+        // Send the 2nd valid request
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
+                        "validerDemande"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_3)), null));
+
+        // Assert the response of the 3rd valid request
+        final ResponseMessage responseMsg_3 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+
+        assertNull("XML payload in response", responseMsg_3.getPayload());
+        final Source fault_3 = responseMsg_3.getFault();
+        assertNotNull("No fault returns", fault_3);
+        final Object responseObj_3 = BpmnComponentTest.unmarshaller.unmarshal(fault_3);
+        assertTrue(responseObj_3 instanceof DemandeDejaValidee);
+        final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
+        assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
     }
 
     /**

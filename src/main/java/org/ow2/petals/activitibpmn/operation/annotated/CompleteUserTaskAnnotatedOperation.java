@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.operation.annotated;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,12 @@ import org.activiti.bpmn.model.UserTask;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.ActionIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstanceIdMappingException;
+import org.ow2.petals.activitibpmn.operation.exception.NoProcessInstanceIdValueException;
+import org.ow2.petals.activitibpmn.operation.exception.NoUserIdValueException;
+import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingFault;
+import org.ow2.petals.activitibpmn.operation.exception.ProcessInstanceNotFoundException;
+import org.ow2.petals.activitibpmn.operation.exception.TaskCompletedException;
+import org.ow2.petals.activitibpmn.operation.exception.UnexpectedUserException;
 
 /**
  * The BPMN operation 'complete user task' extracted from WDSL according to BPMN annotations. This operation is used to
@@ -40,6 +47,17 @@ import org.ow2.petals.activitibpmn.operation.annotated.exception.NoProcessInstan
 public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
 
     public static final String BPMN_ACTION = "userTask";
+
+    private static final List<String> EXCEPTIONS_MAPPED;
+
+    static {
+        EXCEPTIONS_MAPPED = new ArrayList<String>();
+        for (final Class<OperationProcessingFault> exception : new Class[] { ProcessInstanceNotFoundException.class,
+                TaskCompletedException.class, NoProcessInstanceIdValueException.class, NoUserIdValueException.class,
+                UnexpectedUserException.class }) {
+            EXCEPTIONS_MAPPED.add(exception.getSimpleName());
+        }
+    }
 
     /**
      * 
@@ -57,15 +75,17 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
      *            The definition of variables of the operation
      * @param outputTemplate
      *            The output XSLT style-sheet compiled
+     * @param faultTemplates
+     *            The XSLT style-sheet compiled associated to WSDL faults
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
     public CompleteUserTaskAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
             final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate)
-            throws InvalidAnnotationForOperationException {
+            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+            final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, variables,
-                outputTemplate);
+                outputTemplate, faultTemplates);
     }
 
     @Override
@@ -106,6 +126,11 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
                 }
             }
         }
+    }
+
+    @Override
+    protected void addMappedExceptionNames(final List<String> mappedExceptionNames) {
+        mappedExceptionNames.addAll(EXCEPTIONS_MAPPED);
     }
 
 }

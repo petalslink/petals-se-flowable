@@ -151,9 +151,6 @@
       	<wsdl:output>
         	<soap:body use="literal" />
       	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
 	</wsdl:operation>
     <wsdl:operation name="validerDemande_missingTag">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
@@ -175,9 +172,6 @@
       	<wsdl:output>
         	<soap:body use="literal" />
       	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
 	</wsdl:operation>
     <wsdl:operation name="demanderConges_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
@@ -203,9 +197,6 @@
          <wsdl:output>
          <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
    </wsdl:operation>
     <wsdl:operation name="validerDemande_missingValue">
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
@@ -228,9 +219,6 @@
          <wsdl:output>
          <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
    </wsdl:operation>
     <wsdl:operation name="demanderConges_empty">
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
@@ -256,9 +244,6 @@
          <wsdl:output>
          <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
    </wsdl:operation>
     <wsdl:operation name="validerDemande_empty">
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
@@ -281,9 +266,6 @@
          <wsdl:output>
          <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
    </wsdl:operation>
 </wsdl:binding>
 <!-- ======================== SERVICE (SU jbi.xml service-name) ============== --> 

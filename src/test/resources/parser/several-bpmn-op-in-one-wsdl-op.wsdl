@@ -165,9 +165,6 @@
          <wsdl:output>
             <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-            <soap:body use="literal" />
-         </wsdl:fault>
       </wsdl:operation>
    </wsdl:binding>
    <!-- ======================== SERVICE (SU jbi.xml service-name) ============== -->

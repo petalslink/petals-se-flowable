@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
@@ -47,6 +48,7 @@ import org.activiti.bpmn.model.FormValue;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.exception.NoUserIdValueException;
 import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingException;
+import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingFault;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.w3c.dom.Document;
 
@@ -79,6 +81,11 @@ public abstract class ActivitiOperation {
      * Namespace of task parameters for the output XSLT style-sheet
      */
     protected static final String SCHEMA_OUTPUT_XSLT_TASK_PARAMS = "http://petals.ow2.org/se/bpmn/output-params/1.0/task";
+
+    /**
+     * Namespace of fault parameters for the fault XSLT style-sheet
+     */
+    public static final String SCHEMA_OUTPUT_XSLT_FAULT_PARAMS = "http://petals.ow2.org/se/bpmn/faults/1.0";
 
     /**
      * The WSDL operation name associated to this {@link ActivitiOperation}
@@ -125,6 +132,12 @@ public abstract class ActivitiOperation {
      */
     private final Templates outputTemplate;
 
+    /**
+     * The XSLT style-sheet compiled associated to WSDL faults. The key is the class simple name of the exception
+     * associated to the fault.
+     */
+    private final Map<String, Templates> faultTemplates;
+
     protected final Logger logger;
 
     /**
@@ -135,7 +148,6 @@ public abstract class ActivitiOperation {
      * @param logger
      */
     protected ActivitiOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
-
         this.wsdlOperationName = annotatedOperation.getWsdlOperationName();
         this.processDefinitionId = annotatedOperation.getProcessDefinitionId();
         this.actionId = annotatedOperation.getActionId();
@@ -144,6 +156,7 @@ public abstract class ActivitiOperation {
         this.variables = annotatedOperation.getVariables();
         this.variableTypes = annotatedOperation.getVariableTypes();
         this.outputTemplate = annotatedOperation.getOutputTemplate();
+        this.faultTemplates = annotatedOperation.getFaultTemplates();
         this.logger = logger;
     }
 
@@ -161,137 +174,186 @@ public abstract class ActivitiOperation {
     public abstract String getAction();
 
     /**
+     * <p>
      * Execute the operation
+     * </p>
+     * <p>
+     * The reply XML payload or fault or error of the operation processing is set into the exchange.
+     * </p>
      */
-    public final Source execute(final Exchange exchange) throws MessagingException {
+    public final void execute(final Exchange exchange) {
 
-        final Document inMsgWsdl = exchange.getInMessageContentAsDocument();
-        final DOMSource domSource = new DOMSource(inMsgWsdl);
-
-        if (this.logger.isLoggable(Level.FINE)) {
-            final StringWriter writer = new StringWriter();
-            final StreamResult result = new StreamResult(writer);
-            final Transformer transformer = Transformers.takeTransformer();
-            try {
-                transformer.transform(domSource, result);
-            } catch (final TransformerException e) {
-                throw new MessagingException(e);
-            } finally {
-                Transformers.releaseTransformer(transformer);
-            }
-            this.logger.fine("*** inMsgWsdl = " + writer.toString());
-        }
-
-        if (this.logger.isLoggable(Level.FINE)) {
-            this.logger.fine("Activiti processDefId = " + processDefinitionId);
-            this.logger.fine("Activiti Action = " + this.getClass().getSimpleName());
-            this.logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
-        }
-
-        inMsgWsdl.getDocumentElement().normalize();
-
-        // Get the userId
-        final String userId;
         try {
-            userId = this.userIdXPathExpr.evaluate(domSource);
-            if (userId == null || userId.trim().isEmpty()) {
-                throw new NoUserIdValueException(this.wsdlOperationName);
+            final Document inMsgWsdl = exchange.getInMessageContentAsDocument();
+            final DOMSource domSource = new DOMSource(inMsgWsdl);
+
+            if (this.logger.isLoggable(Level.FINE)) {
+                final StringWriter writer = new StringWriter();
+                final StreamResult result = new StreamResult(writer);
+                final Transformer transformer = Transformers.takeTransformer();
+                try {
+                    transformer.transform(domSource, result);
+                } catch (final TransformerException e) {
+                    throw new MessagingException(e);
+                } finally {
+                    Transformers.releaseTransformer(transformer);
+                }
+                this.logger.fine("*** inMsgWsdl = " + writer.toString());
             }
 
             if (this.logger.isLoggable(Level.FINE)) {
-                this.logger.fine("User identifier value: " + userId);
+                this.logger.fine("Activiti processDefId = " + processDefinitionId);
+                this.logger.fine("Activiti Action = " + this.getClass().getSimpleName());
+                this.logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
             }
-        } catch (final XPathExpressionException e) {
-            throw new OperationProcessingException(this.wsdlOperationName, e);
-        }
 
-        // Get the bpmn variables
-        final Map<String, Object> variableValues = new HashMap<String, Object>();
-        for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
-            final String variableName = variable.getKey();
+            inMsgWsdl.getDocumentElement().normalize();
+
             try {
-                final String variableValueAsStr = variable.getValue().evaluate(domSource);
-                if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
-                    if (this.variableTypes.get(variableName).isRequired()) {
-                        throw new MessagingException("The task: " + this.getClass().getSimpleName() + " of process: "
-                                + this.processDefinitionId + " required the variable: " + variableName);
-                    } else {
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("variable: " + variableName + "=> no value");
-                        }
-                    }
-                } else {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("variable: " + variableName + "=> value: " + variableValueAsStr);
+                // Get the userId
+                final String userId;
+                try {
+                    userId = this.userIdXPathExpr.evaluate(domSource);
+                    if (userId == null || userId.trim().isEmpty()) {
+                        throw new NoUserIdValueException(this.wsdlOperationName);
                     }
 
-                    // Get the type of the bpmn variable
-                    final FormProperty variableProperties = this.variableTypes.get(variableName);
-                    final String varType = variableProperties.getType();
-                    // Put the value in Map of activiti variable in the right format
-                    if (varType.equals("string")) {
-                        variableValues.put(variableName, variableValueAsStr);
-                    } else if (varType.equals("long")) {
-                        try {
-                            variableValues.put(variableName, Long.valueOf(variableValueAsStr));
-                        } catch (final NumberFormatException e) {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + "' must be a long ! Current value is: " + variableValueAsStr);
-                        }
-                    } else if (varType.equals("enum")) {
-                        boolean validValue = false;
-                        for (final FormValue enumValue : variableProperties.getFormValues()) {
-                            if (variableValueAsStr.equals(enumValue.getId())) {
-                                validValue = true;
+                    if (this.logger.isLoggable(Level.FINE)) {
+                        this.logger.fine("User identifier value: " + userId);
+                    }
+                } catch (final XPathExpressionException e) {
+                    throw new OperationProcessingException(this.wsdlOperationName, e);
+                }
+
+                // Get the bpmn variables
+                final Map<String, Object> variableValues = new HashMap<String, Object>();
+                for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
+                    final String variableName = variable.getKey();
+                    try {
+                        final String variableValueAsStr = variable.getValue().evaluate(domSource);
+                        if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
+                            if (this.variableTypes.get(variableName).isRequired()) {
+                                throw new MessagingException("The task: " + this.getClass().getSimpleName()
+                                        + " of process: " + this.processDefinitionId + " required the variable: "
+                                        + variableName);
+                            } else {
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.fine("variable: " + variableName + "=> no value");
+                                }
+                            }
+                        } else {
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.fine("variable: " + variableName + "=> value: " + variableValueAsStr);
+                            }
+
+                            // Get the type of the bpmn variable
+                            final FormProperty variableProperties = this.variableTypes.get(variableName);
+                            final String varType = variableProperties.getType();
+                            // Put the value in Map of activiti variable in the right format
+                            if (varType.equals("string")) {
+                                variableValues.put(variableName, variableValueAsStr);
+                            } else if (varType.equals("long")) {
+                                try {
+                                    variableValues.put(variableName, Long.valueOf(variableValueAsStr));
+                                } catch (final NumberFormatException e) {
+                                    throw new MessagingException("The value of the variable '" + variableName
+                                            + "' must be a long ! Current value is: " + variableValueAsStr);
+                                }
+                            } else if (varType.equals("enum")) {
+                                boolean validValue = false;
+                                for (final FormValue enumValue : variableProperties.getFormValues()) {
+                                    if (variableValueAsStr.equals(enumValue.getId())) {
+                                        validValue = true;
+                                    }
+                                }
+                                if (!validValue) {
+                                    throw new MessagingException("The value of the variable '" + variableName
+                                            + " does not belong to the enum of Activiti variable ! Current value is: "
+                                            + variableValueAsStr);
+                                } else {
+                                    variableValues.put(variableName, variableValueAsStr);
+                                }
+                            } else if (varType.equals("date")) {
+                                try {
+                                    variableValues.put(variableName, DatatypeConverter
+                                            .parseDateTime(variableValueAsStr).getTime());
+                                } catch (final IllegalArgumentException e) {
+                                    throw new MessagingException("The value of the variable '" + variableName
+                                            + "' must be a valid date ! Current value is: " + variableValueAsStr);
+                                }
+                            } else if (varType.equals("boolean")) {
+                                if (variableValueAsStr.equalsIgnoreCase("true")
+                                        || variableValueAsStr.equalsIgnoreCase("false")) {
+                                    variableValues.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
+                                } else {
+                                    throw new MessagingException("The value of the variable '" + variableName
+                                            + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
+                                            + variableValueAsStr);
+                                }
                             }
                         }
-                        if (!validValue) {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + " does not belong to the enum of Activiti variable ! Current value is: "
-                                    + variableValueAsStr);
-                        } else {
-                            variableValues.put(variableName, variableValueAsStr);
-                        }
-                    } else if (varType.equals("date")) {
-                        try {
-                            variableValues.put(variableName, DatatypeConverter.parseDateTime(variableValueAsStr)
-                                    .getTime());
-                        } catch (final IllegalArgumentException e) {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + "' must be a valid date ! Current value is: " + variableValueAsStr);
-                        }
-                    } else if (varType.equals("boolean")) {
-                        if (variableValueAsStr.equalsIgnoreCase("true") || variableValueAsStr.equalsIgnoreCase("false")) {
-                            variableValues.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
-                        } else {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
-                                    + variableValueAsStr);
-                        }
+                    } catch (final XPathExpressionException e) {
+                        throw new OperationProcessingException(this.wsdlOperationName, e);
                     }
                 }
-            } catch (final XPathExpressionException e) {
-                throw new OperationProcessingException(this.wsdlOperationName, e);
+
+                final Map<QName, String> xslParameters = new HashMap<QName, String>();
+                this.doExecute(domSource, userId, variableValues, xslParameters);
+
+                exchange.setOutMessageContent(this.createXmlOutput(this.outputTemplate, xslParameters));
+
+            } catch (final OperationProcessingFault e) {
+                // A fault occurs during the operation processing
+                final Templates faultTemplate = this.faultTemplates.get(e.getClass().getSimpleName());
+                if (faultTemplate == null) {
+                    // No fault mapped --> Processing as an error
+                    throw new OperationProcessingException(this.wsdlOperationName, e);
+                }
+                final Fault fault = exchange.createFault();
+                fault.setContent(this.createXmlOutput(faultTemplate, e.getXslParameters()));
+                exchange.setFault(fault);
             }
+        } catch (final OperationProcessingException e) {
+            this.logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
+            // Technical error, it would be set as a Fault by the CDK
+            exchange.setError(e);
+        } catch (final MessagingException e) {
+            this.logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
+            // Technical error, it would be set as a Fault by the CDK
+            exchange.setError(e);
         }
+    }
 
-        final Map<QName, String> xslParameters = new HashMap<QName, String>();
-        this.doExecute(domSource, userId, variableValues, xslParameters);
-
+    /**
+     * Create a XML source from a XSLT style-sheet template and XSL parameters
+     * 
+     * @param templates
+     *            The XSLT style-sheet template to use
+     * @param xslParameters
+     *            The XSL parameters
+     * @return The XML source generated
+     * @throws OperationProcessingException
+     *             An error occurs during generation
+     */
+    private Source createXmlOutput(final Templates templates, final Map<QName, String> xslParameters)
+            throws OperationProcessingException {
         try {
-            // TODO: For performance reasons, check that it is not needed to introduce a pool of transformers to avoid
+            // TODO: For performance reasons, check that it is not needed to introduce a pool of transformers to
+            // avoid
             // to create a transformer on each request
-            final Transformer outputTransformer = this.outputTemplate.newTransformer();
+            final Transformer outputTransformer = templates.newTransformer();
 
             // We prepare the parameters to set to the XSL transformer:
-            if (this.logger.isLoggable(Level.INFO)) {
-                this.logger.info("XSL Parameters:");
-                for (final Entry<QName, String> variable : xslParameters.entrySet()) {
-                    this.logger.info("\t- " + variable.getKey().toString() + " => " + variable.getValue());
+            if (xslParameters != null) {
+                if (this.logger.isLoggable(Level.INFO)) {
+                    this.logger.info("XSL Parameters:");
+                    for (final Entry<QName, String> variable : xslParameters.entrySet()) {
+                        this.logger.info("\t- " + variable.getKey().toString() + " => " + variable.getValue());
+                    }
                 }
-            }
-            for (final Entry<QName, String> variable : xslParameters.entrySet()) {
-                outputTransformer.setParameter(variable.getKey().toString(), variable.getValue());
+                for (final Entry<QName, String> variable : xslParameters.entrySet()) {
+                    outputTransformer.setParameter(variable.getKey().toString(), variable.getValue());
+                }
             }
 
             // Create the output through the XSL transformation
@@ -299,12 +361,14 @@ public abstract class ActivitiOperation {
             final Result result = new StreamResult(baos);
             // TODO: Improve the empty document to avoid to create it each time
             outputTransformer.transform(new DOMSource(DocumentBuilders.newDocument()), result);
+
             return new StreamSource(new ByteArrayInputStream(baos.toByteArray()));
+
         } catch (final TransformerException e) {
             throw new OperationProcessingException(this.wsdlOperationName, e);
         }
     }
-    
+
     /**
      * 
      * @param domSource
@@ -314,11 +378,12 @@ public abstract class ActivitiOperation {
      * @param processVars
      * @param outputNamedValues
      *            The output named values to generate response
-     * @throws MessagingException
+     * @throws OperationProcessingException
+     *             An error occurs when processing the operation
      */
     protected abstract void doExecute(final DOMSource domSource, final String userId,
             final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
-            throws MessagingException;
+            throws OperationProcessingException;
 
     /**
      * @param logLevel
@@ -381,5 +446,4 @@ public abstract class ActivitiOperation {
 
         return xslParamValue;
     }
-
 }

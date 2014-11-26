@@ -15,34 +15,22 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.activitibpmn.operation.exception;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.xml.namespace.QName;
+package org.ow2.petals.activitibpmn.operation.annotated.exception;
 
 
 /**
- * The value of the user identifier is required in the incoming request.
+ * The fault name of BPMN fault annotation is not known as mappable exception
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoUserIdValueException extends OperationProcessingFault {
+public class UnsupportedMappedExceptionNameException extends InvalidAnnotationForOperationException {
+    
+    private static final long serialVersionUID = -8657635446067970106L;
 
-    private static final long serialVersionUID = -5968252264228963812L;
+    private static final String MESSAGE_PATTERN = "The fault name '%s' of BPMN fault annotation is not known as mappable exception";
 
-    private static final String MESSAGE = "User identifier is missing or empty in the incoming request !";
-
-    public NoUserIdValueException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public UnsupportedMappedExceptionNameException(final String wsdlOperationName, final String faultName) {
+        super(wsdlOperationName, String.format(MESSAGE_PATTERN, faultName));
     }
-
-    @Override
-    public Map<QName, String> getXslParameters() {
-        final Map<QName, String> xslParameters = new HashMap<QName, String>();
-        return xslParameters;
-    }
-
 }

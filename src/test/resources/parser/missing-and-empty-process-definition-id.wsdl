@@ -140,9 +140,6 @@
       	<wsdl:output>
         	<soap:body use="literal" />
       	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
 	</wsdl:operation>
     <wsdl:operation name="validerDemande_missingAttr">
       	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
@@ -164,9 +161,6 @@
       	<wsdl:output>
         	<soap:body use="literal" />
       	</wsdl:output>
-      	<wsdl:fault>
-        	<soap:body use="literal" />
-      	</wsdl:fault>
 	</wsdl:operation>
     <wsdl:operation name="demanderConges_emptyAttr">
          <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
@@ -192,9 +186,6 @@
          <wsdl:output>
          <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
    </wsdl:operation>
     <wsdl:operation name="validerDemande_emptyAttr">
          <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
@@ -217,9 +208,6 @@
          <wsdl:output>
          <soap:body use="literal" />
          </wsdl:output>
-         <wsdl:fault>
-         <soap:body use="literal" />
-         </wsdl:fault>
    </wsdl:operation>
 </wsdl:binding>
 <!-- ======================== SERVICE (SU jbi.xml service-name) ============== --> 

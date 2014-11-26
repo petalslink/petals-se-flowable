@@ -59,25 +59,24 @@ public class ActivitiJBIListener extends AbstractJBIListener {
     @Override
     public boolean onJBIMessage(final Exchange exchange) {
  
-        final Logger logger = getLogger();
+        final Logger logger = this.getLogger();
         logger.fine("Start ActivitiJBIListener.onJBIMessage()");
         try {
-            Exception finalException = null;
-
             if (exchange.isActiveStatus()) {
                 this.logHint = "Exchange " + exchange.getExchangeId();
-                try {
-                    // Get the InMessage
-                    final NormalizedMessage normalizedMessage = exchange.getInMessage();
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("normalizedMessage = " + normalizedMessage.toString());
-                    }
 
-                    // Provider role
-                    if (exchange.isProviderRole()) {
+                // Provider role
+                if (exchange.isProviderRole()) {
+                    try {
+                        // Get the InMessage
+                        final NormalizedMessage normalizedMessage = exchange.getInMessage();
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("normalizedMessage = " + normalizedMessage.toString());
+                        }
 
                         // Validate Message pattern
                         if (!exchange.isInOutPattern()) {
+                            // TODO: Add a unit test
                             if (logger.isLoggable(Level.WARNING)) {
                                 logger.warning(this.logHint
                                         + " encountered a problem. The exchange pattern must be IN/OUT !");
@@ -109,24 +108,19 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         final ActivitiOperation activitiOperation = ((ActivitiSE) this.component)
                                 .getActivitiOperations(eptAndOperation);
                         if (activitiOperation == null) {
+                            // TODO: Create a unit test
                             throw new MessagingException("No BPMN operation found matching the exchange");
                         }
 
-                        exchange.setOutMessageContent(activitiOperation.execute(exchange));
-                    } else {
-                        // TODO: to do
-            		}
+                        activitiOperation.execute(exchange);
 
-                } catch (final MessagingException e) {
-                    finalException = e;
-                }
-
-                // Handle cases where a fault could not be set on the exchange
-                if (finalException != null) {
-                    logger.finest("Exchange " + exchange.getExchangeId() + " encountered a problem. "
-                            + finalException.getMessage());
-                    // Technical error, it would be set as a Fault by the CDK
-                    exchange.setError(finalException);
+                    } catch (final MessagingException e) {
+                        logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
+                        // Technical error, it would be set as a Fault by the CDK
+                        exchange.setError(e);
+                    }
+                } else {
+                    // TODO: to do
                 }
             }
 

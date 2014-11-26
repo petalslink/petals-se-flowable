@@ -22,7 +22,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 
@@ -31,6 +30,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.operation.annotated.StartEventAnnotatedOperation;
+import org.ow2.petals.activitibpmn.operation.exception.OperationProcessingException;
 
 /**
  * The operation to create a new instance of a process
@@ -75,13 +75,12 @@ public class StartEventOperation extends ActivitiOperation {
     @Override
     protected void doExecute(final DOMSource domSource, final String bpmnUserId,
             final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
-            throws MessagingException {
+ throws OperationProcessingException {
 
         // Start a new process instance
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)
         final String bpmnProcessIdValue;
         try {
-            // TODO: How this works on concurrent requests. I think that it is not thread-safe ?
             this.identityService.setAuthenticatedUserId(bpmnUserId);
 
             // We use RuntimeService.startProcessInstanceById() to be able to create a process instance from the given
@@ -106,8 +105,9 @@ public class StartEventOperation extends ActivitiOperation {
         final ProcessInstance retrievedProcessInstance = this.runtimeService.createProcessInstanceQuery()
                 .processInstanceId(bpmnProcessIdValue).includeProcessVariables().singleResult();
         if (retrievedProcessInstance == null) {
-            throw new MessagingException(String.format(
-                    "The just create process instance '%s' is not found for the process definition '%s'.",
+            // This exception should not occur
+            throw new OperationProcessingException(this.wsdlOperationName, String.format(
+                    "The just created process instance '%s' is not found for the process definition '%s'.",
                     bpmnProcessIdValue, this.deployedProcessDefinitionId));
         }
         for (final Entry<String, Object> processVariable : retrievedProcessInstance.getProcessVariables().entrySet()) {

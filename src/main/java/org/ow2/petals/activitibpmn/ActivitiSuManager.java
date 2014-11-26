@@ -335,8 +335,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 // TODO manage the assignee according with su jbi descriptor
 
                 if (this.logger.isLoggable(Level.FINE)) {
-                    this.logger.fine("The BPMN process " + processFileName + " version: " + version
-                            + " is succesfully read");
+                    this.logger.fine("The BPMN process [file: " + processFileName + ", version: " + version
+                            + "] is succesfully read");
                 }
 
                 return new EmbeddedProcessDefinition(processFileName, version, tenantId, categoryId, bpmnModel);
@@ -495,8 +495,6 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             final String wsdlOperationName = annotatedOperation.getWsdlOperationName();
             this.logger.fine("Processing WSDL annotated operation: " + wsdlOperationName);
 
-            
-
             // create the right ActivitiOperation according to the bpmnActionType
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
                 operations.add(new StartEventOperation(annotatedOperation, ((ActivitiSE) this.component)
@@ -506,6 +504,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 operations.add(new CompleteUserTaskOperation(annotatedOperation, ((ActivitiSE) this.component)
                         .getProcessEngine().getTaskService(), ((ActivitiSE) this.component).getProcessEngine()
                         .getIdentityService(), ((ActivitiSE) this.component).getProcessEngine().getHistoryService(),
+                        ((ActivitiSE) this.component).getProcessEngine().getRuntimeService(),
                         this.logger));
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported
