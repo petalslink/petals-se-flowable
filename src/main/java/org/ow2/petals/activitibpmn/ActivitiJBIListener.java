@@ -122,6 +122,8 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                 } else {
                     // TODO: to do
                 }
+            } else if (exchange.isErrorStatus()) {
+                logger.warning("Exchange " + exchange.getExchangeId() + " received with a status 'ERROR'. Skipped !");
             }
 
             // True to let the CDK close the exchange.
