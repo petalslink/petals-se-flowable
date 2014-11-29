@@ -637,8 +637,8 @@ public class BpmnComponentTest {
         inMemoryLogHandler.clear();
         BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream(this.toByteArray(request_2)), null));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(request_2))));
 
         // Assert the response of the 2nd valid request
         final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
@@ -1031,6 +1031,7 @@ public class BpmnComponentTest {
         request_2.setMotifRefus("To not finished the process and be able to try to complete again the user task");
 
         // Send the 2nd valid request
+        inMemoryLogHandler.clear();
         BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
@@ -1042,7 +1043,7 @@ public class BpmnComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
         assertTrue(monitLogs_2.size() == 2);
-        assertMonitProviderFailureLog(
+        assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
                 monitLogs_2.get(1));
 
