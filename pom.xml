@@ -59,10 +59,26 @@
 	
 	<dependencies>
       <dependency>
-         <groupId>com.ebmwebsourcing.easycommons</groupId>
+         <groupId>org.ow2.easycommons</groupId>
          <artifactId>easycommons-util</artifactId>
       </dependency>
-		<dependency>
+      <dependency>
+         <groupId>org.ow2.easycommons</groupId>
+         <artifactId>easycommons-lang</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-commons-log</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-wsdl</artifactId>
+      </dependency>
+      <dependency>
 			<groupId>org.ow2.petals</groupId>
 			<artifactId>petals-cdk-core</artifactId>
 		</dependency>
@@ -95,12 +111,6 @@
 	      <artifactId>activiti-bpmn-model</artifactId>
     		<version>${activiti.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.6</version>
-         <scope>runtime</scope>
-		</dependency>
       
       <dependency>
          <!-- TODO: The JDBC Driver should be set as shared library. How to set the default one ? -->
@@ -132,17 +142,17 @@
                <artifactId>slf4j-api</artifactId>
             </exclusion>
             <exclusion>
-               <!-- Activiti comes with a newer version of SLF4J, we use it -->
+               <!-- Activiti comes with a newer version of slf4j-api, we use the corresponding one for this dependency -->
                <groupId>org.slf4j</groupId>
                <artifactId>slf4j-jdk14</artifactId>
             </exclusion>
          </exclusions>
       </dependency>
       <dependency>
-         <!-- Activiti comes with a version of SLF4J newer than the one provided by petals-junit-external-resources, we use it -->
          <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
+         <artifactId>slf4j-jdk14</artifactId>
          <version>1.7.6</version>
+         <scope>test</scope>
       </dependency>
 	</dependencies>
 
@@ -150,39 +160,18 @@
       <plugins>
          <plugin>
             <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb2-plugin</artifactId>
+            <artifactId>maven-jaxb21-plugin</artifactId>
             <executions>
                <execution>
                   <id>generate</id>
-                  <goals>
-                     <goal>generate</goal>
-                  </goals>
-                  <phase>process-test-resources</phase>
+                  <phase>generate-test-sources</phase>
                   <configuration>
+                     <addCompileSourceRoot>false</addCompileSourceRoot>
+                     <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
                      <schemaDirectory>${basedir}/src/test/resources/su/</schemaDirectory>
                      <schemaIncludes>
                         <include>valid/vacationRequest.wsdl</include>
                      </schemaIncludes>
-                     <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>add-test-source</id>
-                  <phase>generate-test-sources</phase>
-                  <goals>
-                     <goal>add-test-source</goal>
-                  </goals>
-                  <configuration>
-                     <sources>
-                        <source>${project.build.directory}/generated-test-sources/xjc
-                        </source>
-                     </sources>
                   </configuration>
                </execution>
             </executions>
