@@ -213,7 +213,7 @@ public abstract class ActivitiOperation {
                 // Get the userId
                 final String userId;
                 try {
-                    userId = this.userIdXPathExpr.evaluate(domSource);
+                    userId = this.userIdXPathExpr.evaluate(domSource.getNode());
                     if (userId == null || userId.trim().isEmpty()) {
                         throw new NoUserIdValueException(this.wsdlOperationName);
                     }
@@ -230,7 +230,7 @@ public abstract class ActivitiOperation {
                 for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
                     final String variableName = variable.getKey();
                     try {
-                        final String variableValueAsStr = variable.getValue().evaluate(domSource);
+                        final String variableValueAsStr = variable.getValue().evaluate(domSource.getNode());
                         if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
                             if (this.variableTypes.get(variableName).isRequired()) {
                                 throw new MessagingException("The task: " + this.getClass().getSimpleName()

@@ -93,7 +93,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         // Get the process instance identifier
         final String processInstanceId;
         try {
-            processInstanceId = this.proccesInstanceIdXPathExpr.evaluate(domSource);
+            processInstanceId = this.proccesInstanceIdXPathExpr.evaluate(domSource.getNode());
             if (processInstanceId == null || processInstanceId.trim().isEmpty()) {
                 throw new NoProcessInstanceIdValueException(this.wsdlOperationName);
             }
