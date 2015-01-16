@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015 Linagora
+ Copyright (c) 2014-2015 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -62,7 +62,23 @@
          <groupId>org.ow2.easycommons</groupId>
          <artifactId>easycommons-util</artifactId>
       </dependency>
-		<dependency>
+      <dependency>
+         <groupId>org.ow2.easycommons</groupId>
+         <artifactId>easycommons-lang</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-commons-log</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-wsdl</artifactId>
+      </dependency>
+      <dependency>
 			<groupId>org.ow2.petals</groupId>
 			<artifactId>petals-cdk-core</artifactId>
 		</dependency>
@@ -84,13 +100,13 @@
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-engine</artifactId>
     		<version>${activiti.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in Java 6 -->
-               <groupId>javax.activation</groupId>
-               <artifactId>activation</artifactId>
-            </exclusion>
-         </exclusions>
+    		<exclusions>
+    		   <exclusion>
+                  <!-- Already in Java 6 -->
+    		      <artifactId>activation</artifactId>
+    		      <groupId>javax.activation</groupId>
+    		   </exclusion>
+    		</exclusions>
 		</dependency>
 	   <dependency>
  	     	<groupId>org.activiti</groupId>
@@ -157,17 +173,11 @@
                <artifactId>slf4j-api</artifactId>
             </exclusion>
             <exclusion>
-               <!-- Activiti comes with a newer version of SLF4J, we use it -->
+               <!-- Activiti comes with a newer version of slf4j-api, we use the corresponding one for this dependency -->
                <groupId>org.slf4j</groupId>
                <artifactId>slf4j-jdk14</artifactId>
             </exclusion>
          </exclusions>
-      </dependency>
-      <dependency>
-         <!-- Activiti comes with a version of SLF4J newer than the one provided by petals-junit-external-resources, we use it -->
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-         <version>1.7.6</version>
       </dependency>
 	</dependencies>
 
@@ -175,40 +185,22 @@
       <plugins>
          <plugin>
             <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb2-plugin</artifactId>
+            <artifactId>maven-jaxb21-plugin</artifactId>
             <executions>
                <execution>
                   <id>generate-beans-of-vacationRequest</id>
                   <goals>
                      <goal>generate</goal>
                   </goals>
-                  <phase>process-test-resources</phase>
+                  <phase>generate-test-sources</phase>
                   <configuration>
+                     <addCompileSourceRoot>false</addCompileSourceRoot>
+                     <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
                      <schemaDirectory>${basedir}/src/test/resources/su/</schemaDirectory>
                      <schemaIncludes>
                         <include>valid/vacationRequest.wsdl</include>
                         <include>valid/archivageService.wsdl</include>
                      </schemaIncludes>
-                     <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>add-test-source</id>
-                  <phase>generate-test-sources</phase>
-                  <goals>
-                     <goal>add-test-source</goal>
-                  </goals>
-                  <configuration>
-                     <sources>
-                        <source>${project.build.directory}/generated-test-sources/xjc
-                        </source>
-                     </sources>
                   </configuration>
                </execution>
             </executions>

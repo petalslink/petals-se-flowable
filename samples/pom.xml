@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015 Linagora
+ Copyright (c) 2014-2015 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -33,6 +33,19 @@
     <module>su-SOAP-vacationRequest-consume</module>
     <module>sa-SOAP-vacationRequest</module>
   </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <configuration>
+          <!-- Do not deploy, because mvn deploy is called on this on the CI server -->
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   
   <scm>
     <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
