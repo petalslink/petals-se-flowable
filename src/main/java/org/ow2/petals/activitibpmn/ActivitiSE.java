@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Linagora
+ * Copyright (c) 2015 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PETALS_SENDER_COMP_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER;
@@ -48,7 +49,14 @@ import javax.jbi.JBIException;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
-import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.apache.cxf.Bus;
+import org.apache.cxf.BusFactory;
+import org.apache.cxf.transport.ConduitInitiatorManager;
+import org.ow2.petals.activitibpmn.incoming.operation.ActivitiOperation;
+import org.ow2.petals.activitibpmn.outgoing.PetalsSender;
+import org.ow2.petals.activitibpmn.outgoing.cxf.transport.PetalsCxfTransportFactory;
+import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 
@@ -230,7 +238,7 @@ public class ActivitiSE extends AbstractServiceEngine {
                 }
             }
 
-			 /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
+            /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
             final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
 			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
             final String databaseSchemaUpdate = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
@@ -266,7 +274,20 @@ public class ActivitiSE extends AbstractServiceEngine {
             pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
             pec.setJobExecutorActivate(false);
 
+            // We register the Petals transport into Apache CXF
+            this.registerCxfPetalsTransport();
+
             this.activitiEngine = pec.buildProcessEngine();
+            
+            // Caution: Beans of the configuration are initialized when building the process engine
+            if (pec instanceof ProcessEngineConfigurationImpl) {
+                // We add to the BPMN engine the bean in charge of sending Petals message exchange
+                final AbstractListener petalsSender = new PetalsSender();
+                petalsSender.init(this);
+                ((ProcessEngineConfigurationImpl) pec).getBeans().put(PETALS_SENDER_COMP_NAME, petalsSender);
+            } else {
+                this.getLogger().warning("The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
+            }
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while creating the Activiti BPMN Engine.", e );
@@ -333,4 +354,13 @@ public class ActivitiSE extends AbstractServiceEngine {
 	protected AbstractServiceUnitManager createServiceUnitManager() {
 		return new ActivitiSuManager(this);
 	}
+
+    private void registerCxfPetalsTransport() {
+        final Bus bus = BusFactory.getThreadDefaultBus();
+        final PetalsCxfTransportFactory cxfPetalsTransport = new PetalsCxfTransportFactory();
+        final ConduitInitiatorManager extension = bus.getExtension(ConduitInitiatorManager.class);
+        extension.registerConduitInitiator(PetalsCxfTransportFactory.TRANSPORT_ID, cxfPetalsTransport);
+        // TODO: Set a timeout at CXF client level (it should be the same than the tiemout at NMR level)
+        // TODO: Add unit tests about timeout
+    }
 }

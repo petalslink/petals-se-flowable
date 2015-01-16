@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014 Linagora
+ Copyright (c) 2015 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -32,27 +32,27 @@
    <xsl:param name="se-out-process-params:vacationMotivation" />
 
    <xsl:template match="/">
-      <xsl:element name="numero" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
-         <xsl:element name="numeroDde" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+      <xsl:element name="numero" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
+         <xsl:element name="numeroDde" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
             <xsl:value-of select="$se-out-special-params:processInstanceId"/>
          </xsl:element>
-         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
             <xsl:attribute name="name">user-id</xsl:attribute>
             <xsl:value-of select="$se-out-special-params:userId"/>
          </xsl:element>
-         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
             <xsl:attribute name="name">employeeName</xsl:attribute>
             <xsl:value-of select="$se-out-process-params:employeeName"/>
          </xsl:element>
-         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
             <xsl:attribute name="name">numberOfDays</xsl:attribute>
             <xsl:value-of select="$se-out-process-params:numberOfDays"/>
          </xsl:element>
-         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
             <xsl:attribute name="name">startDate</xsl:attribute>
             <xsl:value-of select="$se-out-process-params:startDate"/>
          </xsl:element>
-         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+         <xsl:element name="xsl-parameter" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
             <xsl:attribute name="name">vacationMotivation</xsl:attribute>
             <xsl:value-of select="$se-out-process-params:vacationMotivation"/>
          </xsl:element>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014 Linagora
+ Copyright (c) 2015 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -24,8 +24,8 @@
    <xsl:param name="bpmn-fault:processInstanceId" />
 
    <xsl:template match="/">
-      <xsl:element name="numeroDemandeInconnu" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
-         <xsl:element name="numeroDde"  namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su">
+      <xsl:element name="numeroDemandeInconnu" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
+         <xsl:element name="numeroDde"  namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
             <xsl:value-of select="$bpmn-fault:processInstanceId"/>
          </xsl:element>
       </xsl:element>

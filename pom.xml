@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014 Linagora
+ Copyright (c) 2015 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -54,12 +54,12 @@
 	</developers>
    
    <properties>
-      <activiti.version>5.16.4</activiti.version>
+      <activiti.version>5.17.1-SNAPSHOT</activiti.version>
    </properties>
 	
 	<dependencies>
       <dependency>
-         <groupId>com.ebmwebsourcing.easycommons</groupId>
+         <groupId>org.ow2.easycommons</groupId>
          <artifactId>easycommons-util</artifactId>
       </dependency>
 		<dependency>
@@ -84,17 +84,42 @@
 			<groupId>org.activiti</groupId>
 			<artifactId>activiti-engine</artifactId>
     		<version>${activiti.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in Java 6 -->
+               <groupId>javax.activation</groupId>
+               <artifactId>activation</artifactId>
+            </exclusion>
+         </exclusions>
 		</dependency>
 	   <dependency>
  	     	<groupId>org.activiti</groupId>
  	     	<artifactId>activiti-bpmn-converter</artifactId>
     		<version>${activiti.version}</version>
- 	   	</dependency>
+ 	   </dependency>
  	   <dependency>
 			<groupId>org.activiti</groupId>
 	      <artifactId>activiti-bpmn-model</artifactId>
     		<version>${activiti.version}</version>
 		</dependency>
+      <dependency>
+         <!-- activiti-cxf is needed to get the WSDL importer -->
+         <groupId>org.activiti</groupId>
+         <artifactId>activiti-cxf</artifactId>
+         <version>${activiti.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in Java 6 -->
+               <groupId>xerces</groupId>
+               <artifactId>xercesImpl</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- Already included in Java 6 -->
+               <groupId>xml-apis</groupId>
+               <artifactId>xml-apis</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-jdk14</artifactId>
@@ -153,7 +178,7 @@
             <artifactId>maven-jaxb2-plugin</artifactId>
             <executions>
                <execution>
-                  <id>generate</id>
+                  <id>generate-beans-of-vacationRequest</id>
                   <goals>
                      <goal>generate</goal>
                   </goals>
@@ -162,6 +187,7 @@
                      <schemaDirectory>${basedir}/src/test/resources/su/</schemaDirectory>
                      <schemaIncludes>
                         <include>valid/vacationRequest.wsdl</include>
+                        <include>valid/archivageService.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
                   </configuration>

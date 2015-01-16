@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014 Linagora
+ Copyright (c) 2015 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -44,7 +44,7 @@
 		<petalsCDK:processor-stop-max-wait />
 		<petalsCDK:time-beetween-async-cleaner-runs />
 		<petalsCDK:properties-file />
-		<petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.ActivitiJBIListener</petalsCDK:jbi-listener-class-name>	
+		<petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.incoming.ActivitiJBIListener</petalsCDK:jbi-listener-class-name>	
 
 		<!-- Component specific configuration -->
 		<petals-se-activitibpmn:jdbc_driver>org.h2.Driver</petals-se-activitibpmn:jdbc_driver>

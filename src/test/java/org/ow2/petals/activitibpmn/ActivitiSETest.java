@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Linagora
+ * Copyright (c) 2015 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -18,9 +18,6 @@
 package org.ow2.petals.activitibpmn;
 
 
-/*import org.activiti.engine.task.Task;
-import org.activiti.engine.test.ActivitiTestCase;
-import org.activiti.engine.test.Deployment;*/
 import org.junit.Test;
 
 

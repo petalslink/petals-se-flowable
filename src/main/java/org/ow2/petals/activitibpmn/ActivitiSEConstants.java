@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Linagora
+ * Copyright (c) 2015 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -152,6 +152,17 @@ public final class ActivitiSEConstants {
 		public static final String DATABASE_SCHEMA_UPDATE = "database_schema_update";
 		
 	}
+
+    /**
+     * Constants relatives to the Activiti components
+     */
+    public static class Activiti {
+
+        /**
+         * Name of the component in charge of sending message exchange coming from Petals service tasks
+         */
+        public static final String PETALS_SENDER_COMP_NAME = "petals-sender";
+    }
 
     private ActivitiSEConstants() {
         // Utility class => No constructor

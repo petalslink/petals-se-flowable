@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Linagora
+ * Copyright (c) 2015 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -44,16 +44,16 @@ import org.ow2.petals.activitibpmn.exception.NoAnnotatedOperationDeclarationExce
 import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.ProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
-import org.ow2.petals.activitibpmn.operation.ActivitiOperation;
-import org.ow2.petals.activitibpmn.operation.CompleteUserTaskOperation;
-import org.ow2.petals.activitibpmn.operation.EmbeddedProcessDefinition;
-import org.ow2.petals.activitibpmn.operation.StartEventOperation;
-import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedOperation;
-import org.ow2.petals.activitibpmn.operation.annotated.AnnotatedWsdlParser;
-import org.ow2.petals.activitibpmn.operation.annotated.CompleteUserTaskAnnotatedOperation;
-import org.ow2.petals.activitibpmn.operation.annotated.StartEventAnnotatedOperation;
-import org.ow2.petals.activitibpmn.operation.annotated.exception.InvalidAnnotationException;
-import org.ow2.petals.activitibpmn.operation.annotated.exception.UnsupportedActionException;
+import org.ow2.petals.activitibpmn.incoming.operation.ActivitiOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.CompleteUserTaskOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.EmbeddedProcessDefinition;
+import org.ow2.petals.activitibpmn.incoming.operation.StartEventOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedWsdlParser;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.CompleteUserTaskAnnotatedOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.StartEventAnnotatedOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationException;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
@@ -99,9 +99,11 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         }
 
 		//TODO Manage consume for Activiti Petals Task
+		/*
         if (jbiDescriptor.getServices().getConsumes().size() != 0) {
             throw new PEtALSCDKException( "Invalid JBI descriptor: 'Consumes' sections are not till supported by this component." );
         }
+        */
 
 		// Check that there is only one Provides section in the SU
         if (jbiDescriptor.getServices().getProvides().size() != 1) {
@@ -140,7 +142,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 suDataHandler.getInstallRoot());
         
         // Deploy processes from the BPMN models into the BPMN engine
-        this.deployBpmnModels(embeddedBpmnModels, operations);
+        this.deployBpmnModels(embeddedBpmnModels, operations, suRootPath);
         
         // Enable processing operations
         final String edptName = provides.getEndpointName();
@@ -330,7 +332,6 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 // TODO: Enable validation
                 final BpmnModel bpmnModel = new BpmnXMLConverter().convertToBpmnModel(bpmnInputStreamSource, false,
                         false);
-                bpmnModel.setTargetNamespace(categoryId);
 
                 // TODO manage the assignee according with su jbi descriptor
 
@@ -381,7 +382,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      *            The list of operations described into the WSDL
      * @throws PEtALSCDKException
      */
-    private void deployBpmnModels(final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels, final List<ActivitiOperation> operations )
+    private void deployBpmnModels(final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels,
+            final List<ActivitiOperation> operations, final String suRootPath)
             throws PEtALSCDKException {
 
         final Iterator<EmbeddedProcessDefinition> iterator = embeddedBpmnModels.values().iterator();
@@ -406,10 +408,23 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 final DeploymentBuilder db = repositoryService.createDeployment();
 
                 // Characterize the deployment with processFileName / tenantId / categoryId
-                db.name(process.getProcessFileName());
+                db.name("Process read from: " + process.getProcessFileName());
                 db.tenantId(process.getTenantId());
                 db.category(process.getCategoryId());
-                db.addBpmnModel(process.getProcessFileName(), process.getModel());
+                // db.addBpmnModel(process.getProcessFileName(), process.getModel());
+                // TODO: To remove: deployment using file and parameter 'suRootPath'
+                final File processFile = new File(suRootPath, process.getProcessFileName());
+                try {
+                    final FileInputStream bpmnInputFile = new FileInputStream(processFile);
+                    db.addInputStream(process.getProcessFileName(), bpmnInputFile);
+                } catch (final FileNotFoundException e) {
+                    throw new PEtALSCDKException(e);
+                }
+
+                // TODO: Enable validation removing following two lines when Activiti contribution about custom service
+                // task type will be working
+                db.disableBpmnValidation();
+                db.disableSchemaValidation();
 
                 // TODO Manage the process suspension State be careful of multi SU deployement for the same
                 // process

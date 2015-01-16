@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014 Linagora
+ * Copyright (c) 2015 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,6 +20,7 @@ package org.ow2.petals.activitibpmn;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderBeginLog;
@@ -38,6 +39,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.MessageExchange;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -53,26 +55,31 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
-import org.ow2.petals.activitibpmn.operation.exception.NoProcessInstanceIdValueException;
-import org.ow2.petals.activitibpmn.operation.exception.NoUserIdValueException;
+import org.ow2.petals.activitibpmn.incoming.operation.exception.NoProcessInstanceIdValueException;
+import org.ow2.petals.activitibpmn.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.commons.log.FlowAttributes;
+import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.Component;
+import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.ComponentConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
+import org.ow2.petals.component.framework.junit.impl.message.WrappedResponseToConsumerMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedStatusFromConsumerMessage;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTestBuilder;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
-import org.ow2.petals.se.activitibpmn._1_0.su.AckResponse;
-import org.ow2.petals.se.activitibpmn._1_0.su.Demande;
-import org.ow2.petals.se.activitibpmn._1_0.su.DemandeDejaValidee;
-import org.ow2.petals.se.activitibpmn._1_0.su.Numero;
-import org.ow2.petals.se.activitibpmn._1_0.su.NumeroDemandeInconnu;
-import org.ow2.petals.se.activitibpmn._1_0.su.Validation;
-import org.ow2.petals.se.activitibpmn._1_0.su.XslParameter;
+import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
+import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
+import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
+import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
+import org.ow2.petals.samples.se_bpmn.vacationservice.DemandeDejaValidee;
+import org.ow2.petals.samples.se_bpmn.vacationservice.Numero;
+import org.ow2.petals.samples.se_bpmn.vacationservice.NumeroDemandeInconnu;
+import org.ow2.petals.samples.se_bpmn.vacationservice.Validation;
+import org.ow2.petals.samples.se_bpmn.vacationservice.XslParameter;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.ebmwebsourcing.easycommons.xml.SourceHelper;
@@ -85,17 +92,27 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  */
 public class BpmnComponentTest {
 
-    private static final QName INTERFACE = new QName("http://petals.ow2.org/samples/se-bpmn", "demandeDeConges");
+    private static final String VACATION_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/vacationService";
 
-    private static final QName SERVICE = new QName("http://petals.ow2.org/samples/se-bpmn", "demandeDeCongesService");
+    private static final QName VACATION_INTERFACE = new QName(VACATION_NAMESPACE, "demandeDeConges");
 
-    private static final String ENDPOINT = "testEndpointName";
+    private static final QName VACATION_SERVICE = new QName(VACATION_NAMESPACE, "demandeDeCongesService");
 
-    private static final QName OPERATION_DEMANDERCONGES = new QName("http://petals.ow2.org/samples/se-bpmn",
-            "demanderConges");
+    private static final String VACATION_ENDPOINT = "testEndpointName";
 
-    private static final QName OPERATION_VALIDERDEMANDE = new QName("http://petals.ow2.org/samples/se-bpmn",
-            "validerDemande");
+    private static final QName OPERATION_DEMANDERCONGES = new QName(VACATION_NAMESPACE, "demanderConges");
+
+    private static final QName OPERATION_VALIDERDEMANDE = new QName(VACATION_NAMESPACE, "validerDemande");
+
+    private static final String ARCHIVE_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/archivageService";
+
+    private static final QName ARCHIVE_INTERFACE = new QName(ARCHIVE_NAMESPACE, "archiver");
+
+    private static final QName ARCHIVE_SERVICE = new QName(ARCHIVE_NAMESPACE, "archiverService");
+
+    private static final String ARCHIVE_ENDPOINT = "archiveEndpointName";
+
+    private static final QName ARCHIVER_OPERATION = new QName(ARCHIVE_NAMESPACE, "archiver");
 
     @ClassRule
     public static final ComponentUnderTestBuilder componentBuilder = new ComponentUnderTestBuilder();
@@ -107,6 +124,9 @@ public class BpmnComponentTest {
 
     private static Unmarshaller unmarshaller;
 
+    /**
+     * The Petals SE Activiti to test
+     */
     private static Component componentUnderTest;
 
     private static ServiceConfiguration serviceConfiguration;
@@ -114,7 +134,8 @@ public class BpmnComponentTest {
     static {
         try {
             JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
-                    AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class);
+                    AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
+                    ArchiverResponse.class);
             BpmnComponentTest.unmarshaller = context.createUnmarshaller();
             BpmnComponentTest.marshaller = context.createMarshaller();
             BpmnComponentTest.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -128,6 +149,8 @@ public class BpmnComponentTest {
         BpmnComponentTest.initializeLoggingSystem();
         BpmnComponentTest.initializeAnsStartComponentUnderTest();
         BpmnComponentTest.deployServiceUnits();
+
+        BpmnComponentTest.registerOtherServiceProviders();
     }
 
     @AfterClass
@@ -183,7 +206,7 @@ public class BpmnComponentTest {
         final URL wsdlUrl = Thread.currentThread().getContextClassLoader().getResource("su/valid/vacationRequest.wsdl");
         assertNotNull("WSDl not found", wsdlUrl);
         BpmnComponentTest.serviceConfiguration = new ServiceConfiguration(BpmnComponentTest.class.getSimpleName(),
-                INTERFACE, SERVICE, ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
+                VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
 
         final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("su/valid/demanderCongesResponse.xsl");
@@ -220,7 +243,19 @@ public class BpmnComponentTest {
         BpmnComponentTest.serviceConfiguration.setParameter(
                 "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version", "1");
 
+        // Consume service 'archiver'
+        // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange between Activti
+        // and other services
+        final ServiceConfiguration consumeServiceConfiguration = new ServiceConfiguration(
+                BpmnComponentTest.class.getSimpleName(), ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT,
+                ServiceType.CONSUME);
+        BpmnComponentTest.serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
+
         BpmnComponentTest.componentUnderTest.installService(BpmnComponentTest.serviceConfiguration);
+    }
+
+    private static void registerOtherServiceProviders() {
+        componentBuilder.registerOtherServiceProvider(ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
     }
 
     /**
@@ -240,12 +275,11 @@ public class BpmnComponentTest {
         // Send an exchange with the status set to 'DONE'. We must use 'processMessageFromServiceBus' because nothing is
         // returned on the end of IN-OUT exchange
         BpmnComponentTest.componentUnderTest.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(
-                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
-                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream("".getBytes()), new FlowAttributes("testFlowInstanceId", "testFlowStepId"),
-                ExchangeStatus.DONE));
+                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
+                new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.DONE));
 
-        assertTrue(inMemoryLogHandler.getAllRecords(Level.MONIT).size() == 0);
+        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
     }
 
     /**
@@ -261,19 +295,18 @@ public class BpmnComponentTest {
      * </p>
      */
     @Test
-    public void onErrorStatusAsProvider() {
+    public void onErrorStatusAsProvider() throws InterruptedException {
 
         // Send an exchange with the status set to 'ERROR'. We must use 'processMessageFromServiceBus' because nothing
-        // is
-        // returned on the end of IN-OUT exchange
+        // is returned on the end of IN-OUT exchange
         BpmnComponentTest.componentUnderTest.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(
-                BpmnComponentTest.serviceConfiguration, new QName("http://petals.ow2.org/samples/se-bpmn",
-                        "demanderConges"), AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream("".getBytes()), new FlowAttributes("testFlowInstanceId", "testFlowStepId"),
-                ExchangeStatus.ERROR));
+                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
+                new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.ERROR));
 
-        assertTrue(inMemoryLogHandler.getAllRecords(Level.MONIT).size() == 0);
-        assertTrue(inMemoryLogHandler.getAllRecords(Level.WARNING).size() == 1);
+        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
+        // A log trace must be logged with level WARNING telling that incoming error messages are not accepted
+        assertEquals(1, inMemoryLogHandler.getAllRecords(Level.WARNING).size());
     }
 
     /**
@@ -290,6 +323,7 @@ public class BpmnComponentTest {
      * <ul>
      * <li>on the first request, the process instance is correctly created,</li>
      * <li>on the 2nd request, the user task is ended,</li>
+     * <li>service tasks invoked Petals services
      * <li>on the 3rd request, the right business fault associated to a user task already completed is returned because
      * the process instance is finished.</li>
      * </ul>
@@ -298,7 +332,7 @@ public class BpmnComponentTest {
     @Test
     public void validStartEventRequest() throws Exception {
 
-        // Create the 1st valid request
+        // Create the 1st valid request for start event 'request
         final Demande request_1 = new Demande();
         final String demandeur = "demandeur";
         request_1.setDemandeur(demandeur);
@@ -311,7 +345,7 @@ public class BpmnComponentTest {
         final String motivation = "hollidays";
         request_1.setMotifDde(motivation);
 
-        // Send the 1st valid request
+        // Send the 1st valid request for start event 'request
         BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
@@ -322,9 +356,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_1.size() == 2);
+        assertEquals(2, monitLogs_1.size());
         assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
                 monitLogs_1.get(1));
 
         // Check the reply
@@ -371,7 +406,7 @@ public class BpmnComponentTest {
         }
         // TODO: Add a check to verify that the process instance exists in Activiti
 
-        // Create the 2nd valid request
+        // Create the 2nd valid request for user task 'handleRequest'
         final Validation request_2 = new Validation();
         final String valideur = "valideur";
         request_2.setValideur(valideur);
@@ -385,15 +420,57 @@ public class BpmnComponentTest {
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
 
+        {
+            // Assert the 1st request sent by Activiti on orchestrated service
+            final RequestMessage archiveRequestMsg_1 = BpmnComponentTest.componentUnderTest.pollRequestFromConsumer();
+            final MessageExchange archiveMessageExchange_1 = archiveRequestMsg_1.getMessageExchange();
+            assertNotNull(archiveMessageExchange_1);
+            assertEquals(ARCHIVE_INTERFACE, archiveMessageExchange_1.getInterfaceName());
+            assertEquals(ARCHIVE_SERVICE, archiveMessageExchange_1.getService());
+            assertNotNull(archiveMessageExchange_1.getEndpoint());
+            assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
+            assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
+            assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
+            final Object archiveRequestObj_1 = BpmnComponentTest.unmarshaller.unmarshal(archiveRequestMsg_1
+                    .getPayload());
+            assertTrue(archiveRequestObj_1 instanceof Archiver);
+            final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
+            assertEquals(response_1.getNumeroDde(), archiveRequest_1.getItem());
+
+            // Returns the reply of the service provider to the Activiti service task
+            final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
+            archiverResponse_1.setItem("value of item");
+            archiverResponse_1.setItem2("value of item2");
+            final ResponseMessage otherResponse_1 = new WrappedResponseToConsumerMessage(archiveMessageExchange_1,
+                    new ByteArrayInputStream(this.toByteArray(archiverResponse_1)));
+            BpmnComponentTest.componentUnderTest.pushResponseToConsumer(otherResponse_1);
+
+            // Assert the status DONE on the message exchange
+            final RequestMessage statusDoneMsg_1 = BpmnComponentTest.componentUnderTest.pollRequestFromConsumer();
+            assertNotNull(statusDoneMsg_1);
+            // It's the same message exchange instance
+            assertSame(statusDoneMsg_1.getMessageExchange(), archiveRequestMsg_1.getMessageExchange());
+            assertEquals(statusDoneMsg_1.getMessageExchange().getStatus(), ExchangeStatus.DONE);
+        }
+
         // Assert the response of the 2nd valid request
         final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_2.size() == 2);
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
-                monitLogs_2.get(1));
+        // TODO: Should we have MONIT traces about the service call on the consumer side ?
+        assertEquals(2, monitLogs_2.size());
+        final FlowLogData providerBegin = assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
+        /*
+        final FlowLogData consumerBegin = assertMonitConsumerBeginLog(ARCHIVE_INTERFACE, ARCHIVE_SERVICE,
+                ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, providerBegin, monitLogs_2.get(1));
+        assertMonitConsumerEndLog(consumerBegin, monitLogs_2.get(2));
+        */
+        // TODO: Investigate why the user task completion is synchronous with following service tasks
+        // TODO: Enable following assertion when the user task completion will be not linked to the following service
+        // tasks
+        // assertMonitProviderEndLog(providerBegin, monitLogs_2.get(1));
 
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
@@ -466,9 +543,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_3 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_3.size() == 2);
+        assertEquals(2, monitLogs_3.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)),
                 monitLogs_3.get(1));
 
         // Check the reply
@@ -515,9 +593,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs.size() == 2);
+        assertEquals(2, monitLogs.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs.get(0)),
                 monitLogs.get(1));
 
         // Check the reply
@@ -563,9 +642,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs.size() == 2);
+        assertEquals(2, monitLogs.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs.get(0)),
                 monitLogs.get(1));
 
         // Check the reply
@@ -613,9 +693,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_1.size() == 2);
+        assertEquals(2, monitLogs_1.size());
         assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
                 monitLogs_1.get(1));
 
         // Check the reply
@@ -645,9 +726,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_2.size() == 2);
+        assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
                 monitLogs_2.get(1));
 
         // Check the reply
@@ -696,9 +778,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_1.size() == 2);
+        assertEquals(2, monitLogs_1.size());
         assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
                 monitLogs_1.get(1));
 
         // Check the reply
@@ -729,9 +812,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_2.size() == 2);
+        assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
                 monitLogs_2.get(1));
 
         // Check the reply
@@ -780,9 +864,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_1.size() == 2);
+        assertEquals(2, monitLogs_1.size());
         assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
                 monitLogs_1.get(1));
 
         // Check the reply
@@ -812,9 +897,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_2.size() == 2);
+        assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
                 monitLogs_2.get(1));
 
         // Check the reply
@@ -863,9 +949,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_1.size() == 2);
+        assertEquals(2, monitLogs_1.size());
         assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
                 monitLogs_1.get(1));
 
         // Check the reply
@@ -896,9 +983,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_2.size() == 2);
+        assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
                 monitLogs_2.get(1));
 
         // Check the reply
@@ -946,9 +1034,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs.size() == 2);
+        assertEquals(2, monitLogs.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs.get(0)),
                 monitLogs.get(1));
 
         // Check the reply
@@ -983,7 +1072,7 @@ public class BpmnComponentTest {
     @Test
     public void userTaskRequest_TaskCompletedFault() throws Exception {
 
-        // Create the 1st valid request
+        // Create the 1st valid request for start event 'request
         final Demande request_1 = new Demande();
         final String demandeur = "demandeur";
         request_1.setDemandeur(demandeur);
@@ -996,7 +1085,7 @@ public class BpmnComponentTest {
         final String motivation = "hollidays";
         request_1.setMotifDde(motivation);
 
-        // Send the 1st valid request
+        // Send the 1st valid request for start event 'request
         BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
@@ -1007,9 +1096,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_1.size() == 2);
+        assertEquals(2, monitLogs_1.size());
         assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)),
                 monitLogs_1.get(1));
 
         // Check the reply
@@ -1022,7 +1112,7 @@ public class BpmnComponentTest {
         assertNotNull(response_1.getNumeroDde());
         // TODO: Add a check to verify that the process instance exists in Activiti
 
-        // Create the 2nd valid request
+        // Create the 2nd valid request for the user task 'handleRequest'
         final Validation request_2 = new Validation();
         final String valideur = "valideur";
         request_2.setValideur(valideur);
@@ -1030,7 +1120,7 @@ public class BpmnComponentTest {
         request_2.setApprobation(Boolean.FALSE.toString());
         request_2.setMotifRefus("To not finished the process and be able to try to complete again the user task");
 
-        // Send the 2nd valid request
+        // Send the 2nd valid request for the user task 'handleRequest
         inMemoryLogHandler.clear();
         BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
@@ -1042,9 +1132,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_2.size() == 2);
+        assertEquals(2, monitLogs_2.size());
         assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)),
                 monitLogs_2.get(1));
 
         // Check the reply
@@ -1054,15 +1145,17 @@ public class BpmnComponentTest {
         final Object responseObj_2 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_2.getPayload());
         assertTrue(responseObj_2 instanceof AckResponse);
         final AckResponse response_2 = (AckResponse) responseObj_2;
+        assertNotNull(response_2);
         // TODO: Add a check against Activiti to verify that the process instance is not finished
 
-        // Create the 3rd request
+        // Create the 3rd request for the user task 'handleRequest'
         final Validation request_3 = new Validation();
         request_3.setValideur(valideur);
         request_3.setNumeroDde(response_1.getNumeroDde());
         request_3.setApprobation(Boolean.TRUE.toString());
+        request_2.setMotifRefus("On this 2nd call a fault should occur completing the user task");
 
-        // Send the 3rd valid request
+        // Send the 3rd valid request for the user task 'handleRequest'
         inMemoryLogHandler.clear();
         BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
@@ -1074,9 +1167,10 @@ public class BpmnComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_3 = inMemoryLogHandler.getAllRecords(Level.MONIT);
-        assertTrue(monitLogs_3.size() == 2);
+        assertEquals(2, monitLogs_3.size());
         assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(INTERFACE, SERVICE, ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)),
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)),
                 monitLogs_3.get(1));
 
         // Check the reply
