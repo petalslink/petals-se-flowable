@@ -188,7 +188,8 @@
             <artifactId>maven-jaxb21-plugin</artifactId>
             <executions>
                <execution>
-                  <id>generate-beans-of-vacationRequest</id>
+                  <!-- must use the same id as in the parent if not there will be two executions of the plugin -->
+                  <id>generate</id>
                   <goals>
                      <goal>generate</goal>
                   </goals>
