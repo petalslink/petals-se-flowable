@@ -16,48 +16,46 @@
  along with this program/library; If not, see <http://www.gnu.org/licenses />
  for the GNU Lesser General Public License version 2.1.
 -->
-<project 
-		xmlns="http://maven.apache.org/POM/4.0.0" 
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-		xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
-		
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>petals-cdkbased-components-parent</artifactId>
-		<groupId>org.ow2.petals</groupId>
-		<relativePath>../cdk-based-parent/pom.xml</relativePath>
-		<version>1.0.0-SNAPSHOT</version>
-	</parent>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-cdkbased-components-parent</artifactId>
+      <groupId>org.ow2.petals</groupId>
+      <relativePath>../cdk-based-parent/pom.xml</relativePath>
+      <version>1.0.0-SNAPSHOT</version>
+   </parent>
 	
 	<!-- ============== -->
 	<!-- Identification -->
 	<!-- ============== -->
-	<name>Petals ESB - Components - SE Activiti BPMN</name>
-	<artifactId>petals-se-activitibpmn</artifactId>
-	<groupId>org.ow2.petals</groupId>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>jbi-component</packaging>
-	<description>BPMN Service Engine based on Activiti</description>
+   <name>Petals ESB - Components - SE Activiti BPMN</name>
+   <artifactId>petals-se-activitibpmn</artifactId>
+   <groupId>org.ow2.petals</groupId>
+   <version>1.0.0-SNAPSHOT</version>
+   <packaging>jbi-component</packaging>
+   <description>BPMN Service Engine based on Activiti</description>
 
-	<developers>
-		<developer>
-			<name>Bertrand Escudie </name>
-			<email>bescudie@linagora.com</email>
-			<id>bescudie</id>
-			<organization>Linagora</organization>
-			<organizationUrl>http://www.linagora.com</organizationUrl>
-			<roles>
-				<role>Product Owner</role>
-			</roles>
-			<timezone>+1</timezone>
-		</developer>
-	</developers>
-   
+   <developers>
+      <developer>
+         <name>Bertrand Escudie </name>
+         <email>bescudie@linagora.com</email>
+         <id>bescudie</id>
+         <organization>Linagora</organization>
+         <organizationUrl>http://www.linagora.com</organizationUrl>
+         <roles>
+            <role>Product Owner</role>
+         </roles>
+         <timezone>+1</timezone>
+      </developer>
+   </developers>
+
    <properties>
-      <activiti.version>5.17.1-SNAPSHOT</activiti.version>
+      <activiti.version>5.17.0</activiti.version>
    </properties>
-	
-	<dependencies>
+
+   <dependencies>
       <dependency>
          <groupId>org.ow2.easycommons</groupId>
          <artifactId>easycommons-util</artifactId>
@@ -79,50 +77,68 @@
          <artifactId>easywsdl-wsdl</artifactId>
       </dependency>
       <dependency>
-			<groupId>org.ow2.petals</groupId>
-			<artifactId>petals-cdk-core</artifactId>
-		</dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-core</artifactId>
+      </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-api</artifactId>
          <version>2.4.1-SNAPSHOT</version>
       </dependency>
-		<dependency>
-			<groupId>org.ow2.petals</groupId>
- 			<artifactId>petals-jbi</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ow2.petals</groupId>
- 			<artifactId>petals-cdk-jbidescriptor</artifactId>
-			<version>2.4.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.activiti</groupId>
-			<artifactId>activiti-engine</artifactId>
-    		<version>${activiti.version}</version>
-    		<exclusions>
-    		   <exclusion>
-                  <!-- Already in Java 6 -->
-    		      <artifactId>activation</artifactId>
-    		      <groupId>javax.activation</groupId>
-    		   </exclusion>
-    		</exclusions>
-		</dependency>
-	   <dependency>
- 	     	<groupId>org.activiti</groupId>
- 	     	<artifactId>activiti-bpmn-converter</artifactId>
-    		<version>${activiti.version}</version>
- 	   </dependency>
- 	   <dependency>
-			<groupId>org.activiti</groupId>
-	      <artifactId>activiti-bpmn-model</artifactId>
-    		<version>${activiti.version}</version>
-		</dependency>
       <dependency>
-         <!-- activiti-cxf is needed to get the WSDL importer -->
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-jbi</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-jbidescriptor</artifactId>
+         <version>2.4.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+         <groupId>org.activiti</groupId>
+         <artifactId>activiti-engine</artifactId>
+         <version>${activiti.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- Already in Java 6 -->
+               <artifactId>activation</artifactId>
+               <groupId>javax.activation</groupId>
+            </exclusion>
+            <exclusion>
+               <!-- We prefer to use Javax Mail provided by Geronimo -->
+               <artifactId>mail</artifactId>
+               <groupId>javax.mail</groupId>
+            </exclusion>
+            <exclusion>
+               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>commons-logging</groupId>
+               <artifactId>commons-logging</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <!-- Activit engine comes with javax.mail:mail:1.4.1, we prefer the artifact coming from Geronimo -->
+         <groupId>org.apache.geronimo.specs</groupId>
+         <artifactId>geronimo-javamail_1.4_spec</artifactId>
+         <scope>runtime</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.activiti</groupId>
+         <artifactId>activiti-bpmn-converter</artifactId>
+         <version>${activiti.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>org.activiti</groupId>
+         <artifactId>activiti-bpmn-model</artifactId>
+         <version>${activiti.version}</version>
+      </dependency>
+      <dependency>
+         <!-- activiti-cxf add support of WSDL-based services to the Activity engine to call Petals services -->
          <groupId>org.activiti</groupId>
          <artifactId>activiti-cxf</artifactId>
          <version>${activiti.version}</version>
+         <scope>runtime</scope>
          <exclusions>
             <exclusion>
                <!-- Already included in Java 6 -->
@@ -136,13 +152,20 @@
             </exclusion>
          </exclusions>
       </dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-jdk14</artifactId>
-			<version>1.7.6</version>
+      <dependency>
+         <!-- Dependency required to get log traces of Activiti engine -->
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-jdk14</artifactId>
+         <version>1.7.6</version>
          <scope>runtime</scope>
-		</dependency>
-      
+      </dependency>
+      <dependency>
+         <!-- Dependency required by the Petals transporter -->
+         <groupId>org.apache.cxf</groupId>
+         <artifactId>cxf-api</artifactId>
+         <version>2.6.14</version>
+      </dependency>
+
       <dependency>
          <!-- TODO: The JDBC Driver should be set as shared library. How to set the default one ? -->
          <groupId>com.h2database</groupId>
@@ -150,10 +173,10 @@
          <version>1.4.178</version>
          <scope>runtime</scope>
       </dependency>
-      
+
       <dependency>
-        <groupId>org.easymock</groupId>
-        <artifactId>easymock</artifactId>
+         <groupId>org.easymock</groupId>
+         <artifactId>easymock</artifactId>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -179,10 +202,27 @@
             </exclusion>
          </exclusions>
       </dependency>
-	</dependencies>
+   </dependencies>
 
    <build>
       <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- These dependencies are needed for runtime -->
+                        <usedDependency>org.apache.geronimo.specs:geronimo-javamail_1.4_spec</usedDependency>
+                        <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
+                        <usedDependency>org.activiti:activiti-cxf</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <groupId>org.jvnet.jaxb2.maven2</groupId>
             <artifactId>maven-jaxb21-plugin</artifactId>
@@ -208,10 +248,10 @@
          </plugin>
       </plugins>
    </build>
-   
+
    <repositories>
       <repository>
-         <!-- The repository in which SNAPSHOT version of Activiti are available -->
+         <!-- The repository in which SNAPSHOT versions of Activiti are available -->
          <id>sonatype-snapshots</id>
          <name>Sonatype Snapshots Repository</name>
          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
@@ -226,8 +266,8 @@
    </repositories>
 
    <scm>
-		<connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
-		<developerConnection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</developerConnection>
-	</scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</developerConnection>
+   </scm>
 
 </project>
