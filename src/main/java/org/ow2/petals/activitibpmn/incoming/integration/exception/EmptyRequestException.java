@@ -17,15 +17,22 @@
  */
 package org.ow2.petals.activitibpmn.incoming.integration.exception;
 
-public abstract class IntegrationOperationException extends Exception {
+import javax.xml.namespace.QName;
 
-    private static final long serialVersionUID = 3045867630315007055L;
+/**
+ * The incoming request received by the integration service is empty.
+ * 
+ * @author Christophe DENEUX - Linagora
+ *
+ */
+public class EmptyRequestException extends InvalidRequestException {
 
-    public IntegrationOperationException(final String message, final Exception cause) {
-        super(message, cause);
+    private static final long serialVersionUID = 86643546833322342L;
+
+    private static final String MESSAGE_PATTERN = "The incoming request received by the integration operation '%s' is empty";
+
+    public EmptyRequestException(final QName operationName) {
+        super(String.format(MESSAGE_PATTERN, operationName.toString()));
     }
 
-    public IntegrationOperationException(final String message) {
-        super(message);
-    }
 }

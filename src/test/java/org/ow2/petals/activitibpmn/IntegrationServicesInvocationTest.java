@@ -31,11 +31,16 @@ import javax.xml.bind.JAXBException;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
+import org.ow2.petals.activitibpmn.incoming.integration.exception.EmptyRequestException;
+import org.ow2.petals.activitibpmn.incoming.integration.exception.InvalidRequestException;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
+import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
+
+import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 
 /**
  * Unit tests about request processing of BPMN services
@@ -44,6 +49,118 @@ import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
  * 
  */
 public class IntegrationServicesInvocationTest extends AbstractComponentTest {
+
+    /**
+     * <p>
+     * Check the processing of the integration service {@link GetTasksOperation} when:
+     * <ul>
+     * <li>an invalid request is sent,</li>
+     * <li>the request content is not compliant to the XML schema defined in WSDL</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>no error occurs</li>
+     * <li>a fault occurs about the invalid request</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void getTasks_UnexpectedRequest_0() throws Exception {
+
+        final Demande getTasksReq = new Demande();
+
+        inMemoryLogHandler.clear();
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.nativeServiceConfiguration, ITG_OP_GETTASKS,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(getTasksReq))));
+
+        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
+
+        final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
+        assertNull("An error is set in the response", getTaskRespMsg.getError());
+        assertNull("A XML payload is set in response", getTaskRespMsg.getPayload());
+        assertNotNull("No fault in response", getTaskRespMsg.getFault());
+
+        final String getTaskRespStr = SourceHelper.toString(getTaskRespMsg.getFault());
+        assertTrue(getTaskRespStr.contains(InvalidRequestException.class.getName()));
+    }
+
+    /**
+     * <p>
+     * Check the processing of the integration service {@link GetTasksOperation} when:
+     * <ul>
+     * <li>an invalid request is sent,</li>
+     * <li>the request content is compliant to the XML schema defined in WSDL</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>no error occurs</li>
+     * <li>a fault occurs about the invalid request</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void getTasks_UnexpectedRequest_1() throws Exception {
+
+        final GetTasksResponse getTasksReq = new GetTasksResponse();
+
+        inMemoryLogHandler.clear();
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.nativeServiceConfiguration, ITG_OP_GETTASKS,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(getTasksReq))));
+
+        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
+
+        final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
+        assertNull("An error is set in the response", getTaskRespMsg.getError());
+        assertNull("A XML payload is set in response", getTaskRespMsg.getPayload());
+        assertNotNull("No fault in response", getTaskRespMsg.getFault());
+
+        final String getTaskRespStr = SourceHelper.toString(getTaskRespMsg.getFault());
+        assertTrue(getTaskRespStr.contains(InvalidRequestException.class.getName()));
+    }
+
+    /**
+     * <p>
+     * Check the processing of the integration service {@link GetTasksOperation} when:
+     * <ul>
+     * <li>an empty request is sent</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>no error occurs</li>
+     * <li>a fault occurs about the invalid request</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void getTasks_EmptyRequest() throws Exception {
+
+        final Demande getTasksReq = new Demande();
+
+        inMemoryLogHandler.clear();
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.nativeServiceConfiguration, ITG_OP_GETTASKS,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), null));
+
+        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
+
+        final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
+        assertNull("An error is set in the response", getTaskRespMsg.getError());
+        assertNull("A XML payload is set in response", getTaskRespMsg.getPayload());
+        assertNotNull("No fault in response", getTaskRespMsg.getFault());
+
+        final String getTaskRespStr = SourceHelper.toString(getTaskRespMsg.getFault());
+        assertTrue(getTaskRespStr.contains(EmptyRequestException.class.getName()));
+    }
 
     /**
      * <p>
@@ -76,7 +193,7 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
 
         final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
         assertNull("An error is set in the response", getTaskRespMsg.getError());
-        assertNull("An error is set in the response", getTaskRespMsg.getFault());
+        assertNull("A fault is set in the response", getTaskRespMsg.getFault());
         assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
         final Object getTaskRespObj = BpmnServicesInvocationTest.unmarshaller.unmarshal(getTaskRespMsg.getPayload());
         assertTrue(getTaskRespObj instanceof GetTasksResponse);

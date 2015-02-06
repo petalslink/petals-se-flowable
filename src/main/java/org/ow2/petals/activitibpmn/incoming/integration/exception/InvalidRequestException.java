@@ -17,15 +17,30 @@
  */
 package org.ow2.petals.activitibpmn.incoming.integration.exception;
 
-public abstract class IntegrationOperationException extends Exception {
+import javax.xml.namespace.QName;
 
-    private static final long serialVersionUID = 3045867630315007055L;
+/**
+ * The incoming request received by the integration service is invalid, ie. not compliant with the service contract.
+ * 
+ * @author Christophe DENEUX - Linagora
+ *
+ */
+public class InvalidRequestException extends IntegrationOperationException {
 
-    public IntegrationOperationException(final String message, final Exception cause) {
-        super(message, cause);
+    private static final long serialVersionUID = -1107793733817534060L;
+
+    private static final String MESSAGE_PATTERN = "The incoming request received by the integration operation '%s' is unexpected";
+
+    public InvalidRequestException(final QName operationName, final Exception cause) {
+        super(String.format(MESSAGE_PATTERN, operationName.toString()), cause);
     }
 
-    public IntegrationOperationException(final String message) {
+    public InvalidRequestException(final QName operationName) {
+        super(String.format(MESSAGE_PATTERN, operationName.toString()));
+    }
+
+    public InvalidRequestException(final String message) {
         super(message);
     }
+
 }
