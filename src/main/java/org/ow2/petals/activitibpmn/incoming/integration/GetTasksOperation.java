@@ -113,13 +113,20 @@ public class GetTasksOperation implements ActivitiService {
                     final GetTasks incomingRequest = (GetTasks) incomingObject;
                     final TaskQuery taskQuery = this.taskService.createTaskQuery();
 
-                    if (incomingRequest.isActive()) {
+                    // By default, we search active tasks
+                    final Boolean isActive = incomingRequest.isActive();
+                    if (isActive == null || isActive.booleanValue()) {
                         taskQuery.active();
                     }
 
                     final String assignee = incomingRequest.getAssignee();
                     if (assignee != null && !assignee.isEmpty()) {
                         taskQuery.taskCandidateOrAssigned(assignee);
+                    }
+
+                    final String processInstanceId = incomingRequest.getProcessInstanceIdentifier();
+                    if (processInstanceId != null && !processInstanceId.isEmpty()) {
+                        taskQuery.processInstanceId(processInstanceId);
                     }
 
                     final GetTasksResponse response = new GetTasksResponse();

@@ -24,58 +24,33 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PORT_TYPE;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_SERVICE;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderBeginLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.bind.DatatypeConverter;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoUserIdValueException;
-import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
-import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
-import org.ow2.petals.component.framework.junit.impl.ComponentConfiguration;
-import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedResponseToConsumerMessage;
-import org.ow2.petals.component.framework.junit.impl.message.WrappedStatusFromConsumerMessage;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTestBuilder;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
-import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
 import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
@@ -86,245 +61,15 @@ import org.ow2.petals.samples.se_bpmn.vacationservice.NumeroDemandeInconnu;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Validation;
 import org.ow2.petals.samples.se_bpmn.vacationservice.XslParameter;
 
-import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 
 /**
- * Unit tests about request processing
+ * Unit tests about request processing of BPMN services
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class BpmnComponentTest {
-
-    private static final String VACATION_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/vacationService";
-
-    private static final QName VACATION_INTERFACE = new QName(VACATION_NAMESPACE, "demandeDeConges");
-
-    private static final QName VACATION_SERVICE = new QName(VACATION_NAMESPACE, "demandeDeCongesService");
-
-    private static final String VACATION_ENDPOINT = "testEndpointName";
-
-    private static final QName OPERATION_DEMANDERCONGES = new QName(VACATION_NAMESPACE, "demanderConges");
-
-    private static final QName OPERATION_VALIDERDEMANDE = new QName(VACATION_NAMESPACE, "validerDemande");
-
-    private static final String ARCHIVE_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/archivageService";
-
-    private static final QName ARCHIVE_INTERFACE = new QName(ARCHIVE_NAMESPACE, "archiver");
-
-    private static final QName ARCHIVE_SERVICE = new QName(ARCHIVE_NAMESPACE, "archiverService");
-
-    private static final String ARCHIVE_ENDPOINT = "archiveEndpointName";
-
-    private static final QName ARCHIVER_OPERATION = new QName(ARCHIVE_NAMESPACE, "archiver");
-
-    @ClassRule
-    public static final ComponentUnderTestBuilder componentBuilder = new ComponentUnderTestBuilder();
-
-    @ClassRule
-    public static final InMemoryLogHandler inMemoryLogHandler = new InMemoryLogHandler();
-
-    private static Marshaller marshaller;
-
-    private static Unmarshaller unmarshaller;
-
-    /**
-     * The Petals SE Activiti to test
-     */
-    private static Component componentUnderTest;
-
-    private static ServiceConfiguration serviceConfiguration;
-
-    /**
-     * The integration service provided by the component
-     */
-    private static ServiceConfiguration nativeServiceConfiguration;
-
-    static {
-        try {
-            final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
-                    AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
-                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class);
-            BpmnComponentTest.unmarshaller = context.createUnmarshaller();
-            BpmnComponentTest.marshaller = context.createMarshaller();
-            BpmnComponentTest.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        } catch (final JAXBException e) {
-            throw new UncheckedException(e);
-        }
-    }
-
-    @BeforeClass
-    public static void setup() throws Exception {
-        BpmnComponentTest.initializeLoggingSystem();
-        BpmnComponentTest.initializeAnsStartComponentUnderTest();
-        BpmnComponentTest.deployServiceUnits();
-
-        BpmnComponentTest.registerOtherServiceProviders();
-    }
-
-    @AfterClass
-    public static void shutdown() {
-        BpmnComponentTest.componentUnderTest.uninstallAllServices();
-        BpmnComponentTest.componentUnderTest.shutdown();
-    }
-
-    /**
-     * All log traces must be cleared before starting a unit test
-     */
-    @Before
-    public void clearLogTraces() {
-        inMemoryLogHandler.clear();
-    }
-
-    /**
-     * Initialize the logging system reading the configuration defined in resource '/logging.properties'.
-     */
-    private static void initializeLoggingSystem() throws SecurityException, IOException {
-        final InputStream inputStream = ActivitiSuManagerTest.class.getResourceAsStream("/logging.properties");
-        assertNotNull("Logging configuration file not found", inputStream);
-        try {
-            LogManager.getLogManager().readConfiguration(inputStream);
-        } finally {
-            inputStream.close();
-        }
-    }
-
-    /**
-     * <p>
-     * Initialize and start the component under test.
-     * </p>
-     * <p>
-     * The configuration of the component is its default configuration, except the log level set to {@link Leve#FINE}.
-     * </p>
-     */
-    private static void initializeAnsStartComponentUnderTest() throws Exception {
-
-        final Logger logger = Logger.getAnonymousLogger();
-        logger.addHandler(BpmnComponentTest.inMemoryLogHandler.getHandler());
-        logger.setLevel(Level.FINE);
-        BpmnComponentTest.componentUnderTest = BpmnComponentTest.componentBuilder.create(new ComponentConfiguration(
-                "componentUnderTest", logger));
-        BpmnComponentTest.componentUnderTest.start();
-
-        final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader().getResource("component.wsdl");
-        assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
-        BpmnComponentTest.nativeServiceConfiguration = new ServiceConfiguration(
-                BpmnComponentTest.class.getSimpleName(), ITG_PORT_TYPE, ITG_SERVICE,
-                BpmnComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ServiceType.PROVIDE,
-                nativeServiceWsdlUrl);
-    }
-
-    /**
-     * Deploy service units
-     */
-    private static void deployServiceUnits() {
-
-        final URL wsdlUrl = Thread.currentThread().getContextClassLoader().getResource("su/valid/vacationRequest.wsdl");
-        assertNotNull("WSDl not found", wsdlUrl);
-        BpmnComponentTest.serviceConfiguration = new ServiceConfiguration(BpmnComponentTest.class.getSimpleName(),
-                VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
-
-        final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/demanderCongesResponse.xsl");
-        assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
-        BpmnComponentTest.serviceConfiguration.addResource(demanderCongesResponseXslUrl);
-
-        final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/validerDemandeResponse.xsl");
-        assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
-        BpmnComponentTest.serviceConfiguration.addResource(validerDemandeResponseXslUrl);
-
-        final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/ajusterDemandeResponse.xsl");
-        assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
-        BpmnComponentTest.serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
-
-        final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/numeroDemandeInconnu.xsl");
-        assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
-        BpmnComponentTest.serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
-
-        final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/demandeDejaValidee.xsl");
-        assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
-        BpmnComponentTest.serviceConfiguration.addResource(demandeDejaValideeXslUrl);
-
-        final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/vacationRequest.bpmn20.xml");
-        assertNotNull("BPMN file not found", bpmnUrl);
-        BpmnComponentTest.serviceConfiguration.addResource(bpmnUrl);
-        BpmnComponentTest.serviceConfiguration.setParameter(
-                "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file",
-                "vacationRequest.bpmn20.xml");
-        BpmnComponentTest.serviceConfiguration.setParameter(
-                "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version", "1");
-
-        // Consume service 'archiver'
-        // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange between Activti
-        // and other services
-        final ServiceConfiguration consumeServiceConfiguration = new ServiceConfiguration(
-                BpmnComponentTest.class.getSimpleName(), ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT,
-                ServiceType.CONSUME);
-        BpmnComponentTest.serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
-
-        BpmnComponentTest.componentUnderTest.installService(BpmnComponentTest.serviceConfiguration);
-    }
-
-    private static void registerOtherServiceProviders() {
-        componentBuilder.registerOtherServiceProvider(ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
-    }
-
-    /**
-     * <p>
-     * Check the processing of the component when receiving the end (status 'DONE') of an IN_OU exchange.
-     * </p>
-     * <p>
-     * Expected results:
-     * <ul>
-     * <li>no MONIT trace logged</li>
-     * </ul>
-     * </p>
-     */
-    @Test
-    public void onDoneStatusAsProvider() {
-
-        // Send an exchange with the status set to 'DONE'. We must use 'processMessageFromServiceBus' because nothing is
-        // returned on the end of IN-OUT exchange
-        BpmnComponentTest.componentUnderTest.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
-                new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.DONE));
-
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
-    }
-
-    /**
-     * <p>
-     * Check the processing of the component when receiving a IN-OUT message exchange with status 'ERROR'.
-     * </p>
-     * <p>
-     * Expected results:
-     * <ul>
-     * <li>no MONIT trace logged</li>
-     * <li>a warning is logged telling that the message exchange is discarded.</li>
-     * </ul>
-     * </p>
-     */
-    @Test
-    public void onErrorStatusAsProvider() throws InterruptedException {
-
-        // Send an exchange with the status set to 'ERROR'. We must use 'processMessageFromServiceBus' because nothing
-        // is returned on the end of IN-OUT exchange
-        BpmnComponentTest.componentUnderTest.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
-                new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.ERROR));
-
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
-        // A log trace must be logged with level WARNING telling that incoming error messages are not accepted
-        assertEquals(1, inMemoryLogHandler.getAllRecords(Level.WARNING).size());
-    }
+public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
     /**
      * <p>
@@ -363,13 +108,13 @@ public class BpmnComponentTest {
         request_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -383,7 +128,7 @@ public class BpmnComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -429,16 +174,19 @@ public class BpmnComponentTest {
         final String valideur = "valideur";
         // TODO: Set the expected user when task assignment works fine in the unit test or SE
         // getTasksReq.setAssignee("management");
+        getTasksReq.setProcessInstanceIdentifier(response_1.getNumeroDde());
 
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.nativeServiceConfiguration, ITG_OP_GETTASKS,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.nativeServiceConfiguration, ITG_OP_GETTASKS,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(getTasksReq))));
         {
-            final ResponseMessage getTaskRespMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+            final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest
+                    .pollResponseFromProvider();
             assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
-            final Object getTaskRespObj = BpmnComponentTest.unmarshaller.unmarshal(getTaskRespMsg.getPayload());
+            final Object getTaskRespObj = BpmnServicesInvocationTest.unmarshaller
+                    .unmarshal(getTaskRespMsg.getPayload());
             assertTrue(getTaskRespObj instanceof GetTasksResponse);
             final GetTasksResponse getTaskResp = (GetTasksResponse) getTaskRespObj;
             assertNotNull(getTaskResp.getTasks());
@@ -460,14 +208,15 @@ public class BpmnComponentTest {
 
         // Send the 2nd valid request
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
 
         {
             // Assert the 1st request sent by Activiti on orchestrated service
-            final RequestMessage archiveRequestMsg_1 = BpmnComponentTest.componentUnderTest.pollRequestFromConsumer();
+            final RequestMessage archiveRequestMsg_1 = BpmnServicesInvocationTest.componentUnderTest
+                    .pollRequestFromConsumer();
             final MessageExchange archiveMessageExchange_1 = archiveRequestMsg_1.getMessageExchange();
             assertNotNull(archiveMessageExchange_1);
             assertEquals(ARCHIVE_INTERFACE, archiveMessageExchange_1.getInterfaceName());
@@ -476,7 +225,7 @@ public class BpmnComponentTest {
             assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
             assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
             assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
-            final Object archiveRequestObj_1 = BpmnComponentTest.unmarshaller.unmarshal(archiveRequestMsg_1
+            final Object archiveRequestObj_1 = BpmnServicesInvocationTest.unmarshaller.unmarshal(archiveRequestMsg_1
                     .getPayload());
             assertTrue(archiveRequestObj_1 instanceof Archiver);
             final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
@@ -488,10 +237,11 @@ public class BpmnComponentTest {
             archiverResponse_1.setItem2("value of item2");
             final ResponseMessage otherResponse_1 = new WrappedResponseToConsumerMessage(archiveMessageExchange_1,
                     new ByteArrayInputStream(this.toByteArray(archiverResponse_1)));
-            BpmnComponentTest.componentUnderTest.pushResponseToConsumer(otherResponse_1);
+            BpmnServicesInvocationTest.componentUnderTest.pushResponseToConsumer(otherResponse_1);
 
             // Assert the status DONE on the message exchange
-            final RequestMessage statusDoneMsg_1 = BpmnComponentTest.componentUnderTest.pollRequestFromConsumer();
+            final RequestMessage statusDoneMsg_1 = BpmnServicesInvocationTest.componentUnderTest
+                    .pollRequestFromConsumer();
             assertNotNull(statusDoneMsg_1);
             // It's the same message exchange instance
             assertSame(statusDoneMsg_1.getMessageExchange(), archiveRequestMsg_1.getMessageExchange());
@@ -499,7 +249,7 @@ public class BpmnComponentTest {
         }
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_2 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -521,7 +271,7 @@ public class BpmnComponentTest {
         final Source fault_2 = responseMsg_2.getFault();
         assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
         assertNotNull("No XML payload in response", responseMsg_2.getPayload());
-        final Object responseObj_2 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_2.getPayload());
+        final Object responseObj_2 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_2.getPayload());
         assertTrue(responseObj_2 instanceof AckResponse);
         final AckResponse response_2 = (AckResponse) responseObj_2;
         {
@@ -578,13 +328,13 @@ public class BpmnComponentTest {
 
         // Send the 2nd valid request
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_3))));
 
         // Assert the response of the 3rd valid request
-        final ResponseMessage responseMsg_3 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_3 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_3 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -598,7 +348,7 @@ public class BpmnComponentTest {
         assertNull("XML payload in response", responseMsg_3.getPayload());
         final Source fault_3 = responseMsg_3.getFault();
         assertNotNull("No fault returns", fault_3);
-        final Object responseObj_3 = BpmnComponentTest.unmarshaller.unmarshal(fault_3);
+        final Object responseObj_3 = BpmnServicesInvocationTest.unmarshaller.unmarshal(fault_3);
         assertTrue(responseObj_3 instanceof DemandeDejaValidee);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
@@ -628,13 +378,14 @@ public class BpmnComponentTest {
         request.setMotifDde("hollidays");
 
         // Send the request
-        BpmnComponentTest.componentUnderTest
-                .pushRequestToProvider(new WrappedRequestToProviderMessage(BpmnComponentTest.serviceConfiguration,
+        BpmnServicesInvocationTest.componentUnderTest
+                .pushRequestToProvider(new WrappedRequestToProviderMessage(
+                        BpmnServicesInvocationTest.serviceConfiguration,
                         OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                         new ByteArrayInputStream(this.toByteArray(request))));
 
         // Assert the response of the request
-        final ResponseMessage responseMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -677,13 +428,14 @@ public class BpmnComponentTest {
         request.setMotifDde("hollidays");
 
         // Send the request
-        BpmnComponentTest.componentUnderTest
-                .pushRequestToProvider(new WrappedRequestToProviderMessage(BpmnComponentTest.serviceConfiguration,
+        BpmnServicesInvocationTest.componentUnderTest
+                .pushRequestToProvider(new WrappedRequestToProviderMessage(
+                        BpmnServicesInvocationTest.serviceConfiguration,
                         OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                         new ByteArrayInputStream(this.toByteArray(request))));
 
         // Assert the response of the request
-        final ResponseMessage responseMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -728,13 +480,13 @@ public class BpmnComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -748,7 +500,7 @@ public class BpmnComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -761,13 +513,13 @@ public class BpmnComponentTest {
 
         // Send the 2nd valid request
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_2 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -813,13 +565,13 @@ public class BpmnComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -833,7 +585,7 @@ public class BpmnComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -847,13 +599,13 @@ public class BpmnComponentTest {
 
         // Send the 2nd valid request
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_2 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -899,13 +651,13 @@ public class BpmnComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -919,7 +671,7 @@ public class BpmnComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -932,13 +684,13 @@ public class BpmnComponentTest {
 
         // Send the 2nd valid request
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_2 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -984,13 +736,13 @@ public class BpmnComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -1004,7 +756,7 @@ public class BpmnComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -1018,13 +770,13 @@ public class BpmnComponentTest {
 
         // Send the 2nd valid request
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_2 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -1069,13 +821,14 @@ public class BpmnComponentTest {
         request.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        BpmnComponentTest.componentUnderTest
-                .pushRequestToProvider(new WrappedRequestToProviderMessage(BpmnComponentTest.serviceConfiguration,
+        BpmnServicesInvocationTest.componentUnderTest
+                .pushRequestToProvider(new WrappedRequestToProviderMessage(
+                        BpmnServicesInvocationTest.serviceConfiguration,
                         OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                         new ByteArrayInputStream(this.toByteArray(request))));
 
         // Assert the response of the valid request
-        final ResponseMessage responseMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -1089,7 +842,7 @@ public class BpmnComponentTest {
         assertNull("XML payload in response", responseMsg.getPayload());
         final Source fault = responseMsg.getFault();
         assertNotNull("No fault returns", fault);
-        final Object responseObj = BpmnComponentTest.unmarshaller.unmarshal(fault);
+        final Object responseObj = BpmnServicesInvocationTest.unmarshaller.unmarshal(fault);
         assertTrue(responseObj instanceof NumeroDemandeInconnu);
         final NumeroDemandeInconnu response = (NumeroDemandeInconnu) responseObj;
         assertEquals(unknownProcessInstanceId, response.getNumeroDde());
@@ -1131,13 +884,13 @@ public class BpmnComponentTest {
         request_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -1151,7 +904,7 @@ public class BpmnComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -1167,13 +920,13 @@ public class BpmnComponentTest {
 
         // Send the 2nd valid request for the user task 'handleRequest
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_2 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -1187,7 +940,7 @@ public class BpmnComponentTest {
         final Source fault_2 = responseMsg_2.getFault();
         assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
         assertNotNull("No XML payload in response", responseMsg_2.getPayload());
-        final Object responseObj_2 = BpmnComponentTest.unmarshaller.unmarshal(responseMsg_2.getPayload());
+        final Object responseObj_2 = BpmnServicesInvocationTest.unmarshaller.unmarshal(responseMsg_2.getPayload());
         assertTrue(responseObj_2 instanceof AckResponse);
         final AckResponse response_2 = (AckResponse) responseObj_2;
         assertNotNull(response_2);
@@ -1202,13 +955,13 @@ public class BpmnComponentTest {
 
         // Send the 3rd valid request for the user task 'handleRequest'
         inMemoryLogHandler.clear();
-        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
-                BpmnComponentTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
+        BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_3))));
 
         // Assert the response of the 3rd valid request
-        final ResponseMessage responseMsg_3 = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+        final ResponseMessage responseMsg_3 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_3 = inMemoryLogHandler.getAllRecords(Level.MONIT);
@@ -1222,27 +975,10 @@ public class BpmnComponentTest {
         assertNull("XML payload in response", responseMsg_3.getPayload());
         final Source fault_3 = responseMsg_3.getFault();
         assertNotNull("No fault returns", fault_3);
-        final Object responseObj_3 = BpmnComponentTest.unmarshaller.unmarshal(fault_3);
+        final Object responseObj_3 = BpmnServicesInvocationTest.unmarshaller.unmarshal(fault_3);
         assertTrue(responseObj_3 instanceof DemandeDejaValidee);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
-    }
-
-    /**
-     * Convert a JAXB element to bytes
-     * 
-     * @param jaxbElement
-     *            The JAXB element to write as bytes
-     */
-    private byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
-
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            BpmnComponentTest.marshaller.marshal(jaxbElement, baos);
-            return baos.toByteArray();
-        } finally {
-            baos.close();
-        }
     }
 
 }
