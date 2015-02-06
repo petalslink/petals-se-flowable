@@ -15,24 +15,36 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
+package org.ow2.petals.activitibpmn.incoming;
 
-import javax.xml.namespace.QName;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.ow2.petals.component.framework.api.message.Exchange;
 
 /**
- * The annotation defining the operation output is required for the given WSDL binding operation.
+ * <p>
+ * A service provided by the SE, that can be invoked by service consumer. Each WSDL operation has its associated
+ * {@link ActivitiService}.
+ * </p>
+ * <p>
+ * Note: implementations of {@link ActivitiService} must be thread safe.
  * 
- * @author Christophe DENEUX - Linagora
- * 
+ * @author Christophe DENEUX
+ *
  */
-public class NoOutputMappingException extends InvalidAnnotationForOperationException {
+public interface ActivitiService {
 
-    private static final long serialVersionUID = 1694880832993253995L;
+    /**
+     * <p>
+     * Execute the operation
+     * </p>
+     * <p>
+     * The reply XML payload or fault or error of the operation processing is set into the exchange.
+     * </p>
+     */
+    public void execute(final Exchange exchange);
 
-    private static final String MESSAGE = "The annotation defining the operation output is required";
-
-    public NoOutputMappingException(final QName wsdlOperation) {
-        super(wsdlOperation, MESSAGE);
-    }
+    public void log(final Logger logger, final Level logLevel);
 
 }

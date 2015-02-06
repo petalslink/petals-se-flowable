@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The process definition identifier declared with annotations exists several times in the BPMN models.
@@ -35,9 +36,9 @@ public class ProcessDefinitionIdDuplicatedInModelException extends InvalidAnnota
      */
     private final String processDefinitionId;
 
-    public ProcessDefinitionIdDuplicatedInModelException(final String wsdlOperationName,
+    public ProcessDefinitionIdDuplicatedInModelException(final QName wsdlOperation,
             final String processDefinitionId) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, processDefinitionId));
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, processDefinitionId));
         this.processDefinitionId = processDefinitionId;
     }
 

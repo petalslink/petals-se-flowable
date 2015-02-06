@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
@@ -50,7 +51,7 @@ public abstract class AnnotatedOperation {
     /**
      * The WSDL operation containing the current annotations
      */
-    private final String wsdlOperationName;
+    private final QName wsdlOperation;
 
     /**
      * The BPMN process identifier associated to the BPMN operation.
@@ -105,7 +106,7 @@ public abstract class AnnotatedOperation {
      * </p>
      * <b>Note 2</b>: For performance reasons, variable types are populated during the coherence check. </p>
      * 
-     * @param wsdlOperationName
+     * @param wsdlOperation
      *            The WSDL operation containing the current annotations
      * @param processDefinitionId
      *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
@@ -125,12 +126,12 @@ public abstract class AnnotatedOperation {
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    protected AnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
+    protected AnnotatedOperation(final QName wsdlOperation, final String processDefinitionId,
             final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Map<String, XPathExpression> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super();
-        this.wsdlOperationName = wsdlOperationName;
+        this.wsdlOperation = wsdlOperation;
         this.processDefinitionId = processDefinitionId;
         this.actionId = actionId;
         this.processInstanceIdHolder = processInstanceIdHolder;
@@ -154,7 +155,7 @@ public abstract class AnnotatedOperation {
 
         // The process definition identifier is required
         if (this.processDefinitionId == null || this.processDefinitionId.trim().isEmpty()) {
-            throw new NoProcessDefinitionIdMappingException(this.getWsdlOperationName());
+            throw new NoProcessDefinitionIdMappingException(this.wsdlOperation);
         }
         
         // Check that the process definition identifier exists only once in the process definitions embedded into the service unit
@@ -169,24 +170,24 @@ public abstract class AnnotatedOperation {
             }
         }
         if (processDefinitionIdCount == 0) {
-            throw new ProcessDefinitionIdNotFoundInModelException(this.wsdlOperationName, this.processDefinitionId);
+            throw new ProcessDefinitionIdNotFoundInModelException(this.wsdlOperation, this.processDefinitionId);
         } else if (processDefinitionIdCount > 1) {
-            throw new ProcessDefinitionIdDuplicatedInModelException(this.wsdlOperationName, this.processDefinitionId);
+            throw new ProcessDefinitionIdDuplicatedInModelException(this.wsdlOperation, this.processDefinitionId);
         }
 
         // The action identifier is required
         if (this.actionId == null || this.actionId.trim().isEmpty()) {
-            throw new NoActionIdMappingException(this.getWsdlOperationName());
+            throw new NoActionIdMappingException(this.wsdlOperation);
         }
 
         // The mapping defining the user id is required
         if (this.userIdHolder == null) {
-            throw new NoUserIdMappingException(this.wsdlOperationName);
+            throw new NoUserIdMappingException(this.wsdlOperation);
         }
         
         // The mapping defining the output XSLT style-sheet is required
         if (this.outputTemplate == null) {
-            throw new NoOutputMappingException(wsdlOperationName);
+            throw new NoOutputMappingException(wsdlOperation);
         }
 
         this.doAnnotationCoherenceCheck(modelContainingProcessDefinitionId);
@@ -194,7 +195,7 @@ public abstract class AnnotatedOperation {
         // Check the existence of declared variables into the process definition
         for (final String variableName : this.variables.keySet()) {
             if (!this.variableTypes.containsKey(variableName)) {
-                throw new VariableNotFoundInModelException(this.wsdlOperationName, variableName,
+                throw new VariableNotFoundInModelException(this.wsdlOperation, variableName,
                         this.processDefinitionId);
             }
         }
@@ -203,7 +204,7 @@ public abstract class AnnotatedOperation {
         for (final Entry<String, FormProperty> entry : this.variableTypes.entrySet()) {
             final String variableName = entry.getKey();
             if (entry.getValue().isRequired() && !this.variables.containsKey(variableName)) {
-                throw new RequiredVariableMissingException(this.wsdlOperationName, variableName);
+                throw new RequiredVariableMissingException(this.wsdlOperation, variableName);
             }
         }
 
@@ -211,7 +212,7 @@ public abstract class AnnotatedOperation {
         final List<String> mappedExceptionNames = this.getMappedExceptionNames();
         for (final String faultName : this.getFaultTemplates().keySet()) {
             if (!mappedExceptionNames.contains(faultName)) {
-                throw new UnsupportedMappedExceptionNameException(this.wsdlOperationName, faultName);
+                throw new UnsupportedMappedExceptionNameException(this.wsdlOperation, faultName);
             }
         }
     }
@@ -244,8 +245,8 @@ public abstract class AnnotatedOperation {
     /**
      * @return The WSDL operation containing the current annotations
      */
-    public String getWsdlOperationName() {
-        return this.wsdlOperationName;
+    public QName getWsdlOperation() {
+        return this.wsdlOperation;
     }
 
     /**

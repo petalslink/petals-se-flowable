@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
@@ -80,7 +81,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    public CompleteUserTaskAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
+    public CompleteUserTaskAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
             final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Map<String, XPathExpression> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
@@ -99,7 +100,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
         // The mapping defining the process instance id is required to complete a user task
         final XPathExpression processInstanceIdHolder = this.getProcessInstanceIdHolder();
         if (processInstanceIdHolder == null) {
-            throw new NoProcessInstanceIdMappingException(this.getWsdlOperationName());
+            throw new NoProcessInstanceIdMappingException(this.getWsdlOperation());
         }
 
         // The mapping defining the action identifier must be declared in the process definition
@@ -117,7 +118,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
             }
         }
         if (!isActionIdFound) {
-            throw new ActionIdNotFoundInModelException(this.getWsdlOperationName(), this.getActionId(),
+            throw new ActionIdNotFoundInModelException(this.getWsdlOperation(), this.getActionId(),
                     this.getProcessDefinitionId());
         } else {
             if (formPropertyList != null && formPropertyList.size() > 0) {

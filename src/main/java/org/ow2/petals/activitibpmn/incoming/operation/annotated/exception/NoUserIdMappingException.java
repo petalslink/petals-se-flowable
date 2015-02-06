@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The annotation defining the user identifier is required for the given WSDL binding operation.
@@ -30,8 +31,8 @@ public class NoUserIdMappingException extends InvalidAnnotationForOperationExcep
 
     private static final String MESSAGE = "The annotation defining the user identifier is required";
 
-    public NoUserIdMappingException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public NoUserIdMappingException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
 }

@@ -15,24 +15,18 @@
  * along with this program/library; If not, see <http://www.gnu.org/licenses/>
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
+package org.ow2.petals.activitibpmn.incoming.integration.exception;
 
 import javax.xml.namespace.QName;
 
-/**
- * The annotation defining the operation output is required for the given WSDL binding operation.
- * 
- * @author Christophe DENEUX - Linagora
- * 
- */
-public class NoOutputMappingException extends InvalidAnnotationForOperationException {
+public class OperationInitializationException extends IntegrationOperationException {
 
-    private static final long serialVersionUID = 1694880832993253995L;
+    private static final long serialVersionUID = 1018414105515209042L;
 
-    private static final String MESSAGE = "The annotation defining the operation output is required";
+    private static final String MESSAGE_PATTERN = "An error occurs initializing the integration operation '%s'";
 
-    public NoOutputMappingException(final QName wsdlOperation) {
-        super(wsdlOperation, MESSAGE);
+    public OperationInitializationException(final QName operationName, final Exception cause) {
+        super(String.format(MESSAGE_PATTERN, operationName.toString()), cause);
     }
 
 }

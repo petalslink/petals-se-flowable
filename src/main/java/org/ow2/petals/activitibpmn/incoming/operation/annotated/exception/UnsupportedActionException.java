@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The BPMN action declared as annotation in the WSDL is unsupported.
@@ -30,7 +31,7 @@ public class UnsupportedActionException extends InvalidAnnotationForOperationExc
 
     private static final String MESSAGE_PATTERN = "The BPMN action '%s' is not supported";
 
-    public UnsupportedActionException(final String wsdlOperationName, final String notSupportedBpmnActionType) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, notSupportedBpmnActionType));
+    public UnsupportedActionException(final QName wsdlOperation, final String notSupportedBpmnActionType) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, notSupportedBpmnActionType));
     }
 }

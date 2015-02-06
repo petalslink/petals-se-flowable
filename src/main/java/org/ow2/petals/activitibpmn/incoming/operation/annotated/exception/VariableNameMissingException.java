@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * A BPMN annotation is missing to declared a variable name
@@ -30,8 +31,8 @@ public class VariableNameMissingException extends InvalidAnnotationForOperationE
 
     private static final String MESSAGE = "A BPMN variable is declared for which the name is missing";
 
-    public VariableNameMissingException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public VariableNameMissingException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
 }

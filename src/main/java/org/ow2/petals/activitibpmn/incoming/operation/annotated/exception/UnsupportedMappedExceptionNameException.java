@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The fault name of BPMN fault annotation is not known as mappable exception
@@ -30,7 +31,7 @@ public class UnsupportedMappedExceptionNameException extends InvalidAnnotationFo
 
     private static final String MESSAGE_PATTERN = "The fault name '%s' of BPMN fault annotation is not known as mappable exception";
 
-    public UnsupportedMappedExceptionNameException(final String wsdlOperationName, final String faultName) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, faultName));
+    public UnsupportedMappedExceptionNameException(final QName wsdlOperation, final String faultName) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, faultName));
     }
 }

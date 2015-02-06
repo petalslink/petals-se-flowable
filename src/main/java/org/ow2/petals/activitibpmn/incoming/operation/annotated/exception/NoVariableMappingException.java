@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * A variable was declared for the given WSDL binding operation, so the expression defining its value is required.
@@ -35,8 +36,8 @@ public class NoVariableMappingException extends InvalidAnnotationForOperationExc
      */
     private final String variableName;
 
-    public NoVariableMappingException(final String wsdlOperationName, final String variableName) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName));
+    public NoVariableMappingException(final QName wsdlOperation, final String variableName) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, variableName));
         this.variableName = variableName;
     }
 

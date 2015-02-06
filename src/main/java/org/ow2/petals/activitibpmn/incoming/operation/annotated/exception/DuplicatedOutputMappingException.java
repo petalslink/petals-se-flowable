@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
+
 /**
  * The annotation defining the operation output is duplicated for the given WSDL binding operation.
  * 
@@ -29,8 +31,8 @@ public class DuplicatedOutputMappingException extends InvalidAnnotationForOperat
 
     private static final String MESSAGE = "The annotation defining the operation output is duplicated";
 
-    public DuplicatedOutputMappingException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public DuplicatedOutputMappingException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
 }

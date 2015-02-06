@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathExpressionException;
 
 /**
@@ -36,9 +37,9 @@ public class VariableMappingExpressionException extends InvalidAnnotationForOper
      */
     private final String variableName;
 
-    public VariableMappingExpressionException(final String wsdlOperationName, final String variableName,
+    public VariableMappingExpressionException(final QName wsdlOperation, final String variableName,
             final XPathExpressionException cause) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName, cause.getMessage()), cause);
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, variableName, cause.getMessage()), cause);
         this.variableName = variableName;
     }
 

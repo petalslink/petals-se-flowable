@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The annotation defining the process definition identifier is required for the given WSDL binding operation.
@@ -30,8 +31,8 @@ public class NoProcessDefinitionIdMappingException extends InvalidAnnotationForO
 
     private static final String MESSAGE = "The annotation defining the process definition identifier is required";
 
-    public NoProcessDefinitionIdMappingException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public NoProcessDefinitionIdMappingException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
 }

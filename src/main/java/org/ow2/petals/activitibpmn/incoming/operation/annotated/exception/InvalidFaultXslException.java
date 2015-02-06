@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 
 /**
@@ -41,9 +42,9 @@ public class InvalidFaultXslException extends InvalidAnnotationForOperationExcep
      */
     private final String wsdlFault;
 
-    public InvalidFaultXslException(final String wsdlOperationName, final String wsdlFault, final String xslFileName,
+    public InvalidFaultXslException(final QName wsdlOperation, final String wsdlFault, final String xslFileName,
             final Throwable cause) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, xslFileName, wsdlFault, cause.getMessage()), cause);
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, xslFileName, wsdlFault, cause.getMessage()), cause);
         this.xslFileName = xslFileName;
         this.wsdlFault = wsdlFault;
     }

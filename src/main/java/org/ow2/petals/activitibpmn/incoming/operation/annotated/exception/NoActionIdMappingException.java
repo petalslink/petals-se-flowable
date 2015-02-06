@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The annotation defining the action identifier is required for the given WSDL binding operation.
@@ -30,8 +31,8 @@ public class NoActionIdMappingException extends InvalidAnnotationForOperationExc
 
     private static final String MESSAGE = "The annotation defining the action identifier is required";
 
-    public NoActionIdMappingException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public NoActionIdMappingException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
 }

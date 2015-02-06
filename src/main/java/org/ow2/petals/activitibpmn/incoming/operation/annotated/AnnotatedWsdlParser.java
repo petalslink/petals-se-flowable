@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.namespace.QName;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
@@ -196,6 +197,7 @@ public class AnnotatedWsdlParser {
         final List<AnnotatedOperation> annotatedOperations = new ArrayList<AnnotatedOperation>();
 
         annotatedWsdl.getDocumentElement().normalize();
+        final String targetNamespace = annotatedWsdl.getDocumentElement().getAttribute("targetNamespace");
         final XPathFactory xpathFactory = XPathFactory.newInstance();
 
         // Get the node "wsdl:binding"
@@ -210,8 +212,8 @@ public class AnnotatedWsdlParser {
             final NodeList wsdlOperations = ((Element) binding).getElementsByTagNameNS(SCHEMA_WSDL, "operation");
             for (int j = 0; j < wsdlOperations.getLength(); j++) {
                 try {
-                    annotatedOperations.add(this.parseOperation(wsdlOperations.item(j), xpathFactory, suRootPath,
-                            bpmnModels));
+                    annotatedOperations.add(this.parseOperation(wsdlOperations.item(j), targetNamespace, xpathFactory,
+                            suRootPath, bpmnModels));
                 } catch (final InvalidAnnotationForOperationException e) {
                     this.encounteredErrors.add(e);
                 }
@@ -231,6 +233,8 @@ public class AnnotatedWsdlParser {
      * 
      * @param wsdlOperation
      *            The binding operation to parse
+     * @param targetNamespace
+     *            The target namespace of WSDL definition
      * @param xpathFactory
      *            The XPath factory
      * @param suRootPath
@@ -241,11 +245,10 @@ public class AnnotatedWsdlParser {
      * @throws An
      *             error occurs during the parsing of the binding operation
      */
-    private AnnotatedOperation parseOperation(final Node wsdlOperation, final XPathFactory xpathFactory,
+    private AnnotatedOperation parseOperation(final Node wsdlOperation, final String targetNamespace, final XPathFactory xpathFactory,
             final String suRootPath, final List<BpmnModel> bpmnModels) throws InvalidAnnotationForOperationException {
-
-        // TODO: The namespace of the operation should be included in the operation name
-        final String wsdlOperationName = ((Element) wsdlOperation).getAttribute("name");
+        
+        final QName wsdlOperationName = new QName(targetNamespace, ((Element) wsdlOperation).getAttribute("name"));
 
         // Get the node "bpmn:operation"
         final NodeList bpmnOperations = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
@@ -319,7 +322,7 @@ public class AnnotatedWsdlParser {
      * @return The XPath expression to select the process instance identifier
      * @throws InvalidAnnotationForOperationException
      */
-    private XPathExpression getProcessInstanceIdXpathExpr(final Node wsdlOperation, final String wsdlOperationName,
+    private XPathExpression getProcessInstanceIdXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
             final XPathFactory xpathFactory) throws InvalidAnnotationForOperationException {
 
         final Node processInstanceId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
@@ -356,7 +359,7 @@ public class AnnotatedWsdlParser {
      * @return The XPath expression to select the user identifier
      * @throws InvalidAnnotationForOperationException
      */
-    private XPathExpression getUserIdXpathExpr(final Node wsdlOperation, final String wsdlOperationName,
+    private XPathExpression getUserIdXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
             final XPathFactory xpathFactory) throws InvalidAnnotationForOperationException {
 
         final Node userId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
@@ -394,7 +397,8 @@ public class AnnotatedWsdlParser {
      * @throws InvalidAnnotationForOperationException
      */
     private Map<String, XPathExpression> getVariableXpathExpr(final Node wsdlOperation,
-            final String wsdlOperationName, final XPathFactory xpathFactory)
+ final QName wsdlOperationName,
+            final XPathFactory xpathFactory)
             throws InvalidAnnotationForOperationException {
 
         final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
@@ -443,7 +447,7 @@ public class AnnotatedWsdlParser {
      * @return The output XSLT style-sheet compiled
      * @throws InvalidAnnotationForOperationException
      */
-    private Templates getOutputTemplate(final Node wsdlOperation, final String wsdlOperationName,
+    private Templates getOutputTemplate(final Node wsdlOperation, final QName wsdlOperationName,
             final String suRootPath) throws InvalidAnnotationForOperationException {
 
         final NodeList bpmnOutputs = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
@@ -478,7 +482,7 @@ public class AnnotatedWsdlParser {
      * @return The fault XSLT style-sheets compiled
      * @throws InvalidAnnotationForOperationException
      */
-    private Map<String, Templates> getFaultTemplates(final Node wsdlOperation, final String wsdlOperationName,
+    private Map<String, Templates> getFaultTemplates(final Node wsdlOperation, final QName wsdlOperationName,
             final String suRootPath) throws InvalidAnnotationForOperationException {
         
         final Map<String, Templates> faultTemplates = new HashMap<String, Templates>();
@@ -528,7 +532,7 @@ public class AnnotatedWsdlParser {
      * @throws OutputXslNotFoundException
      *             The output XSLT style-sheet was not found
      */
-    private Templates readOutputXsl(final String xslFileName, final String suRootPath, final String wsdlOperationName)
+    private Templates readOutputXsl(final String xslFileName, final String suRootPath, final QName wsdlOperationName)
             throws InvalidOutputXslException, OutputXslNotFoundException {
 
         final URL xslUrl;
@@ -593,7 +597,7 @@ public class AnnotatedWsdlParser {
      * @throws FaultXslNotFoundException
      *             The fault XSLT style-sheet was not found
      */
-    private Templates readFaultXsl(final String xslFileName, final String suRootPath, final String wsdlOperationName,
+    private Templates readFaultXsl(final String xslFileName, final String suRootPath, final QName wsdlOperationName,
             final String wsdlFaultName) throws InvalidFaultXslException, FaultXslNotFoundException {
 
         final URL xslUrl;

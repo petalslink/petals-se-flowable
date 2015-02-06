@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.xml.namespace.QName;
 
 import org.activiti.bpmn.converter.BpmnXMLConverter;
 import org.activiti.bpmn.converter.util.InputStreamProvider;
@@ -148,8 +149,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         final String edptName = provides.getEndpointName();
         for (final ActivitiOperation operation : operations) {
             // Store the ActivitiOperation in the map with the corresponding end-point
-            final EptAndOperation eptAndOperation = new EptAndOperation(edptName, operation.getWsdlOperationName());
-            ((ActivitiSE) this.component).registerActivitiOperation(eptAndOperation, operation);
+            final EptAndOperation eptAndOperation = new EptAndOperation(edptName, operation.getWsdlOperation());
+            ((ActivitiSE) this.component).registerActivitiService(eptAndOperation, operation);
         }
         ((ActivitiSE) this.component).logEptOperationToActivitiOperation(this.logger, Level.FINEST);
         
@@ -196,7 +197,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             // set the serviceEndPoint Name of the Provides
             final String edptName = serviceEndpoint.getEndpointName();
             // Remove the ActivitiOperation in the map with the corresponding end-point
-            ((ActivitiSE) this.component).removeActivitiOperation(edptName);
+            ((ActivitiSE) this.component).removeActivitiService(edptName);
 
             /**
              * // Get the operation Name of the end point ServiceUnitDataHandler suDataHandler
@@ -507,8 +508,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         final List<ActivitiOperation> operations = new ArrayList<ActivitiOperation>(annotatedOperations.size());
         for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
             
-            final String wsdlOperationName = annotatedOperation.getWsdlOperationName();
-            this.logger.fine("Processing WSDL annotated operation: " + wsdlOperationName);
+            final QName wsdlOperation = annotatedOperation.getWsdlOperation();
+            this.logger.fine("Processing WSDL annotated operation: " + wsdlOperation);
 
             // create the right ActivitiOperation according to the bpmnActionType
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
@@ -524,8 +525,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported
                 // here.
-                throw new ProcessDefinitionDeclarationException(new UnsupportedActionException(
-                        wsdlOperationName, annotatedOperation.getClass().getSimpleName()));
+                throw new ProcessDefinitionDeclarationException(new UnsupportedActionException(wsdlOperation,
+                        annotatedOperation.getClass().getSimpleName()));
             }
         }
 

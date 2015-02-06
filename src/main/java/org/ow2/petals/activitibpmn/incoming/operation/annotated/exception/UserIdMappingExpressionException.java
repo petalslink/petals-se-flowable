@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 import javax.xml.xpath.XPathExpressionException;
 
 /**
@@ -31,8 +32,8 @@ public class UserIdMappingExpressionException extends InvalidAnnotationForOperat
 
     private static final String MESSAGE_PATTERN = "The mapping defining the user identifier is invalid: %s";
 
-    public UserIdMappingExpressionException(final String wsdlOperationName, final XPathExpressionException cause) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, cause.getMessage()), cause);
+    public UserIdMappingExpressionException(final QName wsdlOperation, final XPathExpressionException cause) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, cause.getMessage()), cause);
     }
 
 }

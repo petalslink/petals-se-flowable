@@ -38,6 +38,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.bpmn.model.FormValue;
+import org.ow2.petals.activitibpmn.incoming.ActivitiService;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.OperationProcessingException;
@@ -48,7 +49,7 @@ import org.w3c.dom.Document;
 
 import com.ebmwebsourcing.easycommons.xml.Transformers;
 
-public abstract class ActivitiOperation {
+public abstract class ActivitiOperation implements ActivitiService {
 
     /**
      * Namespace of special parameters for the output XSLT style-sheet
@@ -83,7 +84,7 @@ public abstract class ActivitiOperation {
     /**
      * The WSDL operation name associated to this {@link ActivitiOperation}
      */
-    protected final String wsdlOperationName;
+    protected final QName wsdlOperation;
 
     /**
      * The process definition identifier
@@ -141,7 +142,7 @@ public abstract class ActivitiOperation {
      * @param logger
      */
     protected ActivitiOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
-        this.wsdlOperationName = annotatedOperation.getWsdlOperationName();
+        this.wsdlOperation = annotatedOperation.getWsdlOperation();
         this.processDefinitionId = annotatedOperation.getProcessDefinitionId();
         this.actionId = annotatedOperation.getActionId();
         this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();
@@ -166,14 +167,7 @@ public abstract class ActivitiOperation {
      */
     public abstract String getAction();
 
-    /**
-     * <p>
-     * Execute the operation
-     * </p>
-     * <p>
-     * The reply XML payload or fault or error of the operation processing is set into the exchange.
-     * </p>
-     */
+    @Override
     public final void execute(final Exchange exchange) {
 
         try {
@@ -208,14 +202,14 @@ public abstract class ActivitiOperation {
                 try {
                     userId = this.userIdXPathExpr.evaluate(domSource);
                     if (userId == null || userId.trim().isEmpty()) {
-                        throw new NoUserIdValueException(this.wsdlOperationName);
+                        throw new NoUserIdValueException(this.wsdlOperation);
                     }
 
                     if (this.logger.isLoggable(Level.FINE)) {
                         this.logger.fine("User identifier value: " + userId);
                     }
                 } catch (final XPathExpressionException e) {
-                    throw new OperationProcessingException(this.wsdlOperationName, e);
+                    throw new OperationProcessingException(this.wsdlOperation, e);
                 }
 
                 // Get the bpmn variables
@@ -286,7 +280,7 @@ public abstract class ActivitiOperation {
                             }
                         }
                     } catch (final XPathExpressionException e) {
-                        throw new OperationProcessingException(this.wsdlOperationName, e);
+                        throw new OperationProcessingException(this.wsdlOperation, e);
                     }
                 }
 
@@ -297,7 +291,7 @@ public abstract class ActivitiOperation {
                     exchange.setOutMessageContent(XslUtils.createXmlPayload(this.outputTemplate, xslParameters,
                             this.logger));
                 } catch (final TransformerException e) {
-                    throw new OperationProcessingException(this.wsdlOperationName, e);
+                    throw new OperationProcessingException(this.wsdlOperation, e);
                 }
 
             } catch (final OperationProcessingFault e) {
@@ -305,14 +299,14 @@ public abstract class ActivitiOperation {
                 final Templates faultTemplate = this.faultTemplates.get(e.getClass().getSimpleName());
                 if (faultTemplate == null) {
                     // No fault mapped --> Processing as an error
-                    throw new OperationProcessingException(this.wsdlOperationName, e);
+                    throw new OperationProcessingException(this.wsdlOperation, e);
                 }
                 final Fault fault = exchange.createFault();
                 try {
                     fault.setContent(XslUtils.createXmlPayload(faultTemplate, e.getXslParameters(), this.logger));
                     exchange.setFault(fault);
                 } catch (final TransformerException e1) {
-                    throw new OperationProcessingException(this.wsdlOperationName, e);
+                    throw new OperationProcessingException(this.wsdlOperation, e);
                 }
             }
         } catch (final OperationProcessingException e) {
@@ -344,9 +338,7 @@ public abstract class ActivitiOperation {
             final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
             throws OperationProcessingException;
 
-    /**
-     * @param logLevel
-     */
+    @Override
     public void log(final Logger logger, final Level logLevel) {
         if (logger.isLoggable(logLevel)) {
             logger.log(logLevel, "operation '" + this.getClass().getSimpleName() + "':");
@@ -379,9 +371,9 @@ public abstract class ActivitiOperation {
     }
 
     /**
-     * @return The WSDL operation name associated to this {@link ActivitiOperation}
+     * @return The WSDL operation associated to this {@link ActivitiOperation}
      */
-    public String getWsdlOperationName() {
-        return this.wsdlOperationName;
+    public QName getWsdlOperation() {
+        return this.wsdlOperation;
     }
 }

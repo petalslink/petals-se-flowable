@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The BPMN annotation defining a BPMN operation is missing on a WSDL operation
@@ -30,8 +31,8 @@ public class NoBpmnOperationDefinedException extends InvalidAnnotationForOperati
 
     private static final String MESSAGE = "The BPMN annotation defining a BPMN operation is missing";
 
-    public NoBpmnOperationDefinedException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public NoBpmnOperationDefinedException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
 }

@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
+
 
 /**
  * A WSDL annotation is invalid for the operation
@@ -33,23 +35,23 @@ public abstract class InvalidAnnotationForOperationException extends InvalidAnno
     /**
      * Name of the WSDL operation for which an error occurs
      */
-    private final String wsdlOperationName;
+    private final QName wsdlOperation;
 
-    public InvalidAnnotationForOperationException(final String wsdlOperationName, final String message) {
-        super(String.format(MESSAGE_PATTERN, wsdlOperationName, message));
-        this.wsdlOperationName = wsdlOperationName;
+    public InvalidAnnotationForOperationException(final QName wsdlOperation, final String message) {
+        super(String.format(MESSAGE_PATTERN, wsdlOperation, message));
+        this.wsdlOperation = wsdlOperation;
     }
 
-    public InvalidAnnotationForOperationException(final String wsdlOperationName, final String message,
+    public InvalidAnnotationForOperationException(final QName wsdlOperation, final String message,
             final Throwable cause) {
-        super(String.format(MESSAGE_PATTERN, wsdlOperationName, message), cause);
-        this.wsdlOperationName = wsdlOperationName;
+        super(String.format(MESSAGE_PATTERN, wsdlOperation, message), cause);
+        this.wsdlOperation = wsdlOperation;
     }
 
     /**
      * @return The name of the WSDL operation for which an error occurs
      */
-    public String getWsdlOperationName() {
-        return this.wsdlOperationName;
+    public QName getWsdlOperation() {
+        return this.wsdlOperation;
     }
 }

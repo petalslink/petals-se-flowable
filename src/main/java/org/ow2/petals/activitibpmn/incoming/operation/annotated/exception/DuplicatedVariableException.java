@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * A BPMN variable is declared twice through annotations into an operation.
@@ -35,8 +36,8 @@ public class DuplicatedVariableException extends InvalidAnnotationForOperationEx
      */
     private final String variableName;
 
-    public DuplicatedVariableException(final String wsdlOperationName, final String variableName) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName));
+    public DuplicatedVariableException(final QName wsdlOperation, final String variableName) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, variableName));
         this.variableName = variableName;
     }
 

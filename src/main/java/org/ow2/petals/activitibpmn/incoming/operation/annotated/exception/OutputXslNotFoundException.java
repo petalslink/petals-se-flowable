@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The output XSLT style-sheet declared with annotations does not exist in service-unit.
@@ -35,8 +36,8 @@ public class OutputXslNotFoundException extends InvalidAnnotationForOperationExc
      */
     private final String xslFileName;
 
-    public OutputXslNotFoundException(final String wsdlOperationName, final String xslFileName) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, xslFileName));
+    public OutputXslNotFoundException(final QName wsdlOperation, final String xslFileName) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, xslFileName));
         this.xslFileName = xslFileName;
     }
 

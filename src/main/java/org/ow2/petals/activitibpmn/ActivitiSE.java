@@ -34,10 +34,12 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_PASSWORD;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,12 +55,16 @@ import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
-import org.ow2.petals.activitibpmn.incoming.operation.ActivitiOperation;
+import org.ow2.easywsdl.wsdl.api.Endpoint;
+import org.ow2.petals.activitibpmn.incoming.ActivitiService;
+import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
+import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.activitibpmn.outgoing.PetalsSender;
 import org.ow2.petals.activitibpmn.outgoing.cxf.transport.PetalsCxfTransportFactory;
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 
 
 /**
@@ -82,30 +88,30 @@ public class ActivitiSE extends AbstractServiceEngine {
 	/**
      * A map used to get the Activiti Operation associated with (end-point Name + Operation)
      */
-    private final Map<EptAndOperation,ActivitiOperation> eptOperationToActivitiOperation =
-        new ConcurrentHashMap<EptAndOperation, ActivitiOperation > ();
+    private final Map<EptAndOperation, ActivitiService> activitiServices = new ConcurrentHashMap<EptAndOperation, ActivitiService>();
 	
 	
-  	/**
-	 * @param eptAndOperation the end-point Name and operation Name
-	 * @param activitiOperation the Activiti Operation
-	 * @return the map with the inserted elements
-	 */
-    public void registerActivitiOperation(final EptAndOperation eptAndOperation,
-            final ActivitiOperation activitiOperation) {
-        this.eptOperationToActivitiOperation.put(eptAndOperation, activitiOperation);
+  	  /**
+     * @param eptAndOperation
+     *            the end-point Name and operation Name
+     * @param activitiservice
+     *            the Activiti service
+     * @return the map with the inserted elements
+     */
+    public void registerActivitiService(final EptAndOperation eptAndOperation, final ActivitiService activitiservice) {
+        this.activitiServices.put(eptAndOperation, activitiservice);
     }
 
 	    /**
      * @param eptName
      *            the end-point name
      */
-    public void removeActivitiOperation(final String eptName) {
+    public void removeActivitiService(final String eptName) {
 
-        final Iterator<Entry<EptAndOperation, ActivitiOperation>> itEptOperationToActivitiOperation = this.eptOperationToActivitiOperation
+        final Iterator<Entry<EptAndOperation, ActivitiService>> itEptOperationToActivitiOperation = this.activitiServices
                 .entrySet().iterator();
         while (itEptOperationToActivitiOperation.hasNext()) {
-            final Entry<EptAndOperation, ActivitiOperation> entry = itEptOperationToActivitiOperation.next();
+            final Entry<EptAndOperation, ActivitiService> entry = itEptOperationToActivitiOperation.next();
             if (entry.getKey().getEptName().equals(eptName)) {
                 itEptOperationToActivitiOperation.remove();
             }
@@ -117,11 +123,11 @@ public class ActivitiSE extends AbstractServiceEngine {
 	 */
     public void logEptOperationToActivitiOperation(final Logger logger, final Level logLevel) {
         if (logger.isLoggable(logLevel)) {
-            for (final Map.Entry<EptAndOperation, ActivitiOperation> entry : eptOperationToActivitiOperation.entrySet()) {
+            for (final Map.Entry<EptAndOperation, ActivitiService> entry : this.activitiServices.entrySet()) {
                 final EptAndOperation key = entry.getKey();
                 logger.log(logLevel, "*** EptAndoperation ");
                 logger.log(logLevel, "EptName = " + key.getEptName());
-                logger.log(logLevel, "OperationName = " + key.getOperationName());
+                logger.log(logLevel, "Operation = " + key.getOperation());
                 logger.log(logLevel, "------------------------------------------------------ ");
                 entry.getValue().log(logger, logLevel);
                 logger.log(logLevel, "******************* ");
@@ -131,12 +137,13 @@ public class ActivitiSE extends AbstractServiceEngine {
 
 
 
-	/**
-	 * @param eptAndOperation the end-point Name and operation Name
-	 * @return the Activiti Operation associated with this end-point name and operation Name
-	 */
-    public ActivitiOperation getActivitiOperations(final EptAndOperation eptAndOperation) {
-		return this.eptOperationToActivitiOperation.get(eptAndOperation);
+	    /**
+     * @param eptAndOperation
+     *            the end-point Name and operation Name
+     * @return the Activiti Service associated with this end-point name and operation Name
+     */
+    public ActivitiService getActivitiServices(final EptAndOperation eptAndOperation) {
+        return this.activitiServices.get(eptAndOperation);
 	}
 	
 	
@@ -287,6 +294,24 @@ public class ActivitiSE extends AbstractServiceEngine {
                 ((ProcessEngineConfigurationImpl) pec).getBeans().put(PETALS_SENDER_COMP_NAME, petalsSender);
             } else {
                 this.getLogger().warning("The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
+            }
+
+            // Register integration operation
+            final List<Endpoint> integrationEndpoints = WSDLUtilImpl.getEndpointList(this.getNativeWsdl()
+                    .getDescription());
+            if (integrationEndpoints.size() > 1) {
+                throw new JBIException("Unexpected endpoint number supporting integration services");
+            } else if (integrationEndpoints.size() == 1) {
+                try {
+                    final String integrationEndpointName = integrationEndpoints.get(0).getName();
+                    this.activitiServices.put(new EptAndOperation(integrationEndpointName, ITG_OP_GETTASKS),
+                            new GetTasksOperation(this.activitiEngine.getTaskService(), this.activitiEngine
+                                    .getRepositoryService(), this.getLogger()));
+                } catch (final OperationInitializationException e) {
+                    this.getLogger().log(Level.WARNING, "Integration operations are not completly initialized", e);
+                }
+            } else {
+                this.getLogger().warning("No endpoint exists to execute integration operations");
             }
 
 		} catch( final ActivitiException e ) {

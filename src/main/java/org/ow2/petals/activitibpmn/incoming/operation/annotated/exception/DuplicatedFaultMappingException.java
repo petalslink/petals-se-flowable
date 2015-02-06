@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
+
 /**
  * The annotation defining a fault is duplicated for a WSDL fault of the given WSDL binding operation.
  * 
@@ -34,8 +36,8 @@ public class DuplicatedFaultMappingException extends InvalidAnnotationForOperati
      */
     private final String wsdlFault;
 
-    public DuplicatedFaultMappingException(final String wsdlOperationName, final String wsdlFault) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, wsdlFault));
+    public DuplicatedFaultMappingException(final QName wsdlOperation, final String wsdlFault) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, wsdlFault));
         this.wsdlFault = wsdlFault;
     }
 

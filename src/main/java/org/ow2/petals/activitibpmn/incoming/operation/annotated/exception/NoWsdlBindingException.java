@@ -26,6 +26,8 @@ package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
  */
 public class NoWsdlBindingException extends InvalidAnnotationException {
 
+    private static final long serialVersionUID = 7769813773155226885L;
+
     private static final String MESSAGE = "No binding defined in WSDL";
 
     public NoWsdlBindingException() {

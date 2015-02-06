@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import javax.xml.namespace.QName;
+
 /**
  * The component class of the Activiti BPMN Service Engine related constants.
  * 
@@ -162,6 +164,44 @@ public final class ActivitiSEConstants {
          * Name of the component in charge of sending message exchange coming from Petals service tasks
          */
         public static final String PETALS_SENDER_COMP_NAME = "petals-sender";
+    }
+
+    public static class IntegrationOperation {
+
+        /**
+         * Name space of integration service
+         */
+        public static final String ITG_NAMESPACE = "http://petals.ow2.org/components/activiti/generic/1.0";
+
+        /**
+         * Name (local part) of the integration service interface
+         */
+        public static final String ITG_PORT_TYPE_NAME = "ActivitiGeneric";
+
+        /**
+         * Name of the integration service interface
+         */
+        public static final QName ITG_PORT_TYPE = new QName(ITG_NAMESPACE, ITG_PORT_TYPE_NAME);
+
+        /**
+         * Name (local part) of the integration service
+         */
+        public static final String ITG_SERVICE_NAME = "ActivitiGenericService";
+
+        /**
+         * Name of the integration service
+         */
+        public static final QName ITG_SERVICE = new QName(ITG_NAMESPACE, ITG_SERVICE_NAME);
+
+        /**
+         * Name (local part) of the integration operation to search tasks
+         */
+        public static final String ITG_OP_GETTASKS_NAME = "getTasks";
+
+        /**
+         * Name of the integration operation to search tasks
+         */
+        public static final QName ITG_OP_GETTASKS = new QName(ITG_NAMESPACE, ITG_OP_GETTASKS_NAME);
     }
 
     private ActivitiSEConstants() {

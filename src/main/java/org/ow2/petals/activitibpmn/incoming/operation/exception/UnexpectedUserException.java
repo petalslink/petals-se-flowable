@@ -60,9 +60,9 @@ public class UnexpectedUserException extends OperationProcessingFault {
      * @param userId
      *            The identifier of the unexpected user
      */
-    public UnexpectedUserException(final String wsdlOperationName, final String processInstanceId, final String taskId,
+    public UnexpectedUserException(final QName wsdlOperation, final String processInstanceId, final String taskId,
             final String userId) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, taskId, processInstanceId));
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, taskId, processInstanceId));
         this.processInstanceId = processInstanceId;
         this.taskId = taskId;
         this.userId = userId;

@@ -35,8 +35,8 @@ public class NoUserIdValueException extends OperationProcessingFault {
 
     private static final String MESSAGE = "User identifier is missing or empty in the incoming request !";
 
-    public NoUserIdValueException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public NoUserIdValueException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
     @Override

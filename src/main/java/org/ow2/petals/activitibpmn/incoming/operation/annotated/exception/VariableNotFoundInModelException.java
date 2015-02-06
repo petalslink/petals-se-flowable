@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * A variable declared with annotations does not exist in the BPMN model.
@@ -40,9 +41,9 @@ public class VariableNotFoundInModelException extends InvalidAnnotationForOperat
      */
     private final String processDefinitionId;
 
-    public VariableNotFoundInModelException(final String wsdlOperationName, final String variableName,
+    public VariableNotFoundInModelException(final QName wsdlOperation, final String variableName,
             final String processDefinitionId) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName, processDefinitionId));
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, variableName, processDefinitionId));
         this.variableName = variableName;
         this.processDefinitionId = processDefinitionId;
     }

@@ -107,7 +107,7 @@ public class StartEventOperation extends ActivitiOperation {
                 .processInstanceId(bpmnProcessIdValue).includeProcessVariables().singleResult();
         if (retrievedProcessInstance == null) {
             // This exception should not occur
-            throw new OperationProcessingException(this.wsdlOperationName, String.format(
+            throw new OperationProcessingException(this.wsdlOperation, String.format(
                     "The just created process instance '%s' is not found for the process definition '%s'.",
                     bpmnProcessIdValue, this.deployedProcessDefinitionId));
         }

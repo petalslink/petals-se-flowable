@@ -35,37 +35,37 @@ public abstract class OperationProcessingFault extends OperationProcessingExcept
 
     /**
      * 
-     * @param wsdlOperationName
+     * @param wsdlOperation
      *            The WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      * @param message
      *            The error message
      */
-    public OperationProcessingFault(final String wsdlOperationName, final String message) {
-        super(wsdlOperationName, message);
+    public OperationProcessingFault(final QName wsdlOperation, final String message) {
+        super(wsdlOperation, message);
     }
 
     /**
      * 
-     * @param wsdlOperationName
+     * @param wsdlOperation
      *            The WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      * @param cause
      *            The error cause
      */
-    public OperationProcessingFault(final String wsdlOperationName, final Throwable cause) {
-        super(wsdlOperationName, cause);
+    public OperationProcessingFault(final QName wsdlOperation, final Throwable cause) {
+        super(wsdlOperation, cause);
     }
 
     /**
      * 
-     * @param wsdlOperationName
+     * @param wsdlOperation
      *            The WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      * @param message
      *            The error message
      * @param cause
      *            The error cause
      */
-    public OperationProcessingFault(final String wsdlOperationName, final String message, final Throwable cause) {
-        super(wsdlOperationName, message, cause);
+    public OperationProcessingFault(final QName wsdlOperation, final String message, final Throwable cause) {
+        super(wsdlOperation, message, cause);
     }
 
     /**

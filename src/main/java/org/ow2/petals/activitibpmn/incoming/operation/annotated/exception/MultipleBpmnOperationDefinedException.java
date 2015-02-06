@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * Several BPMN annotations defining a BPMN operation are declared on a WSDL operation
@@ -30,8 +31,8 @@ public class MultipleBpmnOperationDefinedException extends InvalidAnnotationForO
 
     private static final String MESSAGE = "Several BPMN annotations defining a BPMN operation are declared";
 
-    public MultipleBpmnOperationDefinedException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public MultipleBpmnOperationDefinedException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
 }

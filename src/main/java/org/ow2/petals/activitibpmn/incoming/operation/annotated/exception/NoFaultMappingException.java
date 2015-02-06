@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The annotation defining a fault is required for each fault of the given WSDL binding operation.
@@ -35,8 +36,8 @@ public class NoFaultMappingException extends InvalidAnnotationForOperationExcept
      */
     private final String wsdlFault;
 
-    public NoFaultMappingException(final String wsdlOperationName, final String wsdlFault) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, wsdlFault));
+    public NoFaultMappingException(final QName wsdlOperation, final String wsdlFault) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, wsdlFault));
         this.wsdlFault = wsdlFault;
     }
 

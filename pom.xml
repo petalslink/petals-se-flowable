@@ -65,6 +65,10 @@
          <artifactId>easycommons-lang</artifactId>
       </dependency>
       <dependency>
+         <groupId>commons-pool</groupId>
+         <artifactId>commons-pool</artifactId>
+      </dependency>
+      <dependency>
          <groupId>commons-io</groupId>
          <artifactId>commons-io</artifactId>
       </dependency>
@@ -233,6 +237,21 @@
                   <goals>
                      <goal>generate</goal>
                   </goals>
+                  <phase>generate-sources</phase>
+                  <configuration>
+                     <addCompileSourceRoot>true</addCompileSourceRoot>
+                     <addTestCompileSourceRoot>false</addTestCompileSourceRoot>
+                     <schemaDirectory>${basedir}/src/main/resources/</schemaDirectory>
+                     <schemaIncludes>
+                        <include>component.wsdl</include>
+                     </schemaIncludes>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>generate-test</id>
+                  <goals>
+                     <goal>generate</goal>
+                  </goals>
                   <phase>generate-test-sources</phase>
                   <configuration>
                      <addCompileSourceRoot>false</addCompileSourceRoot>
@@ -242,6 +261,7 @@
                         <include>valid/vacationRequest.wsdl</include>
                         <include>valid/archivageService.wsdl</include>
                      </schemaIncludes>
+                     <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
                   </configuration>
                </execution>
             </executions>

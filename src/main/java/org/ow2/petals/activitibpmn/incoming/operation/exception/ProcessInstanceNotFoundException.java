@@ -45,8 +45,8 @@ public class ProcessInstanceNotFoundException extends OperationProcessingFault {
      * @param processInstanceId
      *            The identifier of the process instance not found
      */
-    public ProcessInstanceNotFoundException(final String wsdlOperationName, final String processInstanceId) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, processInstanceId));
+    public ProcessInstanceNotFoundException(final QName wsdlOperation, final String processInstanceId) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, processInstanceId));
         this.processInstanceId = processInstanceId;
     }
 

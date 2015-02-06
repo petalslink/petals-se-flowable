@@ -35,8 +35,8 @@ public class NoProcessInstanceIdValueException extends OperationProcessingFault 
 
     private static final String MESSAGE = "Process instance identifier is missing or empty in the incoming request !";
 
-    public NoProcessInstanceIdValueException(final String wsdlOperationName) {
-        super(wsdlOperationName, MESSAGE);
+    public NoProcessInstanceIdValueException(final QName wsdlOperation) {
+        super(wsdlOperation, MESSAGE);
     }
 
     @Override

@@ -18,14 +18,14 @@
 -->
 <!-- ======================== DEFINITION ==================================== -->
 <wsdl:definitions name="demandeDeCongesService"
-   targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
-   xmlns:tns="http://petals.ow2.org/se/Activitibpmn/1.0/su" xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
+   targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
+   xmlns:tns="http://petals.ow2.org/se/activiti/unit-test/parser" xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
    <!-- ======================== TYPES ========================================== -->
    <wsdl:types>
-      <xsd:schema targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
+      <xsd:schema targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
          elementFormDefault="qualified">
          <xsd:element name="demande">
             <xsd:complexType>

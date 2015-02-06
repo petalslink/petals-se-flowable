@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * An annotation defining a fault is set without the exception name on which it must be mapped
@@ -35,8 +36,8 @@ public class NoFaultNameMappingException extends InvalidAnnotationForOperationEx
      */
     private final String wsdlFault;
 
-    public NoFaultNameMappingException(final String wsdlOperationName, final String wsdlFault) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, wsdlFault));
+    public NoFaultNameMappingException(final QName wsdlOperation, final String wsdlFault) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, wsdlFault));
         this.wsdlFault = wsdlFault;
     }
 

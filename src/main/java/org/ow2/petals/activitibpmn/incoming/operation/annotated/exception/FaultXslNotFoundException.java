@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The fault XSLT style-sheet declared with annotations does not exist in service-unit.
@@ -40,8 +41,8 @@ public class FaultXslNotFoundException extends InvalidAnnotationForOperationExce
      */
     private final String wsdlFault;
 
-    public FaultXslNotFoundException(final String wsdlOperationName, final String wsdlFault, final String xslFileName) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, xslFileName, wsdlFault));
+    public FaultXslNotFoundException(final QName wsdlOperation, final String wsdlFault, final String xslFileName) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, xslFileName, wsdlFault));
         this.xslFileName = xslFileName;
         this.wsdlFault = wsdlFault;
     }

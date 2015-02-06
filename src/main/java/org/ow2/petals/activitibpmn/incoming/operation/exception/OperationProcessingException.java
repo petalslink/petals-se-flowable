@@ -18,6 +18,7 @@
 package org.ow2.petals.activitibpmn.incoming.operation.exception;
 
 import javax.jbi.messaging.MessagingException;
+import javax.xml.namespace.QName;
 
 import org.ow2.petals.activitibpmn.incoming.operation.ActivitiOperation;
 
@@ -36,50 +37,50 @@ public class OperationProcessingException extends MessagingException {
     /**
      * Name of the WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      */
-    private final String wsdlOperationName;
+    private final QName wsdlOperation;
 
     /**
      * 
-     * @param wsdlOperationName
+     * @param wsdlOperation
      *            The WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      * @param message
      *            The error message
      */
-    public OperationProcessingException(final String wsdlOperationName, final String message) {
-        super(String.format(MESSAGE_PATTERN, wsdlOperationName, message));
-        this.wsdlOperationName = wsdlOperationName;
+    public OperationProcessingException(final QName wsdlOperation, final String message) {
+        super(String.format(MESSAGE_PATTERN, wsdlOperation, message));
+        this.wsdlOperation = wsdlOperation;
     }
 
     /**
      * 
-     * @param wsdlOperationName
+     * @param wsdlOperation
      *            The WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      * @param cause
      *            The error cause
      */
-    public OperationProcessingException(final String wsdlOperationName, final Throwable cause) {
-        super(String.format(MESSAGE_PATTERN, wsdlOperationName, cause.getMessage()), cause);
-        this.wsdlOperationName = wsdlOperationName;
+    public OperationProcessingException(final QName wsdlOperation, final Throwable cause) {
+        super(String.format(MESSAGE_PATTERN, wsdlOperation, cause.getMessage()), cause);
+        this.wsdlOperation = wsdlOperation;
     }
 
     /**
      * 
-     * @param wsdlOperationName
+     * @param wsdlOperation
      *            The WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      * @param message
      *            The error message
      * @param cause
      *            The error cause
      */
-    public OperationProcessingException(final String wsdlOperationName, final String message, final Throwable cause) {
-        super(String.format(MESSAGE_PATTERN, wsdlOperationName, message), cause);
-        this.wsdlOperationName = wsdlOperationName;
+    public OperationProcessingException(final QName wsdlOperation, final String message, final Throwable cause) {
+        super(String.format(MESSAGE_PATTERN, wsdlOperation, message), cause);
+        this.wsdlOperation = wsdlOperation;
     }
 
     /**
      * @return The name of the WSDL operation associated to the {@link ActivitiOperation} for which an error occurs
      */
-    public String getWsdlOperationName() {
-        return this.wsdlOperationName;
+    public QName getWsdlOperation() {
+        return this.wsdlOperation;
     }
 }

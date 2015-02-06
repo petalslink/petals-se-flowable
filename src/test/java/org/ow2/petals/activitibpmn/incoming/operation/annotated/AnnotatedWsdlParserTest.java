@@ -33,6 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 
 import org.activiti.bpmn.converter.BpmnXMLConverter;
@@ -84,6 +85,20 @@ import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
  * 
  */
 public class AnnotatedWsdlParserTest {
+
+    private static final String WSDL_TARGET_NAMESPACE = "http://petals.ow2.org/se/activiti/unit-test/parser";
+
+    private static final String BPMN_OP_DEMANDER_CONGES_NAME = "demanderConges";
+
+    private static final QName BPMN_OP_DEMANDER_CONGES = new QName(WSDL_TARGET_NAMESPACE, BPMN_OP_DEMANDER_CONGES_NAME);
+
+    private static final String BPMN_OP_VALIDER_DEMANDE_NAME = "validerDemande";
+
+    private static final QName BPMN_OP_VALIDER_DEMANDE = new QName(WSDL_TARGET_NAMESPACE, BPMN_OP_VALIDER_DEMANDE_NAME);
+
+    private static final String BPMN_OP_AJUSTER_DEMANDE_NAME = "ajusterDemande";
+
+    private static final QName BPMN_OP_AJUSTER_DEMANDE = new QName(WSDL_TARGET_NAMESPACE, BPMN_OP_AJUSTER_DEMANDE_NAME);
 
     private static String SU_ROOT_PATH;
 
@@ -272,13 +287,13 @@ public class AnnotatedWsdlParserTest {
         boolean op3_found = true;
         for (final AnnotatedOperation annotatedoperation : annotatedOperations) {
             if (annotatedoperation instanceof StartEventAnnotatedOperation
-                    && annotatedoperation.getWsdlOperationName().equals("demanderConges")) {
+                    && BPMN_OP_DEMANDER_CONGES.equals(annotatedoperation.getWsdlOperation())) {
 
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
-                    && annotatedoperation.getWsdlOperationName().equals("validerDemande")) {
+                    && BPMN_OP_VALIDER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
 
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
-                    && annotatedoperation.getWsdlOperationName().equals("ajusterDemande")) {
+                    && BPMN_OP_AJUSTER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
             } else {
                 fail("Unexpected annotated operation");
             }
@@ -313,13 +328,13 @@ public class AnnotatedWsdlParserTest {
         boolean op3_found = true;
         for (final AnnotatedOperation annotatedoperation : annotatedOperations) {
             if (annotatedoperation instanceof StartEventAnnotatedOperation
-                    && annotatedoperation.getWsdlOperationName().equals("demanderConges")) {
+                    && BPMN_OP_DEMANDER_CONGES.equals(annotatedoperation.getWsdlOperation())) {
 
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
-                    && annotatedoperation.getWsdlOperationName().equals("validerDemande")) {
+                    && BPMN_OP_VALIDER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
 
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
-                    && annotatedoperation.getWsdlOperationName().equals("ajusterDemande")) {
+                    && BPMN_OP_AJUSTER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
             } else {
                 fail("Unexpected annotated operation");
             }
@@ -396,24 +411,27 @@ public class AnnotatedWsdlParserTest {
         boolean noBpmnOperationExceptionFound = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoUserIdMappingException) {
-                if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("demanderConges_missingTag")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingTag")
+                        .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
                     missingTagUserIdMappingOp1 = true;
-                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_missingTag")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingTag")
+                        .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
                     missingTagUserIdMappingOp2 = true;
-                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
-                        "demanderConges_missingValue")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingValue")
+                        .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
                     tagNoSetUserIdMappingOp1 = true;
-                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_missingValue")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingValue")
+                        .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
                     tagNoSetUserIdMappingOp2 = true;
-                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("demanderConges_empty")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_empty")
+                        .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
                     emptyUserIdMappingOp1 = true;
-                } else if (((NoUserIdMappingException) exception).getWsdlOperationName().equals("validerDemande_empty")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_empty")
+                        .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
                     emptyUserIdMappingOp2 = true;
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -455,14 +473,14 @@ public class AnnotatedWsdlParserTest {
         boolean noBpmnOperationExceptionFound = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof UserIdMappingExpressionException) {
-                if (((UserIdMappingExpressionException) exception).getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(((UserIdMappingExpressionException) exception).getWsdlOperation())) {
                     invalidUserIdMappingOp1 = true;
-                } else if (((UserIdMappingExpressionException) exception).getWsdlOperationName().equals(
-                        "validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(((UserIdMappingExpressionException) exception)
+                        .getWsdlOperation())) {
                     invalidUserIdMappingOp2 = true;
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -519,19 +537,18 @@ public class AnnotatedWsdlParserTest {
         boolean emptyProcessInstanceIdMappingIn = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoProcessInstanceIdMappingException) {
-                if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName()
-                        .equals(
-                        "validerDemande_missingTag")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingTag")
+                        .equals(((NoProcessInstanceIdMappingException) exception).getWsdlOperation())) {
                     missingTagProcessInstanceIdMappingIn = true;
-                } else if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_missingValue")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingValue")
+                        .equals(((NoProcessInstanceIdMappingException) exception).getWsdlOperation())) {
                     tagNoSetProcessInstanceIdMappingIn = true;
-                } else if (((NoProcessInstanceIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_empty")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_empty")
+                        .equals(((NoProcessInstanceIdMappingException) exception).getWsdlOperation())) {
                     emptyProcessInstanceIdMappingIn = true;
                 } else {
                     fail("Unexpected operation: "
-                            + ((NoProcessInstanceIdMappingException) exception).getWsdlOperationName());
+                            + ((NoProcessInstanceIdMappingException) exception).getWsdlOperation());
                 }
             } else {
                 fail("Unexpected error: " + exception.getClass());
@@ -564,7 +581,8 @@ public class AnnotatedWsdlParserTest {
         assertEquals(1, encounteredErrors.size());
         final InvalidAnnotationException exception = encounteredErrors.get(0);
         assertTrue(exception instanceof ProcessInstanceIdMappingExpressionException);
-        assertEquals("validerDemande", ((ProcessInstanceIdMappingExpressionException) exception).getWsdlOperationName());
+        assertEquals(BPMN_OP_VALIDER_DEMANDE,
+                ((ProcessInstanceIdMappingExpressionException) exception).getWsdlOperation());
     }
 
     /**
@@ -599,21 +617,21 @@ public class AnnotatedWsdlParserTest {
         boolean noBpmnOperationExceptionFound = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoProcessDefinitionIdMappingException) {
-                if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
-                        "demanderConges_missingAttr")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingAttr")
+                        .equals(((NoProcessDefinitionIdMappingException) exception).getWsdlOperation())) {
                     missingAttrMappingOp1 = true;
-                } else if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_missingAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingAttr")
+                        .equals(((NoProcessDefinitionIdMappingException) exception).getWsdlOperation())) {
                     missingAttrMappingOp2 = true;
-                } else if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
-                        "demanderConges_emptyAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_emptyAttr")
+                        .equals(((NoProcessDefinitionIdMappingException) exception).getWsdlOperation())) {
                     emptyAttrMappingOp1 = true;
-                } else if (((NoProcessDefinitionIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_emptyAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_emptyAttr")
+                        .equals(((NoProcessDefinitionIdMappingException) exception).getWsdlOperation())) {
                     emptyAttrMappingOp2 = true;
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -659,21 +677,21 @@ public class AnnotatedWsdlParserTest {
         boolean noBpmnOperationExceptionFound = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoActionIdMappingException) {
-                if (((NoActionIdMappingException) exception).getWsdlOperationName()
-                        .equals("demanderConges_missingAttr")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingAttr")
+                        .equals(((NoActionIdMappingException) exception).getWsdlOperation())) {
                     missingAttrMappingOp1 = true;
-                } else if (((NoActionIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_missingAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingAttr")
+                        .equals(((NoActionIdMappingException) exception).getWsdlOperation())) {
                     missingAttrMappingOp2 = true;
-                } else if (((NoActionIdMappingException) exception).getWsdlOperationName().equals(
-                        "demanderConges_emptyAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_emptyAttr")
+                        .equals(((NoActionIdMappingException) exception).getWsdlOperation())) {
                     emptyAttrMappingOp1 = true;
-                } else if (((NoActionIdMappingException) exception).getWsdlOperationName().equals(
-                        "validerDemande_emptyAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_emptyAttr")
+                        .equals(((NoActionIdMappingException) exception).getWsdlOperation())) {
                     emptyAttrMappingOp2 = true;
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -714,14 +732,14 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof VariableMappingExpressionException) {
                 final VariableMappingExpressionException expectedException = (VariableMappingExpressionException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     invalidVariableMappingOp1 = true;
                     assertEquals("numberOfDays", expectedException.getVariableName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     invalidVariableMappingOp2 = true;
                     assertEquals("vacationApproved", expectedException.getVariableName());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -776,47 +794,57 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof RequiredVariableMissingException) {
                 final RequiredVariableMissingException expectedException = (RequiredVariableMissingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges_missingVariableTag")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingVariableTag").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagVariableMappingOp1 = true;
                     assertEquals("numberOfDays", expectedException.getVariableName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingVariableTag")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingVariableTag")
+                        .equals(expectedException.getWsdlOperation())) {
                     missingTagVariableMappingOp2 = true;
                     assertEquals("vacationApproved", expectedException.getVariableName());
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof VariableNameMissingException) {
                 final VariableNameMissingException expectedException = (VariableNameMissingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges_missingVariableName")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingVariableName").equals(expectedException
+                        .getWsdlOperation())) {
                     missingVariableNameMappingOp1 = true;
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingVariableName")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingVariableName")
+                        .equals(expectedException.getWsdlOperation())) {
                     missingVariableNameMappingOp2 = true;
-                } else if (expectedException.getWsdlOperationName().equals("demanderConges_emptyVariableName")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_emptyVariableName")
+                        .equals(expectedException.getWsdlOperation())) {
                     emptyVariableNameMappingOp1 = true;
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_emptyVariableName")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_emptyVariableName")
+                        .equals(expectedException.getWsdlOperation())) {
                     emptyVariableNameMappingOp2 = true;
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoVariableMappingException) {
                 final NoVariableMappingException expectedException = (NoVariableMappingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges_noVariableContent")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_noVariableContent").equals(expectedException
+                        .getWsdlOperation())) {
                     missingVariablePlaceholderMappingOp1 = true;
                     assertEquals("numberOfDays", expectedException.getVariableName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_noVariableContent")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_noVariableContent")
+                        .equals(expectedException.getWsdlOperation())) {
                     missingVariablePlaceholderMappingOp2 = true;
                     assertEquals("vacationApproved", expectedException.getVariableName());
-                } else if (expectedException.getWsdlOperationName().equals("demanderConges_emptyVariableContent")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_emptyVariableContent")
+                        .equals(expectedException.getWsdlOperation())) {
                     emptyVariablePlaceholderMappingOp1 = true;
                     assertEquals("numberOfDays", expectedException.getVariableName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_emptyVariableContent")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_emptyVariableContent")
+                        .equals(expectedException.getWsdlOperation())) {
                     emptyVariablePlaceholderMappingOp2 = true;
                     assertEquals("vacationApproved", expectedException.getVariableName());
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -863,14 +891,14 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof ProcessDefinitionIdNotFoundInModelException) {
                 final ProcessDefinitionIdNotFoundInModelException expectedException = (ProcessDefinitionIdNotFoundInModelException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     unexistingProcessDefinitionIdOp1 = true;
                     assertEquals("unexistingProcessDefinitionId", expectedException.getProcessDefinitionId());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     unexistingProcessDefinitionIdOp2 = true;
                     assertEquals("unexistingProcessDefinitionId", expectedException.getProcessDefinitionId());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -912,17 +940,17 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof ProcessDefinitionIdDuplicatedInModelException) {
                 final ProcessDefinitionIdDuplicatedInModelException expectedException = (ProcessDefinitionIdDuplicatedInModelException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     unexistingProcessDefinitionIdOp1 = true;
                     assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     unexistingProcessDefinitionIdOp2 = true;
                     assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
-                } else if (expectedException.getWsdlOperationName().equals("ajusterDemande")) {
+                } else if (BPMN_OP_AJUSTER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     unexistingProcessDefinitionIdOp3 = true;
                     assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -962,16 +990,16 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof ActionIdNotFoundInModelException) {
                 final ActionIdNotFoundInModelException expectedException = (ActionIdNotFoundInModelException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     unexistingActionIdOp1 = true;
                     assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
                     assertEquals("unexisting-request", expectedException.getActionId());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     unexistingActionIdOp2 = true;
                     assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
                     assertEquals("unexisting-handleRequest", expectedException.getActionId());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1010,14 +1038,14 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof DuplicatedVariableException) {
                 final DuplicatedVariableException expectedException = ((DuplicatedVariableException) exception);
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     duplicatedVariableMappingOp1 = true;
                     assertEquals("numberOfDays", expectedException.getVariableName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     duplicatedVariableMappingOp2 = true;
                     assertEquals("vacationApproved", expectedException.getVariableName());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1056,16 +1084,16 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof VariableNotFoundInModelException) {
                 final VariableNotFoundInModelException expectedException = (VariableNotFoundInModelException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     unexistingActionIdOp1 = true;
                     assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
                     assertEquals("unexisting-variable-1", expectedException.getVariableName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     unexistingActionIdOp2 = true;
                     assertEquals("vacationRequest", expectedException.getProcessDefinitionId());
                     assertEquals("unexisting-variable-2", expectedException.getVariableName());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1104,15 +1132,15 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof InvalidOutputXslException) {
                 final InvalidOutputXslException expectedException = (InvalidOutputXslException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     invalidOutputXsltMappingOp1 = true;
                     assertEquals("invalid.xsl", expectedException.getXslFileName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     invalidOutputXsltMappingOp2 = true;
                     assertEquals("invalid.xsl", expectedException.getXslFileName());
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1151,14 +1179,14 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof OutputXslNotFoundException) {
                 final OutputXslNotFoundException expectedException = (OutputXslNotFoundException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     unexistingOutputXslOp1 = true;
                     assertEquals("unexisting.xsl", expectedException.getXslFileName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     unexistingOutputXslOp2 = true;
                     assertEquals("unexisting.xsl", expectedException.getXslFileName());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1206,21 +1234,27 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoOutputMappingException) {
                 final NoOutputMappingException expectedException = (NoOutputMappingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges_missingTag")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingTag").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagOutputXslOp1 = true;
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingTag")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingTag").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagOutputXslOp2 = true;
-                } else if (expectedException.getWsdlOperationName().equals("demanderConges_missingValue")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingValue").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagValueOutputXslOp1 = true;
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingValue")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingValue").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagValueOutputXslOp2 = true;
-                } else if (expectedException.getWsdlOperationName().equals("demanderConges_empty")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_empty").equals(expectedException
+                        .getWsdlOperation())) {
                     emptyOutputXslOp1 = true;
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_empty")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_empty").equals(expectedException
+                        .getWsdlOperation())) {
                     emptyOutputXslOp2 = true;
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1263,12 +1297,12 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof DuplicatedOutputMappingException) {
                 final DuplicatedOutputMappingException expectedException = (DuplicatedOutputMappingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     duplicatedOutputXslOp1 = true;
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     duplicatedOutputXslOp2 = true;
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1322,45 +1356,55 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoFaultMappingException) {
                 final NoFaultMappingException expectedException = (NoFaultMappingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges_missingTag")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingTag").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagFaultXslOp1 = true;
                     assertEquals("demandeFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingTag")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingTag").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagFaultXslOp2 = true;
                     assertEquals("vacationFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("demanderConges_missingValue")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingValue").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagValueFaultXslOp1 = true;
                     assertEquals("demandeFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingValue")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingValue").equals(expectedException
+                        .getWsdlOperation())) {
                     missingTagValueFaultXslOp2 = true;
                     assertEquals("vacationFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("demanderConges_empty")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_empty").equals(expectedException
+                        .getWsdlOperation())) {
                     emptyFaultXslOp1 = true;
                     assertEquals("demandeFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_empty")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_empty").equals(expectedException
+                        .getWsdlOperation())) {
                     emptyFaultXslOp2 = true;
                     assertEquals("vacationFault", expectedException.getWsdlFault());
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoFaultNameMappingException) {
                 final NoFaultNameMappingException expectedException = (NoFaultNameMappingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges_missingAttr")) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingAttr").equals(expectedException
+                        .getWsdlOperation())) {
                     missingAttrFaultXslOp1 = true;
                     assertEquals("demandeFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_missingAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingAttr").equals(expectedException
+                        .getWsdlOperation())) {
                     missingAttrFaultXslOp2 = true;
                     assertEquals("vacationFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("demanderConges_emptyAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_emptyAttr").equals(expectedException
+                        .getWsdlOperation())) {
                     emptyAttrFaultXslOp1 = true;
                     assertEquals("demandeFault", expectedException.getWsdlFault());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande_emptyAttr")) {
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_emptyAttr").equals(expectedException
+                        .getWsdlOperation())) {
                     emptyAttrFaultXslOp2 = true;
                     assertEquals("vacationFault", expectedException.getWsdlFault());
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1407,12 +1451,12 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof DuplicatedFaultMappingException) {
                 final DuplicatedFaultMappingException expectedException = (DuplicatedFaultMappingException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     duplicatedFaultXslOp1 = true;
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     duplicatedFaultXslOp2 = true;
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1451,16 +1495,16 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof FaultXslNotFoundException) {
                 final FaultXslNotFoundException expectedException = (FaultXslNotFoundException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     unexistingFaultXslOp1 = true;
                     assertEquals("demandeFault", expectedException.getWsdlFault());
                     assertEquals("unexisting.xsl", expectedException.getXslFileName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     unexistingFaultXslOp2 = true;
                     assertEquals("vacationFault", expectedException.getWsdlFault());
                     assertEquals("unexisting.xsl", expectedException.getXslFileName());
                 } else {
-                    fail("Unexpected operation: " + expectedException.getWsdlOperationName());
+                    fail("Unexpected operation: " + expectedException.getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;
@@ -1499,17 +1543,17 @@ public class AnnotatedWsdlParserTest {
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof InvalidFaultXslException) {
                 final InvalidFaultXslException expectedException = (InvalidFaultXslException) exception;
-                if (expectedException.getWsdlOperationName().equals("demanderConges")) {
+                if (BPMN_OP_DEMANDER_CONGES.equals(expectedException.getWsdlOperation())) {
                     invalidFaultXsltMappingOp1 = true;
                     assertEquals("demandeFault", expectedException.getWsdlFault());
                     assertEquals("invalid.xsl", expectedException.getXslFileName());
-                } else if (expectedException.getWsdlOperationName().equals("validerDemande")) {
+                } else if (BPMN_OP_VALIDER_DEMANDE.equals(expectedException.getWsdlOperation())) {
                     invalidFaultXsltMappingOp2 = true;
                     assertEquals("vacationFault", expectedException.getWsdlFault());
                     assertEquals("invalid.xsl", expectedException.getXslFileName());
                 } else {
                     fail("Unexpected operation: "
-                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperationName());
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
             } else if (exception instanceof NoBpmnOperationException) {
                 noBpmnOperationExceptionFound = true;

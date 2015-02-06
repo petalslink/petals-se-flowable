@@ -17,7 +17,7 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <!-- ======================== DEFINITION ==================================== --> 
-<xsd:schema targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
+<xsd:schema targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
    elementFormDefault="qualified">
    <xsd:element name="demande">
       <xsd:complexType>

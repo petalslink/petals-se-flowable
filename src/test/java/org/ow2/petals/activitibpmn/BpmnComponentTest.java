@@ -23,6 +23,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PORT_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_SERVICE;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderBeginLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
@@ -70,6 +73,8 @@ import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToPro
 import org.ow2.petals.component.framework.junit.impl.message.WrappedResponseToConsumerMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedStatusFromConsumerMessage;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTestBuilder;
+import org.ow2.petals.components.activiti.generic._1.GetTasks;
+import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
 import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
@@ -131,11 +136,16 @@ public class BpmnComponentTest {
 
     private static ServiceConfiguration serviceConfiguration;
 
+    /**
+     * The integration service provided by the component
+     */
+    private static ServiceConfiguration nativeServiceConfiguration;
+
     static {
         try {
-            JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
+            final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
                     AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
-                    ArchiverResponse.class);
+                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class);
             BpmnComponentTest.unmarshaller = context.createUnmarshaller();
             BpmnComponentTest.marshaller = context.createMarshaller();
             BpmnComponentTest.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -196,6 +206,13 @@ public class BpmnComponentTest {
         BpmnComponentTest.componentUnderTest = BpmnComponentTest.componentBuilder.create(new ComponentConfiguration(
                 "componentUnderTest", logger));
         BpmnComponentTest.componentUnderTest.start();
+
+        final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader().getResource("component.wsdl");
+        assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
+        BpmnComponentTest.nativeServiceConfiguration = new ServiceConfiguration(
+                BpmnComponentTest.class.getSimpleName(), ITG_PORT_TYPE, ITG_SERVICE,
+                BpmnComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ServiceType.PROVIDE,
+                nativeServiceWsdlUrl);
     }
 
     /**
@@ -406,9 +423,37 @@ public class BpmnComponentTest {
         }
         // TODO: Add a check to verify that the process instance exists in Activiti
 
+        // Verify the task basket using integration service
+        final GetTasks getTasksReq = new GetTasks();
+        getTasksReq.setActive(true);
+        final String valideur = "valideur";
+        // TODO: Set the expected user when task assignment works fine in the unit test or SE
+        // getTasksReq.setAssignee("management");
+
+        inMemoryLogHandler.clear();
+        BpmnComponentTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
+                BpmnComponentTest.nativeServiceConfiguration, ITG_OP_GETTASKS,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(getTasksReq))));
+        {
+            final ResponseMessage getTaskRespMsg = BpmnComponentTest.componentUnderTest.pollResponseFromProvider();
+            assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
+            final Object getTaskRespObj = BpmnComponentTest.unmarshaller.unmarshal(getTaskRespMsg.getPayload());
+            assertTrue(getTaskRespObj instanceof GetTasksResponse);
+            final GetTasksResponse getTaskResp = (GetTasksResponse) getTaskRespObj;
+            assertNotNull(getTaskResp.getTasks());
+            assertNotNull(getTaskResp.getTasks().getTask());
+            assertEquals(1, getTaskResp.getTasks().getTask().size());
+            // TODO: Enable the following assert when task assignment works fine in the unit test or SE
+            // assertEquals(valideur, getTaskResp.getTasks().getTask().get(0).getAssignee());
+            assertEquals("vacationRequest", getTaskResp.getTasks().getTask().get(0).getProcessDefinitionIdentifier());
+            assertEquals(response_1.getNumeroDde(), getTaskResp.getTasks().getTask().get(0)
+                    .getProcessInstanceIdentifier());
+            assertEquals("handleRequest", getTaskResp.getTasks().getTask().get(0).getTaskIdentifier());
+        }
+
         // Create the 2nd valid request for user task 'handleRequest'
         final Validation request_2 = new Validation();
-        final String valideur = "valideur";
         request_2.setValideur(valideur);
         request_2.setNumeroDde(response_1.getNumeroDde());
         request_2.setApprobation(Boolean.TRUE.toString());

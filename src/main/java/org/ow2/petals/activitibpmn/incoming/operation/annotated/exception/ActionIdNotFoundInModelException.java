@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * The annotation defining the action identifier identifier is required for the given WSDL binding operation.
@@ -40,9 +41,9 @@ public class ActionIdNotFoundInModelException extends InvalidAnnotationForOperat
      */
     private final String processDefinitionId;
 
-    public ActionIdNotFoundInModelException(final String wsdlOperationName, final String actionId,
+    public ActionIdNotFoundInModelException(final QName wsdlOperation, final String actionId,
             final String processDefinitionId) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, actionId, processDefinitionId));
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, actionId, processDefinitionId));
         this.actionId = actionId;
         this.processDefinitionId = processDefinitionId;
     }

@@ -17,12 +17,12 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <wsdl:definitions name="demandeDeCongesService"
-   targetNamespace="http://petals.ow2.org/se/Activitibpmn/1.0/su"
-   xmlns:tns="http://petals.ow2.org/se/Activitibpmn/1.0/su" xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
+   targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
+   xmlns:tns="http://petals.ow2.org/se/activiti/unit-test/parser" xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
-   <wsdl:import location="abstract-import.wsdl" namespace="http://petals.ow2.org/se/Activitibpmn/1.0/su" />
+   <wsdl:import location="abstract-import.wsdl" namespace="http://petals.ow2.org/se/activiti/unit-test/parser" />
 
    <!-- ======================== BINDINGS ======================================= -->
    <wsdl:binding name="demandeDeCongesBinding" type="tns:demandeDeConges">

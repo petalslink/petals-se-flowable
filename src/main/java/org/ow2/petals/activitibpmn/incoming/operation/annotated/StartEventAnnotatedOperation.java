@@ -20,6 +20,7 @@ package org.ow2.petals.activitibpmn.incoming.operation.annotated;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
@@ -61,7 +62,7 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    public StartEventAnnotatedOperation(final String wsdlOperationName, final String processDefinitionId,
+    public StartEventAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
             final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Map<String, XPathExpression> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
@@ -87,7 +88,7 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
             }
         }
         if (!isActionIdFound) {
-            throw new ActionIdNotFoundInModelException(this.getWsdlOperationName(), this.getActionId(),
+            throw new ActionIdNotFoundInModelException(this.getWsdlOperation(), this.getActionId(),
                     this.getProcessDefinitionId());
         } else {
             if (formPropertyList != null && formPropertyList.size() > 0) {

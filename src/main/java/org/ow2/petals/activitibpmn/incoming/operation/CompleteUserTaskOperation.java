@@ -96,14 +96,14 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         try {
             processInstanceId = this.proccesInstanceIdXPathExpr.evaluate(domSource);
             if (processInstanceId == null || processInstanceId.trim().isEmpty()) {
-                throw new NoProcessInstanceIdValueException(this.wsdlOperationName);
+                throw new NoProcessInstanceIdValueException(this.wsdlOperation);
             }
 
             if (this.logger.isLoggable(Level.FINE)) {
                 this.logger.fine("Process instance identifier value: " + processInstanceId);
             }
         } catch (final XPathExpressionException e) {
-            throw new OperationProcessingException(this.wsdlOperationName, e);
+            throw new OperationProcessingException(this.wsdlOperation, e);
         }
 
         // Get the task
@@ -134,7 +134,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
                 .taskId(taskToComplete.getId()).includeProcessVariables().includeTaskLocalVariables().singleResult();
         if (executedTask == null) {
             // This exception should not occur
-            throw new OperationProcessingException(this.wsdlOperationName, String.format(
+            throw new OperationProcessingException(this.wsdlOperation, String.format(
                     "The just completed task '%s' is not found in the history for the process instance '%s'.",
                     this.actionId,
                     processInstanceId));
@@ -185,23 +185,23 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         if (this.historyService.createHistoricProcessInstanceQuery().finished().processInstanceId(processInstanceId)
                 .singleResult() != null) {
             // The process instance is finished, so the task is finished !
-            throw new TaskCompletedException(this.wsdlOperationName, processInstanceId, this.actionId);
+            throw new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
         } else if (this.runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult() == null) {
             // No active process instance found for the process instance identifier
-            throw new ProcessInstanceNotFoundException(this.wsdlOperationName, processInstanceId);
+            throw new ProcessInstanceNotFoundException(this.wsdlOperation, processInstanceId);
         } else if (this.historyService.createHistoricTaskInstanceQuery().finished()
                 .processInstanceId(processInstanceId).taskDefinitionKey(this.actionId).singleResult() != null) {
             // The task of the active process instance is finished
-            throw new TaskCompletedException(this.wsdlOperationName, processInstanceId, this.actionId);
+            throw new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
         } else if (this.taskService.createTaskQuery().processInstanceId(processInstanceId)
                 .taskDefinitionKey(this.actionId).singleResult() != null) {
             // The task assignee is not the expected one
             // TODO: Add a unit test
-            throw new UnexpectedUserException(this.wsdlOperationName, processInstanceId, this.actionId, bpmnUserId);
+            throw new UnexpectedUserException(this.wsdlOperation, processInstanceId, this.actionId, bpmnUserId);
         } else {
             // This error case should not occur. If this error occurs, it is likely that an business error case is
             // missing from the above conditions
-            throw new OperationProcessingException(wsdlOperationName, String.format(
+            throw new OperationProcessingException(wsdlOperation, String.format(
                     "The task '%s' is not a current user task to complete for the process instance '%s'.",
                     this.actionId, processInstanceId));
         }

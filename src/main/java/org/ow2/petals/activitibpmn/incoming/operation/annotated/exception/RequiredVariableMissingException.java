@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 
+import javax.xml.namespace.QName;
 
 /**
  * A variable required by the process definition is missing in the WSDL
@@ -35,8 +36,8 @@ public class RequiredVariableMissingException extends InvalidAnnotationForOperat
      */
     private final String variableName;
 
-    public RequiredVariableMissingException(final String wsdlOperationName, final String variableName) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, variableName));
+    public RequiredVariableMissingException(final QName wsdlOperation, final String variableName) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, variableName));
         this.variableName = variableName;
     }
 

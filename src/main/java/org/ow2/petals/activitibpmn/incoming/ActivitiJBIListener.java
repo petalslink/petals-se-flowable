@@ -22,10 +22,10 @@ import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 import javax.jbi.messaging.NormalizedMessage;
+import javax.xml.namespace.QName;
 
 import org.ow2.petals.activitibpmn.ActivitiSE;
 import org.ow2.petals.activitibpmn.EptAndOperation;
-import org.ow2.petals.activitibpmn.incoming.operation.ActivitiOperation;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
@@ -88,35 +88,32 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                             throw new MessagingException("The exchange pattern must be IN/OUT !");
                         }
 
-                        // TODO Validate Message
-
-                        // Get the eptName and Operation
                         final String eptName = exchange.getEndpointName();
-                        // TODO: Caution: the namespace must be used, the local part is not sufficient to identify an
-                        // operation
-                        final String operationName = exchange.getOperationName();
-                        // Set eptAndoperation
-                        final EptAndOperation eptAndOperation = new EptAndOperation(eptName, operationName);
+                        final QName operation = exchange.getOperation();
 
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine(logHint + " was received and is started to be processed.");
                             logger.fine("interfaceName = " + exchange.getInterfaceName());
                             logger.fine("Service       = " + exchange.getService());
                             logger.fine("EndpointName  = " + eptName);
-                            logger.fine("OperationName = " + operationName);
+                            logger.fine("OperationName = " + operation.toString());
                             logger.fine("Pattern " + exchange.getPattern());
                         }
+                        // SU-based service ('service mode')
 
-                        // Get the Activiti Operation from the Map eptOperationToActivitiOperation
-                        // @see org.ow2.petals.activitibpmn.ActivitiSE
-                        final ActivitiOperation activitiOperation = ((ActivitiSE) this.component)
-                                .getActivitiOperations(eptAndOperation);
-                        if (activitiOperation == null) {
+                        // TODO Validate Message
+
+                        final EptAndOperation eptAndOperation = new EptAndOperation(eptName, operation);
+
+                        // Get the Activiti Service from the registered services
+                        final ActivitiService activitiService = ((ActivitiSE) this.component)
+                                .getActivitiServices(eptAndOperation);
+                        if (activitiService == null) {
                             // TODO: Create a unit test
-                            throw new MessagingException("No BPMN operation found matching the exchange");
+                            throw new MessagingException("No Activity services found matching the exchange");
                         }
 
-                        activitiOperation.execute(exchange);
+                        activitiService.execute(exchange);
 
                     } catch (final MessagingException e) {
                         logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);

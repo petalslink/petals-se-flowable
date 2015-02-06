@@ -52,8 +52,8 @@ public class TaskCompletedException extends OperationProcessingFault {
      * @param taskId
      *            The identifier of the process instance not found
      */
-    public TaskCompletedException(final String wsdlOperationName, final String processInstanceId, final String taskId) {
-        super(wsdlOperationName, String.format(MESSAGE_PATTERN, taskId, processInstanceId));
+    public TaskCompletedException(final QName wsdlOperation, final String processInstanceId, final String taskId) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, taskId, processInstanceId));
         this.processInstanceId = processInstanceId;
         this.taskId = taskId;
     }
