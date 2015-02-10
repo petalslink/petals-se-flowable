@@ -51,6 +51,7 @@ import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToPro
 import org.ow2.petals.component.framework.junit.impl.message.WrappedResponseToConsumerMessage;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
+import org.ow2.petals.components.activiti.generic._1.Task;
 import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
 import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
@@ -83,9 +84,21 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      * <p>
      * Expected results:
      * <ul>
-     * <li>on the first request, the process instance is correctly created,</li>
-     * <li>on the 2nd request, the user task is ended,</li>
-     * <li>service tasks invoked Petals services
+     * <li>on the first request:
+     * <ul>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
+     * <li>on the 2nd request,:
+     * <ul>
+     * <li>the process instance is correctly finished in the Activiti engine,</li>
+     * <li>the 1st user task is completed by the right assignee,</li>
+     * <li>the service reply is as expected,</li>
+     * <li>service tasks invoked Petals services</li>
+     * </ul>
+     * </li>
      * <li>on the 3rd request, the right business fault associated to a user task already completed is returned because
      * the process instance is finished.</li>
      * </ul>
@@ -93,11 +106,14 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      */
     @Test
     public void validStartEventRequest() throws Exception {
+        
+        this.initIdentities();
 
-        // Create the 1st valid request for start event 'request
+        // --------------------------------------------------------
+        // ---- Create a new instance of the process definition
+        // --------------------------------------------------------
         final Demande request_1 = new Demande();
-        final String demandeur = "demandeur";
-        request_1.setDemandeur(demandeur);
+        request_1.setDemandeur(BPMN_USER_DEMANDEUR);
         final int numberOfDays = 10;
         request_1.setNbJourDde(numberOfDays);
         final GregorianCalendar now = new GregorianCalendar();
@@ -142,10 +158,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
             for (final XslParameter xslParameter : response_1.getXslParameter()) {
                 if ("user-id".equals(xslParameter.getName().toString())) {
                     userFound = true;
-                    assertEquals(demandeur, xslParameter.getValue());
+                    assertEquals(BPMN_USER_DEMANDEUR, xslParameter.getValue());
                 } else if ("employeeName".equals(xslParameter.getName().toString())) {
                     employeeFound = true;
-                    assertEquals(demandeur, xslParameter.getValue());
+                    assertEquals(BPMN_USER_DEMANDEUR, xslParameter.getValue());
                 } else if ("numberOfDays".equals(xslParameter.getName().toString())) {
                     numberOfDaysFound = true;
                     assertEquals(numberOfDays, Integer.parseInt(xslParameter.getValue()));
@@ -166,14 +182,13 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
             assertTrue(startDateFound);
             assertTrue(motivationFound);
         }
-        // TODO: Add a check to verify that the process instance exists in Activiti
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Verify the task basket using integration service
         final GetTasks getTasksReq = new GetTasks();
         getTasksReq.setActive(true);
-        final String valideur = "valideur";
-        // TODO: Set the expected user when task assignment works fine in the unit test or SE
-        // getTasksReq.setAssignee("management");
+        getTasksReq.setAssignee(BPMN_USER_VALIDEUR);
         getTasksReq.setProcessInstanceIdentifier(response_1.getNumeroDde());
 
         inMemoryLogHandler.clear();
@@ -192,17 +207,17 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
             assertNotNull(getTaskResp.getTasks());
             assertNotNull(getTaskResp.getTasks().getTask());
             assertEquals(1, getTaskResp.getTasks().getTask().size());
-            // TODO: Enable the following assert when task assignment works fine in the unit test or SE
-            // assertEquals(valideur, getTaskResp.getTasks().getTask().get(0).getAssignee());
-            assertEquals("vacationRequest", getTaskResp.getTasks().getTask().get(0).getProcessDefinitionIdentifier());
-            assertEquals(response_1.getNumeroDde(), getTaskResp.getTasks().getTask().get(0)
-                    .getProcessInstanceIdentifier());
-            assertEquals("handleRequest", getTaskResp.getTasks().getTask().get(0).getTaskIdentifier());
+            final Task task = getTaskResp.getTasks().getTask().get(0);
+            assertEquals(BPMN_PROCESS_DEFINITION_KEY, task.getProcessDefinitionIdentifier());
+            assertEquals(response_1.getNumeroDde(), task.getProcessInstanceIdentifier());
+            assertEquals(BPMN_PROCESS_1ST_USER_TASK_KEY, task.getTaskIdentifier());
         }
 
-        // Create the 2nd valid request for user task 'handleRequest'
+        // ------------------------------------------------------------------
+        // ---- Complete the first user task (validate the vacation request)
+        // ------------------------------------------------------------------
         final Validation request_2 = new Validation();
-        request_2.setValideur(valideur);
+        request_2.setValideur(BPMN_USER_VALIDEUR);
         request_2.setNumeroDde(response_1.getNumeroDde());
         request_2.setApprobation(Boolean.TRUE.toString());
 
@@ -289,10 +304,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                     assertEquals(response_1.getNumeroDde(), xslParameter.getValue());
                 } else if ("user-id".equals(xslParameter.getName().toString())) {
                     userFound = true;
-                    assertEquals(valideur, xslParameter.getValue());
+                    assertEquals(BPMN_USER_VALIDEUR, xslParameter.getValue());
                 } else if ("employeeName".equals(xslParameter.getName().toString())) {
                     employeeFound = true;
-                    assertEquals(demandeur, xslParameter.getValue());
+                    assertEquals(BPMN_USER_DEMANDEUR, xslParameter.getValue());
                 } else if ("numberOfDays".equals(xslParameter.getName().toString())) {
                     numberOfDaysFound = true;
                     assertEquals(numberOfDays, Integer.parseInt(xslParameter.getValue()));
@@ -318,20 +333,17 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
             assertTrue(approvedFound);
             assertTrue(motivationFound);
         }
-        // TODO: Add a check against Activiti to verify that the process instance is finished
+        assertProcessInstanceFinished(response_1.getNumeroDde());
+        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
-        // Create the 3rd request
-        final Validation request_3 = new Validation();
-        request_3.setValideur(valideur);
-        request_3.setNumeroDde(response_1.getNumeroDde());
-        request_3.setApprobation(Boolean.TRUE.toString());
-
-        // Send the 2nd valid request
+        // --------------------------------------------------------
+        // ---- Try to complete AGAIN the first user task
+        // --------------------------------------------------------
         inMemoryLogHandler.clear();
         BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnServicesInvocationTest.serviceConfiguration, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_3))));
+                        .toByteArray(request_2))));
 
         // Assert the response of the 3rd valid request
         final ResponseMessage responseMsg_3 = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
@@ -365,11 +377,14 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      * Expected results:
      * <ul>
      * <li>a fault is returned to the caller</li>
+     * <li>no process instance is created on the Activiti engine</li>
      * </ul>
      * </p>
      */
     @Test
     public void startEventRequest_NoUserIdValue() throws Exception {
+
+        final int currentProcInstNb = this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY);
 
         // Create the 1st valid request
         final Demande request = new Demande();
@@ -401,6 +416,8 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final String faultStr = SourceHelper.toString(fault);
         assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg.getPayload());
+
+        assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
     }
 
     /**
@@ -419,6 +436,8 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      */
     @Test
     public void startEventRequest_EmptyUserIdValue() throws Exception {
+
+        final int currentProcInstNb = this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY);
 
         // Create the 1st valid request
         final Demande request = new Demande();
@@ -451,6 +470,8 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final String faultStr = SourceHelper.toString(fault);
         assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg.getPayload());
+
+        assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
     }
 
     /**
@@ -464,13 +485,28 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      * <p>
      * Expected results:
      * <ul>
-     * <li>on the first request, the process instance is correctly created,</li>
-     * <li>on the 2nd request, a fault is returned.</li>
+     * <li>on the first request:
+     * <ul>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
+     * <li>on the 2nd request:
+     * <ul>
+     * <li>a fault is returned</li>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
      * </ul>
      * </p>
      */
     @Test
     public void userTaskRequest_NoUserIdValue() throws Exception {
+
+        this.initIdentities();
 
         // Create the 1st valid request
         final Demande request_1 = new Demande();
@@ -504,7 +540,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
-        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Assert that the process instance is created
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -535,7 +574,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final String faultStr = SourceHelper.toString(fault_2);
         assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg_2.getPayload());
-        // TODO: Add a check against Activiti to verify that the user task is not complete
+
+        // Assert that the process instance and current user task
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
@@ -549,13 +591,28 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      * <p>
      * Expected results:
      * <ul>
-     * <li>on the first request, the process instance is correctly created,</li>
-     * <li>on the 2nd request, a fault is returned.</li>
+     * <li>on the first request:
+     * <ul>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
+     * <li>on the 2nd request:
+     * <ul>
+     * <li>a fault is returned</li>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
      * </ul>
      * </p>
      */
     @Test
     public void userTaskRequest_EmptyUserIdValue() throws Exception {
+
+        this.initIdentities();
 
         // Create the 1st valid request
         final Demande request_1 = new Demande();
@@ -589,7 +646,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
-        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Assert that the process instance is created
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -621,7 +681,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final String faultStr = SourceHelper.toString(fault_2);
         assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg_2.getPayload());
-        // TODO: Add a check against Activiti to verify that the user task is not complete
+
+        // Assert that the process instance and current user task
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
@@ -635,13 +698,28 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      * <p>
      * Expected results:
      * <ul>
-     * <li>on the first request, the process instance is correctly created,</li>
-     * <li>on the 2nd request, a fault is returned.</li>
+     * <li>on the first request:
+     * <ul>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
+     * <li>on the 2nd request:
+     * <ul>
+     * <li>a fault is returned</li>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
      * </ul>
      * </p>
      */
     @Test
     public void userTaskRequest_NoProcessInstanceIdValue() throws Exception {
+
+        this.initIdentities();
 
         // Create the 1st valid request
         final Demande request_1 = new Demande();
@@ -675,7 +753,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
-        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Assert that the process instance is created
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -706,7 +787,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final String faultStr = SourceHelper.toString(fault_2);
         assertTrue("Unexpected fault: " + faultStr, faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg_2.getPayload());
-        // TODO: Add a check against Activiti to verify that the user task is not complete
+
+        // Assert that the process instance and current user task
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
@@ -720,13 +804,28 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      * <p>
      * Expected results:
      * <ul>
-     * <li>on the first request, the process instance is correctly created,</li>
-     * <li>on the 2nd request, a fault is returned.</li>
+     * <li>on the first request:
+     * <ul>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
+     * <li>on the 2nd request:
+     * <ul>
+     * <li>a fault is returned</li>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
      * </ul>
      * </p>
      */
     @Test
     public void userTaskRequest_EmptyProcessInstanceIdValue() throws Exception {
+
+        this.initIdentities();
 
         // Create the 1st valid request
         final Demande request_1 = new Demande();
@@ -760,7 +859,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
-        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Assert that the process instance is created
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -792,15 +894,18 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final String faultStr = SourceHelper.toString(fault_2);
         assertTrue("Unexpected fault: " + faultStr, faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
         assertNull("XML payload in response", responseMsg_2.getPayload());
-        // TODO: Add a check against Activiti to verify that the user task is not complete
+
+        // Assert that the process instance and current user task
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
      * <p>
      * Check the message processing where:
      * <ol>
-     * <li>a valid request is sent to complete the waiting user task where the process instance identifier does not
-     * exist on the BPMN engine side.</li>
+     * <li>a valid request is sent to complete a waiting user task where the process instance identifier does not exist
+     * on the BPMN engine side.</li>
      * </ol>
      * </p>
      * <p>
@@ -860,8 +965,21 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      * <p>
      * Expected results:
      * <ul>
-     * <li>on the first request, the process instance is correctly created,</li>
-     * <li>on the 2nd request, the user task is ended,</li>
+     * <li>on the first request:
+     * <ul>
+     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the 1st user task is correctly assigned,</li>
+     * <li>the service reply is as expected,</li>
+     * </ul>
+     * </li>
+     * <li>on the 2nd request,:
+     * <ul>
+     * <li>the process instance is correctly finished in the Activiti engine,</li>
+     * <li>the 1st user task is completed by the right assignee,</li>
+     * <li>the service reply is as expected,</li>
+     * <li>service tasks invoked Petals services</li>
+     * </ul>
+     * </li>
      * <li>on the 3rd request, the right business fault associated to a user task already completed is returned because
      * the user task is already completed.</li>
      * </ul>
@@ -869,6 +987,8 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      */
     @Test
     public void userTaskRequest_TaskCompletedFault() throws Exception {
+
+        this.initIdentities();
 
         // Create the 1st valid request for start event 'request
         final Demande request_1 = new Demande();
@@ -908,7 +1028,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
-        // TODO: Add a check to verify that the process instance exists in Activiti
+
+        // Check Activiti engine against the process instance creation
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request for the user task 'handleRequest'
         final Validation request_2 = new Validation();
@@ -944,7 +1067,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertTrue(responseObj_2 instanceof AckResponse);
         final AckResponse response_2 = (AckResponse) responseObj_2;
         assertNotNull(response_2);
-        // TODO: Add a check against Activiti to verify that the process instance is not finished
+
+        // Check Activiti engine against the current user task
+        assertProcessInstanceFinished(response_1.getNumeroDde());
+        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
 
         // Create the 3rd request for the user task 'handleRequest'
         final Validation request_3 = new Validation();
@@ -979,6 +1105,10 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertTrue(responseObj_3 instanceof DemandeDejaValidee);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
+
+        // Check Activiti engine against the current user task
+        assertProcessInstanceFinished(response_1.getNumeroDde());
+        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
     }
 
 }

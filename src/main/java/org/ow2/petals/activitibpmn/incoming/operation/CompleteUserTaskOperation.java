@@ -107,15 +107,21 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         }
 
         // Get the task
-        // TODO: We should select only task assigned to the user id
         final List<Task> taskList = this.taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(this.actionId).list();
-        if ((taskList == null) || (taskList.size() == 0)) {
+                .taskDefinitionKey(this.actionId).taskCandidateOrAssigned(bpmnUserId).list();
+        if ((taskList == null) || (taskList.isEmpty())) {
             this.investigateMissingTask(processInstanceId, bpmnUserId);
         }
 
         // Perform the user Task
         final Task taskToComplete = taskList.get(0);
+
+        // Before to complete the task, with set explicitly its assignee. It is not done by Activiti engine when
+        // completing the task.
+        taskToComplete.setAssignee(bpmnUserId);
+        this.taskService.saveTask(taskToComplete);
+
+        // We complete the task
         try {
             this.identityService.setAuthenticatedUserId(bpmnUserId);
             this.taskService.complete(taskToComplete.getId(), processVars);

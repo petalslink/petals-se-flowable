@@ -60,10 +60,9 @@
             </xsd:sequence>
          </xsd:complexType>
          <xsd:complexType name="Task">
-            <xsd:attribute name="process-definition-identifier" type="xsd:string" />
-            <xsd:attribute name="process-instance-identifier" type="xsd:string" />
-            <xsd:attribute name="task-identifier" type="xsd:string" />
-            <xsd:attribute name="assignee" type="xsd:string" />
+            <xsd:attribute name="process-definition-identifier" type="xsd:string" use="required" />
+            <xsd:attribute name="process-instance-identifier" type="xsd:string" use="required" />
+            <xsd:attribute name="task-identifier" type="xsd:string" use="required"/>
          </xsd:complexType>
 
       </xsd:schema>

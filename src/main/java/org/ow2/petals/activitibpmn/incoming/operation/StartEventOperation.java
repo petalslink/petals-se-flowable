@@ -74,9 +74,8 @@ public class StartEventOperation extends ActivitiOperation {
     }
 
     @Override
-    protected void doExecute(final DOMSource domSource, final String bpmnUserId,
-            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
- throws OperationProcessingException {
+    protected void doExecute(final DOMSource domSource, final String bpmnUserId, final Map<String, Object> processVars,
+            final Map<QName, String> outputNamedValues) throws OperationProcessingException {
 
         // Start a new process instance
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)

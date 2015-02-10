@@ -17,14 +17,19 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PORT_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_SERVICE;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -34,10 +39,22 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
+import org.activiti.engine.history.HistoricProcessInstance;
+import org.activiti.engine.history.HistoricProcessInstanceQuery;
+import org.activiti.engine.history.HistoricTaskInstance;
+import org.activiti.engine.history.HistoricTaskInstanceQuery;
+import org.activiti.engine.identity.Group;
+import org.activiti.engine.identity.User;
+import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.engine.runtime.ProcessInstanceQuery;
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
+import org.ow2.petals.activitibpmn.junit.ActivitiClient;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.Component;
 import org.ow2.petals.component.framework.junit.impl.ComponentConfiguration;
@@ -88,6 +105,16 @@ public abstract class AbstractComponentTest {
 
     protected static final QName ARCHIVER_OPERATION = new QName(ARCHIVE_NAMESPACE, "archiver");
 
+    protected static final String BPMN_PROCESS_DEFINITION_KEY = "vacationRequest";
+
+    protected static final String BPMN_PROCESS_1ST_USER_TASK_KEY = "handleRequest";
+
+    protected static final String BPMN_PROCESS_2ND_USER_TASK_KEY = "adjustVacationRequestTask";
+
+    protected static final String BPMN_USER_DEMANDEUR = "demandeur";
+
+    protected static final String BPMN_USER_VALIDEUR = "valideur";
+
     @ClassRule
     public static final ComponentUnderTestBuilder componentBuilder = new ComponentUnderTestBuilder();
 
@@ -109,6 +136,10 @@ public abstract class AbstractComponentTest {
      * The integration service provided by the component
      */
     protected static ServiceConfiguration nativeServiceConfiguration;
+
+    @Rule
+    public ActivitiClient activitiClient = new ActivitiClient(new File(new File(
+            AbstractComponentTest.componentUnderTest.getBaseDirectory(), "work"), DEFAULT_JDBC_URL_DATABASE_FILENAME));
 
     static {
         try {
@@ -259,6 +290,121 @@ public abstract class AbstractComponentTest {
             return baos.toByteArray();
         } finally {
             baos.close();
+        }
+    }
+    
+    /**
+     * Assertion about the pending state of a process instance. The process instance is not finished.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier
+     * @param processDefinitionKey
+     *            The process definition key
+     */
+    protected void assertProcessInstancePending(final String processInstanceId, final String processDefinitionKey) {
+
+        final ProcessInstanceQuery processInstQuery = this.activitiClient.getRuntimeService()
+                .createProcessInstanceQuery();
+        final ProcessInstance processInstance = processInstQuery.processInstanceId(processInstanceId)
+                .singleResult();
+        assertNotNull(processInstance);
+        assertEquals(processInstanceId, processInstance.getProcessInstanceId());
+        assertEquals(processDefinitionKey, processInstance.getProcessDefinitionKey());
+        assertFalse(processInstance.isEnded());
+        assertFalse(processInstance.isSuspended());
+    }
+    
+    /**
+     * @param processDefinitionKey
+     *            The process definition identifier
+     * @return The number of process instances that are not finished and associated to the given process definition
+     */
+    protected int getProcessInstanceNumber(final String processDefinitionKey) {
+        final ProcessInstanceQuery processInstQuery = this.activitiClient.getRuntimeService()
+                .createProcessInstanceQuery();
+        final List<ProcessInstance> processInstances = processInstQuery.processDefinitionKey(processDefinitionKey)
+                .list();
+        assertNotNull(processInstances);
+        return processInstances.size();
+    }
+
+    /**
+     * Assertion about the creation of a process instance. The process instance is not finished.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier
+     * @param processDefinitionKey
+     *            The process definition key
+     */
+    protected void assertProcessInstanceFinished(final String processInstanceId) {
+
+        final HistoricProcessInstanceQuery query = this.activitiClient.getHistoryService()
+                .createHistoricProcessInstanceQuery();
+        final HistoricProcessInstance processInstance = query.processInstanceId(processInstanceId).singleResult();
+        assertNotNull(processInstance);
+    }
+
+    /**
+     * Assertion about the current user task.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier
+     * @param taskDefinitionKey
+     *            The process definition key
+     * @param user
+     *            The task can be completed by the given user
+     */
+    protected void assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
+            final String user) {
+
+        final TaskQuery taskQuery = this.activitiClient.getTaskService().createTaskQuery();
+        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskCandidateOrAssigned(user)
+                .singleResult();
+        assertNotNull(nextTask);
+        assertEquals(processInstanceId, nextTask.getProcessInstanceId());
+        assertEquals(taskDefinitionKey, nextTask.getTaskDefinitionKey());
+    }
+
+    /**
+     * Assertion about a user task completed.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier
+     * @param taskDefinitionKey
+     *            The process definition key
+     * @param user
+     *            The task has been completed by the given user
+     */
+    protected void assertUserTaskEnded(final String processInstanceId, final String taskDefinitionKey, final String user) {
+
+        final HistoricTaskInstanceQuery taskQuery = this.activitiClient.getHistoryService()
+                .createHistoricTaskInstanceQuery();
+        final HistoricTaskInstance nextTask = taskQuery.processInstanceId(processInstanceId)
+                .taskDefinitionKey(taskDefinitionKey)
+                .singleResult();
+        assertNotNull(nextTask);
+        assertEquals(user, nextTask.getAssignee());
+    }
+
+    protected void initIdentities() {
+
+        // TODO: Users and groups should be initialized according to the implementation of the IdentityService provided
+        // by the SE (LDAP integration, Petals Service integration, ...)
+        final String employees = "employees";
+        final Group groupEmployees = this.activitiClient.getIdentityService().newGroup(employees);
+        final String management = "management";
+        final Group groupManagement = this.activitiClient.getIdentityService().newGroup(management);
+        final User userDemandeur = this.activitiClient.getIdentityService().newUser(BPMN_USER_DEMANDEUR);
+        final User userValideur = this.activitiClient.getIdentityService().newUser(BPMN_USER_VALIDEUR);
+        try {
+            this.activitiClient.getIdentityService().saveGroup(groupEmployees);
+            this.activitiClient.getIdentityService().saveGroup(groupManagement);
+            this.activitiClient.getIdentityService().saveUser(userDemandeur);
+            this.activitiClient.getIdentityService().saveUser(userValideur);
+            this.activitiClient.getIdentityService().createMembership(BPMN_USER_DEMANDEUR, employees);
+            this.activitiClient.getIdentityService().createMembership(BPMN_USER_VALIDEUR, management);
+        } catch (final RuntimeException e) {
+            // NOP: Identities already configured in the Activiti Database
         }
     }
 

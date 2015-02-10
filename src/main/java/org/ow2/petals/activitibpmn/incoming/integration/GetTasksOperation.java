@@ -144,7 +144,6 @@ public class GetTasksOperation implements ActivitiService {
                         final List<Task> tasks = taskQuery.list();
                         for (final Task task : tasks) {
                             final org.ow2.petals.components.activiti.generic._1.Task responseTask = new org.ow2.petals.components.activiti.generic._1.Task();
-                            responseTask.setAssignee(task.getAssignee());
                             responseTask.setProcessInstanceIdentifier(task.getProcessInstanceId());
                             responseTask.setTaskIdentifier(task.getTaskDefinitionKey());
                             responseTasks.getTask().add(responseTask);

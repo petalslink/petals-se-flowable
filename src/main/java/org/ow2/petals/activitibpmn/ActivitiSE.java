@@ -79,16 +79,16 @@ public class ActivitiSE extends AbstractServiceEngine {
 	private ProcessEngine activitiEngine;
 	
 	/**
-	 * @return the Activiti Engine
-	 */
-	public ProcessEngine getProcessEngine() {
-		return this.activitiEngine;
-	}
-	
-	/**
      * A map used to get the Activiti Operation associated with (end-point Name + Operation)
      */
     private final Map<EptAndOperation, ActivitiService> activitiServices = new ConcurrentHashMap<EptAndOperation, ActivitiService>();
+
+    /**
+     * @return the Activiti Engine
+     */
+    public ProcessEngine getProcessEngine() {
+        return this.activitiEngine;
+    }
 	
 	
   	  /**
@@ -102,7 +102,7 @@ public class ActivitiSE extends AbstractServiceEngine {
         this.activitiServices.put(eptAndOperation, activitiservice);
     }
 
-	    /**
+    /**
      * @param eptName
      *            the end-point name
      */
@@ -286,6 +286,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 
             this.activitiEngine = pec.buildProcessEngine();
             
+
             // Caution: Beans of the configuration are initialized when building the process engine
             if (pec instanceof ProcessEngineConfigurationImpl) {
                 // We add to the BPMN engine the bean in charge of sending Petals message exchange
