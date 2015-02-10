@@ -22,9 +22,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PORT_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_SERVICE;
+import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderBeginLog;
+import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
+import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.logging.LogRecord;
 
 import javax.xml.bind.JAXBException;
 
@@ -33,6 +40,7 @@ import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.EmptyRequestException;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.InvalidRequestException;
+import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
@@ -77,8 +85,6 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(getTasksReq))));
 
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
-
         final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
         assertNull("An error is set in the response", getTaskRespMsg.getError());
         assertNull("A XML payload is set in response", getTaskRespMsg.getPayload());
@@ -86,6 +92,9 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
 
         final String getTaskRespStr = SourceHelper.toString(getTaskRespMsg.getFault());
         assertTrue(getTaskRespStr.contains(InvalidRequestException.class.getName()));
+
+        // Check MONIT traces
+        assertMonitLogsWithFailure();
     }
 
     /**
@@ -115,8 +124,6 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(getTasksReq))));
 
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
-
         final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
         assertNull("An error is set in the response", getTaskRespMsg.getError());
         assertNull("A XML payload is set in response", getTaskRespMsg.getPayload());
@@ -124,6 +131,9 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
 
         final String getTaskRespStr = SourceHelper.toString(getTaskRespMsg.getFault());
         assertTrue(getTaskRespStr.contains(InvalidRequestException.class.getName()));
+
+        // Check MONIT traces
+        assertMonitLogsWithFailure();
     }
 
     /**
@@ -144,14 +154,10 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
     @Test
     public void getTasks_EmptyRequest() throws Exception {
 
-        final Demande getTasksReq = new Demande();
-
         inMemoryLogHandler.clear();
         BpmnServicesInvocationTest.componentUnderTest.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 BpmnServicesInvocationTest.nativeServiceConfiguration, ITG_OP_GETTASKS,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), null));
-
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
 
         final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
         assertNull("An error is set in the response", getTaskRespMsg.getError());
@@ -160,6 +166,9 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
 
         final String getTaskRespStr = SourceHelper.toString(getTaskRespMsg.getFault());
         assertTrue(getTaskRespStr.contains(EmptyRequestException.class.getName()));
+
+        // Check MONIT traces
+        assertMonitLogsWithFailure();
     }
 
     /**
@@ -189,8 +198,6 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(getTasksReq))));
 
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
-
         final ResponseMessage getTaskRespMsg = BpmnServicesInvocationTest.componentUnderTest.pollResponseFromProvider();
         assertNull("An error is set in the response", getTaskRespMsg.getError());
         assertNull("A fault is set in the response", getTaskRespMsg.getFault());
@@ -201,6 +208,26 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
         assertNotNull(getTaskResp.getTasks());
         assertNotNull(getTaskResp.getTasks().getTask());
         assertEquals(0, getTaskResp.getTasks().getTask().size());
+
+        // Check MONIT traces
+        final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs.size());
+        final FlowLogData providerBegin = assertMonitProviderBeginLog(ITG_PORT_TYPE, ITG_SERVICE,
+                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ITG_OP_GETTASKS,
+                monitLogs.get(0));
+        assertMonitProviderEndLog(providerBegin, monitLogs.get(1));
+    }
+
+    /**
+     * Assertion about MONIT logs generated during an invocation with error of the integration operation 'GetTasks'
+     */
+    private void assertMonitLogsWithFailure() {
+        final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs.size());
+        final FlowLogData providerBegin = assertMonitProviderBeginLog(ITG_PORT_TYPE, ITG_SERVICE,
+                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ITG_OP_GETTASKS,
+                monitLogs.get(0));
+        assertMonitProviderFailureLog(providerBegin, monitLogs.get(1));
     }
 
 }
