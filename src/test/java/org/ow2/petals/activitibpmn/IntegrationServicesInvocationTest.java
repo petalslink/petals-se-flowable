@@ -22,8 +22,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PORT_TYPE;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_SERVICE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderBeginLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
@@ -212,8 +212,8 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
-        final FlowLogData providerBegin = assertMonitProviderBeginLog(ITG_PORT_TYPE, ITG_SERVICE,
-                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ITG_OP_GETTASKS,
+        final FlowLogData providerBegin = assertMonitProviderBeginLog(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_TASK_SERVICE), ITG_OP_GETTASKS,
                 monitLogs.get(0));
         assertMonitProviderEndLog(providerBegin, monitLogs.get(1));
     }
@@ -224,8 +224,8 @@ public class IntegrationServicesInvocationTest extends AbstractComponentTest {
     private void assertMonitLogsWithFailure() {
         final List<LogRecord> monitLogs = inMemoryLogHandler.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
-        final FlowLogData providerBegin = assertMonitProviderBeginLog(ITG_PORT_TYPE, ITG_SERVICE,
-                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ITG_OP_GETTASKS,
+        final FlowLogData providerBegin = assertMonitProviderBeginLog(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_TASK_SERVICE), ITG_OP_GETTASKS,
                 monitLogs.get(0));
         assertMonitProviderFailureLog(providerBegin, monitLogs.get(1));
     }

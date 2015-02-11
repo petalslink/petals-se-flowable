@@ -21,8 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PORT_TYPE;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_SERVICE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -210,8 +210,8 @@ public abstract class AbstractComponentTest {
         final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader().getResource("component.wsdl");
         assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
         AbstractComponentTest.nativeServiceConfiguration = new ServiceConfiguration(
-                AbstractComponentTest.class.getSimpleName(), ITG_PORT_TYPE, ITG_SERVICE,
-                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ServiceType.PROVIDE,
+                AbstractComponentTest.class.getSimpleName(), ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_TASK_SERVICE), ServiceType.PROVIDE,
                 nativeServiceWsdlUrl);
     }
 

@@ -76,14 +76,14 @@
       <wsdl:part name="getTasksResponse" element="activiti:getTasksResponse" />
    </wsdl:message>
 
-   <wsdl:portType name="ActivitiGeneric">
+   <wsdl:portType name="Task">
       <wsdl:operation name="getTasks">
          <wsdl:input message="activiti:getTasksRequest" />
          <wsdl:output message="activiti:getTasksResponse" />
       </wsdl:operation>
    </wsdl:portType>
 
-   <wsdl:binding name="ActivitiServiceSoapBinding" type="activiti:ActivitiGeneric">
+   <wsdl:binding name="TaskServiceSoapBinding" type="activiti:Task">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="getTasks">
          <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/getTasks" />
@@ -99,8 +99,8 @@
 		This section must be overridden at the SU definition and the matching
 		Service and
 	-->
-   <wsdl:service name="ActivitiGenericService">
-      <wsdl:port name="autogenerate" binding="activiti:ActivitiServiceSoapBinding">
+   <wsdl:service name="TaskService">
+      <wsdl:port name="autogenerate" binding="activiti:TaskServiceSoapBinding">
          <soap:address location="autogenerate" />
       </wsdl:port>
    </wsdl:service>

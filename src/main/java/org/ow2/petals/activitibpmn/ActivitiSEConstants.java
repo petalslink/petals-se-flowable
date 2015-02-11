@@ -174,24 +174,24 @@ public final class ActivitiSEConstants {
         public static final String ITG_NAMESPACE = "http://petals.ow2.org/components/activiti/generic/1.0";
 
         /**
-         * Name (local part) of the integration service interface
+         * Interface name (local part) of the integration service 'Task'
          */
-        public static final String ITG_PORT_TYPE_NAME = "ActivitiGeneric";
+        public static final String ITG_TASK_PORT_TYPE_NAME = "Task";
 
         /**
-         * Name of the integration service interface
+         * Interface name of the integration service 'Task'
          */
-        public static final QName ITG_PORT_TYPE = new QName(ITG_NAMESPACE, ITG_PORT_TYPE_NAME);
+        public static final QName ITG_TASK_PORT_TYPE = new QName(ITG_NAMESPACE, ITG_TASK_PORT_TYPE_NAME);
 
         /**
-         * Name (local part) of the integration service
+         * Name (local part) of the integration service 'Task'
          */
-        public static final String ITG_SERVICE_NAME = "ActivitiGenericService";
+        public static final String ITG_TASK_SERVICE_NAME = "TaskService";
 
         /**
-         * Name of the integration service
+         * Name of the integration service 'Task'
          */
-        public static final QName ITG_SERVICE = new QName(ITG_NAMESPACE, ITG_SERVICE_NAME);
+        public static final QName ITG_TASK_SERVICE = new QName(ITG_NAMESPACE, ITG_TASK_SERVICE_NAME);
 
         /**
          * Name (local part) of the integration operation to search tasks

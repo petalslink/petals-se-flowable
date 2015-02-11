@@ -24,8 +24,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PORT_TYPE;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_SERVICE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderBeginLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
@@ -217,8 +217,8 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         // Check MONIT traces about the task basket invocation
         final List<LogRecord> monitLogs_taskBasket = inMemoryLogHandler.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_taskBasket.size());
-        final FlowLogData providerBegin_taskBasket = assertMonitProviderBeginLog(ITG_PORT_TYPE, ITG_SERVICE,
-                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_SERVICE), ITG_OP_GETTASKS,
+        final FlowLogData providerBegin_taskBasket = assertMonitProviderBeginLog(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_TASK_SERVICE), ITG_OP_GETTASKS,
                 monitLogs_taskBasket.get(0));
         assertMonitProviderEndLog(providerBegin_taskBasket, monitLogs_taskBasket.get(1));
 
