@@ -53,6 +53,10 @@
 
    <properties>
       <activiti.version>5.17.0</activiti.version>
+      <!-- For now disable that check because jaxb is required to be 2.2.5
+           and we use 2.2.4
+           TODO: use the latest jaxb version everywhere? -->
+      <maven-enforcer-plugin.rules.upperBound>false</maven-enforcer-plugin.rules.upperBound>
    </properties>
 
    <dependencies>
@@ -104,28 +108,17 @@
          <version>${activiti.version}</version>
          <exclusions>
             <exclusion>
-               <!-- Already in Java 6 -->
-               <artifactId>activation</artifactId>
-               <groupId>javax.activation</groupId>
-            </exclusion>
-            <exclusion>
-               <!-- We prefer to use Javax Mail provided by Geronimo -->
-               <artifactId>mail</artifactId>
-               <groupId>javax.mail</groupId>
-            </exclusion>
-            <exclusion>
                <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
                     so commons-logging must be excluded -->
                <groupId>commons-logging</groupId>
                <artifactId>commons-logging</artifactId>
             </exclusion>
+            <exclusion>
+               <!-- We use javax.mail -->
+               <artifactId>mail</artifactId>
+               <groupId>javax.mail</groupId>
+            </exclusion>
          </exclusions>
-      </dependency>
-      <dependency>
-         <!-- Activit engine comes with javax.mail:mail:1.4.1, we prefer the artifact coming from Geronimo -->
-         <groupId>org.apache.geronimo.specs</groupId>
-         <artifactId>geronimo-javamail_1.4_spec</artifactId>
-         <scope>runtime</scope>
       </dependency>
       <dependency>
          <groupId>org.activiti</groupId>
@@ -146,11 +139,6 @@
          <exclusions>
             <exclusion>
                <!-- Already included in Java 6 -->
-               <groupId>xerces</groupId>
-               <artifactId>xercesImpl</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- Already included in Java 6 -->
                <groupId>xml-apis</groupId>
                <artifactId>xml-apis</artifactId>
             </exclusion>
@@ -168,6 +156,13 @@
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-api</artifactId>
          <version>2.6.14</version>
+         <exclusions>
+            <exclusion>
+               <!-- We use javax.mail -->
+               <artifactId>geronimo-javamail_1.4_spec</artifactId>
+               <groupId>org.apache.geronimo.specs</groupId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>
@@ -227,7 +222,6 @@
                   <configuration>
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
-                        <usedDependency>org.apache.geronimo.specs:geronimo-javamail_1.4_spec</usedDependency>
                         <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
                         <usedDependency>org.activiti:activiti-cxf</usedDependency>
                      </usedDependencies>
@@ -237,7 +231,7 @@
          </plugin>
          <plugin>
             <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb21-plugin</artifactId>
+            <artifactId>maven-jaxb2-plugin</artifactId>
             <executions>
                <execution>
                   <!-- must use the same id as in the parent if not there will be two executions of the plugin -->
@@ -276,22 +270,6 @@
          </plugin>
       </plugins>
    </build>
-
-   <repositories>
-      <repository>
-         <!-- The repository in which SNAPSHOT versions of Activiti are available -->
-         <id>sonatype-snapshots</id>
-         <name>Sonatype Snapshots Repository</name>
-         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-         <layout>default</layout>
-         <releases>
-            <enabled>false</enabled>
-         </releases>
-         <snapshots>
-            <enabled>true</enabled>
-         </snapshots>
-      </repository>
-   </repositories>
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
