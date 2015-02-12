@@ -27,11 +27,8 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperati
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -49,18 +46,17 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.ow2.petals.activitibpmn.junit.ActivitiClient;
-import org.ow2.petals.commons.log.Level;
-import org.ow2.petals.component.framework.junit.Component;
-import org.ow2.petals.component.framework.junit.impl.ComponentConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTestBuilder;
+import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
+import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
+import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
@@ -81,7 +77,7 @@ import com.ebmwebsourcing.easycommons.lang.UncheckedException;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public abstract class AbstractComponentTest {
+public abstract class AbstractComponentTest extends AbstractTest {
 
     private static final String VACATION_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/vacationService";
 
@@ -105,6 +101,10 @@ public abstract class AbstractComponentTest {
 
     protected static final QName ARCHIVER_OPERATION = new QName(ARCHIVE_NAMESPACE, "archiver");
 
+    protected static final String VALID_SU = "valid-su";
+
+    protected static final String NATIVE_SVC_CFG = "native";
+
     protected static final String BPMN_PROCESS_DEFINITION_KEY = "vacationRequest";
 
     protected static final String BPMN_PROCESS_1ST_USER_TASK_KEY = "handleRequest";
@@ -115,58 +115,112 @@ public abstract class AbstractComponentTest {
 
     protected static final String BPMN_USER_VALIDEUR = "valideur";
 
-    @ClassRule
-    public static final ComponentUnderTestBuilder componentBuilder = new ComponentUnderTestBuilder();
+    protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
+
+    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
+            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
+            .registerServiceToDeploy(VALID_SU, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
+
+                    final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/vacationRequest.wsdl");
+                    assertNotNull("WSDl not found", wsdlUrl);
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(
+                            AbstractComponentTest.class.getSimpleName(), VACATION_INTERFACE, VACATION_SERVICE,
+                            VACATION_ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
+
+                    final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/demanderCongesResponse.xsl");
+                    assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
+                    serviceConfiguration.addResource(demanderCongesResponseXslUrl);
+
+                    final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/validerDemandeResponse.xsl");
+                    assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
+                    serviceConfiguration.addResource(validerDemandeResponseXslUrl);
+
+                    final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/ajusterDemandeResponse.xsl");
+                    assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
+                    serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
+
+                    final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/numeroDemandeInconnu.xsl");
+                    assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
+                    serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
+
+                    final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/demandeDejaValidee.xsl");
+                    assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
+                    serviceConfiguration.addResource(demandeDejaValideeXslUrl);
+
+                    final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/vacationRequest.bpmn20.xml");
+                    assertNotNull("BPMN file not found", bpmnUrl);
+                    serviceConfiguration.addResource(bpmnUrl);
+
+                    serviceConfiguration.setParameter(
+                            "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file",
+                            "vacationRequest.bpmn20.xml");
+                    serviceConfiguration.setParameter(
+                            "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version", "1");
+
+                    // Consume service 'archiver'
+                    // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
+                    // between
+                    // Activti
+                    // and other services
+                    final ServiceConfiguration consumeServiceConfiguration = new ServiceConfiguration(
+                            AbstractComponentTest.class.getSimpleName(), ARCHIVE_INTERFACE, ARCHIVE_SERVICE,
+                            ARCHIVE_ENDPOINT, ServiceType.CONSUME);
+                    serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
+
+                    return serviceConfiguration;
+                }
+            }).registerNativeServiceToDeploy(NATIVE_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+                @Override
+                public ServiceConfiguration create(final String nativeEndpointName) {
+
+                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("component.wsdl");
+                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
+                    final ServiceConfiguration nativeServiceConfiguration = new ServiceConfiguration(
+                            AbstractComponentTest.class.getSimpleName(), ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                            nativeEndpointName, ServiceType.PROVIDE, nativeServiceWsdlUrl);
+
+                    return nativeServiceConfiguration;
+                }
+
+                @Override
+                public QName getNativeService() {
+                    return ITG_TASK_SERVICE;
+                }
+            }).registerExternalServiceProvider(ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
+
+    private static Marshaller MARSHALLER;
+
+    protected static Unmarshaller UNMARSHALLER;
 
     @ClassRule
-    public static final InMemoryLogHandler inMemoryLogHandler = new InMemoryLogHandler();
-
-    private static Marshaller marshaller;
-
-    protected static Unmarshaller unmarshaller;
-
-    /**
-     * The Petals SE Activiti to test
-     */
-    protected static Component componentUnderTest;
-
-    protected static ServiceConfiguration serviceConfiguration;
-
-    /**
-     * The integration service provided by the component
-     */
-    protected static ServiceConfiguration nativeServiceConfiguration;
+    public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
 
     @Rule
     public ActivitiClient activitiClient = new ActivitiClient(new File(new File(
-            AbstractComponentTest.componentUnderTest.getBaseDirectory(), "work"), DEFAULT_JDBC_URL_DATABASE_FILENAME));
+            COMPONENT_UNDER_TEST.getBaseDirectory(), "work"), DEFAULT_JDBC_URL_DATABASE_FILENAME));
 
     static {
         try {
             final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
                     AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
                     ArchiverResponse.class, GetTasks.class, GetTasksResponse.class);
-            AbstractComponentTest.unmarshaller = context.createUnmarshaller();
-            AbstractComponentTest.marshaller = context.createMarshaller();
-            AbstractComponentTest.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            UNMARSHALLER = context.createUnmarshaller();
+            MARSHALLER = context.createMarshaller();
+            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         } catch (final JAXBException e) {
             throw new UncheckedException(e);
         }
-    }
-
-    @BeforeClass
-    public static void setup() throws Exception {
-        AbstractComponentTest.initializeLoggingSystem();
-        AbstractComponentTest.initializeAnsStartComponentUnderTest();
-        AbstractComponentTest.deployServiceUnits();
-
-        AbstractComponentTest.registerOtherServiceProviders();
-    }
-
-    @AfterClass
-    public static void shutdown() {
-        AbstractComponentTest.componentUnderTest.uninstallAllServices();
-        AbstractComponentTest.componentUnderTest.shutdown();
     }
 
     /**
@@ -174,106 +228,7 @@ public abstract class AbstractComponentTest {
      */
     @Before
     public void clearLogTraces() {
-        inMemoryLogHandler.clear();
-    }
-
-    /**
-     * Initialize the logging system reading the configuration defined in resource '/logging.properties'.
-     */
-    private static void initializeLoggingSystem() throws SecurityException, IOException {
-        final InputStream inputStream = ActivitiSuManagerTest.class.getResourceAsStream("/logging.properties");
-        assertNotNull("Logging configuration file not found", inputStream);
-        try {
-            LogManager.getLogManager().readConfiguration(inputStream);
-        } finally {
-            inputStream.close();
-        }
-    }
-
-    /**
-     * <p>
-     * Initialize and start the component under test.
-     * </p>
-     * <p>
-     * The configuration of the component is its default configuration, except the log level set to {@link Leve#FINE}.
-     * </p>
-     */
-    private static void initializeAnsStartComponentUnderTest() throws Exception {
-
-        final Logger logger = Logger.getAnonymousLogger();
-        logger.addHandler(AbstractComponentTest.inMemoryLogHandler.getHandler());
-        logger.setLevel(Level.FINE);
-        AbstractComponentTest.componentUnderTest = AbstractComponentTest.componentBuilder
-                .create(new ComponentConfiguration("componentUnderTest", logger));
-        AbstractComponentTest.componentUnderTest.start();
-
-        final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader().getResource("component.wsdl");
-        assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
-        AbstractComponentTest.nativeServiceConfiguration = new ServiceConfiguration(
-                AbstractComponentTest.class.getSimpleName(), ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
-                AbstractComponentTest.componentUnderTest.getNativeEndpointName(ITG_TASK_SERVICE), ServiceType.PROVIDE,
-                nativeServiceWsdlUrl);
-    }
-
-    /**
-     * Deploy service units
-     */
-    private static void deployServiceUnits() {
-
-        final URL wsdlUrl = Thread.currentThread().getContextClassLoader().getResource("su/valid/vacationRequest.wsdl");
-        assertNotNull("WSDl not found", wsdlUrl);
-        AbstractComponentTest.serviceConfiguration = new ServiceConfiguration(
-                AbstractComponentTest.class.getSimpleName(), VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                ServiceType.PROVIDE, wsdlUrl);
-
-        final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/demanderCongesResponse.xsl");
-        assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
-        AbstractComponentTest.serviceConfiguration.addResource(demanderCongesResponseXslUrl);
-
-        final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/validerDemandeResponse.xsl");
-        assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
-        AbstractComponentTest.serviceConfiguration.addResource(validerDemandeResponseXslUrl);
-
-        final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/ajusterDemandeResponse.xsl");
-        assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
-        AbstractComponentTest.serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
-
-        final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/numeroDemandeInconnu.xsl");
-        assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
-        AbstractComponentTest.serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
-
-        final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/demandeDejaValidee.xsl");
-        assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
-        AbstractComponentTest.serviceConfiguration.addResource(demandeDejaValideeXslUrl);
-
-        final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                .getResource("su/valid/vacationRequest.bpmn20.xml");
-        assertNotNull("BPMN file not found", bpmnUrl);
-        AbstractComponentTest.serviceConfiguration.addResource(bpmnUrl);
-        AbstractComponentTest.serviceConfiguration.setParameter(
-                "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file",
-                "vacationRequest.bpmn20.xml");
-        AbstractComponentTest.serviceConfiguration.setParameter(
-                "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version", "1");
-
-        // Consume service 'archiver'
-        // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange between Activti
-        // and other services
-        final ServiceConfiguration consumeServiceConfiguration = new ServiceConfiguration(
-                AbstractComponentTest.class.getSimpleName(), ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT,
-                ServiceType.CONSUME);
-        AbstractComponentTest.serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
-
-        AbstractComponentTest.componentUnderTest.installService(AbstractComponentTest.serviceConfiguration);
-    }
-
-    private static void registerOtherServiceProviders() {
-        componentBuilder.registerOtherServiceProvider(ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
+        IN_MEMORY_LOG_HANDLER.clear();
     }
 
     /**
@@ -286,13 +241,13 @@ public abstract class AbstractComponentTest {
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            AbstractComponentTest.marshaller.marshal(jaxbElement, baos);
+            MARSHALLER.marshal(jaxbElement, baos);
             return baos.toByteArray();
         } finally {
             baos.close();
         }
     }
-    
+
     /**
      * Assertion about the pending state of a process instance. The process instance is not finished.
      * 
@@ -305,15 +260,14 @@ public abstract class AbstractComponentTest {
 
         final ProcessInstanceQuery processInstQuery = this.activitiClient.getRuntimeService()
                 .createProcessInstanceQuery();
-        final ProcessInstance processInstance = processInstQuery.processInstanceId(processInstanceId)
-                .singleResult();
+        final ProcessInstance processInstance = processInstQuery.processInstanceId(processInstanceId).singleResult();
         assertNotNull(processInstance);
         assertEquals(processInstanceId, processInstance.getProcessInstanceId());
         assertEquals(processDefinitionKey, processInstance.getProcessDefinitionKey());
         assertFalse(processInstance.isEnded());
         assertFalse(processInstance.isSuspended());
     }
-    
+
     /**
      * @param processDefinitionKey
      *            The process definition identifier
@@ -380,8 +334,7 @@ public abstract class AbstractComponentTest {
         final HistoricTaskInstanceQuery taskQuery = this.activitiClient.getHistoryService()
                 .createHistoricTaskInstanceQuery();
         final HistoricTaskInstance nextTask = taskQuery.processInstanceId(processInstanceId)
-                .taskDefinitionKey(taskDefinitionKey)
-                .singleResult();
+                .taskDefinitionKey(taskDefinitionKey).singleResult();
         assertNotNull(nextTask);
         assertEquals(user, nextTask.getAssignee());
     }

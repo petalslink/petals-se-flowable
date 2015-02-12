@@ -54,13 +54,12 @@ public class OtherServicesInvocationTest extends AbstractComponentTest {
 
         // Send an exchange with the status set to 'DONE'. We must use 'processMessageFromServiceBus' because nothing is
         // returned on the end of IN-OUT exchange
-        OtherServicesInvocationTest.componentUnderTest
-                .processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(
-                        OtherServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        COMPONENT_UNDER_TEST.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
                 new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.DONE));
 
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
+        assertEquals(0, IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT).size());
     }
 
     /**
@@ -80,15 +79,14 @@ public class OtherServicesInvocationTest extends AbstractComponentTest {
 
         // Send an exchange with the status set to 'ERROR'. We must use 'processMessageFromServiceBus' because nothing
         // is returned on the end of IN-OUT exchange
-        OtherServicesInvocationTest.componentUnderTest
-                .processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(
-                        OtherServicesInvocationTest.serviceConfiguration, OPERATION_DEMANDERCONGES,
+        COMPONENT_UNDER_TEST.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
                 new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.ERROR));
 
-        assertEquals(0, inMemoryLogHandler.getAllRecords(Level.MONIT).size());
+        assertEquals(0, IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT).size());
         // A log trace must be logged with level WARNING telling that incoming error messages are not accepted
-        assertEquals(1, inMemoryLogHandler.getAllRecords(Level.WARNING).size());
+        assertEquals(1, IN_MEMORY_LOG_HANDLER.getAllRecords(Level.WARNING).size());
     }
 
 }

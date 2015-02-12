@@ -31,7 +31,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
@@ -71,7 +70,7 @@ import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class ActivitiSuManagerTest {
+public class ActivitiSuManagerTest extends AbstractTest {
 
     private static final QName SERVICE_NAME = new QName("namespace", "a-service");
 
@@ -90,17 +89,6 @@ public class ActivitiSuManagerTest {
 
     @Rule
     final public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    @BeforeClass
-    public static void setLogging() throws SecurityException, IOException {
-        final InputStream inputStream = ActivitiSuManagerTest.class.getResourceAsStream("/logging.properties");
-        assertNotNull("Logging configuration file not found", inputStream);
-        try {
-            LogManager.getLogManager().readConfiguration(inputStream);
-        } finally {
-            inputStream.close();
-        }
-    }
 
     @BeforeClass
     public static void setActivitiEngine() {

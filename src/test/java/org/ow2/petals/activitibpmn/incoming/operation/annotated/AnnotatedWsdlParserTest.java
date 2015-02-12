@@ -30,7 +30,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
@@ -42,6 +41,7 @@ import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.engine.impl.util.io.InputStreamSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.ow2.petals.activitibpmn.AbstractTest;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.ActionIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.DuplicatedFaultMappingException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.DuplicatedOutputMappingException;
@@ -84,7 +84,7 @@ import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class AnnotatedWsdlParserTest {
+public class AnnotatedWsdlParserTest extends AbstractTest {
 
     private static final String WSDL_TARGET_NAMESPACE = "http://petals.ow2.org/se/activiti/unit-test/parser";
 
@@ -105,17 +105,6 @@ public class AnnotatedWsdlParserTest {
     private final Logger logger = Logger.getLogger(AnnotatedWsdlParserTest.class.getName());
 
     private final AnnotatedWsdlParser parser = new AnnotatedWsdlParser(this.logger);
-
-    @BeforeClass
-    public static void setLogging() throws SecurityException, IOException {
-        final InputStream inputStream = AnnotatedWsdlParserTest.class.getResourceAsStream("/logging.properties");
-        assertNotNull("Logging configuration file not found", inputStream);
-        try {
-            LogManager.getLogManager().readConfiguration(inputStream);
-        } finally {
-            inputStream.close();
-        }
-    }
 
     @BeforeClass
     public static void setSuRootPath() throws URISyntaxException {
