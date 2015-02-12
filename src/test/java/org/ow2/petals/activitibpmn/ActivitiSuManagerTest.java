@@ -71,20 +71,20 @@ public class ActivitiSuManagerTest extends AbstractTest {
     private static final URL A_PROCESS_DEFINITION_URL = Thread.currentThread().getContextClassLoader()
             .getResource(A_PROCESS_DEFINITION_NAME);
 
+    private static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
+
+    private static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
+            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
+
+    @ClassRule
+    public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
+
     @BeforeClass
     public static void checkResources() {
         assertNotNull("Process definition file not found: " + A_PROCESS_DEFINITION_NAME, A_PROCESS_DEFINITION_URL);
         assertNotNull("Process definition file not found: " + ANOTHER_PROCESS_DEFINITION_NAME,
                 ANOTHER_PROCESS_DEFINITION_NAME);
     }
-
-    protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
-
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
 
     @After
     public void undeployAllServices() {
