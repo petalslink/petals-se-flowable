@@ -17,52 +17,38 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.logging.Logger;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import javax.jbi.JBIException;
-import javax.jbi.component.ComponentContext;
-import javax.jbi.servicedesc.ServiceEndpoint;
+import javax.jbi.management.DeploymentException;
 import javax.xml.namespace.QName;
 
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.ProcessEngineConfiguration;
-import org.apache.commons.io.IOUtils;
-import org.easymock.EasyMock;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.ow2.petals.activitibpmn.exception.IncoherentProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.InvalidVersionDeclaredException;
 import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
-import org.ow2.petals.component.framework.AbstractComponent;
-import org.ow2.petals.component.framework.api.Interceptor;
 import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorException;
-import org.ow2.petals.component.framework.jbidescriptor.JBIDescriptorBuilder;
-import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
-import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
-import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-
-import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
+import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
+import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
+import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
+import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
+import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
 /**
  * Unit tests of {@link ActivitiSuManager}
@@ -78,27 +64,36 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
     private static final String ENDPOINT_NAME = "an-endpoint-name";
 
-    private static final String MY_PROCESS_FILE = "my-process-file.bpmn";
+    private static final String A_PROCESS_DEFINITION_NAME = "orderProcess.bpmn20.xml";
 
-    private static final String MY_2ND_PROCESS_FILE = "another-process-file.bpmn";
+    private static final String ANOTHER_PROCESS_DEFINITION_NAME = "vacationRequest.bpmn20.xml";
 
-    private final URL A_PROCESS_DEFINITION = Thread.currentThread().getContextClassLoader()
-            .getResource("orderProcess.bpmn20.xml");
-
-    private static ProcessEngine ACTIVITI_ENGINE;
-
-    @Rule
-    final public TemporaryFolder tempFolder = new TemporaryFolder();
+    private static final URL A_PROCESS_DEFINITION_URL = Thread.currentThread().getContextClassLoader()
+            .getResource(A_PROCESS_DEFINITION_NAME);
 
     @BeforeClass
-    public static void setActivitiEngine() {
-        ACTIVITI_ENGINE = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
-                .buildProcessEngine();
+    public static void checkResources() {
+        assertNotNull("Process definition file not found: " + A_PROCESS_DEFINITION_NAME, A_PROCESS_DEFINITION_URL);
+        assertNotNull("Process definition file not found: " + ANOTHER_PROCESS_DEFINITION_NAME,
+                ANOTHER_PROCESS_DEFINITION_NAME);
     }
 
-    @AfterClass
-    public static void stopActivitiEngine() {
-        ACTIVITI_ENGINE.close();
+    protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
+
+    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
+            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
+
+    @ClassRule
+    public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
+
+    @After
+    public void undeployAllServices() {
+        COMPONENT_UNDER_TEST.undeployAllServices();
+    }
+
+    @After
+    public void cleanLogTraces() {
+        IN_MEMORY_LOG_HANDLER.clear();
     }
 
     /**
@@ -106,7 +101,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * Try do deploy a SU containing no process declaration
      * </p>
      * <p>
-     * Expected results: an error occurs because no process declaration is included into the JBI descriptor
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because no process declaration is included into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -114,17 +113,30 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "no-process-definition";
-        final File suRootPath = this.tempFolder.newFolder(suName);
-        this.createSuBpmn(suRootPath, new Element[] {});
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(NoProcessDefinitionDeclarationException.MESSAGE));
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue("Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(NoProcessDefinitionDeclarationException.MESSAGE));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof NoProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -132,7 +144,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * Try do deploy an invalid SU containing one process declaration: the process file is set without version.
      * </p>
      * <p>
-     * Expected results: an error occurs because the field 'version' is missing into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the field 'version' is missing into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -140,19 +156,37 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "one-process-definition-missing-version";
-        final File suRootPath = this.tempFolder.newFolder(suName);
-        this.createSuBpmn(suRootPath, new Element[] { this.createProcessFileExtension(this.createProcessFile(
-                suRootPath, MY_PROCESS_FILE, A_PROCESS_DEFINITION)) });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, MY_PROCESS_FILE, null)));
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE).toString(), A_PROCESS_DEFINITION_NAME);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
+                                    A_PROCESS_DEFINITION_NAME, null)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -160,7 +194,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * Try do deploy an invalid SU containing one process declaration: the process file is set with an empty version.
      * </p>
      * <p>
-     * Expected results: an error occurs because the field 'version' is missing into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the field 'version' is missing into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -168,22 +206,39 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "one-process-definition-empty-version";
-        final File suRootPath = this.tempFolder.newFolder(suName);
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension("") });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, MY_PROCESS_FILE, "")));
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE).toString(), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(
+                            "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version", "");
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
+                                    A_PROCESS_DEFINITION_NAME, "")));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -191,7 +246,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * Try do deploy an invalid SU containing one process declaration: the process file is set with an invalid version.
      * </p>
      * <p>
-     * Expected results: an error occurs because the field 'version' is set to an invalid value into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the field 'version' is set to an invalid value into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -199,23 +258,40 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "one-process-definition-invalid-version";
-        final File suRootPath = this.tempFolder.newFolder(suName);
         final String version = "invalid";
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension(version) });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                InvalidVersionDeclaredException.MESSAGE_PATTERN, MY_PROCESS_FILE, version)));
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE).toString(), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION).toString(), version);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(InvalidVersionDeclaredException.MESSAGE_PATTERN, A_PROCESS_DEFINITION_NAME,
+                                    version)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof InvalidVersionDeclaredException);
+        }
     }
 
     /**
@@ -223,7 +299,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * Try do deploy an invalid SU containing one process declaration: the process version is set without its file.
      * </p>
      * <p>
-     * Expected results: an error occurs because the field 'process-file' is missing into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the field 'process-file' is missing into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -231,19 +311,37 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "one-process-definition-missing-processfile";
-        final File suRootPath = this.tempFolder.newFolder(suName);
         final String version = "1";
-        this.createSuBpmn(suRootPath, new Element[] { this.createVersionExtension(version) });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null, version)));
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION).toString(), version);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null,
+                                    version)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -252,7 +350,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * is set to an empty value.
      * </p>
      * <p>
-     * Expected results: an error occurs because the field 'process-file' is empty into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the field 'process-file' is empty into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -260,20 +362,40 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "one-process-definition-empty-processfile";
-        final File suRootPath = this.tempFolder.newFolder(suName);
         final String version = "1";
-        this.createSuBpmn(suRootPath,
-                new Element[] { this.createProcessFileExtension(""), this.createVersionExtension(version) });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "", version)));
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE).toString(), "");
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION).toString(), version);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage()
+                            .contains(
+                                    String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "",
+                                            version)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -282,7 +404,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * is set to an inexisting file.
      * </p>
      * <p>
-     * Expected results: an error occurs because the field 'process-file' does not exist.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the field 'process-file' does not exist</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -290,20 +416,43 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "one-process-definition-unknown-process-file";
-        final File suRootPath = this.tempFolder.newFolder(suName);
-        this.createSuBpmn(suRootPath,
-                new Element[] { this.createProcessFileExtension(MY_PROCESS_FILE), this.createVersionExtension("1") });
+        final String version = "1";
+        final String processFile = "unexisting-process-file.bpmn";
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result,
-                result.contains(String.format(UnexistingProcessFileException.MESSAGE_PATTERN, new File(suRootPath,
-                        MY_PROCESS_FILE).getAbsolutePath())));
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE).toString(), processFile);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION).toString(), version);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(
+                                    UnexistingProcessFileException.MESSAGE_PATTERN,
+                                    new File(COMPONENT_UNDER_TEST
+                                            .getServiceConfigurationInstallDir(COMPONENT_UNDER_TEST
+                                                    .getServiceConfiguration(suName)), processFile).getAbsolutePath())));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof UnexistingProcessFileException);
+        }
     }
 
     /**
@@ -314,8 +463,12 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * <li>the 2nd process declaration: the process file is set without version.
      * </p>
      * <p>
-     * Expected results: As version occurs once, an error about a missing process file occurs because the CDK has read
-     * multiple process files as '<code>process_file&lt;i&gt;</code>' but the unique version as '<code>version</code>'.
+     * Expected results:
+     * <ul>
+     * <li>As version occurs once, an error about a missing process file occurs because the CDK has read multiple
+     * process files as '<code>process_file&lt;i&gt;</code>' but the unique version as '<code>version</code>'</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -323,26 +476,43 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "multiple-process-definition-missing-version";
-        final File suRootPath = this.tempFolder.newFolder(suName);
         final String version = "1";
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)),
-                        this.createVersionExtension(version),
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_2ND_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)) });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null, version)));
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "1").toString(), version);
+
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), ANOTHER_PROCESS_DEFINITION_NAME);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
+                                    ANOTHER_PROCESS_DEFINITION_NAME, null)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -353,7 +523,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * <li>the 2nd process declaration: the process file is set with an empty version.
      * </p>
      * <p>
-     * Expected results: an error occurs because the 2nd field 'version' is empty into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the 2nd field 'version' is empty into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -361,26 +535,45 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "multiple-process-definition-empty-version";
-        final File suRootPath = this.tempFolder.newFolder(suName);
         final String version = "1";
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)),
-                        this.createVersionExtension(version),
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_2ND_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension("") });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, MY_2ND_PROCESS_FILE, "")));
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "1").toString(), version);
+
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), ANOTHER_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "2").toString(), "");
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
+                                    ANOTHER_PROCESS_DEFINITION_NAME, "")));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -391,7 +584,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * <li>the 2nd process declaration: the process file is set with an invalid version.
      * </p>
      * <p>
-     * Expected results: an error occurs because the 2nd field 'version' is invalid into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the 2nd field 'version' is invalid into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -399,27 +596,46 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "multiple-process-definition-invalid-version";
-        final File suRootPath = this.tempFolder.newFolder(suName);
         final String version1 = "1";
         final String version2 = "invalid";
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)),
-                        this.createVersionExtension(version1),
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_2ND_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension(version2) });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                InvalidVersionDeclaredException.MESSAGE_PATTERN, MY_2ND_PROCESS_FILE, version2)));
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "1").toString(), version1);
+
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), ANOTHER_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "2").toString(), version2);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(InvalidVersionDeclaredException.MESSAGE_PATTERN,
+                                    ANOTHER_PROCESS_DEFINITION_NAME, version2)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof InvalidVersionDeclaredException);
+        }
     }
 
     /**
@@ -430,8 +646,12 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * <li>the 2nd process declaration: the process version is set without file.
      * </p>
      * <p>
-     * Expected results: As process file occurs once, an error about a missing version occurs because the CDK has read
-     * multiple process files as '<code>version&lt;i&gt;</code>' but the unique version as '<code>process_file</code>'.
+     * Expected results:
+     * <ul>
+     * <li>As process file occurs once, an error about a missing version occurs because the CDK has read multiple
+     * process files as '<code>version&lt;i&gt;</code>' but the unique version as '<code>process_file</code>'</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -439,25 +659,44 @@ public class ActivitiSuManagerTest extends AbstractTest {
             IllegalArgumentException, CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException,
             IOException, JBIException, URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
         final String suName = "multiple-process-definition-missing-process-file";
-        final File suRootPath = this.tempFolder.newFolder(suName);
         final String version1 = "1";
         final String version2 = "2";
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension(version1),
-                        this.createVersionExtension(version2) });
+        try {
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
 
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
 
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, MY_PROCESS_FILE, null)));
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "1").toString(), version1);
+
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "2").toString(), version2);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage().contains(
+                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null,
+                                    version2)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
+        }
     }
 
     /**
@@ -468,7 +707,11 @@ public class ActivitiSuManagerTest extends AbstractTest {
      * <li>the 2nd process declaration: the process version is set with an empty file.
      * </p>
      * <p>
-     * Expected results: an error occurs because the 2nd field 'version' is empty into the JBI descriptor.
+     * Expected results:
+     * <ul>
+     * <li>an error occurs because the 2nd field 'version' is empty into the JBI descriptor</li>
+     * <li>the error is logged as ERROR</li>
+     * </ul>
      * </p>
      */
     @Test
@@ -476,178 +719,46 @@ public class ActivitiSuManagerTest extends AbstractTest {
             CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
-        final ActivitiSuManager activitiSuManager = this.createActivitiSuManager();
-
-        final String suName = "multiple-process-definition-empty-process-file";
-        final File suRootPath = this.tempFolder.newFolder(suName);
+        final String suName = "multiple-process-definition-missing-process-file";
         final String version1 = "1";
         final String version2 = "2";
-        this.createSuBpmn(
-                suRootPath,
-                new Element[] {
-                        this.createProcessFileExtension(this.createProcessFile(suRootPath, MY_PROCESS_FILE,
-                                A_PROCESS_DEFINITION)), this.createVersionExtension(version1),
-                        this.createProcessFileExtension(""), this.createVersionExtension(version2) });
-
-        final String result = activitiSuManager.deploy(suName, suRootPath.getAbsolutePath());
-
-        assertTrue("The deployment succeeds: " + result,
-                result.contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-        assertTrue("Unexpected error: " + result, result.contains(String.format(
-                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "", version2)));
-    }
-
-    private ActivitiSuManager createActivitiSuManager() throws CDKJBIDescriptorException, SecurityException,
-            NoSuchFieldException, IllegalArgumentException, IllegalAccessException, JBIException {
-
-        final ActivitiSE component = new ActivitiSE();
-
-        final ServiceEndpoint serviceEndpoint = new ServiceEndpoint() {
-
-            @Override
-            public QName getServiceName() {
-                return SERVICE_NAME;
-            }
-
-            @Override
-            public QName[] getInterfaces() {
-                return new QName[] { INTERFACE_NAME };
-            }
-
-            @Override
-            public String getEndpointName() {
-                return ENDPOINT_NAME;
-            }
-
-            @Override
-            public DocumentFragment getAsReference(QName operationName) {
-                return null;
-            }
-        };
-
-        final ComponentContext componentContext = EasyMock.createMock(ComponentContext.class);
-        EasyMock.expect(componentContext.getComponentName()).andReturn("petals-se-bpmn").anyTimes();
-        EasyMock.expect(componentContext.activateEndpoint(SERVICE_NAME, ENDPOINT_NAME)).andReturn(serviceEndpoint)
-                .anyTimes();
-        componentContext.deactivateEndpoint(serviceEndpoint);
-        EasyMock.expectLastCall().anyTimes();
-        EasyMock.replay(componentContext);
-
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
-        final Field jbiComponentCfgField = AbstractComponent.class.getDeclaredField("jbiComponentConfiguration");
-        jbiComponentCfgField.setAccessible(true);
-        jbiComponentCfgField.set(component, jbiComponentConfiguration);
-        final Field loggerField = AbstractComponent.class.getDeclaredField("logger");
-        loggerField.setAccessible(true);
-        loggerField.set(component, Logger.getLogger(this.getClass().getName()));
-        final Field contextField = AbstractComponent.class.getDeclaredField("context");
-        contextField.setAccessible(true);
-        contextField.set(component, componentContext);
-        final Field interceptorsField = AbstractComponent.class.getDeclaredField("interceptors");
-        interceptorsField.setAccessible(true);
-        interceptorsField.set(component, new HashMap<String, Interceptor>());
-        final Field activitiEngineField = ActivitiSE.class.getDeclaredField("activitiEngine");
-        activitiEngineField.setAccessible(true);
-        activitiEngineField.set(component, ACTIVITI_ENGINE);
-
-        return new ActivitiSuManager(component);
-    }
-
-    /**
-     * Create a BPMN file into the SU directory tree. The BPMN file copied from an existing one.
-     * 
-     * @param suRootPath
-     *            The SU directory tree
-     * @param processFileName
-     *            The name of the BPMN file into the SU directory tree
-     * @param originalProcessFileURL
-     *            The URL of the original BPMN file resource
-     * @return The name of the BPMN file into the SU directory tree, ie <code>processFileName</code>.
-     */
-    private String createProcessFile(final File suRootPath, final String processFileName,
-            final URL originalProcessFileURL) throws URISyntaxException, IOException {
-        final File processDefinitionInputFile = new File(originalProcessFileURL.toURI());
-        final File processDefinitionOutputFile = new File(suRootPath, processFileName);
-        final FileInputStream fis = new FileInputStream(processDefinitionInputFile);
         try {
-            final FileOutputStream fos = new FileOutputStream(processDefinitionOutputFile);
-            try {
-                IOUtils.copy(fis, fos);
-                return processFileName;
-            } finally {
-                fos.close();
-            }
-        } finally {
-            fis.close();
+            COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
+
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(suName, INTERFACE_NAME,
+                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE, null);
+
+                    serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "1").toString(), version1);
+
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), "");
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
+                            ActivitiSEConstants.VERSION + "2").toString(), version2);
+
+                    return serviceConfiguration;
+                }
+            });
+        } catch (final DeploymentException e) {
+            // Expected exception
+            assertTrue("The deployment succeeds: " + e.getMessage(),
+                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
+            assertTrue(
+                    "Unexpected error: " + e.getMessage(),
+                    e.getMessage()
+                            .contains(
+                                    String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "",
+                                            version2)));
+
+            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
+            assertEquals(1, errors.size());
+            final LogRecord error = errors.get(0);
+            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
         }
-    }
-
-    /**
-     * Create the component extension {@value ActivitiSEConstants#PROCESS_FILE}
-     * 
-     * @param processFileExtensionValue
-     *            The value to set, or <code>null</code>
-     */
-    private Element createProcessFileExtension(final String processFileExtensionValue) {
-        final Document doc = DocumentBuilders.newDocument();
-        final Element processFile = doc.createElementNS("activiti", ActivitiSEConstants.PROCESS_FILE);
-        if (processFileExtensionValue != null) {
-            processFile.setTextContent(processFileExtensionValue);
-        }
-        return processFile;
-    }
-
-    /**
-     * Create the component extension {@value ActivitiSEConstants#VERSION}
-     * 
-     * @param versionExtensionValue
-     *            The value to set, or <code>null</code>
-     */
-    private Element createVersionExtension(final String versionExtensionValue) {
-        final Document doc = DocumentBuilders.newDocument();
-        final Element version = doc.createElementNS("activiti", ActivitiSEConstants.VERSION);
-        if (versionExtensionValue != null) {
-            version.setTextContent(versionExtensionValue);
-        }
-        return version;
-    }
-
-    /**
-     * Generate a SU directory tree creating:
-     * <ul>
-     * <li>the JBI descriptor</li>
-     * </ul>
-     * 
-     * @param suRootPath
-     *            The SU root path
-     * @param extensions
-     *            The component extension to add to the JBI descriptor
-     */
-    private void createSuBpmn(final File suRootPath, final Element[] extensions) throws CDKJBIDescriptorException,
-            IOException {
-        final Jbi jbi = new Jbi();
-        jbi.setVersion(BigDecimal.valueOf(1));
-        final Services services = new Services();
-        jbi.setServices(services);
-        final Provides provides = new Provides();
-        services.getProvides().add(provides);
-        provides.setInterfaceName(INTERFACE_NAME);
-        provides.setServiceName(SERVICE_NAME);
-        provides.setEndpointName(ENDPOINT_NAME);
-        provides.getAny().addAll(Arrays.asList(extensions));
-
-        final File metaInfDir = new File(suRootPath, "META-INF");
-        assertTrue(metaInfDir.mkdirs());
-        final File suJbiDescriptorFile = new File(metaInfDir, "jbi.xml");
-        final FileOutputStream fos = new FileOutputStream(suJbiDescriptorFile);
-        try {
-            JBIDescriptorBuilder.buildXmlJBIdescriptor(jbi, fos);
-        } finally {
-            fos.close();
-        }
-
     }
 }

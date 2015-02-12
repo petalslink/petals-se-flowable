@@ -27,6 +27,11 @@ import javax.xml.namespace.QName;
 public final class ActivitiSEConstants {
 
     /**
+     * Name space name of service unit parameters
+     */
+    public static final String NAMESPACE_SU = "http://petals.ow2.org/components/petals-se-activitibpmn/su/1.0";
+
+    /**
      * The SU parameter that defines the tenantId.
      */
     public static final String TENANT_ID = "tenant_id";
