@@ -761,4 +761,81 @@ public class ActivitiSuManagerTest extends AbstractTest {
             assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
         }
     }
+
+    /**
+     * <p>
+     * Try do deploy an valid SU containing multiple process declarations.
+     * </p>
+     * <p>
+     * Expected results: No error occurs
+     * </p>
+     */
+    @Test
+    public void deploy_MultipleProcessDefinition() throws SecurityException, IllegalArgumentException,
+            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            URISyntaxException {
+
+        final String suName = "MultipleProcessDefintion";
+        COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
+
+                final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("su/valid/vacationRequest.wsdl");
+                assertNotNull("WSDl not found", wsdlUrl);
+                final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(AbstractComponentTest.class
+                        .getSimpleName(), AbstractComponentTest.VACATION_INTERFACE,
+                        AbstractComponentTest.VACATION_SERVICE, AbstractComponentTest.VACATION_ENDPOINT,
+                        ServiceType.PROVIDE, wsdlUrl);
+
+                final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("su/valid/demanderCongesResponse.xsl");
+                assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
+                serviceConfiguration.addResource(demanderCongesResponseXslUrl);
+
+                final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("su/valid/validerDemandeResponse.xsl");
+                assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
+                serviceConfiguration.addResource(validerDemandeResponseXslUrl);
+
+                final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("su/valid/ajusterDemandeResponse.xsl");
+                assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
+                serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
+
+                final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("su/valid/numeroDemandeInconnu.xsl");
+                assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
+                serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
+
+                final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("su/valid/demandeDejaValidee.xsl");
+                assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
+                serviceConfiguration.addResource(demandeDejaValideeXslUrl);
+
+                final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("su/valid/vacationRequest.bpmn20.xml");
+                assertNotNull("BPMN file not found", bpmnUrl);
+                serviceConfiguration.addResource(bpmnUrl);
+
+                // First process definition
+                serviceConfiguration.setParameter(
+                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file1",
+                        "vacationRequest.bpmn20.xml");
+                serviceConfiguration.setParameter(
+                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version1", "1");
+
+                // 2nd process definition
+                serviceConfiguration.setParameter(
+                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file2",
+                        "vacationRequest.bpmn20.xml");
+                serviceConfiguration.setParameter(
+                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version2", "1");
+
+                return serviceConfiguration;
+            }
+        });
+
+        assertNotNull(COMPONENT_UNDER_TEST.getServiceConfiguration(suName));
+    }
 }

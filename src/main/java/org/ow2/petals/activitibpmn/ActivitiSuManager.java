@@ -269,8 +269,12 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                     bpmnModels.put(processFileName,
                             this.readBpmnModel(processFileName, versionStr, tenantId, categoryId, suRootPath));
                     nbProcesses++;
-                } else {
+                } else if ((processFileName != null && versionStr == null)
+                        || (processFileName == null && versionStr != null)) {
                     throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
+                } else {
+                    // Here, processFileName == null and versionStr == null, and at least one process definition was
+                    // previously read, so we have nothing to do, we will exit the loop
                 }
             } while (processFileName != null && versionStr != null);
         } else if (processFileName != null && versionStr != null) {

@@ -38,10 +38,10 @@
 			<!-- ACTIVITI specific fields -->
  			<petals-se-activitibpmn:tenant_id>BEStenant</petals-se-activitibpmn:tenant_id>
 			<petals-se-activitibpmn:category_id>TEST</petals-se-activitibpmn:category_id>
-			<petals-se-activitibpmn:process_file>vacationRequest.bpmn20.xml</petals-se-activitibpmn:process_file>
-			<petals-se-activitibpmn:version>1</petals-se-activitibpmn:version>
-			<petals-se-activitibpmn:process_file>orderProcess.bpmn20.xml</petals-se-activitibpmn:process_file>
- 			<petals-se-activitibpmn:version>1</petals-se-activitibpmn:version>
+			<petals-se-activitibpmn:process_file1>vacationRequest.bpmn20.xml</petals-se-activitibpmn:process_file1>
+			<petals-se-activitibpmn:version1>1</petals-se-activitibpmn:version1>
+			<petals-se-activitibpmn:process_file2>orderProcess.bpmn20.xml</petals-se-activitibpmn:process_file2>
+ 			<petals-se-activitibpmn:version2>1</petals-se-activitibpmn:version2>
 
 		</jbi:provides>
 	</jbi:services>
