@@ -118,7 +118,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         }
 
         // Get the SU Data handler
-        final ServiceUnitDataHandler suDataHandler = this.getSUDataHandlerForProvides(provides);
+        final ServiceUnitDataHandler suDataHandler = this.getSUDataHandler(serviceUnitName);
         if (suDataHandler == null) {
             throw new PEtALSCDKException(
                     "Error while processing the JBI descriptor in the component. The SU data handler was null.");
@@ -497,7 +497,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
         
         final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
-        final Document wsdlDocument = this.getServiceDescription(serviceEndpoint);
+        final Document wsdlDocument = this.getSUDataHandler(serviceUnitName).getEndpointDescription(serviceEndpoint);
         final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
                 suRootPath);
         // Log all WSDL errors before to process each annotated operations
