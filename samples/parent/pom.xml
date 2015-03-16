@@ -22,13 +22,13 @@
     <artifactId>petals-parent</artifactId>
     <groupId>org.ow2.petals</groupId>
     <version>20.2.3-SNAPSHOT</version>
-    <relativePath>../../../../parent/pom.xml</relativePath>
+    <relativePath />
   </parent>
   
   <groupId>org.ow2.petals.samples</groupId>
   <artifactId>petals-activitibpmn</artifactId>
   <name>petals-activitibpmn</name>
-  <version>0-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
    <dependencyManagement>
@@ -51,7 +51,6 @@
    </dependencyManagement>
 
    <build>
-      <defaultGoal>install</defaultGoal>
       <pluginManagement>
          <plugins>
             <plugin>

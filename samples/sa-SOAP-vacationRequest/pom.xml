@@ -21,7 +21,7 @@
   <parent>
     <artifactId>petals-activitibpmn</artifactId>
     <groupId>org.ow2.petals.samples</groupId>
-    <version>0-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
   
@@ -29,7 +29,7 @@
   <artifactId>sa-SOAP-vacationRequest</artifactId>
   <packaging>jbi-service-assembly</packaging>
   <name>sa-SOAP-vacationRequest</name>
-  <version>0-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
 
   <properties>
     <!-- Skip dependency check for service assembly because it has Java no source code. -->
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-SOAP-vacationRequest-consume</artifactId>
-      <version>0-SNAPSHOT</version>
+      <version>5.0.0-SNAPSHOT</version>
       <type>jbi-service-unit</type>
     </dependency>
   </dependencies>

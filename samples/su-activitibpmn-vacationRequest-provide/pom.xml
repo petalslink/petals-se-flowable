@@ -21,7 +21,7 @@
   <parent>
     <artifactId>petals-activitibpmn</artifactId>
     <groupId>org.ow2.petals.samples</groupId>
-    <version>0-SNAPSHOT</version>
+    <version>5.0.0-SNAPSHOT</version>
     <relativePath>../parent/pom.xml</relativePath>
   </parent>
   
@@ -29,7 +29,7 @@
   <artifactId>su-activitibpmn-vacationRequest-provide</artifactId>
   <packaging>jbi-service-unit</packaging>
   <name>su-activitibpmn-vacationRequest-provide</name>
-  <version>0-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
   <description>su-activitibpmn-vacationRequest-provide description.</description>
   
   <properties>
