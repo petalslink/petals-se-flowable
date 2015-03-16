@@ -31,10 +31,10 @@ import javax.xml.parsers.DocumentBuilder;
 import org.h2.Driver;
 import org.junit.Test;
 import org.ow2.petals.component.framework.JBIBootstrap;
-import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorException;
-import org.ow2.petals.component.framework.jbidescriptor.JBIDescriptorBuilder;
+import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Component;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
+import org.ow2.petals.jbi.descriptor.JBIDescriptorException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -201,13 +201,14 @@ public class ActivitiSEBootstrapTest {
      * default value in jbi.xml)
      */
     @Test
-    public void defaultConfiguration_definedInJbiDescriptor() throws CDKJBIDescriptorException, SecurityException,
+    public void defaultConfiguration_definedInJbiDescriptor() throws JBIDescriptorException, SecurityException,
             NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
+                defaultJbiDescriptorStream);
 
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
@@ -257,12 +258,13 @@ public class ActivitiSEBootstrapTest {
      */
     @Test
     public void setJdbcUrl_ValidURL() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
+                defaultJbiDescriptorStream);
 
         final String expectedUrl = "http://path";
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
@@ -275,12 +277,13 @@ public class ActivitiSEBootstrapTest {
      */
     @Test
     public void setJdbcUrl_SpaceURL() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
+                defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -308,12 +311,13 @@ public class ActivitiSEBootstrapTest {
      */
     @Test
     public void setJdbcDriver_ValidDriver() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
+                defaultJbiDescriptorStream);
 
         final String expectedDriver = Driver.class.getName();
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
@@ -326,12 +330,13 @@ public class ActivitiSEBootstrapTest {
      */
     @Test
     public void setJdbcDriver_SpaceValue() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, CDKJBIDescriptorException {
+            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = JBIDescriptorBuilder.buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
+                defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 

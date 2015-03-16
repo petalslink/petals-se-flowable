@@ -43,11 +43,11 @@ import org.ow2.petals.activitibpmn.exception.IncoherentProcessDefinitionDeclarat
 import org.ow2.petals.activitibpmn.exception.InvalidVersionDeclaredException;
 import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
-import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorException;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
+import org.ow2.petals.jbi.descriptor.JBIDescriptorException;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
 /**
@@ -110,7 +110,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_NoProcessDefinition() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "no-process-definition";
@@ -153,7 +153,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_OneProcessDefinition_MissingVersion() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "one-process-definition-missing-version";
@@ -203,7 +203,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_OneProcessDefinition_EmptyVersion() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "one-process-definition-empty-version";
@@ -255,7 +255,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_OneProcessDefinition_InvalidVersion() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "one-process-definition-invalid-version";
@@ -308,7 +308,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_OneProcessDefinition_MissingProcessFile() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "one-process-definition-missing-processfile";
@@ -359,7 +359,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_OneProcessDefinition_EmptyProcessFile() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "one-process-definition-empty-processfile";
@@ -413,7 +413,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_OneProcessDefinition_UnknownProcessFile() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "one-process-definition-unknown-process-file";
@@ -473,7 +473,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_MultipleProcessDefinition_MissingVersion() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "multiple-process-definition-missing-version";
@@ -532,7 +532,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_MultipleProcessDefinition_EmptyVersion() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "multiple-process-definition-empty-version";
@@ -593,7 +593,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_MultipleProcessDefinition_InvalidVersion() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "multiple-process-definition-invalid-version";
@@ -656,7 +656,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_MultipleProcessDefinition_MissingProcessFile() throws SecurityException,
-            IllegalArgumentException, CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException,
+            IllegalArgumentException, JBIDescriptorException, NoSuchFieldException, IllegalAccessException,
             IOException, JBIException, URISyntaxException {
 
         final String suName = "multiple-process-definition-missing-process-file";
@@ -716,7 +716,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_MultipleProcessDefinition_EmptyProcessFile() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "multiple-process-definition-missing-process-file";
@@ -772,7 +772,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
      */
     @Test
     public void deploy_MultipleProcessDefinition() throws SecurityException, IllegalArgumentException,
-            CDKJBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
+            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
             URISyntaxException {
 
         final String suName = "MultipleProcessDefintion";
