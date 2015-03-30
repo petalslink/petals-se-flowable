@@ -62,6 +62,7 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
+import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.w3c.dom.Document;
 
 
@@ -149,7 +150,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         final String edptName = provides.getEndpointName();
         for (final ActivitiOperation operation : operations) {
             // Store the ActivitiOperation in the map with the corresponding end-point
-            final EptAndOperation eptAndOperation = new EptAndOperation(edptName, operation.getWsdlOperation());
+            final EndpointOperationKey eptAndOperation = new EndpointOperationKey(edptName,
+                    operation.getWsdlOperation());
             ((ActivitiSE) this.component).registerActivitiService(eptAndOperation, operation);
         }
         ((ActivitiSE) this.component).logEptOperationToActivitiOperation(this.logger, Level.FINEST);

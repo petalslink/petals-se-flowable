@@ -64,6 +64,7 @@ import org.ow2.petals.activitibpmn.outgoing.cxf.transport.PetalsCxfTransportFact
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 
 
@@ -81,7 +82,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 	/**
      * A map used to get the Activiti Operation associated with (end-point Name + Operation)
      */
-    private final Map<EptAndOperation, ActivitiService> activitiServices = new ConcurrentHashMap<EptAndOperation, ActivitiService>();
+    private final Map<EndpointOperationKey, ActivitiService> activitiServices = new ConcurrentHashMap<EndpointOperationKey, ActivitiService>();
 
     /**
      * @return the Activiti Engine
@@ -98,7 +99,8 @@ public class ActivitiSE extends AbstractServiceEngine {
      *            the Activiti service
      * @return the map with the inserted elements
      */
-    public void registerActivitiService(final EptAndOperation eptAndOperation, final ActivitiService activitiservice) {
+    public void registerActivitiService(final EndpointOperationKey eptAndOperation,
+            final ActivitiService activitiservice) {
         this.activitiServices.put(eptAndOperation, activitiservice);
     }
 
@@ -108,11 +110,11 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
     public void removeActivitiService(final String eptName) {
 
-        final Iterator<Entry<EptAndOperation, ActivitiService>> itEptOperationToActivitiOperation = this.activitiServices
+        final Iterator<Entry<EndpointOperationKey, ActivitiService>> itEptOperationToActivitiOperation = this.activitiServices
                 .entrySet().iterator();
         while (itEptOperationToActivitiOperation.hasNext()) {
-            final Entry<EptAndOperation, ActivitiService> entry = itEptOperationToActivitiOperation.next();
-            if (entry.getKey().getEptName().equals(eptName)) {
+            final Entry<EndpointOperationKey, ActivitiService> entry = itEptOperationToActivitiOperation.next();
+            if (entry.getKey().endpoint.equals(eptName)) {
                 itEptOperationToActivitiOperation.remove();
             }
         }
@@ -123,11 +125,11 @@ public class ActivitiSE extends AbstractServiceEngine {
 	 */
     public void logEptOperationToActivitiOperation(final Logger logger, final Level logLevel) {
         if (logger.isLoggable(logLevel)) {
-            for (final Map.Entry<EptAndOperation, ActivitiService> entry : this.activitiServices.entrySet()) {
-                final EptAndOperation key = entry.getKey();
+            for (final Map.Entry<EndpointOperationKey, ActivitiService> entry : this.activitiServices.entrySet()) {
+                final EndpointOperationKey key = entry.getKey();
                 logger.log(logLevel, "*** EptAndoperation ");
-                logger.log(logLevel, "EptName = " + key.getEptName());
-                logger.log(logLevel, "Operation = " + key.getOperation());
+                logger.log(logLevel, "EptName = " + key.endpoint);
+                logger.log(logLevel, "Operation = " + key.operation);
                 logger.log(logLevel, "------------------------------------------------------ ");
                 entry.getValue().log(logger, logLevel);
                 logger.log(logLevel, "******************* ");
@@ -142,7 +144,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      *            the end-point Name and operation Name
      * @return the Activiti Service associated with this end-point name and operation Name
      */
-    public ActivitiService getActivitiServices(final EptAndOperation eptAndOperation) {
+    public ActivitiService getActivitiServices(final EndpointOperationKey eptAndOperation) {
         return this.activitiServices.get(eptAndOperation);
 	}
 	
@@ -305,7 +307,8 @@ public class ActivitiSE extends AbstractServiceEngine {
             } else if (integrationEndpoints.size() == 1) {
                 try {
                     final String integrationEndpointName = integrationEndpoints.get(0).getName();
-                    this.activitiServices.put(new EptAndOperation(integrationEndpointName, ITG_OP_GETTASKS),
+                    this.activitiServices.put(
+                            new EndpointOperationKey(integrationEndpointName, ITG_OP_GETTASKS),
                             new GetTasksOperation(this.activitiEngine.getTaskService(), this.activitiEngine
                                     .getRepositoryService(), this.getLogger()));
                 } catch (final OperationInitializationException e) {
