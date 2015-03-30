@@ -148,9 +148,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         
         // Enable processing operations
         final String edptName = provides.getEndpointName();
+        final QName interfaceName = provides.getInterfaceName();
         for (final ActivitiOperation operation : operations) {
             // Store the ActivitiOperation in the map with the corresponding end-point
-            final EndpointOperationKey eptAndOperation = new EndpointOperationKey(edptName,
+            final EndpointOperationKey eptAndOperation = new EndpointOperationKey(edptName, interfaceName,
                     operation.getWsdlOperation());
             ((ActivitiSE) this.component).registerActivitiService(eptAndOperation, operation);
         }

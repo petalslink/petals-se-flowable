@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
+import javax.xml.namespace.QName;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
@@ -56,6 +57,7 @@ import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
+import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
@@ -114,7 +116,7 @@ public class ActivitiSE extends AbstractServiceEngine {
                 .entrySet().iterator();
         while (itEptOperationToActivitiOperation.hasNext()) {
             final Entry<EndpointOperationKey, ActivitiService> entry = itEptOperationToActivitiOperation.next();
-            if (entry.getKey().endpoint.equals(eptName)) {
+            if (entry.getKey().getEndpointName().equals(eptName)) {
                 itEptOperationToActivitiOperation.remove();
             }
         }
@@ -127,9 +129,8 @@ public class ActivitiSE extends AbstractServiceEngine {
         if (logger.isLoggable(logLevel)) {
             for (final Map.Entry<EndpointOperationKey, ActivitiService> entry : this.activitiServices.entrySet()) {
                 final EndpointOperationKey key = entry.getKey();
-                logger.log(logLevel, "*** EptAndoperation ");
-                logger.log(logLevel, "EptName = " + key.endpoint);
-                logger.log(logLevel, "Operation = " + key.operation);
+                logger.log(logLevel, "*** Endpoint Operation ");
+                logger.log(logLevel, key.toString());
                 logger.log(logLevel, "------------------------------------------------------ ");
                 entry.getValue().log(logger, logLevel);
                 logger.log(logLevel, "******************* ");
@@ -306,12 +307,15 @@ public class ActivitiSE extends AbstractServiceEngine {
                 throw new JBIException("Unexpected endpoint number supporting integration services");
             } else if (integrationEndpoints.size() == 1) {
                 try {
-                    final String integrationEndpointName = integrationEndpoints.get(0).getName();
-                    this.activitiServices.put(
-                            new EndpointOperationKey(integrationEndpointName, ITG_OP_GETTASKS),
+                    final Endpoint endpoint = integrationEndpoints.get(0);
+                    final String integrationEndpointName = endpoint.getName();
+                    final QName integrationInterfaceName = endpoint.getService().getInterface().getQName();
+                    this.activitiServices
+                            .put(new EndpointOperationKey(integrationEndpointName, integrationInterfaceName,
+                                    ITG_OP_GETTASKS),
                             new GetTasksOperation(this.activitiEngine.getTaskService(), this.activitiEngine
                                     .getRepositoryService(), this.getLogger()));
-                } catch (final OperationInitializationException e) {
+                } catch (final OperationInitializationException | WSDLException e) {
                     this.getLogger().log(Level.WARNING, "Integration operations are not completly initialized", e);
                 }
             } else {
