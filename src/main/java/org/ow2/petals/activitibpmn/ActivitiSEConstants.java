@@ -161,6 +161,16 @@ public final class ActivitiSEConstants {
 	}
 
     /**
+     * Tag name of the component JBI descriptor about the activation of the Activiti job executor.
+     */
+    public static final String ENGINE_ENABLE_JOB_EXECUTOR = "engine-enable-job-executor";
+
+    /**
+     * Default value of {@link #ENGINE_ENABLE_JOB_EXECUTOR}.
+     */
+    public static final boolean DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR = true;
+
+    /**
      * Tag name of the component JBI descriptor about the delay, in millisecond, of MONIT trace.
      */
     public static final String MONIT_TRACE_DELAY = "monit-trace-delay";
@@ -174,7 +184,7 @@ public final class ActivitiSEConstants {
      * Tag name of the component JBI descriptor about the core size of the thread pool in charge of logging delayed
      * MONIT traces.
      */
-    public static final String SCHEDULED_LOGGER_CORE_SIZE = "monit-trace-delay";
+    public static final String SCHEDULED_LOGGER_CORE_SIZE = "monit-trace-pool-size";
 
     /**
      * Default value of {@link #SCHEDULED_LOGGER_CORE_SIZE}.

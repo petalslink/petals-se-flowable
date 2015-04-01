@@ -179,6 +179,13 @@
       </xs:restriction>
    </xs:simpleType>
 
+   <xs:element name="engine-enable-job-executor" type="petalsCDK:settableboolean" default="true">
+      <xs:annotation>
+         <xs:documentation>Enable/Disable the job executor of Activiti engine.</xs:documentation>
+         <xs:documentation xml:lang="fr">Active/Désactive le job executor du moteur Activiti</xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
    <xs:element name="monit-trace-pool-size" type="petalsCDK:runtimeint" default="1">
       <xs:annotation>
          <xs:documentation>Size of the thread pool in charge of logging MONIT trace delayed</xs:documentation>

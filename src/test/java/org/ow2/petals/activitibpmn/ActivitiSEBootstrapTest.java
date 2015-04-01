@@ -76,12 +76,22 @@ public class ActivitiSEBootstrapTest {
         final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
         params.add(eltJdbcMaxWaitTime);
 
+        final Element eltEnableEngineJobExecutor = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
+        params.add(eltEnableEngineJobExecutor);
+
+        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
+        params.add(eltMonitTraceDelay);
+        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
+                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
+        params.add(eltScheduledLoggerCoreSize);
+
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
 
     /**
-     * Check that the component embeds the right hard-coded default configuration when the integer values of the
-     * component JBI descriptor are set to 'space'.
+     * Check that the component embeds the right hard-coded default configuration when the integer or boolean values of
+     * the component JBI descriptor are set to 'space'.
      */
     @Test
     public void defaultConfiguration_ValuesSetToSpace() throws SecurityException, NoSuchFieldException,
@@ -111,12 +121,25 @@ public class ActivitiSEBootstrapTest {
         eltJdbcMaxWaitTime.setTextContent(" ");
         params.add(eltJdbcMaxWaitTime);
 
+        final Element eltEnableEngineJobExecutor = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
+        eltEnableEngineJobExecutor.setTextContent(" ");
+        params.add(eltEnableEngineJobExecutor);
+
+        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
+        eltMonitTraceDelay.setTextContent(" ");
+        params.add(eltMonitTraceDelay);
+        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
+                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
+        eltScheduledLoggerCoreSize.setTextContent(" ");
+        params.add(eltScheduledLoggerCoreSize);
+
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
 
     /**
-     * Check that the component embeds the right hard-coded default configuration when the integer values of the
-     * component JBI descriptor are set to invalid values.
+     * Check that the component embeds the right hard-coded default configuration when the integer or boolean values of
+     * the component JBI descriptor are set to invalid values.
      */
     @Test
     public void defaultConfiguration_InvalidValues() throws SecurityException, NoSuchFieldException,
@@ -145,6 +168,19 @@ public class ActivitiSEBootstrapTest {
         final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
         eltJdbcMaxWaitTime.setTextContent("invalid-value");
         params.add(eltJdbcMaxWaitTime);
+
+        final Element eltEnableEngineJobExecutor = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
+        eltEnableEngineJobExecutor.setTextContent("invalid-value");
+        params.add(eltEnableEngineJobExecutor);
+
+        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
+        eltMonitTraceDelay.setTextContent("invalid-value");
+        params.add(eltMonitTraceDelay);
+        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
+                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
+        eltScheduledLoggerCoreSize.setTextContent("invalid-value");
+        params.add(eltScheduledLoggerCoreSize);
 
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
@@ -188,12 +224,32 @@ public class ActivitiSEBootstrapTest {
         eltJdbcMaxWaitTime.setTextContent(String.valueOf(jdbcMaxWaitTime));
         params.add(eltJdbcMaxWaitTime);
 
+        final Element eltEnableEngineJobExecutor = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
+        final boolean engineEnableJobExecutor = false;
+        eltEnableEngineJobExecutor.setTextContent(String.valueOf(engineEnableJobExecutor));
+        params.add(eltEnableEngineJobExecutor);
+
+        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
+        final long monitTraceDelay = 123456l;
+        eltMonitTraceDelay.setTextContent(String.valueOf(monitTraceDelay));
+        params.add(eltMonitTraceDelay);
+
+        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
+                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
+        final int scheduledLoggerCoreSize = 5;
+        eltScheduledLoggerCoreSize.setTextContent(String.valueOf(scheduledLoggerCoreSize));
+        params.add(eltScheduledLoggerCoreSize);
+
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
         assertEquals(jdbcMaxActiveConnections, bootstrap.getJdbcMaxActiveConnections());
         assertEquals(jdbcMaxIdleConnections, bootstrap.getJdbcMaxIdleConnections());
         assertEquals(jdbcMaxCheckoutTime, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(jdbcMaxWaitTime, bootstrap.getJdbcMaxWaitTime());
+        assertEquals(engineEnableJobExecutor, bootstrap.getEngineEnableJobExecutor());
+        assertEquals(monitTraceDelay, bootstrap.getMonitTraceDelay());
+        assertEquals(scheduledLoggerCoreSize, bootstrap.getMonitTracePoolSize());
     }
 
     /**
@@ -242,6 +298,9 @@ public class ActivitiSEBootstrapTest {
                 bootstrap.getJdbcMaxIdleConnections());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME, bootstrap.getJdbcMaxWaitTime());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR, bootstrap.getEngineEnableJobExecutor());
+        assertEquals(ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY, bootstrap.getMonitTraceDelay());
+        assertEquals(ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE, bootstrap.getMonitTracePoolSize());
     }
 
     /**

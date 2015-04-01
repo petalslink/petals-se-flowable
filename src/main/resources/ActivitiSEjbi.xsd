@@ -65,6 +65,8 @@
                   <xs:element ref="petals-se-activitibpmn:jdbc_max_wait_time" maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:database_type" maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:database_schema_update" maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-enable-job-executor" maxOccurs="1"
+                     minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:monit-trace-pool-size" maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:monit-trace-delay" maxOccurs="1" minOccurs="0" />
                </xs:sequence>

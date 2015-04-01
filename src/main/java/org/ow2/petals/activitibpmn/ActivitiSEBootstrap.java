@@ -17,6 +17,12 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
@@ -52,6 +58,28 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     private static final String ATTR_NAME_JDBC_DRIVER = "jdbcDriver";
     private static final String ATTR_NAME_JDBC_URL = "jdbcUrl";
 
+    private static final String ATTR_NAME_JDBC_USERNAME = "jdbcUsername";
+
+    private static final String ATTR_NAME_JDBC_PASSWORD = "jdbcPassword";
+
+    private static final String ATTR_NAME_JDBC_MAX_ACTIVE_CONNECTIONS = "jdbcMaxActiveConnections";
+
+    private static final String ATTR_NAME_JDBC_MAX_IDLE_CONNECTIONS = "jdbcMaxIdleConnections";
+
+    private static final String ATTR_NAME_JDBC_MAX_CHECKOUT_TIME = "jdbcMaxCheckoutTime";
+
+    private static final String ATTR_NAME_JDBC_MAX_WAIT_TIME = "jdbcMaxWaitTime";
+
+    private static final String ATTR_NAME_DATABASE_TYPE = "databaseType";
+
+    private static final String ATTR_NAME_DATABASE_SCHEMA_UPDATE = "databaseSchemaUpdate";
+
+    private static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
+
+    private static final String ATTR_NAME_MONIT_TRACE_DELAY = "monitTraceDelay";
+
+    private static final String ATTR_NAME_MONIT_TRACE_POOL_SIZE = "monitTracePoolSize";
+
 	
     /**
      * {@inheritDoc}
@@ -65,14 +93,17 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 
             attributes.add(ATTR_NAME_JDBC_DRIVER);
             attributes.add(ATTR_NAME_JDBC_URL);
-            attributes.add("jdbcUsername");
-            attributes.add("jdbcPassword");
-            attributes.add("jdbcMaxActiveConnections");
-            attributes.add("jdbcMaxIdleConnections");
-            attributes.add("jdbcMaxCheckoutTime");
-            attributes.add("jdbcMaxWaitTime");
-            attributes.add("databaseType");
-            attributes.add("databaseSchemaUpdate");
+            attributes.add(ATTR_NAME_JDBC_USERNAME);
+            attributes.add(ATTR_NAME_JDBC_PASSWORD);
+            attributes.add(ATTR_NAME_JDBC_MAX_ACTIVE_CONNECTIONS);
+            attributes.add(ATTR_NAME_JDBC_MAX_IDLE_CONNECTIONS);
+            attributes.add(ATTR_NAME_JDBC_MAX_CHECKOUT_TIME);
+            attributes.add(ATTR_NAME_JDBC_MAX_WAIT_TIME);
+            attributes.add(ATTR_NAME_DATABASE_TYPE);
+            attributes.add(ATTR_NAME_DATABASE_SCHEMA_UPDATE);
+            attributes.add(ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR);
+            attributes.add(ATTR_NAME_MONIT_TRACE_DELAY);
+            attributes.add(ATTR_NAME_MONIT_TRACE_POOL_SIZE);
 
             return attributes;
         } finally {
@@ -370,6 +401,114 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public void setDatabaseSchemaUpdate(final String value) {
         // TODO: Add a check about valid values
         this.setParam(DATABASE_SCHEMA_UPDATE, value);
+    }
+
+    /**
+     * Get the engineEnableJobExecutor
+     * 
+     * @return the engineEnableJobExecutor
+     */
+    public boolean getEngineEnableJobExecutor() {
+
+        // Caution:
+        // - only the value "false", ignoring case and spaces will disable the job executor,
+        // - only the value "true", ignoring case and spaces will enable the job executor,
+        // - otherwise, the default value is used.
+        final boolean enableActivitiJobExecutor;
+        final String enableActivitiJobExecutorConfigured = this.getParam(ENGINE_ENABLE_JOB_EXECUTOR);
+        if (enableActivitiJobExecutorConfigured == null || enableActivitiJobExecutorConfigured.trim().isEmpty()) {
+            this.getLogger().info("The activation of the Activiti job executor is not configured. Default value used.");
+            enableActivitiJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
+        } else {
+            enableActivitiJobExecutor = enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("false") ? false
+                    : (enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("true") ? true
+                            : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
+        }
+        return enableActivitiJobExecutor;
+    }
+
+    /**
+     * Set the engineEnableJobExecutor
+     * 
+     * @param value
+     *            the engineEnableJobExecutor
+     */
+    public void setEngineEnableJobExecutor(final String value) {
+        // TODO: Add a check about valid values
+        this.setParam(ENGINE_ENABLE_JOB_EXECUTOR, value);
+    }
+
+    /**
+     * Get the monitTraceDelay
+     * 
+     * @return the monitTraceDelay
+     */
+    public long getMonitTraceDelay() {
+        long monitTraceDelay = 0;
+
+        final String monitTraceDelayString = this.getParam(MONIT_TRACE_DELAY);
+        if (monitTraceDelayString != null && !monitTraceDelayString.trim().isEmpty()) {
+            try {
+                monitTraceDelay = Long.parseLong(monitTraceDelayString);
+            } catch (final NumberFormatException e) {
+                // Invalid value, we use the default one
+                this.getLogger().warning(
+                        "Invalid value (" + monitTraceDelayString + ") for the configuration parameter: "
+                                + MONIT_TRACE_DELAY + ". Default value used: " + DEFAULT_MONIT_TRACE_DELAY);
+                monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
+            }
+        } else {
+            monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
+        }
+
+        return monitTraceDelay;
+    }
+
+    /**
+     * Set the monitTraceDelay
+     * 
+     * @param value
+     *            the monitTraceDelay
+     */
+    public void setMonitTraceDelay(final long value) {
+        this.setParam(MONIT_TRACE_DELAY, Long.toString(value));
+    }
+
+    /**
+     * Get the monitTracePoolSize
+     * 
+     * @return the monitTracePoolSize
+     */
+    public long getMonitTracePoolSize() {
+        int monitTracePoolSize = 0;
+
+        final String monitTracePoolSizeString = this.getParam(SCHEDULED_LOGGER_CORE_SIZE);
+        if (monitTracePoolSizeString != null && !monitTracePoolSizeString.trim().isEmpty()) {
+            try {
+                monitTracePoolSize = Integer.parseInt(monitTracePoolSizeString);
+            } catch (final NumberFormatException e) {
+                // Invalid value, we use the default one
+                this.getLogger().warning(
+                        "Invalid value (" + monitTracePoolSizeString + ") for the configuration parameter: "
+                                + SCHEDULED_LOGGER_CORE_SIZE + ". Default value used: "
+                                + DEFAULT_SCHEDULED_LOGGER_CORE_SIZE);
+                monitTracePoolSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+            }
+        } else {
+            monitTracePoolSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+        }
+
+        return monitTracePoolSize;
+    }
+
+    /**
+     * Set the monitTracePoolSize
+     * 
+     * @param value
+     *            the monitTracePoolSize
+     */
+    public void setMonitTracePoolSize(final int value) {
+        this.setParam(SCHEDULED_LOGGER_CORE_SIZE, Integer.toString(value));
     }
      
 }

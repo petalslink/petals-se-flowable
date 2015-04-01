@@ -17,8 +17,10 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PETALS_SENDER_COMP_NAME;
@@ -60,6 +62,7 @@ import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.delegate.event.ActivitiEventType;
+import org.activiti.engine.impl.asyncexecutor.AsyncExecutor;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
@@ -112,6 +115,16 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
     // TODO: scheduledLoggerCoreSize should be hot-changed
     private int scheduledLoggerCoreSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+
+    /**
+     * The Activiti Async Executor service
+     */
+    private AsyncExecutor activitiAsyncExecutor = null;
+
+    /**
+     * Activation flag of the Activiti job executor
+     */
+    private boolean enableActivitiJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 
     /**
      * @return the Activiti Engine
@@ -292,6 +305,25 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.getLogger().config("   - " + DATABASE_TYPE + " = " + databaseType);
             this.getLogger().config("   - " + DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
 
+            // Caution:
+            // - only the value "false", ignoring case and spaces will disable the job executor,
+            // - only the value "true", ignoring case and spaces will enable the job executor,
+            // - otherwise, the default value is used.
+            final String enableActivitiJobExecutorConfigured = this.getComponentExtensions().get(
+                    ENGINE_ENABLE_JOB_EXECUTOR);
+            if (enableActivitiJobExecutorConfigured == null || enableActivitiJobExecutorConfigured.trim().isEmpty()) {
+                this.getLogger().info(
+                        "The activation of the Activiti job executor is not configured. Default value used.");
+                this.enableActivitiJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
+            } else {
+                this.enableActivitiJobExecutor = enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("false") ? false
+                        : (enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("true") ? true
+                                : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
+            }
+
+            this.getLogger().config("Activiti engine configuration:");
+            this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableActivitiJobExecutor);
+
             final String monitTraceDelayConfigured = this.getComponentExtensions().get(MONIT_TRACE_DELAY);
             if (monitTraceDelayConfigured == null || monitTraceDelayConfigured.trim().isEmpty()) {
                 this.getLogger().info("No MONIT trace delay configured. Default value used.");
@@ -348,8 +380,14 @@ public class ActivitiSE extends AbstractServiceEngine {
             // We register the Petals transport into Apache CXF
             this.registerCxfPetalsTransport();
 
+            // As recommended by Activiti team, we prefer the Async Job Executor
+            pec.setJobExecutorActivate(false);
+            pec.setAsyncExecutorEnabled(this.enableActivitiJobExecutor);
+            // The Async job is started when starting the SE
+            pec.setAsyncExecutorEnabled(false);
+
             this.activitiEngine = pec.buildProcessEngine();
-            
+            this.activitiAsyncExecutor = this.enableActivitiJobExecutor ? pec.getAsyncExecutor() : null;
 
             // Caution: Beans of the configuration are initialized when building the process engine
             if (pec instanceof ProcessEngineConfigurationImpl) {
@@ -417,12 +455,19 @@ public class ActivitiSE extends AbstractServiceEngine {
             // user task completion will occur
             // - To avoid the executions of activities trigerred by timer or other events, the Activiti job executor
             // must be stopped when the SE is in state 'STOPPED'
-            // TODO: Start the Activiti job executor
-
-            // TODO: Add capability to disable the Activiti job executor:
-            // For timers you can even dedicate one specific machine which only runs the job executor. (or more than one
-            // to make them fault tolerant). Both the job executor and Activiti in general is designed in a way that
-            // works clusterable out of the box. see : http://forums.activiti.org/content/clustering
+            if (this.enableActivitiJobExecutor) {
+                if (this.activitiAsyncExecutor != null) {
+                    if (this.activitiAsyncExecutor.isActive()) {
+                        this.getLogger().warning("Activiti Job Executor already started !!");
+                    } else {
+                        this.activitiAsyncExecutor.start();
+                    }
+                } else {
+                    this.getLogger().warning("No Activiti Job Executor exists !!");
+                }
+            } else {
+                this.getLogger().info("Activiti Job Executor not started because it is not activated.");
+            }
 
             // TODO: Add JMX operation to start/stop the Activiti job executor when the component is started
             // TODO: Add JMX operation to disable/enable the Activiti job executor when the component is running
@@ -440,27 +485,40 @@ public class ActivitiSE extends AbstractServiceEngine {
         this.getLogger().fine("Start ActivitiSE.doStop()");
 
         try {
+            // Stop the Activiti Job Executor */
+            if (this.enableActivitiJobExecutor) {
+                if (this.activitiAsyncExecutor != null) {
+                    if (this.activitiAsyncExecutor.isActive()) {
+                        this.activitiAsyncExecutor.shutdown();
+                    } else {
+                        this.getLogger().warning("Activiti Job Executor not started !!");
+                    }
+                } else {
+                    this.getLogger().warning("No Activiti Job Executor exists !!");
+                }
+            } else {
+                this.getLogger().info("Activiti Job Executor not stopped because it is not activated.");
+            }
+
+        } catch (final ActivitiException e) {
+            throw new JBIException("An error occurred while stopping the Activiti BPMN Engine.", e);
+        } finally {
+            this.getLogger().fine("End ActivitiSE.doStop()");
+        }
+
+        try {
             this.scheduledLogger.shutdown();
             // TODO: The timeout should be configurable
             this.scheduledLogger.awaitTermination(5000, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
             this.getLogger().log(Level.WARNING, "The termination of the scheduled logger was interrupted", e);
         }
-
-		try {
-            // TODO: Stop the Activiti Job Executor */
-
-		} catch( final ActivitiException e ) {
-			throw new JBIException( "An error occurred while stopping the Activiti BPMN Engine.", e );
-        } finally {
-            this.getLogger().fine("End ActivitiSE.doStop()");
-		}
 	}
 
 
     @Override
 	public void doShutdown() throws JBIException {
-        this.getLogger().fine("Start ActivitiSE.doStart()");
+        this.getLogger().fine("Start ActivitiSE.doShutdown()");
 
 		try {
 	        
@@ -469,7 +527,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while shutdowning the Activiti BPMN Engine.", e );
         } finally {
-            this.getLogger().fine("End ActivitiSE.doStart()");
+            this.getLogger().fine("End ActivitiSE.doShutdown()");
 		}
 	}
 
