@@ -25,11 +25,11 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.ow2.petals.activitibpmn.ActivitiSE;
-import org.ow2.petals.activitibpmn.EptAndOperation;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
+import org.ow2.petals.component.framework.util.EndpointOperationKey;
 
 
 /**
@@ -89,11 +89,12 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         }
 
                         final String eptName = exchange.getEndpointName();
+                        final QName interfaceName = exchange.getInterfaceName();
                         final QName operation = exchange.getOperation();
 
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine(logHint + " was received and is started to be processed.");
-                            logger.fine("interfaceName = " + exchange.getInterfaceName());
+                            logger.fine("interfaceName = " + interfaceName);
                             logger.fine("Service       = " + exchange.getService());
                             logger.fine("EndpointName  = " + eptName);
                             logger.fine("OperationName = " + operation.toString());
@@ -103,7 +104,8 @@ public class ActivitiJBIListener extends AbstractJBIListener {
 
                         // TODO Validate Message
 
-                        final EptAndOperation eptAndOperation = new EptAndOperation(eptName, operation);
+                        final EndpointOperationKey eptAndOperation = new EndpointOperationKey(eptName, interfaceName,
+                                operation);
 
                         // Get the Activiti Service from the registered services
                         final ActivitiService activitiService = ((ActivitiSE) this.component)
