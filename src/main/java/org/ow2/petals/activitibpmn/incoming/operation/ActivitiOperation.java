@@ -284,8 +284,9 @@ public abstract class ActivitiOperation implements ActivitiService {
                     }
                 }
 
+                // Extract process flow data
                 final Map<QName, String> xslParameters = new HashMap<QName, String>();
-                this.doExecute(domSource, userId, variableValues, xslParameters);
+                this.doExecute(domSource, userId, variableValues, xslParameters, exchange);
 
                 try {
                     exchange.setOutMessageContent(XslUtils.createXmlPayload(this.outputTemplate, xslParameters,
@@ -331,11 +332,13 @@ public abstract class ActivitiOperation implements ActivitiService {
      * @param processVars
      * @param outputNamedValues
      *            The output named values to generate response
+     * @param exchange
+     *            The exchange
      * @throws OperationProcessingException
      *             An error occurs when processing the operation
      */
     protected abstract void doExecute(final DOMSource domSource, final String userId,
-            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues)
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
             throws OperationProcessingException;
 
     @Override

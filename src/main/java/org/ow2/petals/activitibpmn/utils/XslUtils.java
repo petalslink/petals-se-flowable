@@ -67,10 +67,10 @@ public class XslUtils {
 
         // We prepare the parameters to set to the XSL transformer:
         if (xslParameters != null) {
-            if (logger.isLoggable(Level.INFO)) {
-                logger.info("XSL Parameters:");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("XSL Parameters:");
                 for (final Entry<QName, String> variable : xslParameters.entrySet()) {
-                    logger.info("\t- " + variable.getKey().toString() + " => " + variable.getValue());
+                    logger.fine("\t- " + variable.getKey().toString() + " => " + variable.getValue());
                 }
             }
             for (final Entry<QName, String> variable : xslParameters.entrySet()) {

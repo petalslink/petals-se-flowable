@@ -161,6 +161,27 @@ public final class ActivitiSEConstants {
 	}
 
     /**
+     * Tag name of the component JBI descriptor about the delay, in millisecond, of MONIT trace.
+     */
+    public static final String MONIT_TRACE_DELAY = "monit-trace-delay";
+
+    /**
+     * Default value of {@link #MONIT_TRACE_DELAY}.
+     */
+    public static final int DEFAULT_MONIT_TRACE_DELAY = 500;
+
+    /**
+     * Tag name of the component JBI descriptor about the core size of the thread pool in charge of logging delayed
+     * MONIT traces.
+     */
+    public static final String SCHEDULED_LOGGER_CORE_SIZE = "monit-trace-delay";
+
+    /**
+     * Default value of {@link #SCHEDULED_LOGGER_CORE_SIZE}.
+     */
+    public static final int DEFAULT_SCHEDULED_LOGGER_CORE_SIZE = 1;
+
+    /**
      * Constants relatives to the Activiti components
      */
     public static class Activiti {
@@ -169,6 +190,20 @@ public final class ActivitiSEConstants {
          * Name of the component in charge of sending message exchange coming from Petals service tasks
          */
         public static final String PETALS_SENDER_COMP_NAME = "petals-sender";
+
+        /**
+         * Name of the process variable used to store the Petals flow instance identifier. This variable is used to be
+         * able to retrieve the right Petals flow attributes to used with the service tasks that invoke services with
+         * the Petals flow attributes used when creating the process instance.
+         */
+        public static final String PROCESS_VAR_PETALS_FLOW_INSTANCE_ID = "petals.flow.instance.id";
+
+        /**
+         * Name of the process variable used to store the Petals flow step identifier. This variable is used to be able
+         * to retrieve the right Petals flow attributes to used with the service tasks that invoke services with the
+         * Petals flow attributes used when creating the process instance.
+         */
+        public static final String PROCESS_VAR_PETALS_FLOW_STEP_ID = "petals.flow.step.id";
     }
 
     public static class IntegrationOperation {

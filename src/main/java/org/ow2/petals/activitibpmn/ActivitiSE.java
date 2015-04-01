@@ -17,6 +17,10 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PETALS_SENDER_COMP_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
@@ -43,6 +47,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -51,11 +58,14 @@ import javax.jbi.JBIException;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
+import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
+import org.ow2.petals.activitibpmn.event.ProcessCanceledEventListener;
+import org.ow2.petals.activitibpmn.event.ProcessCompletedEventListener;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
@@ -82,6 +92,23 @@ public class ActivitiSE extends AbstractServiceEngine {
      * A map used to get the Activiti Operation associated with (end-point Name + Operation)
      */
     private final Map<EptAndOperation, ActivitiService> activitiServices = new ConcurrentHashMap<EptAndOperation, ActivitiService>();
+
+    /**
+     * An executor service to log MONIT trace about end of process instances
+     */
+    private ScheduledExecutorService scheduledLogger = null;
+
+    /**
+     * Delay to wait before to log some MONIT traces
+     */
+    // TODO: monitTraceDelay should be hot-changed
+    private int monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
+
+    /**
+     * Core size of the thread pool in charge of logging delayed MONIT traces
+     */
+    // TODO: scheduledLoggerCoreSize should be hot-changed
+    private int scheduledLoggerCoreSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
 
     /**
      * @return the Activiti Engine
@@ -261,6 +288,40 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.getLogger().config("   - " + JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
             this.getLogger().config("   - " + DATABASE_TYPE + " = " + databaseType);
             this.getLogger().config("   - " + DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
+
+            final String monitTraceDelayConfigured = this.getComponentExtensions().get(MONIT_TRACE_DELAY);
+            if (monitTraceDelayConfigured == null || monitTraceDelayConfigured.trim().isEmpty()) {
+                this.getLogger().info("No MONIT trace delay configured. Default value used.");
+                this.monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
+            } else {
+                try {
+                    this.monitTraceDelay = Integer.parseInt(monitTraceDelayConfigured);
+                } catch (final NumberFormatException e) {
+                    this.getLogger().warning("Invalid value for the MONIT trace delay. Default value used.");
+                    this.monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
+                }
+            }
+
+            final String scheduledLoggerCoreSizeConfigured = this.getComponentExtensions().get(
+                    SCHEDULED_LOGGER_CORE_SIZE);
+            if (scheduledLoggerCoreSizeConfigured == null || scheduledLoggerCoreSizeConfigured.trim().isEmpty()) {
+                this.getLogger()
+                        .info("No core size of the thread pool in charge of logging MONIT traces is configured. Default value used.");
+                this.scheduledLoggerCoreSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+            } else {
+                try {
+                    this.scheduledLoggerCoreSize = Integer.parseInt(scheduledLoggerCoreSizeConfigured);
+                } catch (final NumberFormatException e) {
+                    this.getLogger()
+                            .warning(
+                                    "Invalid value for the core size of the thread pool in charge of logging MONIT traces. Default value used.");
+                    this.scheduledLoggerCoreSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+                }
+            }
+
+            this.getLogger().config("Other configuration parameters:");
+            this.getLogger().config("   - " + MONIT_TRACE_DELAY + " = " + this.monitTraceDelay);
+            this.getLogger().config("   - " + SCHEDULED_LOGGER_CORE_SIZE + " = " + this.scheduledLoggerCoreSize);
 		    
 	        /* TODO Test Activiti database connection configuration */
 	        /* TODO Test the Database Schema Version
@@ -327,15 +388,37 @@ public class ActivitiSE extends AbstractServiceEngine {
 	public void doStart() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStart()");
 
-        try {
-	        /* TODO Start Job Executor */
-			/*   For timers you can even dedicate one specifc machine which only runs the job executor.
-			 *   (or more than one to make them fault tolerant).
-			 *   Both the job executor and Activiti in general is designed in a way that works clusterable out of the box.
-			 *   see : http://forums.activiti.org/content/clustering
-			 */
+        this.scheduledLogger = Executors.newScheduledThreadPool(this.scheduledLoggerCoreSize,
+                new ScheduledLoggerThreadFactory(ActivitiSE.this.getContext().getComponentName()));
 
-	        /* TODO Build Process Engine */
+        this.activitiEngine.getRuntimeService().addEventListener(
+                        new ProcessCompletedEventListener(this.scheduledLogger, this.monitTraceDelay,
+                                this.activitiEngine.getHistoryService(),
+                        this.getLogger()),
+                ActivitiEventType.PROCESS_COMPLETED);
+        this.activitiEngine.getRuntimeService().addEventListener(
+                        new ProcessCanceledEventListener(this.scheduledLogger, this.monitTraceDelay,
+                                this.activitiEngine.getHistoryService(),
+                        this.getLogger()),
+                ActivitiEventType.PROCESS_CANCELLED);
+
+        try {
+            // Startup Activiti engine against running states of the SE:
+            // - Activiti Engine must be started when the SE is in state 'STOPPED' to be able to deploy process
+            // definitions
+            // - In state 'STOPPED', the SE will not process incoming requests, so no process instance creation and no
+            // user task completion will occur
+            // - To avoid the executions of activities trigerred by timer or other events, the Activiti job executor
+            // must be stopped when the SE is in state 'STOPPED'
+            // TODO: Start the Activiti job executor
+
+            // TODO: Add capability to disable the Activiti job executor:
+            // For timers you can even dedicate one specific machine which only runs the job executor. (or more than one
+            // to make them fault tolerant). Both the job executor and Activiti in general is designed in a way that
+            // works clusterable out of the box. see : http://forums.activiti.org/content/clustering
+
+            // TODO: Add JMX operation to start/stop the Activiti job executor when the component is started
+            // TODO: Add JMX operation to disable/enable the Activiti job executor when the component is running
 	        
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while starting the Activiti BPMN Engine.", e );
@@ -349,9 +432,16 @@ public class ActivitiSE extends AbstractServiceEngine {
 	public void doStop() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStop()");
 
+        try {
+            this.scheduledLogger.shutdown();
+            // TODO: The timeout should be configurable
+            this.scheduledLogger.awaitTermination(5000, TimeUnit.MILLISECONDS);
+        } catch (final InterruptedException e) {
+            this.getLogger().log(Level.WARNING, "The termination of the scheduled logger was interrupted", e);
+        }
+
 		try {
-	        /* TODO STOP Job Executor */
-			/* TODO this.activitiEngine.standby(); */
+            // TODO: Stop the Activiti Job Executor */
 
 		} catch( final ActivitiException e ) {
 			throw new JBIException( "An error occurred while stopping the Activiti BPMN Engine.", e );

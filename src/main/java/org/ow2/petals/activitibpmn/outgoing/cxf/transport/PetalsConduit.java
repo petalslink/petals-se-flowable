@@ -117,7 +117,8 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 com.ebmwebsourcing.easycommons.xml.DOMHelper.prettyPrint(xmlPayload, baos);
 
-                this.getLogger().info(new String(baos.toByteArray()));
+                // TODO: Change log level to FINE
+                LOG.info("Outgoing XML payload: " + new String(baos.toByteArray()));
 
                 // TODO: Add support for attachments
 
@@ -126,7 +127,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
             } catch (final MessagingException e) {
                 // TODO: The error should be pushed into CXF exchange
-                this.getLogger().log(Level.WARNING, "An error occurs", e);
+                LOG.log(Level.WARNING, "An error occurs", e);
             }
         } else {
             // TODO: Add a unit test
@@ -146,7 +147,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 cxfExchange.setInFaultMessage(msg);
             } catch (final TransformerException e) {
                 // TODO: The error should be pushed into CXF exchange
-                this.getLogger().log(Level.WARNING, "An error occurs", e);
+                LOG.log(Level.WARNING, "An error occurs", e);
             }
         }
 
