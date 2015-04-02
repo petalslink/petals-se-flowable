@@ -382,9 +382,10 @@ public class ActivitiSE extends AbstractServiceEngine {
 
             // As recommended by Activiti team, we prefer the Async Job Executor
             pec.setJobExecutorActivate(false);
+            // The Async job is enabled ...
             pec.setAsyncExecutorEnabled(this.enableActivitiJobExecutor);
-            // The Async job is started when starting the SE
-            pec.setAsyncExecutorEnabled(false);
+            // ... but must be started when starting the SE
+            pec.setAsyncExecutorActivate(false);
 
             this.activitiEngine = pec.buildProcessEngine();
             this.activitiAsyncExecutor = this.enableActivitiJobExecutor ? pec.getAsyncExecutor() : null;
