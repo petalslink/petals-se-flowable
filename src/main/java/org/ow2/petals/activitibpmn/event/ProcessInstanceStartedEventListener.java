@@ -39,7 +39,7 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
         ActivitiEventListener {
 
     public ProcessInstanceStartedEventListener(final Logger log) {
-        super(ActivitiEventType.ENTITY_INITIALIZED, log);
+        super(ActivitiEventType.PROCESS_INSTANCE_STARTED, log);
     }
 
     @Override
@@ -48,11 +48,8 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
         final String processInstanceId = event.getProcessInstanceId();
         this.log.fine("The process instance '" + processInstanceId + "' is started.");
 
-        // The event ENTITY_INITIALIZED is fired in several situations including the start of a process instance. That's
-        // why we must filter them
         if (event instanceof ActivitiEntityWithVariablesEvent) {
             final ActivitiEntityWithVariablesEvent eventImpl = (ActivitiEntityWithVariablesEvent) event;
-            if (eventImpl.getEntity() instanceof ExecutionEntity) {
 
                 final Map<String, Object> processVariables = eventImpl.getVariables();
 
@@ -73,10 +70,8 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
                 return new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
                         correlatedFlowStepId, entity.getProcessDefinition().getKey(), processInstanceId);
 
-            } else {
-                return null;
-            }
         } else {
+            this.log.warning("Unexpected event implementation: " + event.getClass().getName());
             return null;
         }
 
