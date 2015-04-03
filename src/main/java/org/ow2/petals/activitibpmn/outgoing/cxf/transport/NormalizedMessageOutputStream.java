@@ -30,6 +30,7 @@ import javax.xml.parsers.DocumentBuilder;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.component.framework.api.Message.MEPConstants;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
@@ -57,11 +58,15 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
     private final AsyncCallback asyncCallback;
 
+    private final FlowAttributes flowAttributes;
+
     public NormalizedMessageOutputStream(final AbstractListener sender, final Exchange cxfExchange,
-            final AsyncCallback asyncCallback) throws MessagingException, PEtALSCDKException {
+            final AsyncCallback asyncCallback, final FlowAttributes flowAttributes) throws MessagingException,
+            PEtALSCDKException {
         this.sender = sender;
         this.cxfExchange = cxfExchange;
         this.asyncCallback = asyncCallback;
+        this.flowAttributes = flowAttributes;
     }
 
     @Override
@@ -84,8 +89,11 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             // TODO: Create a unit test where the endpoint name is missing
             // TODO: Create a unit test where the operation name is missing
             consume.setOperation(operationName);
+            // TODO: Find a way to define the MEP to use.
             final org.ow2.petals.component.framework.api.message.Exchange exchange = this.sender.createConsumeExchange(
                     consume, MEPConstants.IN_OUT_PATTERN);
+            ((org.ow2.petals.component.framework.message.ExchangeImpl) exchange).getMessageExchange()
+                    .setFlowAttributes(this.flowAttributes);
 
             // TODO: Add support for attachments
             // TODO: MUST be optimized generating directly an XML message by CXF or Activiti

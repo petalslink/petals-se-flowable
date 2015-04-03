@@ -44,6 +44,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
 import org.apache.cxf.transport.AbstractConduit;
 import org.apache.cxf.ws.addressing.EndpointReferenceType;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.w3c.dom.Document;
@@ -56,6 +57,8 @@ import com.ebmwebsourcing.easycommons.xml.Transformers;
 public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
     private static final Logger LOG = LogUtils.getL7dLogger(PetalsConduit.class);
+
+    public static ThreadLocal<FlowAttributes> flowAttributes = new ThreadLocal<FlowAttributes>();
 
     private final Bus bus;
 
@@ -80,7 +83,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
         try {
             final NormalizedMessageOutputStream out = new NormalizedMessageOutputStream(this.sender,
-                    message.getExchange(), this.asyncCallback);
+                    message.getExchange(), this.asyncCallback, flowAttributes.get());
             message.setContent(OutputStream.class, out);
         } catch (final MessagingException e) {
             throw new IOException(e);

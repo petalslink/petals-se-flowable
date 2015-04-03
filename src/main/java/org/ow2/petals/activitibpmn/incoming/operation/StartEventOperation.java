@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_CORRELATED_FLOW_STEP_ID;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID;
 
@@ -24,8 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-import javax.jbi.messaging.MessageExchange;
-import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 
@@ -35,12 +35,10 @@ import org.activiti.engine.runtime.ProcessInstance;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.StartEventAnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.OperationProcessingException;
-import org.ow2.petals.activitibpmn.monitoring.ProcessInstanceFlowStepBeginLogData;
 import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.api.message.Exchange;
-import org.ow2.petals.component.framework.message.ExchangeImpl;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
@@ -94,8 +92,17 @@ public class StartEventOperation extends ActivitiOperation {
             final Map<QName, String> outputNamedValues, final Exchange exchange)
             throws OperationProcessingException {
 
-        // Start a new process instance
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)
+
+        // Main flow attributes are stored in process instance as special variables to be transmitted to service tasks
+        final String flowInstanceId = simpleUUIDGenerator.getNewID();
+        final String flowStepId = simpleUUIDGenerator.getNewID();
+        processVars.put(PROCESS_VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
+        processVars.put(PROCESS_VAR_PETALS_FLOW_STEP_ID, flowStepId);
+        final FlowAttributes exchangeFlowAttibutes = exchange.getFlowAttributes();
+        processVars.put(PROCESS_VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
+        processVars.put(PROCESS_VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
+
         final String bpmnProcessIdValue;
         try {
             this.identityService.setAuthenticatedUserId(bpmnUserId);
@@ -106,28 +113,7 @@ public class StartEventOperation extends ActivitiOperation {
             final ProcessInstance createdProcessInstance = this.runtimeService.startProcessInstanceById(
                     this.deployedProcessDefinitionId, processVars);
             bpmnProcessIdValue = createdProcessInstance.getId();
-            
-            final String flowInstanceId = simpleUUIDGenerator.getNewID();
-            final String flowStepId = simpleUUIDGenerator.getNewID();
-            final FlowAttributes exchangeFlowAttibutes = exchange.getFlowAttributes();
-            try {
-                final MessageExchange mex = ((ExchangeImpl) exchange).getMessageExchange();
-                // TODO: Add a unit test where the process does not contain user task (the process instance is
-                // completely executed when creating it) to demonstrate that the following MONIT trace occurs before the
-                // trace 'consumeEnd'
-                this.logger.log(Level.MONIT, "",
-                        new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, mex.getInterfaceName()
-                                .toString(), mex.getService().toString(), mex.getEndpoint().getEndpointName(), mex
-                                .getOperation().toString(), exchangeFlowAttibutes.getFlowInstanceId(),
-                                exchangeFlowAttibutes.getFlowStepId(), this.processDefinitionId, bpmnProcessIdValue));
 
-            } catch (final MessagingException e) {
-                throw new OperationProcessingException(this.wsdlOperation, e);
-            }
-
-            // Store Petals flow attributes in process instance to use them with service tasks
-            this.runtimeService.setVariable(bpmnProcessIdValue, PROCESS_VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
-            this.runtimeService.setVariable(bpmnProcessIdValue, PROCESS_VAR_PETALS_FLOW_STEP_ID, flowStepId);
         } finally {
             this.identityService.setAuthenticatedUserId(null);
         }

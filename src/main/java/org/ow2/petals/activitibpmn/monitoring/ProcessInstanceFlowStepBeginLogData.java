@@ -17,12 +17,13 @@
  */
 package org.ow2.petals.activitibpmn.monitoring;
 
-import org.ow2.petals.component.framework.logger.ConsumeFlowStepBeginLogData;
+import org.ow2.petals.commons.log.TraceCode;
+import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
  * @author Christophe DENEUX - Linagora
  */
-public final class ProcessInstanceFlowStepBeginLogData extends ConsumeFlowStepBeginLogData {
+public final class ProcessInstanceFlowStepBeginLogData extends AbstractFlowLogData {
 
     private static final long serialVersionUID = -310582124340683531L;
 
@@ -42,27 +43,22 @@ public final class ProcessInstanceFlowStepBeginLogData extends ConsumeFlowStepBe
      *            The flow instance identifier used to create the process instance
      * @param flowStepId
      *            The flow step identifier of the task completing the user task
-     * @param flowInterfaceName
-     *            Interface name associated to the interaction request creating the process instance
-     * @param flowServiceName
-     *            Service name associated to the interaction request creating the process instance
-     * @param flowEndpointName
-     *            Endpoint name associated to the interaction request creating the process instance
-     * @param flowOperationName
-     *            operation name associated to the interaction request creating the process instance
      * @param correlatedFlowInstanceId
      *            The flow instance identifier of the correlated process completing the user task, ie. the flow instance
      *            identifier coming from the request completing the user task
      * @param correlatedFlowStepId
      *            The flow step identifier of the correlated process completing the user task, ie. the flow step
      *            identifier coming from the request completing the user task
+     * @param processDefinition
+     *            The process definition identifier of the process instance created
+     * @param processInstanceId
+     *            The identifier of the process instance created
      */
     public ProcessInstanceFlowStepBeginLogData(final String flowInstanceId, final String flowStepId,
-            final String flowInterfaceName, final String flowServiceName, final String flowEndpointName,
-            final String flowOperationName, final String correlatedFlowInstanceId, final String correlatedFlowStepId,
+            final String correlatedFlowInstanceId, final String correlatedFlowStepId,
             final String processDefinition, final String processInstanceId) {
 
-        super(flowInstanceId, flowStepId, flowInterfaceName, flowServiceName, flowEndpointName, flowOperationName);
+        super(TraceCode.CONSUME_FLOW_STEP_BEGIN, flowInstanceId, flowStepId);
 
         ActivitiActivityFlowStepData.addActivitiActivityFlowStepData(this, correlatedFlowInstanceId,
                 correlatedFlowStepId);

@@ -21,31 +21,37 @@ import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
-import org.activiti.engine.HistoryService;
 import org.activiti.engine.delegate.event.ActivitiEvent;
 import org.activiti.engine.delegate.event.ActivitiEventListener;
 import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.ow2.petals.activitibpmn.ActivitiSEConstants;
-import org.ow2.petals.activitibpmn.monitoring.ProcessInstanceFlowStepEndLogData;
+import org.ow2.petals.activitibpmn.monitoring.ProcessInstanceFlowStepFailureLogData;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
-public class ProcessCompletedEventListener extends AbstractProcessEventListener implements ActivitiEventListener {
+/**
+ * The event listener fired when a process instance is canceled to log a MONIT trace.
+ * 
+ * @author Christophe DENEUX - Linagora
+ *
+ */
+public class ProcessInstanceCanceledEventListener extends AbstractMonitDelayedLoggerEventListener implements
+        ActivitiEventListener {
 
-    public ProcessCompletedEventListener(final ScheduledExecutorService scheduledLogger, final int delay,
-            final HistoryService historyService, final Logger log) {
-        super(scheduledLogger, delay, ActivitiEventType.PROCESS_COMPLETED, historyService, log);
+    public ProcessInstanceCanceledEventListener(final ScheduledExecutorService scheduledLogger, final int delay,
+            final Logger log) {
+        super(scheduledLogger, delay, ActivitiEventType.PROCESS_CANCELLED, log);
     }
 
     @Override
     protected AbstractFlowLogData createLogData(final ActivitiEvent event) {
 
         final String processInstanceId = event.getProcessInstanceId();
-        this.log.fine("The process instance '" + processInstanceId + "' is ended.");
+        this.log.fine("The process instance '" + processInstanceId + "' is canceled.");
 
-        final HistoricProcessInstanceQuery processQuery = this.historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(processInstanceId).includeProcessVariables();
+        final HistoricProcessInstanceQuery processQuery = event.getEngineServices().getHistoryService()
+                .createHistoricProcessInstanceQuery().processInstanceId(processInstanceId);
         final HistoricProcessInstance processResult = processQuery.singleResult();
 
         final Map<String, Object> processVariables = processResult.getProcessVariables();
@@ -55,7 +61,7 @@ public class ProcessCompletedEventListener extends AbstractProcessEventListener 
         final String flowStepId = (String) processVariables
                 .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID);
 
-        return new ProcessInstanceFlowStepEndLogData(flowInstanceId, flowStepId);
+        return new ProcessInstanceFlowStepFailureLogData(flowInstanceId, flowStepId, processResult.getDeleteReason());
 
     }
 }

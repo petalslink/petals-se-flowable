@@ -214,6 +214,18 @@ public final class ActivitiSEConstants {
          * Petals flow attributes used when creating the process instance.
          */
         public static final String PROCESS_VAR_PETALS_FLOW_STEP_ID = "petals.flow.step.id";
+
+        /**
+         * Name of the process variable used to store the Petals flow instance identifier of the flow that has created
+         * the new flow associated to the process instance.
+         */
+        public static final String PROCESS_VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID = "petals.correlated.flow.instance.id";
+
+        /**
+         * Name of the process variable used to store the Petals flow step identifier of the flow that has created the
+         * new flow associated to the process instance.
+         */
+        public static final String PROCESS_VAR_PETALS_CORRELATED_FLOW_STEP_ID = "petals.correlated.flow.step.id";
     }
 
     public static class IntegrationOperation {

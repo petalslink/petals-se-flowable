@@ -190,8 +190,8 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertEquals(3, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0));
-        final FlowLogData currentProcessFlowLogData = assertMonitConsumerBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
-                VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(1));
+        final FlowLogData currentProcessFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+                monitLogs_1.get(1));
         assertEquals(initialInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 currentProcessFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
         assertEquals(initialInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
@@ -278,10 +278,6 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
             final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
             assertEquals(response_1.getNumeroDde(), archiveRequest_1.getItem());
 
-            // Assert MONIToring info
-            // assertMonitFlowInstanceIdEquals(currentProcessFlowLogData, archiveMessageExchange_1.getFlowAttributes());
-            // assertMonitFlowStepIdEquals(currentProcessFlowLogData, archiveMessageExchange_1.getFlowAttributes());
-
             // Returns the reply of the service provider to the Activiti service task
             final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
             archiverResponse_1.setItem("value of item");
@@ -309,17 +305,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         // TODO: Investigate why the user task completion is synchronous with following service tasks
         // TODO: Adjust MONIT log assertions when the user task completion will be not linked to the following service
         // task
-        assertEquals(5, monitLogs_2.size());
+        assertEquals(7, monitLogs_2.size());
         final FlowLogData completionTaskInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
-        /*
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(
-                        (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                        (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
-                        ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(2)),
-                monitLogs_2.get(3));
-        */
         final FlowLogData completionTaskFlowLogData = assertMonitProviderBeginLog(
                 (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
@@ -330,9 +318,14 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertEquals(
                 completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
                 completionTaskFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
-        assertMonitProviderEndLog(completionTaskFlowLogData, monitLogs_2.get(2));
-        assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(3));
-        assertMonitConsumerEndLog(currentProcessFlowLogData, monitLogs_2.get(4));
+        final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(
+                (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(2));
+        assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(3));
+        assertMonitProviderEndLog(completionTaskFlowLogData, monitLogs_2.get(4));
+        assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(5));
+        assertMonitConsumerEndLog(currentProcessFlowLogData, monitLogs_2.get(6));
 
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
@@ -579,8 +572,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES,
-                monitLogs_1.get(1));
+        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -685,8 +677,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES,
-                monitLogs_1.get(1));
+        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -792,8 +783,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES,
-                monitLogs_1.get(1));
+        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -899,8 +889,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES,
-                monitLogs_1.get(1));
+        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -1071,8 +1060,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES,
-                monitLogs_1.get(1));
+        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();

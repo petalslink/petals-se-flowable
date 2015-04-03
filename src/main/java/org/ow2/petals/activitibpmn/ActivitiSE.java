@@ -61,7 +61,7 @@ import javax.xml.namespace.QName;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.delegate.event.ActivitiEventType;
+import org.activiti.engine.RuntimeService;
 import org.activiti.engine.impl.asyncexecutor.AsyncExecutor;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.apache.cxf.Bus;
@@ -69,8 +69,11 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
-import org.ow2.petals.activitibpmn.event.ProcessCanceledEventListener;
-import org.ow2.petals.activitibpmn.event.ProcessCompletedEventListener;
+import org.ow2.petals.activitibpmn.event.AbstractEventListener;
+import org.ow2.petals.activitibpmn.event.ProcessInstanceCanceledEventListener;
+import org.ow2.petals.activitibpmn.event.ProcessInstanceCompletedEventListener;
+import org.ow2.petals.activitibpmn.event.ProcessInstanceStartedEventListener;
+import org.ow2.petals.activitibpmn.event.ServiceTaskStartedEventListener;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
@@ -125,6 +128,26 @@ public class ActivitiSE extends AbstractServiceEngine {
      * Activation flag of the Activiti job executor
      */
     private boolean enableActivitiJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
+
+    /**
+     * Event listener fired when a process is started
+     */
+    private AbstractEventListener processInstanceStartedEventListener;
+
+    /**
+     * Event listener fired when a process is completed
+     */
+    private AbstractEventListener processInstanceCompletedEventListener;
+
+    /**
+     * Event listener fired when a process is canceled
+     */
+    private AbstractEventListener processInstanceCanceledEventListener;
+
+    /**
+     * Event listener fired when a service task is started
+     */
+    private AbstractEventListener serviceTaskStartedEventListener;
 
     /**
      * @return the Activiti Engine
@@ -437,16 +460,25 @@ public class ActivitiSE extends AbstractServiceEngine {
         this.scheduledLogger = Executors.newScheduledThreadPool(this.scheduledLoggerCoreSize,
                 new ScheduledLoggerThreadFactory(ActivitiSE.this.getContext().getComponentName()));
 
-        this.activitiEngine.getRuntimeService().addEventListener(
-                        new ProcessCompletedEventListener(this.scheduledLogger, this.monitTraceDelay,
-                                this.activitiEngine.getHistoryService(),
-                        this.getLogger()),
-                ActivitiEventType.PROCESS_COMPLETED);
-        this.activitiEngine.getRuntimeService().addEventListener(
-                        new ProcessCanceledEventListener(this.scheduledLogger, this.monitTraceDelay,
-                                this.activitiEngine.getHistoryService(),
-                        this.getLogger()),
-                ActivitiEventType.PROCESS_CANCELLED);
+        // Create & Register event listeners
+        final RuntimeService runtimeService = this.activitiEngine.getRuntimeService();
+        this.processInstanceStartedEventListener = new ProcessInstanceStartedEventListener(this.getLogger());
+        runtimeService.addEventListener(this.processInstanceStartedEventListener,
+                this.processInstanceStartedEventListener.getListenEventType());
+
+        this.processInstanceCompletedEventListener = new ProcessInstanceCompletedEventListener(this.scheduledLogger,
+                this.monitTraceDelay, this.getLogger());
+        runtimeService.addEventListener(this.processInstanceCompletedEventListener,
+                this.processInstanceCompletedEventListener.getListenEventType());
+
+        this.processInstanceCanceledEventListener = new ProcessInstanceCanceledEventListener(this.scheduledLogger,
+                this.monitTraceDelay, this.getLogger());
+        runtimeService.addEventListener(this.processInstanceCanceledEventListener,
+                this.processInstanceCanceledEventListener.getListenEventType());
+
+        this.serviceTaskStartedEventListener = new ServiceTaskStartedEventListener(this.getLogger());
+        runtimeService.addEventListener(this.serviceTaskStartedEventListener,
+                this.serviceTaskStartedEventListener.getListenEventType());
 
         try {
             // Startup Activiti engine against running states of the SE:
@@ -506,6 +538,13 @@ public class ActivitiSE extends AbstractServiceEngine {
         } finally {
             this.getLogger().fine("End ActivitiSE.doStop()");
         }
+
+        // Deregister event listeners
+        final RuntimeService runtimeService = this.activitiEngine.getRuntimeService();
+        runtimeService.removeEventListener(this.processInstanceStartedEventListener);
+        runtimeService.removeEventListener(this.processInstanceCompletedEventListener);
+        runtimeService.removeEventListener(this.processInstanceCanceledEventListener);
+        runtimeService.removeEventListener(this.serviceTaskStartedEventListener);
 
         try {
             this.scheduledLogger.shutdown();
