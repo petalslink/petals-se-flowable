@@ -20,10 +20,10 @@ package org.ow2.petals.activitibpmn.event;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEntityWithVariablesEvent;
 import org.activiti.engine.delegate.event.ActivitiEvent;
 import org.activiti.engine.delegate.event.ActivitiEventListener;
 import org.activiti.engine.delegate.event.ActivitiEventType;
+import org.activiti.engine.delegate.event.ActivitiProcessStartedEvent;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.ow2.petals.activitibpmn.ActivitiSEConstants;
 import org.ow2.petals.activitibpmn.monitoring.ProcessInstanceFlowStepBeginLogData;
@@ -39,7 +39,7 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
         ActivitiEventListener {
 
     public ProcessInstanceStartedEventListener(final Logger log) {
-        super(ActivitiEventType.PROCESS_INSTANCE_STARTED, log);
+        super(ActivitiEventType.PROCESS_STARTED, log);
     }
 
     @Override
@@ -48,8 +48,8 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
         final String processInstanceId = event.getProcessInstanceId();
         this.log.fine("The process instance '" + processInstanceId + "' is started.");
 
-        if (event instanceof ActivitiEntityWithVariablesEvent) {
-            final ActivitiEntityWithVariablesEvent eventImpl = (ActivitiEntityWithVariablesEvent) event;
+        if (event instanceof ActivitiProcessStartedEvent) {
+            final ActivitiProcessStartedEvent eventImpl = (ActivitiProcessStartedEvent) event;
 
                 final Map<String, Object> processVariables = eventImpl.getVariables();
 
