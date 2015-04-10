@@ -17,9 +17,11 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
@@ -76,6 +78,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 
     private static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
 
+    private static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
+
     private static final String ATTR_NAME_MONIT_TRACE_DELAY = "monitTraceDelay";
 
     private static final String ATTR_NAME_MONIT_TRACE_POOL_SIZE = "monitTracePoolSize";
@@ -102,6 +106,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_DATABASE_TYPE);
             attributes.add(ATTR_NAME_DATABASE_SCHEMA_UPDATE);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR);
+            attributes.add(ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION);
             attributes.add(ATTR_NAME_MONIT_TRACE_DELAY);
             attributes.add(ATTR_NAME_MONIT_TRACE_POOL_SIZE);
 
@@ -436,6 +441,42 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public void setEngineEnableJobExecutor(final String value) {
         // TODO: Add a check about valid values
         this.setParam(ENGINE_ENABLE_JOB_EXECUTOR, value);
+    }
+
+    /**
+     * Get the engineEnableBpmnValidation
+     * 
+     * @return the engineEnableBpmnValidation
+     */
+    public boolean getEngineEnableBpmnValidation() {
+
+        // Caution:
+        // - only the value "false", ignoring case and spaces will disable the BPMN validation,
+        // - only the value "true", ignoring case and spaces will enable the BPMN validation,
+        // - otherwise, the default value is used.
+        final boolean enableActivitiBpmnValidation;
+        final String enableActivitiBpmnValidationConfigured = this.getParam(ENGINE_ENABLE_BPMN_VALIDATION);
+        if (enableActivitiBpmnValidationConfigured == null || enableActivitiBpmnValidationConfigured.trim().isEmpty()) {
+            this.getLogger()
+                    .info("The activation of the BPMN validation on process deployments into Activiti engine is not configured. Default value used.");
+            enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
+        } else {
+            enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("false") ? false
+                    : (enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
+                            : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
+        }
+        return enableActivitiBpmnValidation;
+    }
+
+    /**
+     * Set the engineEnableBpmnValidation
+     * 
+     * @param value
+     *            the engineEnableBpmnValidation
+     */
+    public void setEngineEnableBpmnValidation(final String value) {
+        // TODO: Add a check about valid values
+        this.setParam(ENGINE_ENABLE_BPMN_VALIDATION, value);
     }
 
     /**

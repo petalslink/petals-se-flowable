@@ -79,6 +79,9 @@ public class ActivitiSEBootstrapTest {
         final Element eltEnableEngineJobExecutor = doc.createElementNS("",
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEnableEngineBpmnValidation = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
+        params.add(eltEnableEngineBpmnValidation);
 
         final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
         params.add(eltMonitTraceDelay);
@@ -125,6 +128,10 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         eltEnableEngineJobExecutor.setTextContent(" ");
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEnableEngineBpmnValidation = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
+        eltEnableEngineBpmnValidation.setTextContent(" ");
+        params.add(eltEnableEngineBpmnValidation);
 
         final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
         eltMonitTraceDelay.setTextContent(" ");
@@ -173,6 +180,10 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         eltEnableEngineJobExecutor.setTextContent("invalid-value");
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEnableEngineBpmnValidation = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
+        eltEnableEngineBpmnValidation.setTextContent("invalid-value");
+        params.add(eltEnableEngineBpmnValidation);
 
         final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
         eltMonitTraceDelay.setTextContent("invalid-value");
@@ -229,6 +240,11 @@ public class ActivitiSEBootstrapTest {
         final boolean engineEnableJobExecutor = false;
         eltEnableEngineJobExecutor.setTextContent(String.valueOf(engineEnableJobExecutor));
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEnableEngineBpmnValidation = doc.createElementNS("",
+                ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
+        final boolean engineEnableBpmnValidation = false;
+        eltEnableEngineBpmnValidation.setTextContent(String.valueOf(engineEnableBpmnValidation));
+        params.add(eltEnableEngineBpmnValidation);
 
         final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
         final long monitTraceDelay = 123456l;
@@ -248,6 +264,7 @@ public class ActivitiSEBootstrapTest {
         assertEquals(jdbcMaxCheckoutTime, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(jdbcMaxWaitTime, bootstrap.getJdbcMaxWaitTime());
         assertEquals(engineEnableJobExecutor, bootstrap.getEngineEnableJobExecutor());
+        assertEquals(engineEnableBpmnValidation, bootstrap.getEngineEnableBpmnValidation());
         assertEquals(monitTraceDelay, bootstrap.getMonitTraceDelay());
         assertEquals(scheduledLoggerCoreSize, bootstrap.getMonitTracePoolSize());
     }
@@ -299,6 +316,8 @@ public class ActivitiSEBootstrapTest {
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME, bootstrap.getJdbcMaxWaitTime());
         assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR, bootstrap.getEngineEnableJobExecutor());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION,
+                bootstrap.getEngineEnableBpmnValidation());
         assertEquals(ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY, bootstrap.getMonitTraceDelay());
         assertEquals(ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE, bootstrap.getMonitTracePoolSize());
     }

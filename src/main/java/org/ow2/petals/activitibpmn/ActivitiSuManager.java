@@ -70,20 +70,23 @@ import org.w3c.dom.Document;
  * @author Bertrand ESCUDIE - Linagora
  */
 public class ActivitiSuManager extends AbstractServiceUnitManager {
+
+    /**
+     * Activation flag of the BPMN validation on process deployments into the Activiti engine
+     */
+    private final boolean enableActivitiBpmnValidation;
 	
     /**
-	 * Default constructor.
-	 * @param component the ACTIVITI component
-	 */
-    public ActivitiSuManager(final AbstractComponent component) {
+     * Default constructor.
+     * 
+     * @param component
+     *            the ACTIVITI component
+     * @param enableActivitiBpmnValidation
+     *            Activation flag of the BPMN validation on process deployments into the Activiti engine
+     */
+    public ActivitiSuManager(final AbstractComponent component, final boolean enableActivitiBpmnValidation) {
 		super(component);
-        if (this.logger.isLoggable(Level.FINE)) {
-            this.logger.fine("Start ActivitiSuManager.ActivitiSUManager()");
-		}
-
-        if (this.logger.isLoggable(Level.FINE)) {
-            this.logger.fine("End ActivitiSuManager.ActivitiSUManager()");
-		}
+        this.enableActivitiBpmnValidation = enableActivitiBpmnValidation;
     }
 
     @Override
@@ -431,10 +434,10 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                     throw new PEtALSCDKException(e);
                 }
 
-                // TODO: Enable validation removing following two lines when Activiti contribution about custom service
-                // task type will be working
-                db.disableBpmnValidation();
-                db.disableSchemaValidation();
+                if (!this.enableActivitiBpmnValidation) {
+                    db.disableBpmnValidation();
+                    db.disableSchemaValidation();
+                }
 
                 // TODO Manage the process suspension State be careful of multi SU deployement for the same
                 // process

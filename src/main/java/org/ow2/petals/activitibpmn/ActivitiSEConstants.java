@@ -171,6 +171,17 @@ public final class ActivitiSEConstants {
     public static final boolean DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR = true;
 
     /**
+     * Tag name of the component JBI descriptor about the activation of the Activiti BPMN validation during processes
+     * deployment.
+     */
+    public static final String ENGINE_ENABLE_BPMN_VALIDATION = "engine-enable-bpmn-validation";
+
+    /**
+     * Default value of {@link #ENGINE_ENABLE_BPMN_VALIDATION}.
+     */
+    public static final boolean DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION = true;
+
+    /**
      * Tag name of the component JBI descriptor about the delay, in millisecond, of MONIT trace.
      */
     public static final String MONIT_TRACE_DELAY = "monit-trace-delay";

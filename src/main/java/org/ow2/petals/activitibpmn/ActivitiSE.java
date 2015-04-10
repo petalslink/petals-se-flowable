@@ -17,9 +17,11 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
@@ -128,6 +130,11 @@ public class ActivitiSE extends AbstractServiceEngine {
      * Activation flag of the Activiti job executor
      */
     private boolean enableActivitiJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
+
+    /**
+     * Activation flag of the BPMN validation on process deployments into the Activiti engine
+     */
+    private boolean enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 
     /**
      * Event listener fired when a process is started
@@ -344,8 +351,28 @@ public class ActivitiSE extends AbstractServiceEngine {
                                 : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
             }
 
+            // Caution:
+            // - only the value "false", ignoring case and spaces will disable the BPMN validation,
+            // - only the value "true", ignoring case and spaces will enable the BPMN validation,
+            // - otherwise, the default value is used.
+            final String enableActivitiBpmnValidationConfigured = this.getComponentExtensions().get(
+                    ENGINE_ENABLE_BPMN_VALIDATION);
+            if (enableActivitiBpmnValidationConfigured == null
+                    || enableActivitiBpmnValidationConfigured.trim().isEmpty()) {
+                this.getLogger()
+                        .info("The activation of the BPMN validation during process deployments is not configured. Default value used.");
+                this.enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
+            } else {
+                this.enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase(
+                        "false") ? false
+                        : (enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
+                                : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
+            }
+
             this.getLogger().config("Activiti engine configuration:");
             this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableActivitiJobExecutor);
+            this.getLogger()
+                    .config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + this.enableActivitiBpmnValidation);
 
             final String monitTraceDelayConfigured = this.getComponentExtensions().get(MONIT_TRACE_DELAY);
             if (monitTraceDelayConfigured == null || monitTraceDelayConfigured.trim().isEmpty()) {
@@ -573,7 +600,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 
     @Override
 	protected AbstractServiceUnitManager createServiceUnitManager() {
-		return new ActivitiSuManager(this);
+        return new ActivitiSuManager(this, this.enableActivitiBpmnValidation);
 	}
 
     private void registerCxfPetalsTransport() {
