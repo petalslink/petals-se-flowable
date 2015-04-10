@@ -157,6 +157,11 @@ public final class ActivitiSEConstants {
 		 *                  and drops the schema when the process engine is being closed. 
 		 */
 		public static final String DATABASE_SCHEMA_UPDATE = "database_schema_update";
+
+        /**
+         * Default value of {@link #DATABASE_SCHEMA_UPDATE}.
+         */
+        public static final String DEFAULT_DATABASE_SCHEMA_UPDATE = "true";
 		
 	}
 

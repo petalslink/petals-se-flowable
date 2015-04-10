@@ -27,6 +27,7 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
@@ -395,7 +396,20 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the databaseSchemaUpdate
      */
     public String getDatabaseSchemaUpdate() {
-        return this.getParam(DATABASE_SCHEMA_UPDATE);
+
+        final String databaseSchemaUpdate;
+        final String databaseSchemaUpdateString = this.getParam(DATABASE_SCHEMA_UPDATE);
+        if (databaseSchemaUpdateString == null || databaseSchemaUpdateString.trim().isEmpty()) {
+            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
+        } else if (databaseSchemaUpdateString.trim().equals("false")
+                || databaseSchemaUpdateString.trim().equals("true")
+                || databaseSchemaUpdateString.trim().equals("create-drop")) {
+            databaseSchemaUpdate = databaseSchemaUpdateString.trim();
+        } else {
+            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
+        }
+
+        return databaseSchemaUpdate;
     }
      
     /**

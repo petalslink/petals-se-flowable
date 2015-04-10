@@ -59,8 +59,9 @@
       <petals-se-activitibpmn:jdbc_max_checkout_time />
       <petals-se-activitibpmn:jdbc_max_wait_time />
       <petals-se-activitibpmn:database_type />
-      <petals-se-activitibpmn:database_schema_update>true</petals-se-activitibpmn:database_schema_update>
+      <petals-se-activitibpmn:database_schema_update />
       <petals-se-activitibpmn:engine-enable-job-executor />
+      <petals-se-activitibpmn:engine-enable-bpmn-validation />
       <petals-se-activitibpmn:monit-trace-delay />
       <petals-se-activitibpmn:monit-trace-pool-size />
 

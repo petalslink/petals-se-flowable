@@ -75,6 +75,9 @@ public class ActivitiSEBootstrapTest {
         params.add(eltJdbcMaxCheckoutTime);
         final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
         params.add(eltJdbcMaxWaitTime);
+        final Element eltDatabaseSchemaUpdate = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+        params.add(eltDatabaseSchemaUpdate);
 
         final Element eltEnableEngineJobExecutor = doc.createElementNS("",
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
@@ -123,6 +126,10 @@ public class ActivitiSEBootstrapTest {
         final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
         eltJdbcMaxWaitTime.setTextContent(" ");
         params.add(eltJdbcMaxWaitTime);
+        final Element eltDatabaseSchemaUpdate = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+        eltDatabaseSchemaUpdate.setTextContent(" ");
+        params.add(eltDatabaseSchemaUpdate);
 
         final Element eltEnableEngineJobExecutor = doc.createElementNS("",
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
@@ -175,6 +182,10 @@ public class ActivitiSEBootstrapTest {
         final Element eltJdbcMaxWaitTime = doc.createElementNS("", ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
         eltJdbcMaxWaitTime.setTextContent("invalid-value");
         params.add(eltJdbcMaxWaitTime);
+        final Element eltDatabaseSchemaUpdate = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+        eltDatabaseSchemaUpdate.setTextContent("invalid-value");
+        params.add(eltDatabaseSchemaUpdate);
 
         final Element eltEnableEngineJobExecutor = doc.createElementNS("",
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
@@ -235,6 +246,12 @@ public class ActivitiSEBootstrapTest {
         eltJdbcMaxWaitTime.setTextContent(String.valueOf(jdbcMaxWaitTime));
         params.add(eltJdbcMaxWaitTime);
 
+        final Element eltDatabaseSchemaUpdate = doc.createElementNS("",
+                ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
+        final String databaseSchemaUpdate = "create-drop";
+        eltDatabaseSchemaUpdate.setTextContent(databaseSchemaUpdate);
+        params.add(eltDatabaseSchemaUpdate);
+
         final Element eltEnableEngineJobExecutor = doc.createElementNS("",
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         final boolean engineEnableJobExecutor = false;
@@ -263,6 +280,7 @@ public class ActivitiSEBootstrapTest {
         assertEquals(jdbcMaxIdleConnections, bootstrap.getJdbcMaxIdleConnections());
         assertEquals(jdbcMaxCheckoutTime, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(jdbcMaxWaitTime, bootstrap.getJdbcMaxWaitTime());
+        assertEquals(databaseSchemaUpdate, bootstrap.getDatabaseSchemaUpdate());
         assertEquals(engineEnableJobExecutor, bootstrap.getEngineEnableJobExecutor());
         assertEquals(engineEnableBpmnValidation, bootstrap.getEngineEnableBpmnValidation());
         assertEquals(monitTraceDelay, bootstrap.getMonitTraceDelay());
@@ -315,6 +333,7 @@ public class ActivitiSEBootstrapTest {
                 bootstrap.getJdbcMaxIdleConnections());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME, bootstrap.getJdbcMaxWaitTime());
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE, bootstrap.getDatabaseSchemaUpdate());
         assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR, bootstrap.getEngineEnableJobExecutor());
         assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION,
                 bootstrap.getEngineEnableBpmnValidation());

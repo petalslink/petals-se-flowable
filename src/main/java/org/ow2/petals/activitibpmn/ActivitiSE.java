@@ -28,6 +28,7 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_C
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PETALS_SENDER_COMP_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
@@ -320,8 +321,23 @@ public class ActivitiSE extends AbstractServiceEngine {
 
             /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
             final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
+
 			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
-            final String databaseSchemaUpdate = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
+            final String databaseSchemaUpdateConfigured = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
+            final String databaseSchemaUpdate;
+            if (databaseSchemaUpdateConfigured == null || databaseSchemaUpdateConfigured.trim().isEmpty()) {
+                this.getLogger().info("No schema update processing configured for database. Default value used.");
+                databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
+            } else if (databaseSchemaUpdateConfigured.trim().equals("false")
+                    || databaseSchemaUpdateConfigured.trim().equals("true")
+                    || databaseSchemaUpdateConfigured.trim().equals("create-drop")) {
+                databaseSchemaUpdate = databaseSchemaUpdateConfigured.trim();
+            } else {
+                this.getLogger().info(
+                        "Invalid value '" + databaseSchemaUpdateConfigured
+                                + "' configured for the schema update processing. Default value used.");
+                databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
+            }
 
             this.getLogger().config("DB configuration:");
             this.getLogger().config("   - " + JDBC_DRIVER + " = " + jdbcDriver);
