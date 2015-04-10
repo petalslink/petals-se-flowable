@@ -424,6 +424,9 @@ public class ActivitiSE extends AbstractServiceEngine {
             pec.setJdbcMaxIdleConnections(jdbcMaxIdleConnections);
             pec.setJdbcMaxCheckoutTime(jdbcMaxCheckoutTime);
             pec.setJdbcMaxWaitTime(jdbcMaxWaitTime);
+            if (databaseType != null && !databaseType.trim().isEmpty()) {
+                pec.setDatabaseType(databaseType);
+            }
             pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
             pec.setJobExecutorActivate(false);
 
