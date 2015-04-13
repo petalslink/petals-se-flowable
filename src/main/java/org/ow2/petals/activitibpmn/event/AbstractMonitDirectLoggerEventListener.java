@@ -25,7 +25,7 @@ import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
- * Abstract class logging directly (without delay) a MONIT trace on Activiti events
+ * Abstract class logging directly a MONIT trace on Activiti events
  * 
  * @author Christophe DENEUX - Linagora
  *

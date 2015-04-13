@@ -18,7 +18,6 @@
 package org.ow2.petals.activitibpmn.event;
 
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
 import org.activiti.engine.delegate.event.ActivitiEvent;
@@ -36,12 +35,11 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ProcessInstanceCanceledEventListener extends AbstractMonitDelayedLoggerEventListener implements
+public class ProcessInstanceCanceledEventListener extends AbstractMonitDirectLoggerEventListener implements
         ActivitiEventListener {
 
-    public ProcessInstanceCanceledEventListener(final ScheduledExecutorService scheduledLogger, final int delay,
-            final Logger log) {
-        super(scheduledLogger, delay, ActivitiEventType.PROCESS_CANCELLED, log);
+    public ProcessInstanceCanceledEventListener(final Logger log) {
+        super(ActivitiEventType.PROCESS_CANCELLED, log);
     }
 
     @Override
@@ -57,9 +55,9 @@ public class ProcessInstanceCanceledEventListener extends AbstractMonitDelayedLo
         final Map<String, Object> processVariables = processResult.getProcessVariables();
 
         final String flowInstanceId = (String) processVariables
-                .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID);
+                .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_INSTANCE_ID);
         final String flowStepId = (String) processVariables
-                .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID);
+                .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID);
 
         return new ProcessInstanceFlowStepFailureLogData(flowInstanceId, flowStepId, processResult.getDeleteReason());
 

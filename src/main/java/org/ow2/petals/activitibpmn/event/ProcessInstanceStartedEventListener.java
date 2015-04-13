@@ -54,13 +54,13 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
                 final Map<String, Object> processVariables = eventImpl.getVariables();
 
                 final String flowInstanceId = (String) processVariables
-                        .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID);
+                        .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_INSTANCE_ID);
                 final String flowStepId = (String) processVariables
-                        .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID);
+                        .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID);
                 final String correlatedFlowInstanceId = (String) processVariables
-                        .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
+                        .get(ActivitiSEConstants.Activiti.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
                 final String correlatedFlowStepId = (String) processVariables
-                        .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_CORRELATED_FLOW_STEP_ID);
+                        .get(ActivitiSEConstants.Activiti.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
 
                 final ExecutionEntity entity = (ExecutionEntity) eventImpl.getEntity();
 

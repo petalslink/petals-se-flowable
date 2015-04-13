@@ -18,7 +18,6 @@
 package org.ow2.petals.activitibpmn.event;
 
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Logger;
 
 import org.activiti.engine.delegate.event.ActivitiEvent;
@@ -36,11 +35,11 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ProcessInstanceCompletedEventListener extends AbstractMonitDelayedLoggerEventListener implements ActivitiEventListener {
+public class ProcessInstanceCompletedEventListener extends AbstractMonitDirectLoggerEventListener implements
+        ActivitiEventListener {
 
-    public ProcessInstanceCompletedEventListener(final ScheduledExecutorService scheduledLogger, final int delay,
-            final Logger log) {
-        super(scheduledLogger, delay, ActivitiEventType.PROCESS_COMPLETED, log);
+    public ProcessInstanceCompletedEventListener(final Logger log) {
+        super(ActivitiEventType.PROCESS_COMPLETED, log);
     }
 
     @Override
@@ -56,9 +55,9 @@ public class ProcessInstanceCompletedEventListener extends AbstractMonitDelayedL
         final Map<String, Object> processVariables = processResult.getProcessVariables();
 
         final String flowInstanceId = (String) processVariables
-                .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID);
+                .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_INSTANCE_ID);
         final String flowStepId = (String) processVariables
-                .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID);
+                .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID);
 
         return new ProcessInstanceFlowStepEndLogData(flowInstanceId, flowStepId);
 

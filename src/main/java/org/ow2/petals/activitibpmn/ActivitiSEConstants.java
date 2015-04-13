@@ -187,27 +187,6 @@ public final class ActivitiSEConstants {
     public static final boolean DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION = true;
 
     /**
-     * Tag name of the component JBI descriptor about the delay, in millisecond, of MONIT trace.
-     */
-    public static final String MONIT_TRACE_DELAY = "monit-trace-delay";
-
-    /**
-     * Default value of {@link #MONIT_TRACE_DELAY}.
-     */
-    public static final int DEFAULT_MONIT_TRACE_DELAY = 500;
-
-    /**
-     * Tag name of the component JBI descriptor about the core size of the thread pool in charge of logging delayed
-     * MONIT traces.
-     */
-    public static final String SCHEDULED_LOGGER_CORE_SIZE = "monit-trace-pool-size";
-
-    /**
-     * Default value of {@link #SCHEDULED_LOGGER_CORE_SIZE}.
-     */
-    public static final int DEFAULT_SCHEDULED_LOGGER_CORE_SIZE = 1;
-
-    /**
      * Constants relatives to the Activiti components
      */
     public static class Activiti {
@@ -218,30 +197,28 @@ public final class ActivitiSEConstants {
         public static final String PETALS_SENDER_COMP_NAME = "petals-sender";
 
         /**
-         * Name of the process variable used to store the Petals flow instance identifier. This variable is used to be
-         * able to retrieve the right Petals flow attributes to used with the service tasks that invoke services with
-         * the Petals flow attributes used when creating the process instance.
+         * Name of the process variable used to store the Petals flow instance identifier into Activiti objects as
+         * process instance or user tasks.
          */
-        public static final String PROCESS_VAR_PETALS_FLOW_INSTANCE_ID = "petals.flow.instance.id";
+        public static final String VAR_PETALS_FLOW_INSTANCE_ID = "petals.flow.instance.id";
 
         /**
-         * Name of the process variable used to store the Petals flow step identifier. This variable is used to be able
-         * to retrieve the right Petals flow attributes to used with the service tasks that invoke services with the
-         * Petals flow attributes used when creating the process instance.
+         * Name of a variable used to store the Petals flow step identifier into Activiti objects as process instance or
+         * user tasks.
          */
-        public static final String PROCESS_VAR_PETALS_FLOW_STEP_ID = "petals.flow.step.id";
+        public static final String VAR_PETALS_FLOW_STEP_ID = "petals.flow.step.id";
 
         /**
-         * Name of the process variable used to store the Petals flow instance identifier of the flow that has created
-         * the new flow associated to the process instance.
+         * Name of a variable used to store the Petals flow instance identifier of the flow that has created the new
+         * flow associated to the process instance.
          */
-        public static final String PROCESS_VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID = "petals.correlated.flow.instance.id";
+        public static final String VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID = "petals.correlated.flow.instance.id";
 
         /**
          * Name of the process variable used to store the Petals flow step identifier of the flow that has created the
          * new flow associated to the process instance.
          */
-        public static final String PROCESS_VAR_PETALS_CORRELATED_FLOW_STEP_ID = "petals.correlated.flow.step.id";
+        public static final String VAR_PETALS_CORRELATED_FLOW_STEP_ID = "petals.correlated.flow.step.id";
     }
 
     public static class IntegrationOperation {

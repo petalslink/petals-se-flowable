@@ -65,6 +65,8 @@ import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.w3c.dom.Document;
 
+import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
+
 
 /**
  * @author Bertrand ESCUDIE - Linagora
@@ -75,17 +77,26 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      * Activation flag of the BPMN validation on process deployments into the Activiti engine
      */
     private final boolean enableActivitiBpmnValidation;
+
+    /**
+     * An UUID generator.
+     */
+    private final SimpleUUIDGenerator simpleUUIDGenerator;
 	
     /**
      * Default constructor.
      * 
      * @param component
      *            the ACTIVITI component
+     * @param simpleUUIDGenerator
+     *            An UUID generator
      * @param enableActivitiBpmnValidation
      *            Activation flag of the BPMN validation on process deployments into the Activiti engine
      */
-    public ActivitiSuManager(final AbstractComponent component, final boolean enableActivitiBpmnValidation) {
+    public ActivitiSuManager(final AbstractComponent component, final SimpleUUIDGenerator simpleUUIDGenerator,
+            final boolean enableActivitiBpmnValidation) {
 		super(component);
+        this.simpleUUIDGenerator = simpleUUIDGenerator;
         this.enableActivitiBpmnValidation = enableActivitiBpmnValidation;
     }
 
@@ -527,7 +538,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
                 operations.add(new StartEventOperation(annotatedOperation, ((ActivitiSE) this.component)
                         .getProcessEngine().getIdentityService(), ((ActivitiSE) this.component).getProcessEngine()
-                        .getRuntimeService(), this.logger));
+                        .getRuntimeService(), this.simpleUUIDGenerator, this.logger));
             } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
                 operations.add(new CompleteUserTaskOperation(annotatedOperation, ((ActivitiSE) this.component)
                         .getProcessEngine().getTaskService(), ((ActivitiSE) this.component).getProcessEngine()

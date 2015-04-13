@@ -86,12 +86,6 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         params.add(eltEnableEngineBpmnValidation);
 
-        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
-        params.add(eltMonitTraceDelay);
-        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
-                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
-        params.add(eltScheduledLoggerCoreSize);
-
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
 
@@ -140,14 +134,6 @@ public class ActivitiSEBootstrapTest {
         eltEnableEngineBpmnValidation.setTextContent(" ");
         params.add(eltEnableEngineBpmnValidation);
 
-        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
-        eltMonitTraceDelay.setTextContent(" ");
-        params.add(eltMonitTraceDelay);
-        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
-                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
-        eltScheduledLoggerCoreSize.setTextContent(" ");
-        params.add(eltScheduledLoggerCoreSize);
-
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
 
@@ -195,14 +181,6 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         eltEnableEngineBpmnValidation.setTextContent("invalid-value");
         params.add(eltEnableEngineBpmnValidation);
-
-        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
-        eltMonitTraceDelay.setTextContent("invalid-value");
-        params.add(eltMonitTraceDelay);
-        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
-                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
-        eltScheduledLoggerCoreSize.setTextContent("invalid-value");
-        params.add(eltScheduledLoggerCoreSize);
 
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
@@ -263,17 +241,6 @@ public class ActivitiSEBootstrapTest {
         eltEnableEngineBpmnValidation.setTextContent(String.valueOf(engineEnableBpmnValidation));
         params.add(eltEnableEngineBpmnValidation);
 
-        final Element eltMonitTraceDelay = doc.createElementNS("", ActivitiSEConstants.MONIT_TRACE_DELAY);
-        final long monitTraceDelay = 123456l;
-        eltMonitTraceDelay.setTextContent(String.valueOf(monitTraceDelay));
-        params.add(eltMonitTraceDelay);
-
-        final Element eltScheduledLoggerCoreSize = doc.createElementNS("",
-                ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE);
-        final int scheduledLoggerCoreSize = 5;
-        eltScheduledLoggerCoreSize.setTextContent(String.valueOf(scheduledLoggerCoreSize));
-        params.add(eltScheduledLoggerCoreSize);
-
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
         assertEquals(jdbcMaxActiveConnections, bootstrap.getJdbcMaxActiveConnections());
@@ -283,8 +250,6 @@ public class ActivitiSEBootstrapTest {
         assertEquals(databaseSchemaUpdate, bootstrap.getDatabaseSchemaUpdate());
         assertEquals(engineEnableJobExecutor, bootstrap.getEngineEnableJobExecutor());
         assertEquals(engineEnableBpmnValidation, bootstrap.getEngineEnableBpmnValidation());
-        assertEquals(monitTraceDelay, bootstrap.getMonitTraceDelay());
-        assertEquals(scheduledLoggerCoreSize, bootstrap.getMonitTracePoolSize());
     }
 
     /**
@@ -337,8 +302,6 @@ public class ActivitiSEBootstrapTest {
         assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR, bootstrap.getEngineEnableJobExecutor());
         assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION,
                 bootstrap.getEngineEnableBpmnValidation());
-        assertEquals(ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY, bootstrap.getMonitTraceDelay());
-        assertEquals(ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE, bootstrap.getMonitTracePoolSize());
     }
 
     /**

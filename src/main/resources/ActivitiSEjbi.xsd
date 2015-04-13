@@ -69,8 +69,6 @@
                      minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-enable-bpmn-validation" maxOccurs="1"
                      minOccurs="0" />
-                  <xs:element ref="petals-se-activitibpmn:monit-trace-pool-size" maxOccurs="1" minOccurs="0" />
-                  <xs:element ref="petals-se-activitibpmn:monit-trace-delay" maxOccurs="1" minOccurs="0" />
                </xs:sequence>
             </xs:extension>
          </xs:complexContent>

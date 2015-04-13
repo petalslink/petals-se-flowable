@@ -17,10 +17,10 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation;
 
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_CORRELATED_FLOW_STEP_ID;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_INSTANCE_ID;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -64,7 +64,7 @@ public class StartEventOperation extends ActivitiOperation {
     /**
      * An UUID generator.
      */
-    private static final SimpleUUIDGenerator simpleUUIDGenerator = new SimpleUUIDGenerator();
+    private final SimpleUUIDGenerator simpleUUIDGenerator;
 
     /**
      * @param annotatedOperation
@@ -73,13 +73,16 @@ public class StartEventOperation extends ActivitiOperation {
      *            The identity service of the BPMN engine
      * @param runtimeService
      *            The runtime service of the BPMN engine
+     * @param simpleUUIDGenerator
+     *            A UUID generator
      * @param logger
      */
     public StartEventOperation(final AnnotatedOperation annotatedOperation, final IdentityService identityService,
-            final RuntimeService runtimeService, final Logger logger) {
+            final RuntimeService runtimeService, final SimpleUUIDGenerator simpleUUIDGenerator, final Logger logger) {
         super(annotatedOperation, logger);
         this.identityService = identityService;
         this.runtimeService = runtimeService;
+        this.simpleUUIDGenerator = simpleUUIDGenerator;
     }
 
     @Override
@@ -95,13 +98,13 @@ public class StartEventOperation extends ActivitiOperation {
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)
 
         // Main flow attributes are stored in process instance as special variables to be transmitted to service tasks
-        final String flowInstanceId = simpleUUIDGenerator.getNewID();
-        final String flowStepId = simpleUUIDGenerator.getNewID();
-        processVars.put(PROCESS_VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
-        processVars.put(PROCESS_VAR_PETALS_FLOW_STEP_ID, flowStepId);
+        final String flowInstanceId = this.simpleUUIDGenerator.getNewID();
+        final String flowStepId = this.simpleUUIDGenerator.getNewID();
+        processVars.put(VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
+        processVars.put(VAR_PETALS_FLOW_STEP_ID, flowStepId);
         final FlowAttributes exchangeFlowAttibutes = exchange.getFlowAttributes();
-        processVars.put(PROCESS_VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
-        processVars.put(PROCESS_VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
+        processVars.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
+        processVars.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
 
         final String bpmnProcessIdValue;
         try {

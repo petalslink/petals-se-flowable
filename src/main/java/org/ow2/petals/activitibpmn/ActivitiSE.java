@@ -19,12 +19,8 @@ package org.ow2.petals.activitibpmn;
 
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PETALS_SENDER_COMP_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
@@ -52,9 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,6 +70,8 @@ import org.ow2.petals.activitibpmn.event.ProcessInstanceCanceledEventListener;
 import org.ow2.petals.activitibpmn.event.ProcessInstanceCompletedEventListener;
 import org.ow2.petals.activitibpmn.event.ProcessInstanceStartedEventListener;
 import org.ow2.petals.activitibpmn.event.ServiceTaskStartedEventListener;
+import org.ow2.petals.activitibpmn.event.UserTaskCompletedEventListener;
+import org.ow2.petals.activitibpmn.event.UserTaskStartedEventListener;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
@@ -87,6 +82,8 @@ import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
+
+import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
 
 /**
@@ -104,23 +101,6 @@ public class ActivitiSE extends AbstractServiceEngine {
      * A map used to get the Activiti Operation associated with (end-point Name + Operation)
      */
     private final Map<EndpointOperationKey, ActivitiService> activitiServices = new ConcurrentHashMap<EndpointOperationKey, ActivitiService>();
-
-    /**
-     * An executor service to log MONIT trace about end of process instances
-     */
-    private ScheduledExecutorService scheduledLogger = null;
-
-    /**
-     * Delay to wait before to log some MONIT traces
-     */
-    // TODO: monitTraceDelay should be hot-changed
-    private int monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
-
-    /**
-     * Core size of the thread pool in charge of logging delayed MONIT traces
-     */
-    // TODO: scheduledLoggerCoreSize should be hot-changed
-    private int scheduledLoggerCoreSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
 
     /**
      * The Activiti Async Executor service
@@ -156,6 +136,21 @@ public class ActivitiSE extends AbstractServiceEngine {
      * Event listener fired when a service task is started
      */
     private AbstractEventListener serviceTaskStartedEventListener;
+
+    /**
+     * Event listener fired when a user task is started
+     */
+    private AbstractEventListener userTaskStartedEventListener;
+
+    /**
+     * Event listener fired when a user task is completed
+     */
+    private AbstractEventListener userTaskCompletedEventListener;
+
+    /**
+     * An UUID generator.
+     */
+    private final SimpleUUIDGenerator simpleUUIDGenerator = new SimpleUUIDGenerator();
 
     /**
      * @return the Activiti Engine
@@ -211,7 +206,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 
 
 
-	    /**
+    /**
      * @param eptAndOperation
      *            the end-point Name and operation Name
      * @return the Activiti Service associated with this end-point name and operation Name
@@ -323,6 +318,9 @@ public class ActivitiSE extends AbstractServiceEngine {
             final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
 
 			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
+            /*
+             * TODO Test the Database Schema Version What about databaseSchemaUpdate values "true" and "create-drop"
+             */
             final String databaseSchemaUpdateConfigured = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
             final String databaseSchemaUpdate;
             if (databaseSchemaUpdateConfigured == null || databaseSchemaUpdateConfigured.trim().isEmpty()) {
@@ -338,6 +336,9 @@ public class ActivitiSE extends AbstractServiceEngine {
                                 + "' configured for the schema update processing. Default value used.");
                 databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
             }
+
+            /* TODO Test Activiti database connection configuration */
+            /* TODO Set the non set value with default value */
 
             this.getLogger().config("DB configuration:");
             this.getLogger().config("   - " + JDBC_DRIVER + " = " + jdbcDriver);
@@ -389,48 +390,8 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableActivitiJobExecutor);
             this.getLogger()
                     .config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + this.enableActivitiBpmnValidation);
-
-            final String monitTraceDelayConfigured = this.getComponentExtensions().get(MONIT_TRACE_DELAY);
-            if (monitTraceDelayConfigured == null || monitTraceDelayConfigured.trim().isEmpty()) {
-                this.getLogger().info("No MONIT trace delay configured. Default value used.");
-                this.monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
-            } else {
-                try {
-                    this.monitTraceDelay = Integer.parseInt(monitTraceDelayConfigured);
-                } catch (final NumberFormatException e) {
-                    this.getLogger().warning("Invalid value for the MONIT trace delay. Default value used.");
-                    this.monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
-                }
-            }
-
-            final String scheduledLoggerCoreSizeConfigured = this.getComponentExtensions().get(
-                    SCHEDULED_LOGGER_CORE_SIZE);
-            if (scheduledLoggerCoreSizeConfigured == null || scheduledLoggerCoreSizeConfigured.trim().isEmpty()) {
-                this.getLogger()
-                        .info("No core size of the thread pool in charge of logging MONIT traces is configured. Default value used.");
-                this.scheduledLoggerCoreSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
-            } else {
-                try {
-                    this.scheduledLoggerCoreSize = Integer.parseInt(scheduledLoggerCoreSizeConfigured);
-                } catch (final NumberFormatException e) {
-                    this.getLogger()
-                            .warning(
-                                    "Invalid value for the core size of the thread pool in charge of logging MONIT traces. Default value used.");
-                    this.scheduledLoggerCoreSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
-                }
-            }
-
-            this.getLogger().config("Other configuration parameters:");
-            this.getLogger().config("   - " + MONIT_TRACE_DELAY + " = " + this.monitTraceDelay);
-            this.getLogger().config("   - " + SCHEDULED_LOGGER_CORE_SIZE + " = " + this.scheduledLoggerCoreSize);
 		    
-	        /* TODO Test Activiti database connection configuration */
-	        /* TODO Test the Database Schema Version
-	         *      What about databaseSchemaUpdate values "true" and "create-drop" 
-	         */
-	        /* TODO Set the non set value with default value */
-
-			/* Create an Activiti ProcessEngine with database configuration */
+            /* Create an Activiti ProcessEngine with database configuration */
             final ProcessEngineConfiguration pec = ProcessEngineConfiguration
                     .createStandaloneProcessEngineConfiguration();
             pec.setJdbcDriver(jdbcDriver);
@@ -503,28 +464,31 @@ public class ActivitiSE extends AbstractServiceEngine {
 	public void doStart() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStart()");
 
-        this.scheduledLogger = Executors.newScheduledThreadPool(this.scheduledLoggerCoreSize,
-                new ScheduledLoggerThreadFactory(ActivitiSE.this.getContext().getComponentName()));
-
         // Create & Register event listeners
         final RuntimeService runtimeService = this.activitiEngine.getRuntimeService();
         this.processInstanceStartedEventListener = new ProcessInstanceStartedEventListener(this.getLogger());
         runtimeService.addEventListener(this.processInstanceStartedEventListener,
                 this.processInstanceStartedEventListener.getListenEventType());
 
-        this.processInstanceCompletedEventListener = new ProcessInstanceCompletedEventListener(this.scheduledLogger,
-                this.monitTraceDelay, this.getLogger());
+        this.processInstanceCompletedEventListener = new ProcessInstanceCompletedEventListener(this.getLogger());
         runtimeService.addEventListener(this.processInstanceCompletedEventListener,
                 this.processInstanceCompletedEventListener.getListenEventType());
 
-        this.processInstanceCanceledEventListener = new ProcessInstanceCanceledEventListener(this.scheduledLogger,
-                this.monitTraceDelay, this.getLogger());
+        this.processInstanceCanceledEventListener = new ProcessInstanceCanceledEventListener(this.getLogger());
         runtimeService.addEventListener(this.processInstanceCanceledEventListener,
                 this.processInstanceCanceledEventListener.getListenEventType());
 
         this.serviceTaskStartedEventListener = new ServiceTaskStartedEventListener(this.getLogger());
         runtimeService.addEventListener(this.serviceTaskStartedEventListener,
                 this.serviceTaskStartedEventListener.getListenEventType());
+
+        this.userTaskStartedEventListener = new UserTaskStartedEventListener(this.simpleUUIDGenerator, this.getLogger());
+        runtimeService.addEventListener(this.userTaskStartedEventListener,
+                this.userTaskStartedEventListener.getListenEventType());
+
+        this.userTaskCompletedEventListener = new UserTaskCompletedEventListener(this.getLogger());
+        runtimeService.addEventListener(this.userTaskCompletedEventListener,
+                this.userTaskCompletedEventListener.getListenEventType());
 
         try {
             // Startup Activiti engine against running states of the SE:
@@ -591,14 +555,9 @@ public class ActivitiSE extends AbstractServiceEngine {
         runtimeService.removeEventListener(this.processInstanceCompletedEventListener);
         runtimeService.removeEventListener(this.processInstanceCanceledEventListener);
         runtimeService.removeEventListener(this.serviceTaskStartedEventListener);
+        runtimeService.removeEventListener(this.userTaskStartedEventListener);
+        runtimeService.removeEventListener(this.userTaskCompletedEventListener);
 
-        try {
-            this.scheduledLogger.shutdown();
-            // TODO: The timeout should be configurable
-            this.scheduledLogger.awaitTermination(5000, TimeUnit.MILLISECONDS);
-        } catch (final InterruptedException e) {
-            this.getLogger().log(Level.WARNING, "The termination of the scheduled logger was interrupted", e);
-        }
 	}
 
 
@@ -619,7 +578,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 
     @Override
 	protected AbstractServiceUnitManager createServiceUnitManager() {
-        return new ActivitiSuManager(this, this.enableActivitiBpmnValidation);
+        return new ActivitiSuManager(this, this.simpleUUIDGenerator, this.enableActivitiBpmnValidation);
 	}
 
     private void registerCxfPetalsTransport() {

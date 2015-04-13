@@ -50,6 +50,7 @@ import org.ow2.petals.activitibpmn.incoming.operation.exception.NoProcessInstanc
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.activitibpmn.monitoring.ActivitiActivityFlowStepData;
 import org.ow2.petals.activitibpmn.monitoring.ProcessInstanceFlowStepBeginLogData;
+import org.ow2.petals.activitibpmn.monitoring.UserTaskFlowStepBeginLogData;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
@@ -187,30 +188,37 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(3, monitLogs_1.size());
+        assertEquals(4, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0));
-        final FlowLogData currentProcessFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
                 monitLogs_1.get(1));
         assertEquals(initialInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                currentProcessFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
+                processStartedBeginFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
         assertEquals(initialInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
-                currentProcessFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+                processStartedBeginFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
         assertEquals("vacationRequest",
-                currentProcessFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_DEFINITION_KEY));
+                processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_DEFINITION_KEY));
         assertEquals(response_1.getNumeroDde(),
-                currentProcessFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_INSTANCE_ID_KEY));
-        assertMonitProviderEndLog(initialInteractionRequestFlowLogData, monitLogs_1.get(2));
+                processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_INSTANCE_ID_KEY));
+        final FlowLogData userTaskHandleRequestBeginFlowLogData = assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), null,
+                null, null, null, monitLogs_1.get(2));
+        assertEquals("handleRequest",
+                userTaskHandleRequestBeginFlowLogData.get(UserTaskFlowStepBeginLogData.TASK_DEFINITION_KEY));
+        assertNotNull(userTaskHandleRequestBeginFlowLogData.get(UserTaskFlowStepBeginLogData.TASK_INSTANCE_ID_KEY));
+        assertMonitProviderEndLog(initialInteractionRequestFlowLogData, monitLogs_1.get(3));
 
         // Check that internal process variables are correctly set
         assertEquals(
-                currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 this.activitiClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
-                        ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID));
+                        ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_INSTANCE_ID));
         assertEquals(
-                currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
+                processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
                 this.activitiClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
-                        ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID));
+                        ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID));
 
         // Verify the task basket using integration service
         final GetTasks getTasksReq = new GetTasks();
@@ -244,7 +252,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                 COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_TASK_SERVICE), ITG_OP_GETTASKS,
                 monitLogs_taskBasket.get(0));
         assertMonitProviderEndLog(providerBegin_taskBasket, monitLogs_taskBasket.get(1));
-        assertMonitFlowInstanceIdNotEquals(currentProcessFlowLogData, providerBegin_taskBasket);
+        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_taskBasket);
 
         // ------------------------------------------------------------------
         // ---- Complete the first user task (validate the vacation request)
@@ -297,35 +305,28 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         // Assert the response of the 2nd valid request
         final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
 
-        // Wait that all MONIT traces are logged, in particularly the end trace of the process instance
-        Thread.sleep(ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY);
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         // TODO: Should we have MONIT traces about the service call on the consumer side ?
-        // TODO: Investigate why the user task completion is synchronous with following service tasks
         // TODO: Adjust MONIT log assertions when the user task completion will be not linked to the following service
         // task
-        assertEquals(7, monitLogs_2.size());
+        assertEquals(6, monitLogs_2.size());
         final FlowLogData completionTaskInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
-        final FlowLogData completionTaskFlowLogData = assertMonitProviderBeginLog(
-                (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
-                VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(1));
+        final FlowLogData userTaskHandleRequestEndFlowLogData = assertMonitProviderEndLog(
+                userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
         assertEquals(
-                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                completionTaskFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
-        assertEquals(
-                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
-                completionTaskFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+                userTaskHandleRequestEndFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY),
+                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME));
+        assertEquals(userTaskHandleRequestEndFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY),
+                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME));
         final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(
-                (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                (String) currentProcessFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
                 ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(2));
         assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(3));
-        assertMonitProviderEndLog(completionTaskFlowLogData, monitLogs_2.get(4));
+        assertMonitConsumerEndLog(processStartedBeginFlowLogData, monitLogs_2.get(4));
         assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(5));
-        assertMonitConsumerEndLog(currentProcessFlowLogData, monitLogs_2.get(6));
 
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
@@ -568,11 +569,16 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(3, monitLogs_1.size());
+        assertEquals(4, monitLogs_1.size());
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+                monitLogs_1.get(1));
+        assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), null,
+                null, null, null, monitLogs_1.get(2));
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -673,11 +679,16 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(3, monitLogs_1.size());
+        assertEquals(4, monitLogs_1.size());
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+                monitLogs_1.get(1));
+        assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), null,
+                null, null, null, monitLogs_1.get(2));
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -779,11 +790,16 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(3, monitLogs_1.size());
+        assertEquals(4, monitLogs_1.size());
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+                monitLogs_1.get(1));
+        assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), null,
+                null, null, null, monitLogs_1.get(2));
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -885,11 +901,16 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(3, monitLogs_1.size());
+        assertEquals(4, monitLogs_1.size());
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+                monitLogs_1.get(1));
+        assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), null,
+                null, null, null, monitLogs_1.get(2));
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -1056,11 +1077,16 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(3, monitLogs_1.size());
+        assertEquals(4, monitLogs_1.size());
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+                monitLogs_1.get(1));
+        final FlowLogData userTaskHandleRequestBeginFlowLogData = assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), null,
+                null, null, null, monitLogs_1.get(2));
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(2));
-        assertMonitConsumerBeginLog(null, null, null, null, monitLogs_1.get(1));
+                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -1099,16 +1125,14 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_2.size());
-        final FlowLogData interactionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
-                VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
-        assertMonitProviderEndLog(interactionRequestFlowLogData, monitLogs_2.get(3));
-        final FlowLogData currentProcessFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
-                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(1));
-        assertMonitProviderEndLog(currentProcessFlowLogData, monitLogs_2.get(2));
-        assertEquals(interactionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                currentProcessFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
-        assertEquals(interactionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
-                currentProcessFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        assertMonitProviderEndLog(userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
+        final FlowLogData secondUserTaskHandleRequestBeginFlowLogData = assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME), null,
+                null, null, null, monitLogs_1.get(2));
+        assertMonitProviderEndLog(
+                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
 
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();

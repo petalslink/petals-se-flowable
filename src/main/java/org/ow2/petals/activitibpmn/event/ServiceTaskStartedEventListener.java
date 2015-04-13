@@ -58,9 +58,9 @@ public class ServiceTaskStartedEventListener extends AbstractEventListener imple
             final Map<String, Object> processVariables = processInstance.getProcessVariables();
 
             final String flowInstanceId = (String) processVariables
-                    .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID);
+                    .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_INSTANCE_ID);
             final String flowStepId = (String) processVariables
-                    .get(ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID);
+                    .get(ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID);
 
             PetalsConduit.flowAttributes.set(new FlowAttributes(flowInstanceId, flowStepId));
         }

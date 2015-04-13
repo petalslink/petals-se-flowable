@@ -17,14 +17,12 @@
  */
 package org.ow2.petals.activitibpmn.monitoring;
 
-import javax.jbi.messaging.MessageExchange;
-
-import org.ow2.petals.component.framework.logger.ProvideFlowStepBeginLogData;
+import org.ow2.petals.component.framework.logger.ProvideFlowStepEndLogData;
 
 /**
  * @author Christophe DENEUX - Linagora
  */
-public final class CompleteUserTaskFlowStepBeginLogData extends ProvideFlowStepBeginLogData {
+public final class UserTaskFlowStepEndLogData extends ProvideFlowStepEndLogData {
 
     private static final long serialVersionUID = 1179141207903698624L;
 
@@ -34,11 +32,6 @@ public final class CompleteUserTaskFlowStepBeginLogData extends ProvideFlowStepB
      *            The flow instance identifier used to create the process instance
      * @param flowStepId
      *            The flow step identifier of the task completing the user task
-     * @param flowPreviousStepId
-     *            The flow step identifier used to create the process instance
-     * @param exchange
-     *            The exchange associated to the request completing the user task, and containing: the interface name,
-     *            the service name, the operation name and the endpoint name.
      * @param correlatedFlowInstanceId
      *            The flow instance identifier of the correlated process completing the user task, ie. the flow instance
      *            identifier coming from the request completing the user task
@@ -46,13 +39,11 @@ public final class CompleteUserTaskFlowStepBeginLogData extends ProvideFlowStepB
      *            The flow step identifier of the correlated process completing the user task, ie. the flow step
      *            identifier coming from the request completing the user task
      */
-    public CompleteUserTaskFlowStepBeginLogData(final String flowInstanceId, final String flowStepId,
-            final String flowPreviousStepId, final MessageExchange exchange, final String correlatedFlowInstanceId,
+    public UserTaskFlowStepEndLogData(final String flowInstanceId, final String flowStepId,
+            final String correlatedFlowInstanceId,
             final String correlatedFlowStepId) {
 
-        super(flowInstanceId, flowStepId, exchange.getInterfaceName().toString(), exchange.getService().toString(),
-                exchange.getOperation().toString(), exchange.getEndpoint().getEndpointName(), flowPreviousStepId,
-                exchange);
+        super(flowInstanceId, flowStepId, null);
         ActivitiActivityFlowStepData.addActivitiActivityFlowStepData(this, correlatedFlowInstanceId,
                 correlatedFlowStepId);
 

@@ -19,12 +19,8 @@ package org.ow2.petals.activitibpmn;
 
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_MONIT_TRACE_DELAY;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.MONIT_TRACE_DELAY;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.SCHEDULED_LOGGER_CORE_SIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
@@ -491,79 +487,6 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public void setEngineEnableBpmnValidation(final String value) {
         // TODO: Add a check about valid values
         this.setParam(ENGINE_ENABLE_BPMN_VALIDATION, value);
-    }
-
-    /**
-     * Get the monitTraceDelay
-     * 
-     * @return the monitTraceDelay
-     */
-    public long getMonitTraceDelay() {
-        long monitTraceDelay = 0;
-
-        final String monitTraceDelayString = this.getParam(MONIT_TRACE_DELAY);
-        if (monitTraceDelayString != null && !monitTraceDelayString.trim().isEmpty()) {
-            try {
-                monitTraceDelay = Long.parseLong(monitTraceDelayString);
-            } catch (final NumberFormatException e) {
-                // Invalid value, we use the default one
-                this.getLogger().warning(
-                        "Invalid value (" + monitTraceDelayString + ") for the configuration parameter: "
-                                + MONIT_TRACE_DELAY + ". Default value used: " + DEFAULT_MONIT_TRACE_DELAY);
-                monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
-            }
-        } else {
-            monitTraceDelay = DEFAULT_MONIT_TRACE_DELAY;
-        }
-
-        return monitTraceDelay;
-    }
-
-    /**
-     * Set the monitTraceDelay
-     * 
-     * @param value
-     *            the monitTraceDelay
-     */
-    public void setMonitTraceDelay(final long value) {
-        this.setParam(MONIT_TRACE_DELAY, Long.toString(value));
-    }
-
-    /**
-     * Get the monitTracePoolSize
-     * 
-     * @return the monitTracePoolSize
-     */
-    public long getMonitTracePoolSize() {
-        int monitTracePoolSize = 0;
-
-        final String monitTracePoolSizeString = this.getParam(SCHEDULED_LOGGER_CORE_SIZE);
-        if (monitTracePoolSizeString != null && !monitTracePoolSizeString.trim().isEmpty()) {
-            try {
-                monitTracePoolSize = Integer.parseInt(monitTracePoolSizeString);
-            } catch (final NumberFormatException e) {
-                // Invalid value, we use the default one
-                this.getLogger().warning(
-                        "Invalid value (" + monitTracePoolSizeString + ") for the configuration parameter: "
-                                + SCHEDULED_LOGGER_CORE_SIZE + ". Default value used: "
-                                + DEFAULT_SCHEDULED_LOGGER_CORE_SIZE);
-                monitTracePoolSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
-            }
-        } else {
-            monitTracePoolSize = DEFAULT_SCHEDULED_LOGGER_CORE_SIZE;
-        }
-
-        return monitTracePoolSize;
-    }
-
-    /**
-     * Set the monitTracePoolSize
-     * 
-     * @param value
-     *            the monitTracePoolSize
-     */
-    public void setMonitTracePoolSize(final int value) {
-        this.setParam(SCHEDULED_LOGGER_CORE_SIZE, Integer.toString(value));
     }
      
 }

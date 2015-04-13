@@ -193,20 +193,6 @@
       </xs:annotation>
    </xs:element>
 
-   <xs:element name="monit-trace-pool-size" type="petalsCDK:runtimeint" default="1">
-      <xs:annotation>
-         <xs:documentation>Size of the thread pool in charge of logging MONIT trace delayed</xs:documentation>
-         <xs:documentation xml:lang="fr">Taille du pool de thread en charge de logguer les traces MONIT retardées</xs:documentation>
-      </xs:annotation>
-   </xs:element>
-
-   <xs:element name="monit-trace-delay" type="petalsCDK:runtimelong" default="500">
-      <xs:annotation>
-         <xs:documentation>Delay, in milliseconds, with which some MONIT traces are logged</xs:documentation>
-         <xs:documentation xml:lang="fr">Délai, en millisecondes, avec lequel quelques traces MONIT sont retardées</xs:documentation>
-      </xs:annotation>
-   </xs:element>
-
 </xs:schema>	
 
 

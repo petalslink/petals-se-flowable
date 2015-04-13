@@ -17,24 +17,25 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation;
 
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.activiti.engine.ActivitiException;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
-import org.ow2.petals.activitibpmn.ActivitiSEConstants;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.CompleteUserTaskAnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoProcessInstanceIdValueException;
@@ -43,16 +44,10 @@ import org.ow2.petals.activitibpmn.incoming.operation.exception.OperationProcess
 import org.ow2.petals.activitibpmn.incoming.operation.exception.ProcessInstanceNotFoundException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.TaskCompletedException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.UnexpectedUserException;
-import org.ow2.petals.activitibpmn.monitoring.CompleteUserTaskFlowStepBeginLogData;
 import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.api.message.Exchange;
-import org.ow2.petals.component.framework.logger.ProvideFlowStepEndLogData;
-import org.ow2.petals.component.framework.logger.ProvideFlowStepFailureLogData;
-import org.ow2.petals.component.framework.message.ExchangeImpl;
-
-import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
 /**
  * The operation to complete the user task of process instance
@@ -84,11 +79,6 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
     private final HistoryService historyService;
 
     /**
-     * An UUID generator.
-     */
-    private static final SimpleUUIDGenerator simpleUUIDGenerator = new SimpleUUIDGenerator();
-
-    /**
      * @param annotatedOperation
      *            Annotations of the operation to create
      * @param logger
@@ -104,7 +94,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
     }
 
     @Override
-    protected void doExecute(final DOMSource domSource, final String bpmnUserId, final Map<String, Object> processVars,
+    protected void doExecute(final DOMSource domSource, final String bpmnUserId, final Map<String, Object> taskVars,
             final Map<QName, String> outputNamedValues, final Exchange exchange) throws OperationProcessingException {
 
         // Get the process instance identifier
@@ -128,50 +118,27 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         if ((taskList == null) || (taskList.isEmpty())) {
             this.investigateMissingTask(processInstanceId, bpmnUserId);
         }
+        final Task taskToComplete = taskList.get(0);
+        final String taskId = taskToComplete.getId();
 
-        final String flowInstanceId = (String) this.runtimeService.getVariable(processInstanceId,
-                ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_INSTANCE_ID);
-        // TODO: Review the value of the flow previous step identifier to manage correctly process with branches
-        final String flowPreviousStepId = (String) this.runtimeService.getVariable(processInstanceId,
-                ActivitiSEConstants.Activiti.PROCESS_VAR_PETALS_FLOW_STEP_ID);
-        final String flowStepId = simpleUUIDGenerator.getNewID();
-        final Task taskToComplete;
+        // Set flow attributes as task local variables that will be used by Activiti event listener to generate a MONIT
+        // trace
+        final FlowAttributes exchangeFlowAttibutes = exchange.getFlowAttributes();
+        final Map<String, Object> taskLocalVariables = new HashMap<String, Object>(2);
+        taskLocalVariables.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
+        taskLocalVariables.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
+        this.taskService.setVariablesLocal(taskToComplete.getId(), taskLocalVariables);
+
+        // Before to complete the task, we set explicitly its assignee. It is not done by Activiti engine when
+        // completing the task.
+        this.taskService.setAssignee(taskToComplete.getId(), bpmnUserId);
+
+        // We complete the task
         try {
-            final FlowAttributes exchangeFlowAttibutes = exchange.getFlowAttributes();
-            try {
-                this.logger.log(
-                        Level.MONIT,
-                        "",
-                        new CompleteUserTaskFlowStepBeginLogData(flowInstanceId, flowStepId, flowPreviousStepId,
-                                ((ExchangeImpl) exchange).getMessageExchange(), exchangeFlowAttibutes
-                                        .getFlowInstanceId(), exchangeFlowAttibutes.getFlowStepId()));
-
-                // Perform the user Task
-                taskToComplete = taskList.get(0);
-
-                // Before to complete the task, we set explicitly its assignee. It is not done by Activiti engine when
-                // completing the task.
-                taskToComplete.setAssignee(bpmnUserId);
-                this.taskService.saveTask(taskToComplete);
-
-                // We complete the task
-                try {
-                    this.identityService.setAuthenticatedUserId(bpmnUserId);
-                    this.taskService.complete(taskToComplete.getId(), processVars);
-                } finally {
-                    this.identityService.setAuthenticatedUserId(null);
-                }
-
-                this.logger.log(Level.MONIT, "", new ProvideFlowStepEndLogData(flowInstanceId, flowStepId,
-                        ((ExchangeImpl) exchange).getMessageExchange()));
-            } catch (final ActivitiException e) {
-                this.logger.log(Level.MONIT, "",
-                        new ProvideFlowStepFailureLogData(flowInstanceId, flowStepId, e.getMessage(),
-                                ((ExchangeImpl) exchange).getMessageExchange()));
-                throw e;
-            }
-        } catch (final MessagingException e) {
-            throw new OperationProcessingException(this.wsdlOperation, e);
+            this.identityService.setAuthenticatedUserId(bpmnUserId);
+            this.taskService.complete(taskId, taskVars);
+        } finally {
+            this.identityService.setAuthenticatedUserId(null);
         }
 
         // To prepare the output response, we add named value dedicated to this operation:
@@ -180,8 +147,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         // - the identifier of the process instance
         // As the task is completed, it is retrieved from the history.
         // TODO: Are task local variables different from the provided variables 'processVars' ? If no, don't
-        // retrieve
-        // them and use directly 'processVars'
+        // retrieve them and use directly 'processVars'
         final HistoricTaskInstance executedTask = this.historyService.createHistoricTaskInstanceQuery().finished()
                 .taskId(taskToComplete.getId()).includeProcessVariables().includeTaskLocalVariables().singleResult();
         if (executedTask == null) {

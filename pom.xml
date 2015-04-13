@@ -101,6 +101,11 @@
          <artifactId>petals-cdk-jbidescriptor</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-message-exchange</artifactId>
+         <version>1.2.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
          <groupId>org.activiti</groupId>
          <artifactId>activiti-engine</artifactId>
          <version>${activiti.version}</version>
@@ -262,6 +267,15 @@
                   </configuration>
                </execution>
             </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+               <systemPropertyVariables>
+                  <petals.log.dir>${project.build.directory}/logs</petals.log.dir>
+               </systemPropertyVariables>
+            </configuration>
          </plugin>
       </plugins>
    </build>

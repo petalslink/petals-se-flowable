@@ -62,8 +62,6 @@
       <petals-se-activitibpmn:database_schema_update />
       <petals-se-activitibpmn:engine-enable-job-executor />
       <petals-se-activitibpmn:engine-enable-bpmn-validation />
-      <petals-se-activitibpmn:monit-trace-delay />
-      <petals-se-activitibpmn:monit-trace-pool-size />
 
    </jbi:component>
 </jbi:jbi>
