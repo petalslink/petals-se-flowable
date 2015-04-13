@@ -24,6 +24,8 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.ow2.petals.commons.log.Level;
+
 /**
  * Abstract class for unit tests about request processing
  * 
@@ -33,6 +35,8 @@ import java.net.URL;
 public abstract class AbstractTest {
 
     static {
+        Level.initialize();
+
         final URL logConfig = AbstractTest.class.getResource("/logging.properties");
         assertNotNull("Logging configuration file not found", logConfig);
         try {
