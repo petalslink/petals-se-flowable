@@ -126,9 +126,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("su/valid/vacationRequest.wsdl");
                     assertNotNull("WSDl not found", wsdlUrl);
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(
-                            AbstractComponentTest.class.getSimpleName(), VACATION_INTERFACE, VACATION_SERVICE,
-                            VACATION_ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(VACATION_INTERFACE,
+                            VACATION_SERVICE, VACATION_ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
 
                     final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("su/valid/demanderCongesResponse.xsl");
@@ -172,8 +171,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     // Activti
                     // and other services
                     final ServiceConfiguration consumeServiceConfiguration = new ServiceConfiguration(
-                            AbstractComponentTest.class.getSimpleName(), ARCHIVE_INTERFACE, ARCHIVE_SERVICE,
-                            ARCHIVE_ENDPOINT, ServiceType.CONSUME);
+                            ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ServiceType.CONSUME);
                     serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
 
                     return serviceConfiguration;
@@ -187,8 +185,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
                             .getResource("component.wsdl");
                     assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
                     final ServiceConfiguration nativeServiceConfiguration = new ServiceConfiguration(
-                            AbstractComponentTest.class.getSimpleName(), ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
-                            nativeEndpointName, ServiceType.PROVIDE, nativeServiceWsdlUrl);
+                            ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE, nativeEndpointName, ServiceType.PROVIDE,
+                            nativeServiceWsdlUrl);
 
                     return nativeServiceConfiguration;
                 }
