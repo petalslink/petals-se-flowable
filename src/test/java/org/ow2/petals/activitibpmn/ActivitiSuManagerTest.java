@@ -167,7 +167,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE).toString(), A_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
 
                     return serviceConfiguration;
                 }
@@ -217,9 +217,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE).toString(), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(
-                            "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version", "");
+                            ActivitiSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version"), "");
 
                     return serviceConfiguration;
                 }
@@ -270,9 +269,9 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE).toString(), A_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION).toString(), version);
+                            ActivitiSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
@@ -322,7 +321,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
                             SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION).toString(), version);
+                            ActivitiSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
@@ -373,9 +372,9 @@ public class ActivitiSuManagerTest extends AbstractTest {
                             SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE).toString(), "");
+                            ActivitiSEConstants.PROCESS_FILE), "");
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION).toString(), version);
+                            ActivitiSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
@@ -428,9 +427,9 @@ public class ActivitiSuManagerTest extends AbstractTest {
                             SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE).toString(), processFile);
+                            ActivitiSEConstants.PROCESS_FILE), processFile);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION).toString(), version);
+                            ActivitiSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
@@ -487,12 +486,12 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "1").toString(), version);
+                            ActivitiSEConstants.VERSION + "1"), version);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), ANOTHER_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
 
                     return serviceConfiguration;
                 }
@@ -546,14 +545,14 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "1").toString(), version);
+                            ActivitiSEConstants.VERSION + "1"), version);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), ANOTHER_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "2").toString(), "");
+                            ActivitiSEConstants.VERSION + "2"), "");
 
                     return serviceConfiguration;
                 }
@@ -608,14 +607,14 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "1").toString(), version1);
+                            ActivitiSEConstants.VERSION + "1"), version1);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), ANOTHER_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "2").toString(), version2);
+                            ActivitiSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
                 }
@@ -671,12 +670,12 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "1").toString(), version1);
+                            ActivitiSEConstants.VERSION + "1"), version1);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "2").toString(), version2);
+                            ActivitiSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
                 }
@@ -731,14 +730,14 @@ public class ActivitiSuManagerTest extends AbstractTest {
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "1").toString(), A_PROCESS_DEFINITION_NAME);
+                            ActivitiSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "1").toString(), version1);
+                            ActivitiSEConstants.VERSION + "1"), version1);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.PROCESS_FILE + "2").toString(), "");
+                            ActivitiSEConstants.PROCESS_FILE + "2"), "");
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
-                            ActivitiSEConstants.VERSION + "2").toString(), version2);
+                            ActivitiSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
                 }
@@ -817,18 +816,14 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 serviceConfiguration.addResource(bpmnUrl);
 
                 // First process definition
-                serviceConfiguration.setParameter(
-                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file1",
+                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "process_file1"),
                         "vacationRequest.bpmn20.xml");
-                serviceConfiguration.setParameter(
-                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version1", "1");
+                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version1"), "1");
 
                 // 2nd process definition
-                serviceConfiguration.setParameter(
-                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file2",
+                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "process_file2"),
                         "vacationRequest.bpmn20.xml");
-                serviceConfiguration.setParameter(
-                        "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version2", "1");
+                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version2"), "1");
 
                 return serviceConfiguration;
             }

@@ -34,6 +34,8 @@ import org.ow2.petals.commons.log.Level;
  */
 public abstract class AbstractTest {
 
+    public static final String SE_ACTIVITI_JBI_NS = "http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0";
+
     static {
         Level.initialize();
 

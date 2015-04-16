@@ -159,11 +159,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
-                    serviceConfiguration.setParameter(
-                            "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}process_file",
+                    serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "process_file"),
                             "vacationRequest.bpmn20.xml");
-                    serviceConfiguration.setParameter(
-                            "{http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0}version", "1");
+                    serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version"), "1");
 
                     // Consume service 'archiver'
                     // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
