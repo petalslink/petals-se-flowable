@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
@@ -102,15 +103,21 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             // The buffer contains a SOAP message, we just remove the SOAP enveloppe
             final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
             try {
-                this.sender.getLogger().fine("Request to send: " + new String(buf));
+                if (this.sender.getLogger().isLoggable(Level.FINE)) {
+                    this.sender.getLogger().fine("Request to send: " + new String(buf));
+                }
                 final Document doc = docBuilder.parse(new ByteArrayInputStream(buf));
                 final NodeList soapBodies = doc.getElementsByTagNameNS("http://schemas.xmlsoap.org/soap/envelope/",
                         "Body");
-                final Node xmlPayload = soapBodies.item(0).getFirstChild();
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                com.ebmwebsourcing.easycommons.xml.DOMHelper.prettyPrint(xmlPayload, baos);
-                exchange.setInMessageContent(new ByteArrayInputStream(baos.toByteArray()));
-                // exchange.setInMessageContent(new ByteArrayInputStream(buf));
+                if (soapBodies.item(0).hasChildNodes()) {
+                    final Node xmlPayload = soapBodies.item(0).getFirstChild();
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    com.ebmwebsourcing.easycommons.xml.DOMHelper.prettyPrint(xmlPayload, baos);
+                    exchange.setInMessageContent(new ByteArrayInputStream(baos.toByteArray()));
+                    // exchange.setInMessageContent(new ByteArrayInputStream(buf));
+                } else {
+                    throw new IOException("Empty service task request");
+                }
             } catch (final SAXException e) {
                 throw new IOException(e);
             } finally {
