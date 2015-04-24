@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation;
 
-import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,10 +28,8 @@ import javax.jbi.messaging.MessagingException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -47,7 +44,7 @@ import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.w3c.dom.Document;
 
-import com.ebmwebsourcing.easycommons.xml.Transformers;
+import com.ebmwebsourcing.easycommons.xml.XMLPrettyPrinter;
 
 public abstract class ActivitiOperation implements ActivitiService {
 
@@ -171,21 +168,15 @@ public abstract class ActivitiOperation implements ActivitiService {
     public final void execute(final Exchange exchange) {
 
         try {
-            final Document inMsgWsdl = exchange.getInMessageContentAsDocument();
-            final DOMSource domSource = new DOMSource(inMsgWsdl);
+            final Document incomingPayload = exchange.getInMessageContentAsDocument();
+            final DOMSource domSource = new DOMSource(incomingPayload);
 
             if (this.logger.isLoggable(Level.FINE)) {
-                final StringWriter writer = new StringWriter();
-                final StreamResult result = new StreamResult(writer);
-                final Transformer transformer = Transformers.takeTransformer();
                 try {
-                    transformer.transform(domSource, result);
+                    this.logger.fine("*** incomingPayload = " + XMLPrettyPrinter.prettyPrint(domSource));
                 } catch (final TransformerException e) {
                     throw new MessagingException(e);
-                } finally {
-                    Transformers.releaseTransformer(transformer);
                 }
-                this.logger.fine("*** inMsgWsdl = " + writer.toString());
             }
 
             if (this.logger.isLoggable(Level.FINE)) {
@@ -194,7 +185,7 @@ public abstract class ActivitiOperation implements ActivitiService {
                 this.logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
             }
 
-            inMsgWsdl.getDocumentElement().normalize();
+            incomingPayload.getDocumentElement().normalize();
 
             try {
                 // Get the userId
