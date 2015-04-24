@@ -440,7 +440,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                 final File processFile = new File(suRootPath, process.getProcessFileName());
                 try {
                     final FileInputStream bpmnInputFile = new FileInputStream(processFile);
-                    db.addInputStream(process.getProcessFileName(), bpmnInputFile);
+                    db.addInputStream(processFile.getAbsoluteFile().toURI().toString(), bpmnInputFile);
                 } catch (final FileNotFoundException e) {
                     throw new PEtALSCDKException(e);
                 }
