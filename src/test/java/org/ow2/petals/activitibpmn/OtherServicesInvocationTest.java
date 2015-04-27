@@ -54,7 +54,7 @@ public class OtherServicesInvocationTest extends AbstractComponentTest {
 
         // Send an exchange with the status set to 'DONE'. We must use 'processMessageFromServiceBus' because nothing is
         // returned on the end of IN-OUT exchange
-        COMPONENT_UNDER_TEST.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(COMPONENT_UNDER_TEST
+        COMPONENT_UNDER_TEST.pushSynchronouslyRequestToProvider(new WrappedStatusFromConsumerMessage(COMPONENT_UNDER_TEST
                 .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
                 new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.DONE));
@@ -79,7 +79,7 @@ public class OtherServicesInvocationTest extends AbstractComponentTest {
 
         // Send an exchange with the status set to 'ERROR'. We must use 'processMessageFromServiceBus' because nothing
         // is returned on the end of IN-OUT exchange
-        COMPONENT_UNDER_TEST.processMessageFromServiceBus(new WrappedStatusFromConsumerMessage(COMPONENT_UNDER_TEST
+        COMPONENT_UNDER_TEST.pushSynchronouslyRequestToProvider(new WrappedStatusFromConsumerMessage(COMPONENT_UNDER_TEST
                 .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream("".getBytes()),
                 new FlowAttributes("testFlowInstanceId", "testFlowStepId"), ExchangeStatus.ERROR));
