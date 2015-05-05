@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessagingException;
 
-import org.ow2.petals.component.framework.api.Message.MEPConstants;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
@@ -62,6 +62,6 @@ public interface PetalsContext {
      * @throws PEtALSCDKException
      *             The current Transaction has failed to return its status
      */
-    public Exchange createExchange(final MEPConstants mep) throws MessagingException,
+    public Exchange createExchange(final MEPPatternConstants mep) throws MessagingException,
             PEtALSCDKException;
 }
