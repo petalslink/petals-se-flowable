@@ -52,7 +52,7 @@
    </developers>
 
    <properties>
-      <activiti.version>5.17.1-SNAPSHOT</activiti.version>
+      <activiti.version>5.18.0-SNAPSHOT</activiti.version>
       <!-- For now disable that check because jaxb is required to be 2.2.5
            and we use 2.2.4
            TODO: use the latest jaxb version everywhere? -->
