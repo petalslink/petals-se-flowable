@@ -76,11 +76,6 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     private static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
 
     private static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
-
-    private static final String ATTR_NAME_MONIT_TRACE_DELAY = "monitTraceDelay";
-
-    private static final String ATTR_NAME_MONIT_TRACE_POOL_SIZE = "monitTracePoolSize";
-
 	
     /**
      * {@inheritDoc}
@@ -104,8 +99,6 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_DATABASE_SCHEMA_UPDATE);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION);
-            attributes.add(ATTR_NAME_MONIT_TRACE_DELAY);
-            attributes.add(ATTR_NAME_MONIT_TRACE_POOL_SIZE);
 
             return attributes;
         } finally {
