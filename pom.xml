@@ -52,7 +52,7 @@
    </developers>
 
    <properties>
-      <activiti.version>5.18.0-SNAPSHOT</activiti.version>
+      <activiti.version>5.18.0-PETALS-0-SNAPSHOT</activiti.version>
       <!-- For now disable that check because jaxb is required to be 2.2.5
            and we use 2.2.4
            TODO: use the latest jaxb version everywhere? -->
@@ -106,7 +106,7 @@
          <version>1.2.3-SNAPSHOT</version>
       </dependency>
       <dependency>
-         <groupId>org.activiti</groupId>
+         <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-engine</artifactId>
          <version>${activiti.version}</version>
          <exclusions>
@@ -124,18 +124,18 @@
          </exclusions>
       </dependency>
       <dependency>
-         <groupId>org.activiti</groupId>
+         <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-bpmn-converter</artifactId>
          <version>${activiti.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.activiti</groupId>
+         <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-bpmn-model</artifactId>
          <version>${activiti.version}</version>
       </dependency>
       <dependency>
          <!-- activiti-cxf add support of WSDL-based services to the Activity engine to call Petals services -->
-         <groupId>org.activiti</groupId>
+         <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-cxf</artifactId>
          <version>${activiti.version}</version>
          <scope>runtime</scope>
@@ -223,7 +223,7 @@
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
                         <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
-                        <usedDependency>org.activiti:activiti-cxf</usedDependency>
+                        <usedDependency>org.ow2.petals.activiti:activiti-cxf</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>
