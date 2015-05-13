@@ -114,7 +114,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
 
         // Get the task
         final List<Task> taskList = this.taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(this.actionId).taskCandidateOrAssigned(bpmnUserId).list();
+                .taskDefinitionKey(this.actionId).taskCandidateUser(bpmnUserId).list();
         if ((taskList == null) || (taskList.isEmpty())) {
             this.investigateMissingTask(processInstanceId, bpmnUserId);
         }

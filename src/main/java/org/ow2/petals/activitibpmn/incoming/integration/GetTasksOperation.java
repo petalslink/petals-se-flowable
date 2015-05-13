@@ -130,7 +130,7 @@ public class GetTasksOperation implements ActivitiService {
 
                         final String assignee = incomingRequest.getAssignee();
                         if (assignee != null && !assignee.isEmpty()) {
-                            taskQuery.taskCandidateOrAssigned(assignee);
+                            taskQuery.taskCandidateUser(assignee);
                         }
 
                         final String processInstanceId = incomingRequest.getProcessInstanceIdentifier();

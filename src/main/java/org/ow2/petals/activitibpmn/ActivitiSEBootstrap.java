@@ -21,6 +21,8 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENA
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
@@ -37,6 +39,7 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_PASS
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Driver;
@@ -44,8 +47,10 @@ import java.sql.DriverManager;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.jbi.JBIException;
 import javax.management.InvalidAttributeValueException;
 
+import org.ow2.petals.activitibpmn.identity.IdentityService;
 import org.ow2.petals.component.framework.DefaultBootstrap;
 
 /**
@@ -76,6 +81,10 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     private static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
 
     private static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
+
+    private static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME = "engineIdentityServiceClassName";
+
+    private static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE = "engineIdentityServiceCfgFile";
 	
     /**
      * {@inheritDoc}
@@ -99,6 +108,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_DATABASE_SCHEMA_UPDATE);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION);
+            attributes.add(ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME);
+            attributes.add(ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE);
 
             return attributes;
         } finally {
@@ -112,7 +123,9 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the jdbc Driver
      */
     public String getJdbcDriver() {
-    	return this.getParam(ActivitiSEConstants.DBServer.JDBC_DRIVER);
+
+        return ActivitiParameterReader.getJdbcDriver(this.getParam(ActivitiSEConstants.DBServer.JDBC_DRIVER),
+                this.getLogger());
     }
  
     /**
@@ -480,6 +493,91 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public void setEngineEnableBpmnValidation(final String value) {
         // TODO: Add a check about valid values
         this.setParam(ENGINE_ENABLE_BPMN_VALIDATION, value);
+    }
+
+    /**
+     * Get the identity service class name
+     * 
+     * @return the identity service class name
+     */
+    public String getEngineIdentityServiceClassName() {
+
+        try {
+            return ActivitiParameterReader.getEngineIdentityServiceClassName(
+                    this.getParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME), this.getLogger()).getName();
+        } catch (final JBIException e) {
+            return ActivitiSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME;
+        }
+    }
+
+    /**
+     * Set the identity service class name
+     * 
+     * @param value
+     *            the identity service class name. Must be a loadable class implementing {@link IdentityService}
+     * @throws InvalidAttributeValueException
+     */
+    public void setEngineIdentityServiceClassName(final String value) throws InvalidAttributeValueException {
+
+        if (value == null || value.trim().isEmpty()) {
+            // No identity service configured
+            this.setParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME, null);
+        } else {
+            try {
+                final Class<?> identityServiceClass = ActivitiSE.class.getClassLoader().loadClass(value.trim());
+                if (!IdentityService.class.isAssignableFrom(identityServiceClass)) {
+                    throw new InvalidAttributeValueException("Identity service does not implement "
+                            + IdentityService.class.getName() + ".");
+                } else {
+                    this.setParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME, value);
+                }
+            } catch (final ClassNotFoundException e) {
+                throw new InvalidAttributeValueException("Identity service class not found: " + value + ".");
+            }
+        }
+    }
+
+    /**
+     * Get the identity service configuration file
+     * 
+     * @return the identity service configuration file
+     */
+    public String getEngineIdentityServiceCfgFile() {
+
+        final File confFile = ActivitiParameterReader.getEngineIdentityServiceConfigurationFile(
+                this.getParam(ENGINE_IDENTITY_SERVICE_CFG_FILE), this.getLogger());
+        return confFile == null ? null : confFile.getAbsolutePath();
+    }
+
+    /**
+     * Set the identity service configuration file
+     * 
+     * @param value
+     *            the identity service configuration file
+     */
+    public void setEngineIdentityServiceCfgFile(final String value) throws InvalidAttributeValueException {
+
+        if (value == null || value.trim().isEmpty()) {
+            // No identity service configuration file configured
+            this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, null);
+        } else {
+            final File tmpFile = new File(value.trim());
+            if (!tmpFile.isAbsolute()) {
+                // The identity service configuration file is a resource
+
+                // TODO: Add a check to verify that the resource
+                this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, value.trim());
+            } else if (!tmpFile.exists()) {
+                throw new InvalidAttributeValueException("The identity service configuration file (" + value.trim()
+                        + ") does not exist.");
+            } else if (!tmpFile.isFile()) {
+                throw new InvalidAttributeValueException("The identity service configuration file (" + value.trim()
+                        + ") is not a file.");
+            } else {
+                this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, value.trim());
+            }
+        }
+
     }
      
 }

@@ -218,7 +218,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
                             ActivitiSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version"), "");
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version"), "");
 
                     return serviceConfiguration;
                 }
@@ -816,14 +816,14 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 serviceConfiguration.addResource(bpmnUrl);
 
                 // First process definition
-                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "process_file1"),
+                serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file1"),
                         "vacationRequest.bpmn20.xml");
-                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version1"), "1");
+                serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version1"), "1");
 
                 // 2nd process definition
-                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "process_file2"),
+                serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file2"),
                         "vacationRequest.bpmn20.xml");
-                serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version2"), "1");
+                serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version2"), "1");
 
                 return serviceConfiguration;
             }

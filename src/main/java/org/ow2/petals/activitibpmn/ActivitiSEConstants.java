@@ -17,7 +17,11 @@
  */
 package org.ow2.petals.activitibpmn;
 
+import java.io.File;
+
 import javax.xml.namespace.QName;
+
+import org.ow2.petals.activitibpmn.identity.file.FileIdentityService;
 
 /**
  * The component class of the Activiti BPMN Service Engine related constants.
@@ -25,6 +29,11 @@ import javax.xml.namespace.QName;
  * @author Bertrand Escudie - Linagora
  */
 public final class ActivitiSEConstants {
+
+    /**
+     * Name space name of component parameters
+     */
+    public static final String NAMESPACE_COMP = "http://petals.ow2.org/components/petals-se-activitibpmn/1.0";
 
     /**
      * Name space name of service unit parameters
@@ -162,6 +171,10 @@ public final class ActivitiSEConstants {
          * Default value of {@link #DATABASE_SCHEMA_UPDATE}.
          */
         public static final String DEFAULT_DATABASE_SCHEMA_UPDATE = "true";
+
+        private DBServer() {
+            // NOP: Utility class => No constructor
+        }
 		
 	}
 
@@ -185,6 +198,26 @@ public final class ActivitiSEConstants {
      * Default value of {@link #ENGINE_ENABLE_BPMN_VALIDATION}.
      */
     public static final boolean DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION = true;
+
+    /**
+     * Tag name of the component JBI descriptor about the class name of the identity service to use.
+     */
+    public static final String ENGINE_IDENTITY_SERVICE_CLASS_NAME = "engine-identity-service-class-name";
+
+    /**
+     * Default value of {@link #ENGINE_IDENTITY_SERVICE_CLASS_NAME}.
+     */
+    public static final String DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME = FileIdentityService.class.getName();
+
+    /**
+     * Tag name of the component JBI descriptor about the configuration file of the identity service.
+     */
+    public static final String ENGINE_IDENTITY_SERVICE_CFG_FILE = "engine-identity-service-config-file";
+
+    /**
+     * Default value of {@link #ENGINE_IDENTITY_SERVICE_CFG_FILE}.
+     */
+    public static final File DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE = null;
 
     /**
      * Constants relatives to the Activiti components
@@ -219,6 +252,10 @@ public final class ActivitiSEConstants {
          * new flow associated to the process instance.
          */
         public static final String VAR_PETALS_CORRELATED_FLOW_STEP_ID = "petals.correlated.flow.step.id";
+
+        private Activiti() {
+            // NOP: Utility class => No constructor
+        }
     }
 
     public static class IntegrationOperation {
@@ -257,9 +294,13 @@ public final class ActivitiSEConstants {
          * Name of the integration operation to search tasks
          */
         public static final QName ITG_OP_GETTASKS = new QName(ITG_NAMESPACE, ITG_OP_GETTASKS_NAME);
+
+        private IntegrationOperation() {
+            // NOP: Utility class => No constructor
+        }
     }
 
     private ActivitiSEConstants() {
-        // Utility class => No constructor
+        // NOP: Utility class => No constructor
     }
 }

@@ -40,8 +40,6 @@ import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
-import org.activiti.engine.identity.Group;
-import org.activiti.engine.identity.User;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.task.Task;
@@ -50,12 +48,14 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.rules.RuleChain;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.ow2.petals.activitibpmn.junit.ActivitiClient;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
+import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
@@ -117,8 +117,29 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
+    private static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
+
     protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
+            // We disable the async job executor to have clean log traces, and because the process does not require it.
+            // To remove if the process require it
+            .setParameter(
+                    new QName(ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
+                    Boolean.FALSE.toString())
+            .setParameter(
+                    new QName(ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE),
+                    // Generate identity service configuration files
+                    new ParameterGenerator() {
+
+                        @Override
+                        public String generate() throws Exception {
+                            final URL identityServiceCfg = Thread.currentThread().getContextClassLoader()
+                                    .getResource("su/valid/identityService.properties");
+                            assertNotNull("Identity service config file is missing !", identityServiceCfg);
+                            return new File(identityServiceCfg.toURI()).getAbsolutePath();
+                        }
+
+                    })
             .registerServiceToDeploy(VALID_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -159,9 +180,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
-                    serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "process_file"),
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file"),
                             "vacationRequest.bpmn20.xml");
-                    serviceConfiguration.setParameter(new QName(SE_ACTIVITI_JBI_NS, "version"), "1");
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version"), "1");
 
                     // Consume service 'archiver'
                     // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
@@ -200,11 +221,13 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected static Unmarshaller UNMARSHALLER;
 
     @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
+    public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
+            .around(COMPONENT_UNDER_TEST);
 
     @Rule
     public ActivitiClient activitiClient = new ActivitiClient(new File(new File(
-            COMPONENT_UNDER_TEST.getBaseDirectory(), "work"), DEFAULT_JDBC_URL_DATABASE_FILENAME));
+            COMPONENT_UNDER_TEST.getBaseDirectory(), "work"), DEFAULT_JDBC_URL_DATABASE_FILENAME),
+            "su/valid/identityService.properties");
 
     static {
         try {
@@ -308,7 +331,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
             final String user) {
 
         final TaskQuery taskQuery = this.activitiClient.getTaskService().createTaskQuery();
-        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskCandidateOrAssigned(user)
+        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskCandidateUser(user)
                 .singleResult();
         assertNotNull(nextTask);
         assertEquals(processInstanceId, nextTask.getProcessInstanceId());
@@ -333,28 +356,6 @@ public abstract class AbstractComponentTest extends AbstractTest {
                 .taskDefinitionKey(taskDefinitionKey).singleResult();
         assertNotNull(nextTask);
         assertEquals(user, nextTask.getAssignee());
-    }
-
-    protected void initIdentities() {
-
-        // TODO: Users and groups should be initialized according to the implementation of the IdentityService provided
-        // by the SE (LDAP integration, Petals Service integration, ...)
-        final String employees = "employees";
-        final Group groupEmployees = this.activitiClient.getIdentityService().newGroup(employees);
-        final String management = "management";
-        final Group groupManagement = this.activitiClient.getIdentityService().newGroup(management);
-        final User userDemandeur = this.activitiClient.getIdentityService().newUser(BPMN_USER_DEMANDEUR);
-        final User userValideur = this.activitiClient.getIdentityService().newUser(BPMN_USER_VALIDEUR);
-        try {
-            this.activitiClient.getIdentityService().saveGroup(groupEmployees);
-            this.activitiClient.getIdentityService().saveGroup(groupManagement);
-            this.activitiClient.getIdentityService().saveUser(userDemandeur);
-            this.activitiClient.getIdentityService().saveUser(userValideur);
-            this.activitiClient.getIdentityService().createMembership(BPMN_USER_DEMANDEUR, employees);
-            this.activitiClient.getIdentityService().createMembership(BPMN_USER_VALIDEUR, management);
-        } catch (final RuntimeException e) {
-            // NOP: Identities already configured in the Activiti Database
-        }
     }
 
 }

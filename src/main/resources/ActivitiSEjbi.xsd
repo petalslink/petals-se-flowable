@@ -18,10 +18,10 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://java.sun.com/xml/ns/jbi"
    xmlns:jbi="http://java.sun.com/xml/ns/jbi" xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
-   xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0"
+   xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0"
    elementFormDefault="qualified">
 
-   <xs:import namespace="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0" schemaLocation="ActivitiSEextensions.xsd" />
+   <xs:import namespace="http://petals.ow2.org/components/petals-se-activitibpmn/1.0" schemaLocation="ActivitiSEextensions.xsd" />
 
    <xs:redefine schemaLocation="abstractCDKjbi.xsd">
 	  <!--
@@ -68,6 +68,10 @@
                   <xs:element ref="petals-se-activitibpmn:engine-enable-job-executor" maxOccurs="1"
                      minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-enable-bpmn-validation" maxOccurs="1"
+                     minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-identity-service-class-name" maxOccurs="1"
+                     minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-identity-service-config-file" maxOccurs="1"
                      minOccurs="0" />
                </xs:sequence>
             </xs:extension>

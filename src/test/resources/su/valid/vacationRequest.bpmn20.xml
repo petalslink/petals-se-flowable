@@ -63,7 +63,7 @@
       </extensionElements>
       <potentialOwner>
         <resourceAssignmentExpression>
-          <formalExpression>management</formalExpression>
+          <formalExpression>group(management)</formalExpression>
         </resourceAssignmentExpression>
       </potentialOwner>         
     </userTask>

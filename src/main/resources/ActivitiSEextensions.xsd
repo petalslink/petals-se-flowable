@@ -16,8 +16,8 @@
  along with this program/library; If not, see <http://www.gnu.org/licenses/>
  for the GNU Lesser General Public License version 2.1.
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0"
-   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5" xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0"
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://petals.ow2.org/components/petals-se-activitibpmn/1.0"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5" xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0"
    elementFormDefault="qualified">
    <xs:import namespace="http://petals.ow2.org/components/extensions/version-5" schemaLocation="CDKextensions.xsd" />
 
@@ -193,9 +193,18 @@
       </xs:annotation>
    </xs:element>
 
-</xs:schema>	
+   <xs:element name="engine-identity-service-class-name" type="petalsCDK:settablestring" default="true">
+      <xs:annotation>
+         <xs:documentation>Define the identity service to push into Activiti engine.</xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le service d'identité à utiliser avec le moteur Activiti</xs:documentation>
+      </xs:annotation>
+   </xs:element>
 
+   <xs:element name="engine-identity-service-config-file" type="petalsCDK:settablestring" default="true">
+      <xs:annotation>
+         <xs:documentation>Define the configuration file of the identity service</xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le fichier de configuration du service d'identité</xs:documentation>
+      </xs:annotation>
+   </xs:element>
 
-
-
-
+</xs:schema>

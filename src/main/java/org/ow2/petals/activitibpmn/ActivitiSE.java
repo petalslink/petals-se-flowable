@@ -21,11 +21,12 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENA
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.Activiti.PETALS_SENDER_COMP_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
@@ -72,6 +73,9 @@ import org.ow2.petals.activitibpmn.event.ProcessInstanceStartedEventListener;
 import org.ow2.petals.activitibpmn.event.ServiceTaskStartedEventListener;
 import org.ow2.petals.activitibpmn.event.UserTaskCompletedEventListener;
 import org.ow2.petals.activitibpmn.event.UserTaskStartedEventListener;
+import org.ow2.petals.activitibpmn.identity.IdentityService;
+import org.ow2.petals.activitibpmn.identity.exception.IdentityServiceInitException;
+import org.ow2.petals.activitibpmn.identity.file.FileConfigurator;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
@@ -222,14 +226,8 @@ public class ActivitiSE extends AbstractServiceEngine {
 
 		try {
             // JDBC Driver
-            final String jdbcDriverConfigured = this.getComponentExtensions().get(JDBC_DRIVER);
-            final String jdbcDriver;
-            if (jdbcDriverConfigured == null || jdbcDriverConfigured.trim().isEmpty()) {
-                this.getLogger().info("No JDBC Driver configured for database. Default value used.");
-                jdbcDriver = DEFAULT_JDBC_DRIVER;
-            } else {
-                jdbcDriver = jdbcDriverConfigured;
-            }
+            final String jdbcDriver = ActivitiParameterReader.getJdbcDriver(
+                    this.getComponentExtensions().get(JDBC_DRIVER), this.getLogger());
 
             // JDBC URL
             final String jdbcUrlConfigured = this.getComponentExtensions().get(JDBC_URL);
@@ -386,10 +384,21 @@ public class ActivitiSE extends AbstractServiceEngine {
                                 : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
             }
 
+            final Class<?> identityServiceClass = ActivitiParameterReader.getEngineIdentityServiceClassName(this
+                    .getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CLASS_NAME), this.getLogger());
+
+            final File identityServiceCfgFile = ActivitiParameterReader.getEngineIdentityServiceConfigurationFile(this
+                    .getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CFG_FILE), this.getLogger());
+
             this.getLogger().config("Activiti engine configuration:");
             this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableActivitiJobExecutor);
             this.getLogger()
                     .config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + this.enableActivitiBpmnValidation);
+            this.getLogger().config(
+                    "   - " + ENGINE_IDENTITY_SERVICE_CLASS_NAME + " = " + identityServiceClass.getName());
+            this.getLogger().config(
+                    "   - " + ENGINE_IDENTITY_SERVICE_CFG_FILE + " = "
+                            + (identityServiceCfgFile == null ? "<null>" : identityServiceCfgFile.getAbsolutePath()));
 		    
             /* Create an Activiti ProcessEngine with database configuration */
             final ProcessEngineConfiguration pec = ProcessEngineConfiguration
@@ -417,10 +426,13 @@ public class ActivitiSE extends AbstractServiceEngine {
             // ... but must be started when starting the SE
             pec.setAsyncExecutorActivate(false);
 
+            // Override the default configuration of the identity service.
+            this.registerIdentityService(pec, identityServiceClass, identityServiceCfgFile);
+
             this.activitiEngine = pec.buildProcessEngine();
             this.activitiAsyncExecutor = this.enableActivitiJobExecutor ? pec.getAsyncExecutor() : null;
 
-            // Caution: Beans of the configuration are initialized when building the process engine
+            // Caution: Configuration beans are initialized when building the process engine
             if (pec instanceof ProcessEngineConfigurationImpl) {
                 // We add to the BPMN engine the bean in charge of sending Petals message exchange
                 final AbstractListener petalsSender = new PetalsSender();
@@ -452,13 +464,51 @@ public class ActivitiSE extends AbstractServiceEngine {
                 this.getLogger().warning("No endpoint exists to execute integration operations");
             }
 
-		} catch( final ActivitiException e ) {
-			throw new JBIException( "An error occurred while creating the Activiti BPMN Engine.", e );
+        } catch (final ActivitiException e) {
+            throw new JBIException("An error occurred while creating the Activiti BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End ActivitiSE.doInit()");
 		}
 	}
 
+    /**
+     * Initialize the identity service
+     * 
+     * @param pec
+     *            The Activiti process engine configuration. Not <code>null</code>.
+     * @param identityServiceClass
+     *            The identity service class to use. Not <code>null</code>. Must implement {@link IdentityService}.
+     * @param identityServiceCfgFile
+     *            The identity service configuration file. If <code>null</code>, the default configuration of the
+     *            identity service will be used.
+     */
+    private final void registerIdentityService(final ProcessEngineConfiguration pec,
+            final Class<?> identityServiceClass,
+            final File identityServiceCfgFile) throws JBIException {
+
+        assert pec != null : "pec can not be null";
+        assert identityServiceClass != null : "identityServiceClass can not be null";
+        assert IdentityService.class.isAssignableFrom(identityServiceClass) : "The identity service class does not implement IdentityService";
+
+        Object identityServiceObj;
+        try {
+            identityServiceObj = identityServiceClass.newInstance();
+            assert identityServiceObj instanceof IdentityService;
+            final IdentityService identityService = (IdentityService) identityServiceObj;
+
+            identityService.init(identityServiceCfgFile);
+
+            if (pec instanceof ProcessEngineConfigurationImpl) {
+                ((ProcessEngineConfigurationImpl) pec).addConfigurator(new FileConfigurator(identityService));
+            } else {
+                this.getLogger()
+                        .warning(
+                                "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
+            }
+        } catch (final InstantiationException | IllegalAccessException | IdentityServiceInitException e) {
+            throw new JBIException("An error occurred while instantiating the identity service.", e);
+        }
+    }
 
     @Override
 	public void doStart() throws JBIException {

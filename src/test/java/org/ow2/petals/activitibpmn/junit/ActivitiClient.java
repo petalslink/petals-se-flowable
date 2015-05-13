@@ -17,20 +17,29 @@
  */
 package org.ow2.petals.activitibpmn.junit;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.activiti.engine.HistoryService;
-import org.activiti.engine.IdentityService;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
+import org.ow2.petals.activitibpmn.identity.IdentityService;
+import org.ow2.petals.activitibpmn.identity.file.FileConfigurator;
+import org.ow2.petals.activitibpmn.identity.file.FileIdentityService;
+
+import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
 /**
  * The {@link ActivitiClient} {@link Rule} allows creation of a client connected to an Activiti server. It is guaranteed
@@ -81,7 +90,67 @@ public class ActivitiClient extends ExternalResource {
      */
     private final String jdbcPwd;
 
+    /**
+     * The configuration file of the file-based identity service
+     */
+    private final File fileIdentityServiceCfg;
+
     private ProcessEngine activitiClientEngine;
+
+    /**
+     * <p>
+     * Creates a temporary Activiti client connected to a default Activiti server:
+     * <ul>
+     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC URL: an embedded in-memoty H2 database,</li>
+     * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
+     * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
+     * </ul>
+     * And using the default configuration for the identity service.
+     * </p>
+     */
+    public ActivitiClient() {
+        this(null);
+    }
+
+    /**
+     * <p>
+     * Creates a temporary Activiti client connected to a default Activiti server:
+     * <ul>
+     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC URL: an embedded in-memoty H2 database,</li>
+     * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
+     * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param identityServiceCfg
+     *            Configuration file of the identity service, as resource name
+     */
+    public ActivitiClient(final String identityServiceCfg) {
+        this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:ativiti-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME,
+                DEFAULT_JDBC_PWD, identityServiceCfg);
+    }
+
+    /**
+     * <p>
+     * Creates a temporary Activiti client connected to a default Activiti server:
+     * <ul>
+     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC URL: a JDBC URL for H2,</li>
+     * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
+     * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param h2JdbcUrl
+     *            The JDBC URL for H2 database
+     * @param identityServiceCfg
+     *            Configuration file of the identity service, as resource name
+     */
+    public ActivitiClient(final String h2JdbcUrl, final String identityServiceCfg) {
+        this(DEFAULT_JDBC_DRIVER, h2JdbcUrl.toString(), DEFAULT_JDBC_USERNAME, DEFAULT_JDBC_PWD, identityServiceCfg);
+    }
 
     /**
      * <p>
@@ -96,10 +165,12 @@ public class ActivitiClient extends ExternalResource {
      * 
      * @param fileForJdbcUrl
      *            The file path of the Activiti database set as JDBC URL
+     * @param identityServiceCfg
+     *            Configuration file of the identity service, as resource name
      */
-    public ActivitiClient(final File fileForJdbcUrl) {
+    public ActivitiClient(final File fileForJdbcUrl, final String identityServiceCfg) {
         this(DEFAULT_JDBC_DRIVER, String.format("jdbc:h2:%s", convertFile2Url(fileForJdbcUrl)), DEFAULT_JDBC_USERNAME,
-                DEFAULT_JDBC_PWD);
+                DEFAULT_JDBC_PWD, identityServiceCfg);
     }
 
     private static String convertFile2Url(final File fileForJdbcUrl) {
@@ -111,11 +182,30 @@ public class ActivitiClient extends ExternalResource {
         }
     }
 
-    public ActivitiClient(final String jdbcDriver, final String jdbcUrl, final String jdbcUsername, final String jdbcPwd) {
+    /**
+     * 
+     * @param identityServiceCfg
+     *            Configuration file of the identity service, as resource name
+     */
+    public ActivitiClient(final String jdbcDriver, final String jdbcUrl, final String jdbcUsername,
+            final String jdbcPwd, final String identityServiceCfg) {
         this.jdbcDriver = jdbcDriver;
         this.jdbcUrl = jdbcUrl;
         this.jdbcUsername = jdbcUsername;
         this.jdbcPwd = jdbcPwd;
+
+        if (identityServiceCfg != null) {
+            final URL identityServiceCfgUrl = Thread.currentThread().getContextClassLoader()
+                    .getResource(identityServiceCfg);
+            assertNotNull("Identity service config file is missing !", identityServiceCfgUrl);
+            try {
+                this.fileIdentityServiceCfg = new File(identityServiceCfgUrl.toURI());
+            } catch (final URISyntaxException e) {
+                throw new UncheckedException(e);
+            }
+        } else {
+            this.fileIdentityServiceCfg = null;
+        }
     }
 
     @Override
@@ -142,6 +232,11 @@ public class ActivitiClient extends ExternalResource {
         pec.setJdbcUrl(this.jdbcUrl);
         pec.setJdbcUsername(this.jdbcUsername).setJdbcPassword(this.jdbcPwd);
         pec.setDatabaseSchemaUpdate("true");
+
+        assertTrue(pec instanceof ProcessEngineConfigurationImpl);
+        final IdentityService identityService = new FileIdentityService();
+        identityService.init(this.fileIdentityServiceCfg);
+        ((ProcessEngineConfigurationImpl) pec).addConfigurator(new FileConfigurator(identityService));
 
         this.activitiClientEngine = pec.buildProcessEngine();
     }
@@ -178,7 +273,7 @@ public class ActivitiClient extends ExternalResource {
     /**
      * @return The {@link IdentityService} of the Activiti engine
      */
-    public IdentityService getIdentityService() {
+    public org.activiti.engine.IdentityService getIdentityService() {
         return this.activitiClientEngine.getIdentityService();
     }
 

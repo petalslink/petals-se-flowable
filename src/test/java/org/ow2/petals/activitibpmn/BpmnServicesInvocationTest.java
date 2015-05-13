@@ -116,7 +116,19 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
     @Test
     public void validStartEventRequest() throws Exception {
 
-        this.initIdentities();
+        assertTrue(this.activitiClient.getIdentityService().checkPassword(BPMN_USER_DEMANDEUR, "demandeur"));
+        assertEquals(BPMN_USER_DEMANDEUR,
+                this.activitiClient.getIdentityService().createUserQuery().memberOfGroup("employees").singleResult()
+                        .getId());
+        assertEquals(BPMN_USER_VALIDEUR,
+                this.activitiClient.getIdentityService().createUserQuery().memberOfGroup("management").singleResult()
+                        .getId());
+        assertEquals("employees",
+                this.activitiClient.getIdentityService().createGroupQuery().groupMember(BPMN_USER_DEMANDEUR)
+                        .singleResult().getId());
+        assertEquals("management",
+                this.activitiClient.getIdentityService().createGroupQuery().groupMember(BPMN_USER_VALIDEUR)
+                        .singleResult().getId());
 
         // --------------------------------------------------------
         // ---- Create a new instance of the process definition
@@ -549,8 +561,6 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
     @Test
     public void userTaskRequest_NoUserIdValue() throws Exception {
 
-        this.initIdentities();
-
         // Create the 1st valid request
         final Demande request_1 = new Demande();
         request_1.setDemandeur("demandeur");
@@ -658,8 +668,6 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      */
     @Test
     public void userTaskRequest_EmptyUserIdValue() throws Exception {
-
-        this.initIdentities();
 
         // Create the 1st valid request
         final Demande request_1 = new Demande();
@@ -770,8 +778,6 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
     @Test
     public void userTaskRequest_NoProcessInstanceIdValue() throws Exception {
 
-        this.initIdentities();
-
         // Create the 1st valid request
         final Demande request_1 = new Demande();
         request_1.setDemandeur("demandeur");
@@ -880,8 +886,6 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      */
     @Test
     public void userTaskRequest_EmptyProcessInstanceIdValue() throws Exception {
-
-        this.initIdentities();
 
         // Create the 1st valid request
         final Demande request_1 = new Demande();
@@ -1047,8 +1051,6 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
      */
     @Test
     public void userTaskRequest_TaskCompletedFault() throws Exception {
-
-        this.initIdentities();
 
         // --------------------------------------------------------
         // ---- Create a new instance of the process definition

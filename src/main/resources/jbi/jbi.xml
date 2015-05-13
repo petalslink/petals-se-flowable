@@ -18,7 +18,7 @@
 -->
 <jbi:jbi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
    xmlns:jbi="http://java.sun.com/xml/ns/jbi" version="1.0"
-   xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/version-1.0">
+   xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0">
 
    <jbi:component type="service-engine">
       <jbi:identification>
@@ -46,8 +46,7 @@
       <petalsCDK:processor-stop-max-wait />
       <petalsCDK:time-beetween-async-cleaner-runs />
       <petalsCDK:properties-file />
-      <petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.incoming.ActivitiJBIListener
-      </petalsCDK:jbi-listener-class-name>	
+      <petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.incoming.ActivitiJBIListener</petalsCDK:jbi-listener-class-name>	
 
       <!-- Component specific configuration -->
       <petals-se-activitibpmn:jdbc_driver>org.h2.Driver</petals-se-activitibpmn:jdbc_driver>
@@ -62,6 +61,8 @@
       <petals-se-activitibpmn:database_schema_update />
       <petals-se-activitibpmn:engine-enable-job-executor />
       <petals-se-activitibpmn:engine-enable-bpmn-validation />
+      <petals-se-activitibpmn:engine-identity-service-class-name />
+      <petals-se-activitibpmn:engine-identity-service-config-file />
 
    </jbi:component>
 </jbi:jbi>
