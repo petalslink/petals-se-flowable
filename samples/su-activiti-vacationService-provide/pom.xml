@@ -42,7 +42,7 @@
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-se-activitibpmn</artifactId>
+         <artifactId>petals-se-activiti</artifactId>
          <type>jbi-component</type>
       </dependency>
       
@@ -96,5 +96,6 @@
   <scm>
     <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
     <developerConnection>${project.scm.connection}</developerConnection>
+    
   </scm>
 </project>
