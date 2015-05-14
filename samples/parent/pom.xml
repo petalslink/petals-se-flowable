@@ -64,7 +64,7 @@
    </build>
   
   <scm>
-    <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
+    <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
     <developerConnection>${project.scm.connection}</developerConnection>
   </scm>
 </project>

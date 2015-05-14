@@ -281,8 +281,8 @@
    </build>
 
    <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</connection>
-      <developerConnection>scm:git:https://github.com/petalslink/petals-se-bpmn2.git</developerConnection>
+      <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-activiti.git</developerConnection>
    </scm>
 
 </project>
