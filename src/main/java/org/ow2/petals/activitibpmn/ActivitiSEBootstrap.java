@@ -429,7 +429,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * 
      * @return the engineEnableJobExecutor
      */
-    public boolean getEngineEnableJobExecutor() {
+    public String getEngineEnableJobExecutor() {
 
         // Caution:
         // - only the value "false", ignoring case and spaces will disable the job executor,
@@ -445,7 +445,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
                     : (enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("true") ? true
                             : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
         }
-        return enableActivitiJobExecutor;
+        return Boolean.toString(enableActivitiJobExecutor);
     }
 
     /**
@@ -464,7 +464,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * 
      * @return the engineEnableBpmnValidation
      */
-    public boolean getEngineEnableBpmnValidation() {
+    public String getEngineEnableBpmnValidation() {
 
         // Caution:
         // - only the value "false", ignoring case and spaces will disable the BPMN validation,
@@ -481,7 +481,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
                     : (enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
                             : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
         }
-        return enableActivitiBpmnValidation;
+        return Boolean.toString(enableActivitiBpmnValidation);
     }
 
     /**
