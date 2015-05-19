@@ -271,13 +271,13 @@ public class ActivitiSEBootstrapTest {
 
         final Element eltEnableEngineJobExecutor = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
-        final boolean engineEnableJobExecutor = false;
-        eltEnableEngineJobExecutor.setTextContent(String.valueOf(engineEnableJobExecutor));
+        final String engineEnableJobExecutor = Boolean.FALSE.toString();
+        eltEnableEngineJobExecutor.setTextContent(engineEnableJobExecutor);
         params.add(eltEnableEngineJobExecutor);
         final Element eltEnableEngineBpmnValidation = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
-        final boolean engineEnableBpmnValidation = false;
-        eltEnableEngineBpmnValidation.setTextContent(String.valueOf(engineEnableBpmnValidation));
+        final String engineEnableBpmnValidation = Boolean.FALSE.toString();
+        eltEnableEngineBpmnValidation.setTextContent(engineEnableBpmnValidation);
         params.add(eltEnableEngineBpmnValidation);
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME);
@@ -350,8 +350,9 @@ public class ActivitiSEBootstrapTest {
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME, bootstrap.getJdbcMaxCheckoutTime());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME, bootstrap.getJdbcMaxWaitTime());
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE, bootstrap.getDatabaseSchemaUpdate());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR, bootstrap.getEngineEnableJobExecutor());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION,
+        assertEquals(Boolean.toString(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR),
+                bootstrap.getEngineEnableJobExecutor());
+        assertEquals(Boolean.toString(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION),
                 bootstrap.getEngineEnableBpmnValidation());
         assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
                 bootstrap.getEngineIdentityServiceClassName());
