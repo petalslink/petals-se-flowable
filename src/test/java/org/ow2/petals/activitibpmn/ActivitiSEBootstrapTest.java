@@ -364,7 +364,7 @@ public class ActivitiSEBootstrapTest {
     @Test(expected = InvalidAttributeValueException.class)
     public void setJdbcUrl_InvalidURL() throws InvalidAttributeValueException {
         final ActivitiSEBootstrap bootstrap = new ActivitiSEBootstrap();
-        bootstrap.setJdbcUrl("invalid-url://path");
+        bootstrap.setJdbcUrl("// invalid-url/foo:http+ftp");
     }
 
     /**
@@ -380,10 +380,18 @@ public class ActivitiSEBootstrapTest {
         final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
                 defaultJbiDescriptorStream);
 
-        final String expectedUrl = "http://path";
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
-        bootstrap.setJdbcUrl(expectedUrl);
-        assertEquals(expectedUrl, bootstrap.getJdbcUrl());
+
+        // A simple URL
+        final String expectedSimpleUrl = "http://path";
+        bootstrap.setJdbcUrl(expectedSimpleUrl);
+        assertEquals(expectedSimpleUrl, bootstrap.getJdbcUrl());
+
+        // A JDBC URL that is not an URL
+        final String expectedUrlNotUrl = "jdbc:h2:tcp://localhost/mem:activiti";
+        bootstrap.setJdbcUrl(expectedUrlNotUrl);
+        assertEquals(expectedUrlNotUrl, bootstrap.getJdbcUrl());
+
     }
 
     /**

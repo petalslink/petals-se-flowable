@@ -40,8 +40,8 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.Enumeration;
@@ -182,12 +182,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public void setJdbcUrl(final String value) throws InvalidAttributeValueException {
 
         if (value != null && !value.trim().isEmpty()) {
-            // Check that the given value is an URL
+            // Check that the given value is an URI: A JDBC is an URI, not an URL
             try {
-                new URL(value);
-            } catch (final MalformedURLException e) {
-                throw new InvalidAttributeValueException("Invalid value for attribute '" + ATTR_NAME_JDBC_URL
-                        + "': The value must be an URL.");
+                new URI(value);
+            } catch (final URISyntaxException e) {
+                throw new InvalidAttributeValueException("Invalid value (" + value + ") for attribute '"
+                        + ATTR_NAME_JDBC_URL + "': The value must be a JDBC URL.");
             }
             this.setParam(JDBC_URL, value);
         } else {
