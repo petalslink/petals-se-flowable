@@ -20,27 +20,8 @@
    targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    
-   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
-   
    xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
-   elementFormDefault="qualified" jaxb:version="2.1">
-
-   <xsd:annotation>
-      <xsd:appinfo>
-         <jaxb:globalBindings>
-            <!-- 
-                 Use java.util.Date instead of javax.xml.datatype.XMLGregorianCalendar for xsd:date, xsd:dateTime, 
-                 because Activiti engine uses java.util.Date to store dates/times and JaxB generated XMLGregorianCalendar by default.
-            -->
-            <jaxb:javaType name="java.util.Date" xmlType="xsd:time"
-               parseMethod="org.activiti.engine.impl.webservice.DatatypeConverter.parseTime" printMethod="org.activiti.engine.impl.webservice.DatatypeConverter.printTime" />
-            <jaxb:javaType name="java.util.Date" xmlType="xsd:date"
-               parseMethod="org.activiti.engine.impl.webservice.DatatypeConverter.parseDate" printMethod="org.activiti.engine.impl.webservice.DatatypeConverter.printDate" />
-            <jaxb:javaType name="java.util.Date" xmlType="xsd:dateTime"
-               parseMethod="org.activiti.engine.impl.webservice.DatatypeConverter.parseDateTime" printMethod="org.activiti.engine.impl.webservice.DatatypeConverter.printDateTime" />
-         </jaxb:globalBindings>
-      </xsd:appinfo>
-   </xsd:annotation>
+   elementFormDefault="qualified">
 
    <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
    <xsd:complexType name="vacationRequestType">
