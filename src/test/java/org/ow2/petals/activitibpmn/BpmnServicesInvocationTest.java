@@ -467,10 +467,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                         OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
 
         // Check the reply
-        final Source fault = responseMsg.getFault();
-        assertNotNull("No fault returns", fault);
-        final String faultStr = SourceHelper.toString(fault);
-        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        final Exception error = responseMsg.getError();
+        assertNotNull("No error returns", error);
+        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
         assertNull("XML payload in response", responseMsg.getPayload());
 
         assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
@@ -520,10 +519,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                         OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
 
         // Check the reply
-        final Source fault = responseMsg.getFault();
-        assertNotNull("No fault returns", fault);
-        final String faultStr = SourceHelper.toString(fault);
-        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        final Exception error = responseMsg.getError();
+        assertNotNull("No error returns", error);
+        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
         assertNull("XML payload in response", responseMsg.getPayload());
 
         assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
@@ -626,10 +624,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                         OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
-        final Source fault_2 = responseMsg_2.getFault();
-        assertNotNull("No fault returns", fault_2);
-        final String faultStr = SourceHelper.toString(fault_2);
-        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        final Exception error = responseMsg_2.getError();
+        assertNotNull("No error returns", error);
+        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
         assertNull("XML payload in response", responseMsg_2.getPayload());
 
         // Assert that the process instance and current user task
@@ -735,10 +732,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                         OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
-        final Source fault_2 = responseMsg_2.getFault();
-        assertNotNull("No fault returns", fault_2);
-        final String faultStr = SourceHelper.toString(fault_2);
-        assertTrue("Unexpected fault", faultStr.contains(NoUserIdValueException.class.getName()));
+        final Exception error = responseMsg_2.getError();
+        assertNotNull("No error returns", error);
+        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
         assertNull("XML payload in response", responseMsg_2.getPayload());
 
         // Assert that the process instance and current user task
@@ -843,11 +839,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                         OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
-        final Source fault_2 = responseMsg_2.getFault();
-        assertNotNull("No fault returns", fault_2);
-        final String faultStr = SourceHelper.toString(fault_2);
-        assertTrue("Unexpected fault: " + faultStr,
-                faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
+        final Exception error = responseMsg_2.getError();
+        assertNotNull("No error returns", error);
+        assertTrue("Unexpected fault", error.getCause() instanceof NoProcessInstanceIdValueException);
         assertNull("XML payload in response", responseMsg_2.getPayload());
 
         // Assert that the process instance and current user task
@@ -953,11 +947,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                         OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
-        final Source fault_2 = responseMsg_2.getFault();
-        assertNotNull("No fault returns", fault_2);
-        final String faultStr = SourceHelper.toString(fault_2);
-        assertTrue("Unexpected fault: " + faultStr,
-                faultStr.contains(NoProcessInstanceIdValueException.class.getName()));
+        final Exception error = responseMsg_2.getError();
+        assertNotNull("No error returns", error);
+        assertTrue("Unexpected fault", error.getCause() instanceof NoProcessInstanceIdValueException);
         assertNull("XML payload in response", responseMsg_2.getPayload());
 
         // Assert that the process instance and current user task
