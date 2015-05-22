@@ -62,6 +62,12 @@
       <version>5.0.0-SNAPSHOT</version>
       <type>jbi-service-unit</type>
     </dependency>
+    <dependency>
+      <groupId>org.ow2.petals.samples</groupId>
+      <artifactId>su-SOAP-activitiIntegrationService-consume</artifactId>
+      <version>5.0.0-SNAPSHOT</version>
+      <type>jbi-service-unit</type>
+    </dependency>
   </dependencies>
   
   <build>

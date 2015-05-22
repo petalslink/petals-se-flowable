@@ -36,7 +36,7 @@
     <!-- Skip dependency check for service unit. -->
     <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
     <maven-enforcer-plugin.rules.upperBound>false</maven-enforcer-plugin.rules.upperBound>
-    <activiti.version>5.18.0-PETALS-0-SNAPSHOT</activiti.version>
+    <activiti.version>5.18.0-PETALS-0</activiti.version>
   </properties>
 
    <dependencies>
