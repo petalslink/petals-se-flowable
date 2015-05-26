@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PEtALS integration Activiti component tests" default="all" basedir=".">
+
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+   <taskdef resource="org/ow2/petals/ant/petals-ant.properties" />
+
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+
+   <property name="petals.home"
+             value="${project.build.directory}/${project.artifactId}/container" />
+   <property name="topology.container.name" value="sample-0" />
+
+   <!-- Properties -->
+   <property name="host1.port" value="7700" />
+   <property name="host1.ip" value="localhost" />
+   <property name="host1.username" value="petals" />
+   <property name="host1.password" value="petals" />
+   <property name="activiti-db.file" value="/tmp/activiti.db" />
+
+   <target name="startDatabaseActiviti">
+      <delete file="${activiti-db.file}.mv.db" />
+      <!-- Start Database Activiti -->
+      <java jar="${com.h2database:h2:jar}" fork="true">
+         <arg value="-tcp" />
+      </java>
+   </target>
+
+   <!-- Target : Prepare -->
+   <target name="prepare" />
+
+   <!-- Target : Deploy -->
+   <target name="deploy">
+      <echo message="Installing components..." />
+
+      <jbi-install-component file="${org.ow2.petals:petals-se-activiti:jbi-component}"
+                             port="${host1.port}"
+                             host="${host1.ip}"
+                             username="${host1.username}"
+                             password="${host1.password}">
+         <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
+      </jbi-install-component>
+
+      <jbi-install-component file="${org.ow2.petals:petals-bc-soap:jbi-component}"
+                             port="${host1.port}"
+                             host="${host1.ip}"
+                             username="${host1.username}"
+                             password="${host1.password}">
+         <param name="httpHost" value="localhost" />
+      </jbi-install-component>
+
+      <echo message="Starting components..." />
+      <jbi-start-component name="petals-se-activiti"
+                           port="${host1.port}"
+                           host="${host1.ip}"
+                           username="${host1.username}"
+                           password="${host1.password}" />
+      <jbi-start-component name="petals-bc-soap"
+                           port="${host1.port}"
+                           host="${host1.ip}"
+                           username="${host1.username}"
+                           password="${host1.password}" />
+
+      <echo message="Hacking database Activiti" />
+      <sql driver="org.h2.Driver" url="jdbc:h2:tcp://localhost/${activiti-db.file}" userid="sa" password="">
+         <classpath>
+            <pathelement location="${com.h2database:h2:jar}" />
+         </classpath>
+         <transaction>
+               ALTER TABLE ACT_GE_BYTEARRAY ALTER COLUMN NAME_ VARCHAR(512);
+         </transaction>
+      </sql>
+
+      <echo message="Deploying service assemblies..." />
+      <jbi-deploy-service-assembly file="${org.ow2.petals.samples:sa-vacation-sample:jbi-service-assembly}"
+                                   port="${host1.port}"
+                                   host="${host1.ip}"
+                                   username="${host1.username}"
+                                   password="${host1.password}" />
+
+      <echo message="Starting service assemblies..." />
+      <jbi-start-service-assembly name="sa-vacation-sample"
+                                  port="${host1.port}"
+                                  host="${host1.ip}"
+                                  username="${host1.username}"
+                                  password="${host1.password}" />
+   </target>
+
+
+   <!-- Target : Run -->
+   <target name="run">
+      <echo message="Launching Activiti component tests..." />
+
+      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
+         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Nominal TestCase without adjustment&quot;" />
+      </exec>
+
+      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
+         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Nominal TestCase with adjustment&quot;" />
+      </exec>
+
+      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
+         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Faulty TestCase - Unexpected validator&quot;" />
+      </exec>
+
+      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
+         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Faulty TestCase - Unexpected vacation request id&quot;" />
+      </exec>
+
+   </target>
+
+
+   <!-- Target : Clean all -->
+   <target name="cleanAll">
+      <echo message="Cleaning Activiti component tests..." />
+
+      <petals-stop-all-service-assemblies port="${host1.port}"
+                                          host="${host1.ip}"
+                                          username="${host1.username}"
+                                          password="${host1.password}"
+                                          failOnError="true" />
+      <petals-shut-down-all-service-assemblies port="${host1.port}"
+                                               host="${host1.ip}"
+                                               username="${host1.username}"
+                                               password="${host1.password}"
+                                               failOnError="true" />
+      <petals-undeploy-all-service-assemblies port="${host1.port}"
+                                              host="${host1.ip}"
+                                              username="${host1.username}"
+                                              password="${host1.password}"
+                                              failOnError="true" />
+
+      <petals-stop-all-components port="${host1.port}"
+                                  host="${host1.ip}"
+                                  username="${host1.username}"
+                                  password="${host1.password}"
+                                  failOnError="true" />
+      <petals-shut-down-all-components port="${host1.port}"
+                                       host="${host1.ip}"
+                                       username="${host1.username}"
+                                       password="${host1.password}"
+                                       failOnError="true" />
+      <petals-uninstall-all-components port="${host1.port}"
+                                       host="${host1.ip}"
+                                       username="${host1.username}"
+                                       password="${host1.password}"
+                                       failOnError="true" />
+
+      <petals-unload-all-installers port="${host1.port}"
+                                    host="${host1.ip}"
+                                    username="${host1.username}"
+                                    password="${host1.password}"
+                                    failOnError="true" />
+   </target>
+
+   <!-- Target : Start mocks SoapUI -->
+   <target name="startMocks">
+      <echo message="Starting SoapUI mocks..." />
+
+      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
+         <arg line="-B -s${basedir}/settings.xml soapui:mock" />
+      </exec>
+   </target>
+
+   <!-- Target : Stop mock SoapUI -->
+   <target name="stopMock" depends="mockAvailable" if="isAvailable_${mockServiceAddress}">
+      <echo message="Stopping SoapUI mock ${mockServiceAddress}..." />
+
+      <get src="${mockServiceAddress}?cmd=stop" dest="stopMock" />
+   </target>
+
+   <!-- Target : Wait mock SoapUI -->
+   <target name="waitMock">
+      <echo message="Waiting SoapUI mock ${mockServiceAddress}..." />
+
+      <waitfor maxwait="15" maxwaitunit="minute" timeoutproperty="isStarted_${mockServiceAddress}">
+         <http url="${mockServiceAddress}?wsdl" />
+      </waitfor>
+
+      <fail message="SoapUI mock not started">
+         <condition>
+            <isset property="isStarted_${mockServiceAddress}" />
+         </condition>
+      </fail>
+   </target>
+
+   <!-- Target : Mock available -->
+   <target name="mockAvailable">
+      <echo message="Checking SoapUI mock ${mockServiceAddress}..." />
+
+      <condition property="isAvailable_${mockServiceAddress}">
+         <http url="${mockServiceAddress}?wsdl" />
+      </condition>
+   </target>
+
+   <!-- Target : Start Web services -->
+   <target name="startWebservices">
+      <parallel failonany="yes">
+         <antcall target="startMocks" />
+      </parallel>
+   </target>
+
+   <!-- Target : Wait Web services -->
+   <target name="waitWebservices">
+      <parallel failonany="yes">
+         <antcall target="waitMock">
+            <param name="mockServiceAddress" value="http://localhost:8088/mockNotifyVacationService" />
+         </antcall>
+         <antcall target="waitMock">
+            <param name="mockServiceAddress" value="http://localhost:8088/mockArchiveService" />
+         </antcall>
+      </parallel>
+   </target>
+
+   <!-- Target : Stop Web services -->
+   <target name="stopWebservices">
+      <parallel failonany="yes">
+         <antcall target="stopMock">
+            <param name="mockServiceAddress" value="http://localhost:8088/mockNotifyVacationService" />
+         </antcall>
+         <antcall target="stopMock">
+            <param name="mockServiceAddress" value="http://localhost:8088/mockArchiveService" />
+         </antcall>
+      </parallel>
+   </target>
+
+   <target name="launchContainer">
+      <replaceregexp file="${petals.home}/conf/loggers.properties"
+                     match="org.ow2.petals.log.handler.PetalsFileHandler.level.*"
+                     replace="org.ow2.petals.log.handler.PetalsFileHandler.level=FINEST"
+                     byline="true" />
+      <replaceregexp file="${petals.home}/conf/loggers.properties"
+                     match="Petals.Container.Components.level.*"
+                     replace="Petals.Container.Components.level=FINEST"
+                     byline="true" />
+
+      <startContainer name="${topology.container.name}" home="${petals.home}" jmx.port="${host1.port}" />
+   </target>
+
+   <!-- Target : All -->
+   <target name="all">
+      <antcall target="killAllContainers" />
+      <antcall target="launchContainer" />
+
+      <antcall target="cleanAll" />
+
+      <trycatch>
+         <try>
+            <parallel failonany="yes">
+               <daemons>
+                  <antcall target="startDatabaseActiviti" />
+               </daemons>
+               <antcall target="startWebservices" />
+               <sequential>
+                  <antcall target="prepare" />
+                  <antcall target="deploy" />
+                  <antcall target="waitWebservices" />
+                  <trycatch>
+                     <try>
+                        <antcall target="run" />
+                     </try>
+                     <finally>
+                        <input />
+                        <antcall target="stopWebservices" />
+                     </finally>
+                  </trycatch>
+               </sequential>
+            </parallel>
+         </try>
+         <finally>
+            <!-- We force component uninstallation to avoid stack trace logged by SE Activiti when tests fail. The async job
+                 executor of SE Activiti try run SQL query on a database that is not running --> 
+            <antcall target="cleanAll" />
+         </finally>
+      </trycatch>
+      <stopContainer name="${topology.container.name}" home="${petals.home}" />
+
+   </target>
+
+</project>
