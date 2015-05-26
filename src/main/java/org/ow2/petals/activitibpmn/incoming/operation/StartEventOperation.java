@@ -29,8 +29,10 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.transform.dom.DOMSource;
 
+import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.StartEventAnnotatedOperation;
@@ -62,6 +64,11 @@ public class StartEventOperation extends ActivitiOperation {
     private final RuntimeService runtimeService;
 
     /**
+     * The history service of the BPMN engine
+     */
+    private final HistoryService historyService;
+
+    /**
      * An UUID generator.
      */
     private final SimpleUUIDGenerator simpleUUIDGenerator;
@@ -73,15 +80,19 @@ public class StartEventOperation extends ActivitiOperation {
      *            The identity service of the BPMN engine
      * @param runtimeService
      *            The runtime service of the BPMN engine
+     * @param historyService
+     *            The history service of the BPMN engine
      * @param simpleUUIDGenerator
      *            A UUID generator
      * @param logger
      */
     public StartEventOperation(final AnnotatedOperation annotatedOperation, final IdentityService identityService,
-            final RuntimeService runtimeService, final SimpleUUIDGenerator simpleUUIDGenerator, final Logger logger) {
+            final RuntimeService runtimeService, final HistoryService historyService,
+            final SimpleUUIDGenerator simpleUUIDGenerator, final Logger logger) {
         super(annotatedOperation, logger);
         this.identityService = identityService;
         this.runtimeService = runtimeService;
+        this.historyService = historyService;
         this.simpleUUIDGenerator = simpleUUIDGenerator;
     }
 
@@ -128,17 +139,28 @@ public class StartEventOperation extends ActivitiOperation {
         // To prepare the output response, we add named value dedicated to this operation:
         // - process instance variables
         // - the identifier of the created process instance
-        // TODO: Are process instance variables different from the provided variables 'processVars' ? If no, don't
+        // TODO: Are process instance variables different from the provided variables 'processVars' ? If not, don't
         // retrieve them and use directly 'processVars'
         final ProcessInstance retrievedProcessInstance = this.runtimeService.createProcessInstanceQuery()
                 .processInstanceId(bpmnProcessIdValue).includeProcessVariables().singleResult();
+        final Map<String, Object> processVariables;
         if (retrievedProcessInstance == null) {
-            // This exception should not occur
-            throw new OperationProcessingException(this.wsdlOperation, String.format(
-                    "The just created process instance '%s' is not found for the process definition '%s'.",
-                    bpmnProcessIdValue, this.deployedProcessDefinitionId));
+            // Perhaps the just created process instance is archived because it does not contain user task
+            final HistoricProcessInstance archivedProcessInstance = this.historyService
+                    .createHistoricProcessInstanceQuery().processInstanceId(bpmnProcessIdValue)
+                    .includeProcessVariables().singleResult();
+            if (archivedProcessInstance == null) {
+                // This exception should not occur
+                throw new OperationProcessingException(this.wsdlOperation, String.format(
+                        "The just created process instance '%s' is not found for the process definition '%s'.",
+                        bpmnProcessIdValue, this.deployedProcessDefinitionId));
+            } else {
+                processVariables = archivedProcessInstance.getProcessVariables();
+            }
+        } else {
+            processVariables = retrievedProcessInstance.getProcessVariables();
         }
-        for (final Entry<String, Object> processVariable : retrievedProcessInstance.getProcessVariables().entrySet()) {
+        for (final Entry<String, Object> processVariable : processVariables.entrySet()) {
             outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS,
                     processVariable.getKey()), XslUtils.convertBpmnVariableValueToXslParam(processVariable.getValue()));
 

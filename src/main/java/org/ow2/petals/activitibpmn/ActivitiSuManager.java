@@ -538,7 +538,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
                 operations.add(new StartEventOperation(annotatedOperation, ((ActivitiSE) this.component)
                         .getProcessEngine().getIdentityService(), ((ActivitiSE) this.component).getProcessEngine()
-                        .getRuntimeService(), this.simpleUUIDGenerator, this.logger));
+                        .getRuntimeService(), ((ActivitiSE) this.component).getProcessEngine().getHistoryService(),
+                        this.simpleUUIDGenerator, this.logger));
             } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
                 operations.add(new CompleteUserTaskOperation(annotatedOperation, ((ActivitiSE) this.component)
                         .getProcessEngine().getTaskService(), ((ActivitiSE) this.component).getProcessEngine()

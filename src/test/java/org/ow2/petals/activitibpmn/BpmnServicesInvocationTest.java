@@ -1182,5 +1182,4 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertProcessInstanceFinished(response_1.getNumeroDde());
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
     }
-
 }
