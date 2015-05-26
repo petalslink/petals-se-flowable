@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014-2015 Linagora
+ Copyright (c) 2015 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -22,11 +22,19 @@
    <xsl:output method="xml" encoding="UTF-8" omit-xml-declaration="no"/>
    
    <xsl:param name="bpmn-fault:processInstanceId" />
+   <xsl:param name="bpmn-fault:taskId" />
+   <xsl:param name="bpmn-fault:userId" />
 
    <xsl:template match="/">
-      <xsl:element name="vacationRequestIdUnknown" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
-         <xsl:element name="vacationRequestId"  namespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
+      <xsl:element name="unexpectedUser" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
+         <xsl:element name="vacationRequestId" namespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
             <xsl:value-of select="$bpmn-fault:processInstanceId"/>
+         </xsl:element>
+         <xsl:element name="userId">
+            <xsl:value-of select="$bpmn-fault:userId"/>
+         </xsl:element>
+         <xsl:element name="taskId">
+            <xsl:value-of select="$bpmn-fault:taskId"/>
          </xsl:element>
       </xsl:element>
    </xsl:template>

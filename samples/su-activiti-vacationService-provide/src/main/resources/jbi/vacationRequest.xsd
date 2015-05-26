@@ -20,8 +20,12 @@
    targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    
+   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+   
    xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
-   elementFormDefault="qualified">
+   elementFormDefault="qualified" jaxb:version="2.1">
+
+ 
 
    <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
    <xsd:complexType name="vacationRequestType">

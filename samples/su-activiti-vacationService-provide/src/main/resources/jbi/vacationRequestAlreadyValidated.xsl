@@ -24,7 +24,7 @@
    <xsl:param name="bpmn-fault:processInstanceId" />
 
    <xsl:template match="/">
-      <xsl:element name="vacationRequestAlreadyValidated" namespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
+      <xsl:element name="vacationRequestAlreadyValidated" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
          <xsl:element name="vacationRequestId"  namespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
             <xsl:value-of select="$bpmn-fault:processInstanceId"/>
          </xsl:element>

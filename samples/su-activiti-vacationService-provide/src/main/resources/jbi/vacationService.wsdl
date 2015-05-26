@@ -111,6 +111,16 @@
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
+
+         <xsd:element name="unexpectedUser">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="userId" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="taskId" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
       </xsd:schema>
    </wsdl:types>
    
@@ -139,6 +149,9 @@
    <wsdl:message name="vacationRequestAlreadyValidated">
       <wsdl:part name="fault" element="vacationService:vacationRequestAlreadyValidated" />
    </wsdl:message>
+   <wsdl:message name="unexpectedUser">
+      <wsdl:part name="fault" element="vacationService:unexpectedUser" />
+   </wsdl:message>
    <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== -->
    <wsdl:portType name="vacation">
       <wsdl:operation name="new">
@@ -150,6 +163,7 @@
          <wsdl:output message="vacationService:validationResponse" />
          <wsdl:fault message="vacationService:vacationRequestAlreadyValidated" name="vacationRequestAlreadyValidated" />
          <wsdl:fault message="vacationService:vacationRequestIdUnknown" name="vacationRequestIdUnknown" />
+         <wsdl:fault message="vacationService:unexpectedUser" name="unexpectedUser" />
       </wsdl:operation>
       <wsdl:operation name="update">
          <wsdl:input message="vacationService:updateRequest" />
@@ -196,6 +210,10 @@
          <wsdl:fault name="vacationRequestAlreadyValidated">
             <bpmn:fault name="TaskCompletedException">vacationRequestAlreadyValidated.xsl</bpmn:fault>
             <soap:fault name="vacationRequestAlreadyValidated" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="unexpectedUser">
+            <bpmn:fault name="UnexpectedUserException">unexpectedUser.xsl</bpmn:fault>
+            <soap:fault name="unexpectedUser" use="literal" />
          </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="update">
