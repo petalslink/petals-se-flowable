@@ -37,7 +37,38 @@
           
   <!-- ===================================
            The vacation process
-       =================================== -->        
+       =================================== -->
+          
+  <process id="jira_PETALSSEACTIVITI-4" name="JIRA PETALSSEACTIVITI-4">
+    <startEvent id="jira_4_Request" activiti:initiator="employeeName" name="Create vacation request">
+      <extensionElements>
+        <activiti:formProperty id="numberOfDays" name="Number of days" type="string" required="true"/>
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="jira_4_Flow1" sourceRef="jira_4_Request" targetRef="jira_4_archiverLaDemandeService" />
+    <serviceTask id="jira_4_archiverLaDemandeService"
+                 name="Petals service invocation - Nominal response"
+                 implementation="##WebService"
+                 operationRef="process:archiveOperation">
+         <ioSpecification>
+             <dataInput itemSubjectRef="process:archiverRequestItem" id="jira_4_dataInputOfServiceTask" />
+             <dataOutput itemSubjectRef="process:archiverRequestItem" id="jira_4_dataOutputOfServiceTask" />
+             <inputSet>
+                 <dataInputRefs>jira_4_dataInputOfServiceTask</dataInputRefs>
+             </inputSet>
+             <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>jira_4_dataInputOfServiceTask</targetRef>
+            <assignment>
+               <from>${numberOfDays}</from>
+               <to>${jira_4_dataInputOfServiceTask.item}</to>
+            </assignment>
+         </dataInputAssociation>
+    </serviceTask>
+    <sequenceFlow id="jira_4_Flow2" sourceRef="jira_4_archiverLaDemandeService" targetRef="jira_4_TheEnd2" />
+    <endEvent id="jira_4_TheEnd2" />
+  </process>
   
   <process id="vacationRequest" name="Vacation request">
   

@@ -185,24 +185,13 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
-                    final URL bpmnJira4Url = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/PETALSSEACTIVITI-4.bpmn20.xml");
-                    assertNotNull("BPMN file not found", bpmnJira4Url);
-                    serviceConfiguration.addResource(bpmnJira4Url);
-
-                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file1"),
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file"),
                             "vacationRequest.bpmn20.xml");
-                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version1"), "1");
-
-                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file2"),
-                            "PETALSSEACTIVITI-4.bpmn20.xml");
-                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version2"), "1");
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version"), "1");
 
                     // Consume service 'archiver'
                     // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
-                    // between
-                    // Activti
-                    // and other services
+                    // between Activiti and other services
                     final ServiceConfiguration consumeServiceConfiguration = new ServiceConfiguration(
                             ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ServiceType.CONSUME);
                     serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);

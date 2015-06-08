@@ -250,6 +250,9 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
     private Map<String, EmbeddedProcessDefinition> readBpmnModels(final ConfigurationExtensions extensions,
             final String suRootPath) throws ProcessDefinitionDeclarationException {
 
+        assert extensions != null;
+        assert suRootPath != null;
+
         String tenantId = extensions.get(ActivitiSEConstants.TENANT_ID);
         if (tenantId == null) {
             // TODO: Improve the default value declaration
@@ -427,8 +430,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                     .processDefinitionTenantId(process.getTenantId()).processDefinitionVersion(process.getVersion())
                     .list();
 
-            final ProcessDefinition processDefinition;
-		    if (processDefinitionSearchList == null || processDefinitionSearchList.size() == 0) {
+            final List<ProcessDefinition> processDefinitions;
+            if (processDefinitionSearchList == null || processDefinitionSearchList.isEmpty()) {
                 final DeploymentBuilder db = repositoryService.createDeployment();
 
                 // Characterize the deployment with processFileName / tenantId / categoryId
@@ -455,8 +458,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
                 // Do not use db.enableDuplicateFiltering(); with management of tenantId and CategoryId
                 final Deployment deployment = db.deploy();
-                processDefinition = repositoryService.createProcessDefinitionQuery()
-                        .deploymentId(deployment.getId()).list().get(0);
+                processDefinitions = repositoryService.createProcessDefinitionQuery().deploymentId(deployment.getId())
+                        .list();
 
                 if (this.logger.isLoggable(Level.INFO)) {
                     this.logger.info("The BPMN process " + process.getProcessFileName() + " version: "
@@ -470,25 +473,29 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
                             + process.getVersion() + " is already deployed");
                 }
 				// Set processDefinition
-                processDefinition = processDefinitionSearchList.get(0);
+                processDefinitions = processDefinitionSearchList;
 			}
 
             if (this.logger.isLoggable(Level.FINE)) {
-                this.logger.fine("Process definition deployed:");
-                this.logger.fine("   - Id            = " + processDefinition.getId());
-                this.logger.fine("   - Category      = " + processDefinition.getCategory());
-                this.logger.fine("   - Name          = " + processDefinition.getName());
-                this.logger.fine("   - Key           = " + processDefinition.getKey());
-                this.logger.fine("   - Version       = " + processDefinition.getVersion());
-                this.logger.fine("   - Deployemnt Id = " + processDefinition.getDeploymentId());
-                this.logger.fine("   - ResourceName  = " + processDefinition.getResourceName());
-                this.logger.fine("   - TenantId      = " + processDefinition.getTenantId());
+                this.logger.fine("Process definitions deployed:");
+                for (final ProcessDefinition processDefinition : processDefinitions) {
+                    this.logger.fine("\t- Id            = " + processDefinition.getId());
+                    this.logger.fine("\t\t- Category      = " + processDefinition.getCategory());
+                    this.logger.fine("\t\t- Name          = " + processDefinition.getName());
+                    this.logger.fine("\t\t- Key           = " + processDefinition.getKey());
+                    this.logger.fine("\t\t- Version       = " + processDefinition.getVersion());
+                    this.logger.fine("\t\t- Deployemnt Id = " + processDefinition.getDeploymentId());
+                    this.logger.fine("\t\t- ResourceName  = " + processDefinition.getResourceName());
+                    this.logger.fine("\t\t- TenantId      = " + processDefinition.getTenantId());
+                }
             }
             
             // For each operation we must set its deployed process instance identifier
-            for (final ActivitiOperation operation : operations) {
-                if (processDefinition.getKey().equals(operation.getProcessDefinitionId())) {
-                    operation.setDeployedProcessDefinitionId(processDefinition.getId());
+            for (final ProcessDefinition processDefinition : processDefinitions) {
+                for (final ActivitiOperation operation : operations) {
+                    if (processDefinition.getKey().equals(operation.getProcessDefinitionId())) {
+                        operation.setDeployedProcessDefinitionId(processDefinition.getId());
+                    }
                 }
             }
 		}
