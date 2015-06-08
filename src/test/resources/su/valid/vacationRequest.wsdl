@@ -30,6 +30,15 @@
 <wsdl:types>
 	<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationService" 
 	     		elementFormDefault="qualified" >
+      <xsd:element name="jira_PETALSSEACTIVITI-4">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="demandeur" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="nbJourDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+            </xsd:all>
+         </xsd:complexType>
+      </xsd:element>
+      
     	<xsd:element name="demande">
        		<xsd:complexType>
        			<xsd:all>
@@ -137,6 +146,9 @@
  	</xsd:schema>
 </wsdl:types>
 <!-- ======================== MESSAGES ======================================= --> 
+<wsdl:message name="jira_PETALSSEACTIVITI-4">
+   <wsdl:part name="parameters" element="tns:jira_PETALSSEACTIVITI-4" />
+</wsdl:message>
 <wsdl:message name="demandeConges">
 	<wsdl:part name="parameters" element="tns:demande" />
 </wsdl:message>
@@ -163,6 +175,10 @@
 </wsdl:message>
 <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== --> 
 <wsdl:portType name="demandeDeConges">
+   <wsdl:operation name="jira_PETALSSEACTIVITI-4">
+      <wsdl:input message="tns:jira_PETALSSEACTIVITI-4" />
+      <wsdl:output message="tns:numeroDemande" />
+   </wsdl:operation>
 	<wsdl:operation name="demanderConges">
     	<wsdl:input message="tns:demandeConges" />
      	<wsdl:output message="tns:numeroDemande" />
@@ -182,6 +198,24 @@
 <!-- ======================== BINDINGS ======================================= --> 
 <wsdl:binding name="demandeDeCongesBinding" type="tns:demandeDeConges" > 
 <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="jira_PETALSSEACTIVITI-4">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-bpmn/jira_PETALSSEACTIVITI-4" />
+         <bpmn:operation
+               processDefinitionId="jira_PETALSSEACTIVITI-4"
+               action="startEvent"
+               actionId="jira_4_Request" />
+         <bpmn:userId>/*[local-name()='jira_PETALSSEACTIVITI-4']/*[local-name()='demandeur']</bpmn:userId>
+         <bpmn:variable name="numberOfDays">
+            /*[local-name()='jira_PETALSSEACTIVITI-4']/*[local-name()='nbJourDde']
+         </bpmn:variable>
+         <bpmn:output>demanderCongesResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+   </wsdl:operation>
     <wsdl:operation name="demanderConges">
       	<soap:operation soapAction="http://petals.ow2.org/samples/se-bpmn/demanderConges" />
    	   <bpmn:operation

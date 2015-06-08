@@ -44,6 +44,7 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperati
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,7 @@ import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.impl.asyncexecutor.AsyncExecutor;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.activiti.engine.parse.BpmnParseHandler;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
@@ -429,6 +431,9 @@ public class ActivitiSE extends AbstractServiceEngine {
             // Override the default configuration of the identity service.
             this.registerIdentityService(pec, identityServiceClass, identityServiceCfgFile);
 
+            // Add post BPMN parse handlers
+            this.addPostBpmnParseHandlers(pec);
+
             this.activitiEngine = pec.buildProcessEngine();
             this.activitiAsyncExecutor = this.enableActivitiJobExecutor ? pec.getAsyncExecutor() : null;
 
@@ -507,6 +512,27 @@ public class ActivitiSE extends AbstractServiceEngine {
             }
         } catch (final InstantiationException | IllegalAccessException | IdentityServiceInitException e) {
             throw new JBIException("An error occurred while instantiating the identity service.", e);
+        }
+    }
+
+    /**
+     * Add BPMN parse handlers executed after the default ones
+     * 
+     * @param pec
+     *            The Activiti process engine configuration. Not <code>null</code>.
+     */
+    private final void addPostBpmnParseHandlers(final ProcessEngineConfiguration pec) throws JBIException {
+
+        assert pec != null : "pec can not be null";
+
+        if (pec instanceof ProcessEngineConfigurationImpl) {
+            final List<BpmnParseHandler> postBpmnParseHandlers = new ArrayList<BpmnParseHandler>();
+            postBpmnParseHandlers.add(new ServiceTaskForceAsyncParseHandler());
+            ((ProcessEngineConfigurationImpl) pec).setPostBpmnParseHandlers(postBpmnParseHandlers);
+        } else {
+            this.getLogger()
+                    .warning(
+                            "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
         }
     }
 

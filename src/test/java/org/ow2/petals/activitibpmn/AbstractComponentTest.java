@@ -29,6 +29,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -36,6 +38,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
+import org.activiti.engine.history.HistoricActivityInstanceQuery;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -65,6 +68,7 @@ import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
 import org.ow2.petals.samples.se_bpmn.vacationservice.DemandeDejaValidee;
+import org.ow2.petals.samples.se_bpmn.vacationservice.JiraPETALSSEACTIVITI4;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Numero;
 import org.ow2.petals.samples.se_bpmn.vacationservice.NumeroDemandeInconnu;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Validation;
@@ -86,6 +90,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
     protected static final QName VACATION_SERVICE = new QName(VACATION_NAMESPACE, "demandeDeCongesService");
 
     protected static final String VACATION_ENDPOINT = "testEndpointName";
+
+    protected static final QName OPERATION_JIRA = new QName(VACATION_NAMESPACE, "jira_PETALSSEACTIVITI-4");
 
     protected static final QName OPERATION_DEMANDERCONGES = new QName(VACATION_NAMESPACE, "demanderConges");
 
@@ -121,11 +127,10 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
-            // We disable the async job executor to have clean log traces, and because the process does not require it.
-            // To remove if the process require it
+            // A async job executor is required to process service task
             .setParameter(
                     new QName(ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
-                    Boolean.FALSE.toString())
+                    Boolean.TRUE.toString())
             .setParameter(
                     new QName(ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE),
                     // Generate identity service configuration files
@@ -180,9 +185,18 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
-                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file"),
+                    final URL bpmnJira4Url = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/valid/PETALSSEACTIVITI-4.bpmn20.xml");
+                    assertNotNull("BPMN file not found", bpmnJira4Url);
+                    serviceConfiguration.addResource(bpmnJira4Url);
+
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file1"),
                             "vacationRequest.bpmn20.xml");
-                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version"), "1");
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version1"), "1");
+
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file2"),
+                            "PETALSSEACTIVITI-4.bpmn20.xml");
+                    serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version2"), "1");
 
                     // Consume service 'archiver'
                     // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
@@ -233,7 +247,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
         try {
             final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
                     AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
-                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class);
+                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class, JiraPETALSSEACTIVITI4.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
@@ -356,6 +370,76 @@ public abstract class AbstractComponentTest extends AbstractTest {
                 .taskDefinitionKey(taskDefinitionKey).singleResult();
         assertNotNull(nextTask);
         assertEquals(user, nextTask.getAssignee());
+    }
+
+    /**
+     * Wait that a process instance ends.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the process instance to wait its end.
+     */
+    protected void waitEndOfProcessInstance(final String processInstanceId) throws InterruptedException {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final Thread waitingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean run = true;
+                try {
+                    while (run) {
+                        Thread.sleep(250);
+                        final HistoricProcessInstanceQuery histProcInstQuery = AbstractComponentTest.this.activitiClient
+                                .getHistoryService().createHistoricProcessInstanceQuery()
+                                .processInstanceId(processInstanceId);
+                        if (histProcInstQuery.singleResult() != null) {
+                            // the process instance is finished
+                            run = false;
+                            lock.countDown();
+                        }
+                    }
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        waitingThread.start();
+        lock.await(60, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Wait that a service task of a process instance ends.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its end.
+     * @param taskDefinitionKey
+     *            The service task identifier in the process definition
+     */
+    protected void waitEndOfServiceTask(final String processInstanceId, final String taskDefinitionKey)
+            throws InterruptedException {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final Thread waitingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean run = true;
+                try {
+                    while (run) {
+                        Thread.sleep(250);
+                        // Caution: service tasks are stored in activity historic, not in task historic.
+                        final HistoricActivityInstanceQuery histSvcTaskQuery = AbstractComponentTest.this.activitiClient
+                                .getHistoryService().createHistoricActivityInstanceQuery()
+                                .processInstanceId(processInstanceId).activityId(taskDefinitionKey).finished();
+                        if (histSvcTaskQuery.singleResult() != null) {
+                            // the process instance is finished
+                            run = false;
+                            lock.countDown();
+                        }
+                    }
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        waitingThread.start();
+        lock.await(60, TimeUnit.SECONDS);
     }
 
 }

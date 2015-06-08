@@ -66,6 +66,7 @@ import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
 import org.ow2.petals.samples.se_bpmn.vacationservice.DemandeDejaValidee;
+import org.ow2.petals.samples.se_bpmn.vacationservice.JiraPETALSSEACTIVITI4;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Numero;
 import org.ow2.petals.samples.se_bpmn.vacationservice.NumeroDemandeInconnu;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Validation;
@@ -317,11 +318,12 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         // Assert the response of the 2nd valid request
         final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
 
+        // Wait the end of a service task (a service task is executed asynchronously by SE Activiti, see
+        // PETALSSEACTIVITI-4)
+        this.waitEndOfServiceTask(response_1.getNumeroDde(), "archiverLaDemandeService");
+
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        // TODO: Should we have MONIT traces about the service call on the consumer side ?
-        // TODO: Adjust MONIT log assertions when the user task completion will be not linked to the following service
-        // task
         assertEquals(6, monitLogs_2.size());
         final FlowLogData completionTaskInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
@@ -332,13 +334,16 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                 completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME));
         assertEquals(userTaskHandleRequestEndFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY),
                 completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME));
+        assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(2));
+        // TODO: Should we have MONIT traces about the service call on the consumer side ?
+        // Check the MONIT traces of the invoked services: the service is responsible to generate them, not the SE
+        // Activiti.
         final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(
                 (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
-                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(2));
-        assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(3));
-        assertMonitConsumerEndLog(processStartedBeginFlowLogData, monitLogs_2.get(4));
-        assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(5));
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(3));
+        assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(4));
+        assertMonitConsumerEndLog(processStartedBeginFlowLogData, monitLogs_2.get(5));
 
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
@@ -1181,5 +1186,128 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         // Check Activiti engine against the current user task
         assertProcessInstanceFinished(response_1.getNumeroDde());
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
+    }
+
+    /**
+     * <p>
+     * Unit test about:
+     * <ul>
+     * <li>PETALSSEACTIVITI-4: a service task follow the start event,</li>
+     * <li>PETALSSEACTIVITI-5: process definition without user task.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void jira_PETALSSEACTIVITI_4() throws Exception {
+
+        // --------------------------------------------------------
+        // ---- Create a new instance of the process definition
+        // --------------------------------------------------------
+        final JiraPETALSSEACTIVITI4 request_1 = new JiraPETALSSEACTIVITI4();
+        request_1.setDemandeur(BPMN_USER_DEMANDEUR);
+        final String numberOfDays = "10";
+        request_1.setNbJourDde(numberOfDays);
+
+        // Send the 1st valid request for start event 'request'
+        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(VALID_SU), OPERATION_JIRA, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request_1))));
+
+        {
+            // Assert the 1st request sent by Activiti on orchestrated service
+            final RequestMessage archiveRequestMsg_1 = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
+            assertNotNull("No service request received under the given delay", archiveRequestMsg_1);
+            final MessageExchange archiveMessageExchange_1 = archiveRequestMsg_1.getMessageExchange();
+            assertNotNull(archiveMessageExchange_1);
+            assertEquals(ARCHIVE_INTERFACE, archiveMessageExchange_1.getInterfaceName());
+            assertEquals(ARCHIVE_SERVICE, archiveMessageExchange_1.getService());
+            assertNotNull(archiveMessageExchange_1.getEndpoint());
+            assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
+            assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
+            assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
+            final Object archiveRequestObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(archiveRequestMsg_1
+                    .getPayload());
+            assertTrue(archiveRequestObj_1 instanceof Archiver);
+            final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
+            assertEquals(numberOfDays, archiveRequest_1.getItem());
+
+            // Returns the reply of the service provider to the Activiti service task
+            final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
+            archiverResponse_1.setItem("value of item");
+            archiverResponse_1.setItem2("value of item2");
+            final ResponseMessage otherResponse_1 = new WrappedResponseToConsumerMessage(archiveMessageExchange_1,
+                    new ByteArrayInputStream(this.toByteArray(archiverResponse_1)));
+            COMPONENT_UNDER_TEST.pushResponseToConsumer(otherResponse_1);
+
+            // Assert the status DONE on the message exchange
+            final RequestMessage statusDoneMsg_1 = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
+            assertNotNull(statusDoneMsg_1);
+            // It's the same message exchange instance
+            assertSame(statusDoneMsg_1.getMessageExchange(), archiveRequestMsg_1.getMessageExchange());
+            assertEquals(statusDoneMsg_1.getMessageExchange().getStatus(), ExchangeStatus.DONE);
+        }
+
+        // Assert the response of the 1st valid request
+        final ResponseMessage responseMsg_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+
+        // Check the reply
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+        {
+            assertEquals(5, response_1.getXslParameter().size());
+            boolean userFound = false;
+            boolean employeeFound = false;
+            boolean numberOfDaysFound = false;
+            for (final XslParameter xslParameter : response_1.getXslParameter()) {
+                if ("user-id".equals(xslParameter.getName().toString())) {
+                    userFound = true;
+                    assertEquals(BPMN_USER_DEMANDEUR, xslParameter.getValue());
+                } else if ("employeeName".equals(xslParameter.getName().toString())) {
+                    employeeFound = true;
+                    assertEquals(BPMN_USER_DEMANDEUR, xslParameter.getValue());
+                } else if ("numberOfDays".equals(xslParameter.getName().toString())) {
+                    numberOfDaysFound = true;
+                    assertEquals(numberOfDays, xslParameter.getValue());
+                }
+            }
+            assertTrue(userFound);
+            assertTrue(employeeFound);
+            assertTrue(numberOfDaysFound);
+        }
+
+        // Wait end of process instance
+        this.waitEndOfProcessInstance(response_1.getNumeroDde());
+
+        // Check MONIT traces
+        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(6, monitLogs_1.size());
+        final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
+                VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_JIRA, monitLogs_1.get(0));
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerBeginLog(null, null, null, null,
+                monitLogs_1.get(1));
+        assertEquals(initialInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                processStartedBeginFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
+        assertEquals(initialInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
+                processStartedBeginFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        assertEquals("jira_PETALSSEACTIVITI-4",
+                processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_DEFINITION_KEY));
+        assertEquals(response_1.getNumeroDde(),
+                processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_INSTANCE_ID_KEY));
+        assertMonitProviderEndLog(initialInteractionRequestFlowLogData, monitLogs_1.get(2));
+        // TODO: Should we have MONIT traces about the service call on the consumer side ?
+        // Check the MONIT traces of the invoked services: the service is responsible to generate them, not the SE
+        // Activiti.
+        final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_1.get(3));
+        assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_1.get(4));
+        // Check the last MONIT trace of the BPMN process
+        assertMonitConsumerEndLog(processStartedBeginFlowLogData, monitLogs_1.get(5));
     }
 }
