@@ -261,7 +261,6 @@
                         <antcall target="run" />
                      </try>
                      <finally>
-                        <input />
                         <antcall target="stopWebservices" />
                      </finally>
                   </trycatch>
