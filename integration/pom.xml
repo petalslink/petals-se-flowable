@@ -25,6 +25,8 @@
   <packaging>pom</packaging>
 
   <modules>
+    <module>sa-activiti-vacationRequest</module>
+    <module>launcher-lifecycle-activiti</module>
     <module>launcher-standalone-activiti</module>
   </modules>
 

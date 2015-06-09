@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PEtALS integration - Integration tests about lifecycle of the Petals SE Activiti" default="all" basedir=".">
+
+   <!-- ******************************************************************* -->
+   <taskdef resource="net/sf/antcontrib/antlib.xml" />
+   <taskdef resource="org/ow2/petals/ant/antlib.xml" />
+
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+
+   <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
+
+   <property name="petals.cli.home"
+             value="${project.build.directory}/${project.artifactId}/petals-cli/${petalsCliDirName}" />
+
+   <property name="topology.container.name" value="sample-0" />
+   <property name="topology.container.home"
+             value="${project.build.directory}/${project.artifactId}/container/" />
+   <property name="topology.container.jmx.port" value="7700" />
+
+   <property name="the-component.id" value="petals-se-activiti" />
+   <property name="the-component.url" value="${org.ow2.petals:petals-se-activiti:jbi-component}" />
+
+   <property name="the-sa.id" value="sa-activiti-vacationRequest" />
+   <property name="the-sa.url" value="${org.ow2.petals.integration.tests.se.activiti:sa-activiti-vacationRequest:jbi-service-assembly}" />
+   <property name="the-su.id" value="su-activiti-vacationService-provide-${project.version}" />
+
+   <property name="activiti-db.file" value="/tmp/activiti.db" />
+
+   <target name="startDatabaseActiviti">
+      <delete file="${activiti-db.file}.mv.db" />
+      <!-- Start Database Activiti -->
+      <java jar="${com.h2database:h2:jar}" fork="true">
+         <arg value="-tcp" />
+      </java>
+   </target>
+
+   <target name="clean" depends="killAllRegistryMembers, killAllContainers" />
+
+   <target name="prepare" />
+
+   <target name="launchContainer">
+      <!-- No configuration required, we use the default configuration -->
+
+      <startContainer name="${topology.container.name}"
+                      home="${topology.container.home}"
+                      jmx.port="${topology.container.jmx.port}" />
+   </target>
+
+   <target name="start-infra" depends="prepare, launchContainer">
+      <echo message="0) The Petals ESB environment:" />
+      <echo message="   - A default container with its own registry embedded," />
+      <echo message="   - A standalone topology" />
+      <echo message="   - A database" />
+   </target>
+
+   <target name="all">
+      <antcall target="clean" />
+
+      <trycatch>
+         <try>
+            <parallel failonany="yes">
+               <daemons>
+                  <antcall target="startDatabaseActiviti" />
+               </daemons>
+               <sequential>
+                  <antcall target="run" />
+               </sequential>
+            </parallel>
+         </try>
+         <finally>
+            <!-- We stop all to avoid stack trace logged by SE Activiti when tests fail. The async job
+                 executor of SE Activiti try run SQL query on a database that is not running --> 
+            <antcall target="clean" />
+         </finally>
+      </trycatch>
+      
+      <echo message="All task finished!" />
+   </target>
+
+   <target name="run">
+      <echo message="Launching integration tests about life cycle of Petals SE Activiti" />
+
+      <antcall target="run-tests" />
+
+      <echo message="Integration test completed" />
+   </target>
+
+   <!-- 
+     See details on 'component-lifecycle-tests' to get more information on the test suite
+    -->
+   <target name="run-tests" depends="start-infra">
+
+      <component-lifecycle-tests component.name="Petals SE BPMN"
+                                 component.url="${the-component.url}"
+                                 component.id="${the-component.id}"
+                                 component.native-service="{http://petals.ow2.org/components/activiti/generic/1.0}TaskService"
+                                 is-service-engine="true"
+                                 sa.url="${the-sa.url}"
+                                 sa.id="${the-sa.id}"
+                                 su.id="${the-su.id}"
+                                 su.auto-generated.endpoint="true"
+                                 container.jmx.port="${topology.container.jmx.port}"
+                                 container.name="${topology.container.name}"
+                                 container.home="${topology.container.home}">
+         <param-elements>
+            <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
+         </param-elements>
+         <pre-deployments>
+            <echo message="Hacking database Activiti" />
+            <sql driver="org.h2.Driver" url="jdbc:h2:tcp://localhost/${activiti-db.file}" userid="sa" password="">
+               <classpath>
+                  <pathelement location="${com.h2database:h2:jar}" />
+               </classpath>
+               <transaction>
+	                   ALTER TABLE ACT_GE_BYTEARRAY ALTER COLUMN NAME_ VARCHAR(512);
+	           </transaction>
+            </sql>
+         </pre-deployments>
+      </component-lifecycle-tests>
+   </target>
+
+</project>
