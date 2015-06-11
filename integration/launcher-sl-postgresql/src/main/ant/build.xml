@@ -11,9 +11,8 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
    </import>
 
-   <basename property="petalsEsbDirName" file="${org.ow2.petals:petals-esb-default-zip:zip}" suffix=".zip" />
    <property name="petals.home"
-             value="${project.build.directory}/${project.artifactId}/container/${petalsEsbDirName}" />
+             value="${project.build.directory}/${project.artifactId}/container" />
    <property name="topology.container.name" value="sample-0" />
 
    <!-- Properties -->
@@ -21,9 +20,7 @@
    <property name="host1.ip" value="localhost" />
    <property name="host1.username" value="petals" />
    <property name="host1.password" value="petals" />
-   <property name="activiti-db.file" value="/tmp/activiti.db" />
 
-   <!-- Target : Prepare -->
    <target name="prepare">
 
       <jbi-install-shared-library file="${org.ow2.petals:petals-sl-postgresql-9.4-1201-jdbc4:jbi-shared-library}"
@@ -33,8 +30,6 @@
                                   password="${host1.password}" />
    </target>
 
-
-   <!-- Target : Run -->
    <target name="run">
 
       <jmx:open url="service:jmx:rmi:///jndi/rmi://${host1.ip}:${host1.port}/jmxRmiConnector"
@@ -66,8 +61,6 @@
 
    </target>
 
-
-   <!-- Target : Clean all -->
    <target name="cleanAll">
       <echo message="Cleaning Activiti component tests..." />
 
@@ -111,14 +104,7 @@
    </target>
 
    <target name="launchContainer">
-      <replaceregexp file="${petals.home}/conf/loggers.properties"
-                     match="org.ow2.petals.log.handler.PetalsFileHandler.level.*"
-                     replace="org.ow2.petals.log.handler.PetalsFileHandler.level=FINEST"
-                     byline="true" />
-      <replaceregexp file="${petals.home}/conf/loggers.properties"
-                     match="Petals.Container.Components.level.*"
-                     replace="Petals.Container.Components.level=FINEST"
-                     byline="true" />
+      <!-- No configuration required, we use the default configuration -->
 
       <startContainer name="${topology.container.name}" home="${petals.home}" jmx.port="${host1.port}" />
    </target>
