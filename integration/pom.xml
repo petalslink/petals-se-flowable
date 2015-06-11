@@ -28,6 +28,7 @@
     <module>sa-activiti-vacationRequest</module>
     <module>launcher-lifecycle-activiti</module>
     <module>launcher-standalone-activiti</module>
+    <module>launcher-sl-postgresql</module>
   </modules>
 
   <scm>

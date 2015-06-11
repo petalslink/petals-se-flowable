@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2015 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>parent</artifactId>
+      <groupId>org.ow2.petals.integration.tests</groupId>
+      <version>4.3.0-SNAPSHOT</version>
+      <relativePath>../../parent/pom.xml</relativePath>
+   </parent>
+
+   <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
+   <artifactId>launcher-sl-postgresql</artifactId>
+   <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - Integration with PostgreSQL SL</name>
+   <version>4.3.0-SNAPSHOT</version>
+   <packaging>pom</packaging>
+
+   <dependencies>
+      <dependency>
+         <artifactId>petals-se-activiti</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <artifactId>petals-sl-postgresql-9.4-1201-jdbc4</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <type>jbi-shared-library</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-esb-default-zip</artifactId>
+         <type>zip</type>
+      </dependency>
+      <dependency>
+      <!-- We force the version of SLF4J API to avoid the error "tried to access field
+           org.slf4j.impl.StaticLoggerBinder.SINGLETON from class org.slf4j.LoggerFactory" -->
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+         <version>1.5.10</version>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>maven-petals-plugin</artifactId>
+            <extensions>true</extensions>
+            <executions>
+               <execution>
+                  <id>configure-se-activiti</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>jbi-configure</goal>
+                  </goals>
+                  <configuration>
+                     <jbiSharedLibrariesMappingFileURL>file:${basedir}/src/main/resources/sharedlibraries.properties</jbiSharedLibrariesMappingFileURL>
+                     <groupId>org.ow2.petals</groupId>
+                     <artifactId>petals-se-activiti</artifactId>
+                     <version>${petals-se-activiti.version}</version>
+                     <outputDirectory>${project.build.directory}/configured-artifacts</outputDirectory>
+                     <targetName>petals-se-activiti</targetName>
+                  </configuration>
+               </execution>
+            </executions>
+            <configuration>
+               <verbose>true</verbose>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <groupId>org.apache.maven.plugins</groupId>
+            <executions>
+               <execution>
+                  <id>assembly</id>
+                  <configuration>
+                     <finalName>${project.artifactId}</finalName>
+                     <appendAssemblyId>false</appendAssemblyId>
+                     <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
+                     <attach>false</attach>
+                     <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                     </descriptors>
+                  </configuration>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>attached</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>run-it</id>
+                  <phase>integration-test</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <configuration>
+                     <target description="tests" unless="maven.test.skip">
+                        <property name="maven_plugin_classpath" refid="maven.plugin.classpath" />
+
+                        <ant antfile="${project.build.directory}/${project.artifactId}/build.xml" dir="${project.build.directory}/${project.artifactId}" />
+                     </target>
+                  </configuration>
+               </execution>
+            </executions>
+            <dependencies>
+               <dependency>
+                  <groupId>org.apache.tomcat</groupId>
+                  <artifactId>tomcat-catalina-ant</artifactId>
+                  <version>7.0.62</version>
+               </dependency>
+            </dependencies>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-help-plugin</artifactId>
+            <version>2.2</version>
+            <executions>
+               <execution>
+                  <id>settings</id>
+                  <configuration>
+                     <output>${project.build.directory}/${project.artifactId}/settings.xml</output>
+                  </configuration>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>effective-settings</goal>
+                  </goals>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>maven-petals-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+</project>
