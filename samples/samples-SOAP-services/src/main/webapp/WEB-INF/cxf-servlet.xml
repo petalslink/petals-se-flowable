@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2015 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses />
+ for the GNU Lesser General Public License version 2.1.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:jaxws="http://cxf.apache.org/jaxws"
+   xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+   
+   <import resource="classpath:META-INF/cxf/cxf.xml" />
+   <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+   
+   <jaxws:endpoint id="archiveService" implementor="org.ow2.petals.samples.se_bpmn.archiveservice.ArchiveServiceImpl"
+      address="/archiveService" />
+   <jaxws:endpoint id="notifyVacationService" implementor="org.ow2.petals.samples.se_bpmn.notifyvacationservice.NotifyVacationServiceImpl"
+      address="/notifyVacationService" />
+</beans>
