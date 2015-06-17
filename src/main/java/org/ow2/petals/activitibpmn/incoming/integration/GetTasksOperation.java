@@ -19,19 +19,9 @@ package org.ow2.petals.activitibpmn.incoming.integration;
 
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
 
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.TaskService;
@@ -39,14 +29,7 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.ow2.petals.activitibpmn.incoming.ActivitiService;
-import org.ow2.petals.activitibpmn.incoming.integration.exception.EmptyRequestException;
-import org.ow2.petals.activitibpmn.incoming.integration.exception.InvalidRequestException;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
-import org.ow2.petals.component.framework.api.exception.SOAP11FaultServerException;
-import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
 import org.ow2.petals.components.activiti.generic._1.Tasks;
@@ -57,7 +40,7 @@ import org.ow2.petals.components.activiti.generic._1.Tasks;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class GetTasksOperation implements ActivitiService {
+public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksResponse> {
 
     public static final URI FAULT_ACTOR = URI.create("http://petals.ow2.org/components/activiti/generic/1.0/GetTasks");
 
@@ -71,130 +54,52 @@ public class GetTasksOperation implements ActivitiService {
      */
     private final RepositoryService repositoryService;
 
-    /**
-     * A pool of marshallers for Java-->XML binding of the operation responses
-     */
-    private final ObjectPool marshalerPool;
-
-    /**
-     * A pool of unmarshallers for XML-->Java binding of the operation request
-     */
-    private final ObjectPool unmarshalerPool;
-
-    private final Logger log;
-
     public GetTasksOperation(final TaskService taskService, final RepositoryService repositoryService, final Logger log)
             throws OperationInitializationException {
+        super(ITG_OP_GETTASKS, FAULT_ACTOR, new Class[] { GetTasks.class, GetTasksResponse.class }, log);
         this.taskService = taskService;
         this.repositoryService = repositoryService;
-        this.log = log;
-
-        try {
-            final JAXBContext jaxbContext = JAXBContext.newInstance(new Class[] { GetTasks.class,
-                    GetTasksResponse.class });
-
-            this.marshalerPool = new GenericObjectPool(new MarshalerFactory(jaxbContext));
-            this.unmarshalerPool = new GenericObjectPool(new UnmarshalerFactory(jaxbContext));
-
-        } catch (final JAXBException e) {
-            throw new OperationInitializationException(ITG_OP_GETTASKS, e);
-        }
     }
 
     @Override
-    public void execute(final Exchange exchange) {
-        
-        try {
-            try {
-                final Source incomingPayload = exchange.getInMessageContentAsSource();
-                if (incomingPayload != null) {
-                    // Unmarshal incoming request
-                    final Unmarshaller unmarshaller = (Unmarshaller) this.unmarshalerPool.borrowObject();
-                    final Object incomingObject;
-                    try {
-                        incomingObject = unmarshaller.unmarshal(incomingPayload);
-                    } catch (final Exception e) {
-                        throw new InvalidRequestException(ITG_OP_GETTASKS, e);
-                    } finally {
-                        this.unmarshalerPool.returnObject(unmarshaller);
-                    }
-                    if (incomingObject instanceof GetTasks) {
-                        final GetTasks incomingRequest = (GetTasks) incomingObject;
-                        final TaskQuery taskQuery = this.taskService.createTaskQuery();
+    public GetTasksResponse doExecute(final GetTasks incomingObject) {
 
-                        // By default, we search active tasks
-                        final Boolean isActive = incomingRequest.isActive();
-                        if (isActive == null || isActive.booleanValue()) {
-                            taskQuery.active();
-                        }
+        final TaskQuery taskQuery = this.taskService.createTaskQuery();
 
-                        final String assignee = incomingRequest.getAssignee();
-                        if (assignee != null && !assignee.isEmpty()) {
-                            taskQuery.taskCandidateUser(assignee);
-                        }
-
-                        final String processInstanceId = incomingRequest.getProcessInstanceIdentifier();
-                        if (processInstanceId != null && !processInstanceId.isEmpty()) {
-                            taskQuery.processInstanceId(processInstanceId);
-                        }
-
-                        final GetTasksResponse response = new GetTasksResponse();
-                        final Tasks responseTasks = new Tasks();
-                        response.setTasks(responseTasks);
-                        final List<Task> tasks = taskQuery.list();
-                        for (final Task task : tasks) {
-                            final org.ow2.petals.components.activiti.generic._1.Task responseTask = new org.ow2.petals.components.activiti.generic._1.Task();
-                            responseTask.setProcessInstanceIdentifier(task.getProcessInstanceId());
-                            responseTask.setTaskIdentifier(task.getTaskDefinitionKey());
-                            responseTasks.getTask().add(responseTask);
-
-                            final ProcessDefinitionQuery processDefQuery = this.repositoryService
-                                    .createProcessDefinitionQuery().processDefinitionId(task.getProcessDefinitionId());
-                            final ProcessDefinition processDefinition = processDefQuery.singleResult();
-                            responseTask.setProcessDefinitionIdentifier(processDefinition.getKey());
-                        }
-
-                        // TODO: Avoid to use ByteArray(In|Out)put stream, try to pipe streams because of memory problem
-                        // with big payloads
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        try {
-                            final Marshaller marshaller = (Marshaller) this.marshalerPool.borrowObject();
-                            try {
-                                marshaller.marshal(response, baos);
-                            } finally {
-                                this.marshalerPool.returnObject(marshaller);
-                            }
-                        } finally {
-                            baos.close();
-                        }
-
-                        final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                        try {
-                            exchange.setOutMessageContent(new StreamSource(bais));
-                        } finally {
-                            bais.close();
-                        }
-
-                    } else {
-                        throw new InvalidRequestException(ITG_OP_GETTASKS);
-                    }
-                } else {
-                    throw new EmptyRequestException(ITG_OP_GETTASKS);
-                }
-            } catch (final InvalidRequestException e) {
-                this.log.log(Level.WARNING, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
-                exchange.setFault(new SOAP11FaultServerException(e.getMessage(), FAULT_ACTOR, e));
-            }
-        } catch (final Exception e) {
-            this.log.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
-            exchange.setError(e);
+        // By default, we search active tasks
+        final Boolean isActive = incomingObject.isActive();
+        if (isActive == null || isActive.booleanValue()) {
+            taskQuery.active();
         }
 
-    }
+        final String assignee = incomingObject.getAssignee();
+        if (assignee != null && !assignee.isEmpty()) {
+            taskQuery.taskCandidateUser(assignee);
+        }
 
-    @Override
-    public void log(final Logger logger, final Level logLevel) {
-        // NOP: We have nothing to log
+        final String processInstanceId = incomingObject.getProcessInstanceIdentifier();
+        if (processInstanceId != null && !processInstanceId.isEmpty()) {
+            taskQuery.processInstanceId(processInstanceId);
+        }
+
+        final GetTasksResponse response = new GetTasksResponse();
+        final Tasks responseTasks = new Tasks();
+        response.setTasks(responseTasks);
+        final List<Task> tasks = taskQuery.list();
+        for (final Task task : tasks) {
+            final org.ow2.petals.components.activiti.generic._1.Task responseTask = new org.ow2.petals.components.activiti.generic._1.Task();
+            responseTask.setProcessInstanceIdentifier(task.getProcessInstanceId());
+            responseTask.setTaskIdentifier(task.getTaskDefinitionKey());
+            responseTasks.getTask().add(responseTask);
+
+            final ProcessDefinitionQuery processDefQuery = this.repositoryService.createProcessDefinitionQuery()
+                    .processDefinitionId(task.getProcessDefinitionId());
+            final ProcessDefinition processDefinition = processDefQuery.singleResult();
+            responseTask.setProcessDefinitionIdentifier(processDefinition.getKey());
+        }
+
+        return response;
+
     }
 
 }

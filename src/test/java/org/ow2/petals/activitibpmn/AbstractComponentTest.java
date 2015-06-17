@@ -21,6 +21,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 
@@ -60,6 +62,8 @@ import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
 import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
+import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
+import org.ow2.petals.components.activiti.generic._1.GetProcessInstancesResponse;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
@@ -109,7 +113,9 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
     protected static final String VALID_SU = "valid-su";
 
-    protected static final String NATIVE_SVC_CFG = "native";
+    protected static final String NATIVE_TASKS_SVC_CFG = "native-tasks";
+
+    protected static final String NATIVE_PROCESSINSTANCES_SVC_CFG = "native-process-instances";
 
     protected static final String BPMN_PROCESS_DEFINITION_KEY = "vacationRequest";
 
@@ -198,7 +204,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
 
                     return serviceConfiguration;
                 }
-            }).registerNativeServiceToDeploy(NATIVE_SVC_CFG, new NativeServiceConfigurationFactory() {
+            }).registerNativeServiceToDeploy(NATIVE_TASKS_SVC_CFG, new NativeServiceConfigurationFactory() {
 
                 @Override
                 public ServiceConfiguration create(final String nativeEndpointName) {
@@ -216,6 +222,25 @@ public abstract class AbstractComponentTest extends AbstractTest {
                 @Override
                 public QName getNativeService() {
                     return ITG_TASK_SERVICE;
+                }
+            }).registerNativeServiceToDeploy(NATIVE_PROCESSINSTANCES_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+                @Override
+                public ServiceConfiguration create(final String nativeEndpointName) {
+
+                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("component.wsdl");
+                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
+                    final ServiceConfiguration nativeServiceConfiguration = new ServiceConfiguration(
+                            ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE, nativeEndpointName,
+                            ServiceType.PROVIDE, nativeServiceWsdlUrl);
+
+                    return nativeServiceConfiguration;
+                }
+
+                @Override
+                public QName getNativeService() {
+                    return ITG_PROCESSINSTANCES_SERVICE;
                 }
             }).registerExternalServiceProvider(ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
 
@@ -236,7 +261,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
         try {
             final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
                     AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
-                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class, JiraPETALSSEACTIVITI4.class);
+                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class, GetProcessInstances.class,
+                    GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

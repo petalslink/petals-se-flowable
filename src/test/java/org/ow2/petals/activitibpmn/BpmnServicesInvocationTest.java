@@ -23,7 +23,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitConsumerBeginLog;
@@ -58,9 +61,13 @@ import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedResponseToConsumerMessage;
+import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
+import org.ow2.petals.components.activiti.generic._1.GetProcessInstancesResponse;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
+import org.ow2.petals.components.activiti.generic._1.ProcessInstance;
 import org.ow2.petals.components.activiti.generic._1.Task;
+import org.ow2.petals.components.activiti.generic._1.Variable;
 import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
 import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
@@ -233,6 +240,64 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                 this.activitiClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
                         ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID));
 
+        // Try to retrieve the process instance using the integration service
+        final GetProcessInstances getProcessInstancesReq = new GetProcessInstances();
+        getProcessInstancesReq.setActive(true);
+        getProcessInstancesReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+        getProcessInstancesReq.setProcessInstanceIdentifier(response_1.getNumeroDde());
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG), ITG_OP_GETPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(getProcessInstancesReq))));
+        {
+            final ResponseMessage getProcessInstancesRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
+            final Object getProcessInstancesRespObj = BpmnServicesInvocationTest.UNMARSHALLER
+                    .unmarshal(getProcessInstancesRespMsg.getPayload());
+            assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+            final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
+            assertNotNull(getProcessInstancesResp.getProcessInstances());
+            assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
+            assertEquals(1, getProcessInstancesResp.getProcessInstances().getProcessInstance().size());
+            final ProcessInstance processInstance = getProcessInstancesResp.getProcessInstances().getProcessInstance()
+                    .get(0);
+            assertEquals(BPMN_PROCESS_DEFINITION_KEY, processInstance.getProcessDefinitionIdentifier());
+            assertEquals(response_1.getNumeroDde(), processInstance.getProcessInstanceIdentifier());
+            assertNotNull(processInstance.getVariables());
+            final List<Variable> variables = processInstance.getVariables().getVariable();
+            assertNotNull(variables);
+            assertTrue(variables.size() > 5);
+            for (final Variable variable : variables) {
+                if ("startDate".equals(variable.getName())) {
+                    assertEquals(
+                            0,
+                            startDate.compareTo(DatatypeFactory.newInstance()
+                                    .newXMLGregorianCalendar(variable.getValue()).toGregorianCalendar()));
+                } else if ("vacationMotivation".equals(variable.getName())) {
+                    assertEquals(motivation, variable.getValue());
+                } else if ("numberOfDays".equals(variable.getName())) {
+                    assertEquals(String.valueOf(numberOfDays), variable.getValue());
+                } else if ("employeeName".equals(variable.getName())) {
+                    assertEquals(BPMN_USER_DEMANDEUR, variable.getValue());
+                } else if ("petals.flow.instance.id".equals(variable.getName())) {
+                    assertEquals(
+                            processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                            variable.getValue());
+                }
+            }
+        }
+        // Check MONIT traces about the task basket invocation
+        final List<LogRecord> monitLogs_getProcessInstances = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs_getProcessInstances.size());
+        final FlowLogData providerBegin_getProcessInstances = assertMonitProviderBeginLog(
+                ITG_PROCESSINSTANCES_PORT_TYPE,
+                ITG_PROCESSINSTANCES_SERVICE, COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_PROCESSINSTANCES_SERVICE),
+                ITG_OP_GETPROCESSINSTANCES, monitLogs_getProcessInstances.get(0));
+        assertMonitProviderEndLog(providerBegin_getProcessInstances, monitLogs_getProcessInstances.get(1));
+        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_getProcessInstances);
+
         // Verify the task basket using integration service
         final GetTasks getTasksReq = new GetTasks();
         getTasksReq.setActive(true);
@@ -241,8 +306,9 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         IN_MEMORY_LOG_HANDLER.clear();
         COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(NATIVE_SVC_CFG), ITG_OP_GETTASKS, AbsItfOperation.MEPPatternConstants.IN_OUT
-                .value(), new ByteArrayInputStream(this.toByteArray(getTasksReq))));
+                .getServiceConfiguration(NATIVE_TASKS_SVC_CFG), ITG_OP_GETTASKS,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(getTasksReq))));
         {
             final ResponseMessage getTaskRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
             assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());

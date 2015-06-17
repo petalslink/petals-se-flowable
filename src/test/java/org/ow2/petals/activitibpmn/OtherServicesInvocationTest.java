@@ -25,13 +25,14 @@ import javax.jbi.messaging.ExchangeStatus;
 
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.activitibpmn.integration.GetTasksInvocationTest;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedStatusFromConsumerMessage;
 
 /**
  * Unit tests about request processing not dedicated to BPMN services ({@link BpmnServicesInvocationTest}) or
- * integration services ({@link IntegrationServicesInvocationTest}).
+ * integration services ({@link GetTasksInvocationTest}).
  * 
  * @author Christophe DENEUX - Linagora
  * 

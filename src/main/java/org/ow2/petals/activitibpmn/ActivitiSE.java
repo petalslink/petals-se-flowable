@@ -40,7 +40,10 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_PASSWORD;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE_NAME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE_NAME;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -79,6 +82,7 @@ import org.ow2.petals.activitibpmn.identity.IdentityService;
 import org.ow2.petals.activitibpmn.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.activitibpmn.identity.file.FileConfigurator;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
+import org.ow2.petals.activitibpmn.incoming.integration.GetProcessInstancesOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.activitibpmn.outgoing.PetalsSender;
@@ -91,19 +95,19 @@ import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
-
 /**
  * The component class of the Activiti BPMN Service Engine.
+ * 
  * @author Bertrand Escudie - Linagora
  */
 public class ActivitiSE extends AbstractServiceEngine {
-	
-	/**
-	 * The Activiti BPMN Engine.
-	 */
-	private ProcessEngine activitiEngine;
-	
-	/**
+
+    /**
+     * The Activiti BPMN Engine.
+     */
+    private ProcessEngine activitiEngine;
+
+    /**
      * A map used to get the Activiti Operation associated with (end-point Name + Operation)
      */
     private final Map<EndpointOperationKey, ActivitiService> activitiServices = new ConcurrentHashMap<EndpointOperationKey, ActivitiService>();
@@ -164,9 +168,8 @@ public class ActivitiSE extends AbstractServiceEngine {
     public ProcessEngine getProcessEngine() {
         return this.activitiEngine;
     }
-	
-	
-  	  /**
+
+    /**
      * @param eptAndOperation
      *            the end-point Name and operation Name
      * @param activitiservice
@@ -192,11 +195,11 @@ public class ActivitiSE extends AbstractServiceEngine {
                 itEptOperationToActivitiOperation.remove();
             }
         }
-	}
+    }
 
-	/**
-	 * @param logLevel
-	 */
+    /**
+     * @param logLevel
+     */
     public void logEptOperationToActivitiOperation(final Logger logger, final Level logLevel) {
         if (logger.isLoggable(logLevel)) {
             for (final Map.Entry<EndpointOperationKey, ActivitiService> entry : this.activitiServices.entrySet()) {
@@ -208,9 +211,7 @@ public class ActivitiSE extends AbstractServiceEngine {
                 logger.log(logLevel, "******************* ");
             }
         }
-	}
-
-
+    }
 
     /**
      * @param eptAndOperation
@@ -219,14 +220,13 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
     public ActivitiService getActivitiServices(final EndpointOperationKey eptAndOperation) {
         return this.activitiServices.get(eptAndOperation);
-	}
-	
-	
+    }
+
     @Override
-	public void doInit() throws JBIException {
+    public void doInit() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doInit()");
 
-		try {
+        try {
             // JDBC Driver
             final String jdbcDriver = ActivitiParameterReader.getJdbcDriver(
                     this.getComponentExtensions().get(JDBC_DRIVER), this.getLogger());
@@ -250,8 +250,8 @@ public class ActivitiSE extends AbstractServiceEngine {
                 jdbcUrl = jdbcUrlConfigured;
             }
 
-			final String jdbcUsername = this.getComponentExtensions().get(JDBC_USERNAME);
-			final String jdbcPassword = this.getComponentExtensions().get(JDBC_PASSWORD);
+            final String jdbcUsername = this.getComponentExtensions().get(JDBC_USERNAME);
+            final String jdbcPassword = this.getComponentExtensions().get(JDBC_PASSWORD);
 
             final String jdbcMaxActiveConnectionsConfigured = this.getComponentExtensions().get(
                     JDBC_MAX_ACTIVE_CONNECTIONS);
@@ -317,7 +317,7 @@ public class ActivitiSE extends AbstractServiceEngine {
             /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
             final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
 
-			/* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
+            /* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
             /*
              * TODO Test the Database Schema Version What about databaseSchemaUpdate values "true" and "create-drop"
              */
@@ -401,7 +401,7 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.getLogger().config(
                     "   - " + ENGINE_IDENTITY_SERVICE_CFG_FILE + " = "
                             + (identityServiceCfgFile == null ? "<null>" : identityServiceCfgFile.getAbsolutePath()));
-		    
+
             /* Create an Activiti ProcessEngine with database configuration */
             final ProcessEngineConfiguration pec = ProcessEngineConfiguration
                     .createStandaloneProcessEngineConfiguration();
@@ -444,37 +444,59 @@ public class ActivitiSE extends AbstractServiceEngine {
                 petalsSender.init(this);
                 ((ProcessEngineConfigurationImpl) pec).getBeans().put(PETALS_SENDER_COMP_NAME, petalsSender);
             } else {
-                this.getLogger().warning("The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
+                this.getLogger()
+                        .warning(
+                                "The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
             }
 
-            // Register integration operation
-            final List<Endpoint> integrationEndpoints = WSDLUtilImpl.getEndpointList(this.getNativeWsdl()
-                    .getDescription());
-            if (integrationEndpoints.size() > 1) {
-                throw new JBIException("Unexpected endpoint number supporting integration services");
-            } else if (integrationEndpoints.size() == 1) {
-                try {
-                    final Endpoint endpoint = integrationEndpoints.get(0);
-                    final String integrationEndpointName = endpoint.getName();
-                    final QName integrationInterfaceName = endpoint.getService().getInterface().getQName();
-                    this.activitiServices
-                            .put(new EndpointOperationKey(integrationEndpointName, integrationInterfaceName,
-                                    ITG_OP_GETTASKS),
-                            new GetTasksOperation(this.activitiEngine.getTaskService(), this.activitiEngine
-                                    .getRepositoryService(), this.getLogger()));
-                } catch (final OperationInitializationException | WSDLException e) {
-                    this.getLogger().log(Level.WARNING, "Integration operations are not completly initialized", e);
-                }
-            } else {
-                this.getLogger().warning("No endpoint exists to execute integration operations");
-            }
+            this.registersIntegrationOperations();
 
         } catch (final ActivitiException e) {
             throw new JBIException("An error occurred while creating the Activiti BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End ActivitiSE.doInit()");
-		}
-	}
+        }
+    }
+
+    /**
+     * Registers integration operations
+     */
+    private void registersIntegrationOperations() {
+
+        // Register integration operation
+        final List<Endpoint> integrationEndpoints = WSDLUtilImpl.getEndpointList(this.getNativeWsdl().getDescription());
+        if (integrationEndpoints.size() > 0) {
+            try {
+                for (final Endpoint endpoint : integrationEndpoints) {
+                    final String integrationEndpointName = endpoint.getName();
+                    final QName integrationInterfaceName = endpoint.getService().getInterface().getQName();
+                    try {
+                        if (ITG_PROCESSINSTANCES_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
+                            this.activitiServices.put(new EndpointOperationKey(integrationEndpointName,
+                                    integrationInterfaceName, ITG_OP_GETPROCESSINSTANCES),
+                                    new GetProcessInstancesOperation(this.activitiEngine.getRuntimeService(),
+                                            this.activitiEngine.getRepositoryService(), this.getLogger()));
+                        } else if (ITG_TASK_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
+                            this.activitiServices.put(new EndpointOperationKey(integrationEndpointName,
+                                    integrationInterfaceName, ITG_OP_GETTASKS), new GetTasksOperation(
+                                    this.activitiEngine.getTaskService(), this.activitiEngine.getRepositoryService(),
+                                    this.getLogger()));
+                        } else {
+                            this.getLogger().log(Level.WARNING,
+                                    "Unexpected/Uknown integration operations: " + integrationInterfaceName);
+                        }
+                    } catch (final OperationInitializationException e) {
+                        this.getLogger().log(Level.WARNING,
+                                "Error registering the integration operation '" + integrationInterfaceName + "'.", e);
+                    }
+                }
+            } catch (final WSDLException e) {
+                this.getLogger().log(Level.WARNING, "Integration operations are not completly initialized", e);
+            }
+        } else {
+            this.getLogger().warning("No endpoint exists to execute integration operations");
+        }
+    }
 
     /**
      * Initialize the identity service
@@ -488,8 +510,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      *            identity service will be used.
      */
     private final void registerIdentityService(final ProcessEngineConfiguration pec,
-            final Class<?> identityServiceClass,
-            final File identityServiceCfgFile) throws JBIException {
+            final Class<?> identityServiceClass, final File identityServiceCfgFile) throws JBIException {
 
         assert pec != null : "pec can not be null";
         assert identityServiceClass != null : "identityServiceClass can not be null";
@@ -537,7 +558,7 @@ public class ActivitiSE extends AbstractServiceEngine {
     }
 
     @Override
-	public void doStart() throws JBIException {
+    public void doStart() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStart()");
 
         // Create & Register event listeners
@@ -590,17 +611,16 @@ public class ActivitiSE extends AbstractServiceEngine {
 
             // TODO: Add JMX operation to start/stop the Activiti job executor when the component is started
             // TODO: Add JMX operation to disable/enable the Activiti job executor when the component is running
-	        
-		} catch( final ActivitiException e ) {
-			throw new JBIException( "An error occurred while starting the Activiti BPMN Engine.", e );
+
+        } catch (final ActivitiException e) {
+            throw new JBIException("An error occurred while starting the Activiti BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End ActivitiSE.doStart()");
         }
-	}
-
+    }
 
     @Override
-	public void doStop() throws JBIException {
+    public void doStop() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doStop()");
 
         try {
@@ -634,28 +654,27 @@ public class ActivitiSE extends AbstractServiceEngine {
         runtimeService.removeEventListener(this.userTaskStartedEventListener);
         runtimeService.removeEventListener(this.userTaskCompletedEventListener);
 
-	}
-
+    }
 
     @Override
-	public void doShutdown() throws JBIException {
+    public void doShutdown() throws JBIException {
         this.getLogger().fine("Start ActivitiSE.doShutdown()");
 
-		try {
-	        
-			this.activitiEngine.close();
+        try {
 
-		} catch( final ActivitiException e ) {
-			throw new JBIException( "An error occurred while shutdowning the Activiti BPMN Engine.", e );
+            this.activitiEngine.close();
+
+        } catch (final ActivitiException e) {
+            throw new JBIException("An error occurred while shutdowning the Activiti BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End ActivitiSE.doShutdown()");
-		}
-	}
+        }
+    }
 
     @Override
-	protected AbstractServiceUnitManager createServiceUnitManager() {
+    protected AbstractServiceUnitManager createServiceUnitManager() {
         return new ActivitiSuManager(this, this.simpleUUIDGenerator, this.enableActivitiBpmnValidation);
-	}
+    }
 
     private void registerCxfPetalsTransport() {
         final Bus bus = BusFactory.getThreadDefaultBus();

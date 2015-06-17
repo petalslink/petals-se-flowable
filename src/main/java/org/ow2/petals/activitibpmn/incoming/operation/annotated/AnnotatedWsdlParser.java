@@ -288,7 +288,6 @@ public class AnnotatedWsdlParser {
         // Get the faults
         final Map<String, Templates> bpmnFaultTemplates = this.getFaultTemplates(wsdlOperation, wsdlOperationName,
                 suRootPath);
-        ;
 
         // Create the annotated operation from annotations read into the WSDL
         final AnnotatedOperation annotatedOperation;

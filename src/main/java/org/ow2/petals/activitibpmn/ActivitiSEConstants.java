@@ -286,6 +286,28 @@ public final class ActivitiSEConstants {
         public static final QName ITG_TASK_SERVICE = new QName(ITG_NAMESPACE, ITG_TASK_SERVICE_NAME);
 
         /**
+         * Interface name (local part) of the integration service 'ProcessInstances'
+         */
+        public static final String ITG_PROCESSINSTANCES_PORT_TYPE_NAME = "ProcessInstances";
+
+        /**
+         * Interface name of the integration service 'ProcessInstances'
+         */
+        public static final QName ITG_PROCESSINSTANCES_PORT_TYPE = new QName(ITG_NAMESPACE,
+                ITG_PROCESSINSTANCES_PORT_TYPE_NAME);
+
+        /**
+         * Name (local part) of the integration service 'ProcessInstances'
+         */
+        public static final String ITG_PROCESSINSTANCES_SERVICE_NAME = "ProcessInstancesService";
+
+        /**
+         * Name of the integration service 'Task'
+         */
+        public static final QName ITG_PROCESSINSTANCES_SERVICE = new QName(ITG_NAMESPACE,
+                ITG_PROCESSINSTANCES_SERVICE_NAME);
+
+        /**
          * Name (local part) of the integration operation to search tasks
          */
         public static final String ITG_OP_GETTASKS_NAME = "getTasks";
@@ -294,6 +316,16 @@ public final class ActivitiSEConstants {
          * Name of the integration operation to search tasks
          */
         public static final QName ITG_OP_GETTASKS = new QName(ITG_NAMESPACE, ITG_OP_GETTASKS_NAME);
+
+        /**
+         * Name (local part) of the integration operation to search process instances
+         */
+        public static final String ITG_OP_GETPROCESSINSTANCES_NAME = "getProcessInstances";
+
+        /**
+         * Name of the integration operation to search process instances
+         */
+        public static final QName ITG_OP_GETPROCESSINSTANCES = new QName(ITG_NAMESPACE, ITG_OP_GETPROCESSINSTANCES_NAME);
 
         private IntegrationOperation() {
             // NOP: Utility class => No constructor
