@@ -101,7 +101,7 @@
       <component-lifecycle-tests component.name="Petals SE BPMN"
                                  component.url="${the-component.url}"
                                  component.id="${the-component.id}"
-                                 component.native-service="{http://petals.ow2.org/components/activiti/generic/1.0}TaskService"
+                                 component.native-services="{http://petals.ow2.org/components/activiti/generic/1.0}TaskService, {http://petals.ow2.org/components/activiti/generic/1.0}ProcessInstancesService"
                                  is-service-engine="true"
                                  sa.url="${the-sa.url}"
                                  sa.id="${the-sa.id}"
