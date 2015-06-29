@@ -85,9 +85,11 @@
                      <wsdlOptions>
                         <wsdlOption>
                            <wsdl>${basedir}/src/main/resources/wsdl/archiveService.wsdl</wsdl>
+                           <wsdlLocation>classpath:wsdl/archiveService.wsdl</wsdlLocation>
                         </wsdlOption>
                         <wsdlOption>
                            <wsdl>${basedir}/src/main/resources/wsdl/notifyVacationService.wsdl</wsdl>
+                           <wsdlLocation>classpath:wsdl/notifyVacationService.wsdl</wsdlLocation>
                         </wsdlOption>
                      </wsdlOptions>
                   </configuration>

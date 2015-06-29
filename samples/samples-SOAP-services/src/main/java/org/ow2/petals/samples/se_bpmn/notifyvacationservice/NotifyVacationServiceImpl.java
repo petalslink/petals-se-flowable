@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import javax.jws.WebService;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-@WebService(serviceName = "notifyVacationService", portName = "autogenerate", targetNamespace = "http://petals.ow2.org/samples/se-bpmn/notifyVacationService", wsdlLocation = "file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-activiti/samples/samples-SOAP-services/src/main/resources/wsdl/notifyVacationService.wsdl", endpointInterface = "org.ow2.petals.samples.se_bpmn.notifyvacationservice.NotifyVacation")
+@WebService(serviceName = "notifyVacationService", portName = "autogenerate", targetNamespace = "http://petals.ow2.org/samples/se-bpmn/notifyVacationService", wsdlLocation = "classpath:wsdl/notifyVacationService.wsdl", endpointInterface = "org.ow2.petals.samples.se_bpmn.notifyvacationservice.NotifyVacation")
 public class NotifyVacationServiceImpl implements NotifyVacation {
 
     private static final Logger LOG = Logger.getLogger(NotifyVacationServiceImpl.class.getName());
