@@ -8,8 +8,7 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
    </import>
 
-   <property name="petals.home"
-             value="${project.build.directory}/${project.artifactId}/container" />
+   <property name="petals.home" value="${project.build.directory}/${project.artifactId}/container" />
    <property name="topology.container.name" value="sample-0" />
 
    <!-- Properties -->
@@ -95,6 +94,92 @@
       <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
          <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Nominal TestCase without adjustment&quot;" />
       </exec>
+
+      <!-- Assertions about MONIT traces -->
+      <echo message="Checking MONIT trace of this first process instance" />
+      <petals-monit-read-logfiles id="flows" dir="${petals.home}/logs/flow-monitoring" />
+      <petals-extract-flow-step-info refid="flows">
+         <!-- Retrieve the initial flow that has created the process instance -->
+         <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
+         <flowStepCriteria name="flowStepInterfaceName"
+                           value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacation" />
+         <flowStepCriteria name="flowStepOperationName"
+                           value="{http://petals.ow2.org/samples/se-bpmn/vacationService}new" />
+         <flowStepInfo attribute="flowInstanceId" property="initial-flow-instance-id" />
+         <flowStepInfo attribute="flowStepId" property="initial-flow-step-id" />
+      </petals-extract-flow-step-info>
+      <petals-extract-flow-step-info refid="flows">
+         <!-- Retrieve the flow associated to the process instance -->
+         <flowStepCriteria name="traceCode" value="consumeFlowStepBegin" />
+         <flowStepCriteria name="correlatedFlowInstanceId" value="${initial-flow-instance-id}" />
+         <flowStepCriteria name="correlatedFlowStepId" value="${initial-flow-step-id}" />
+         <flowStepCriteria name="processDefinition" value="vacationRequest" />
+         <flowStepInfo attribute="flowInstanceId" property="process-instance-flow-instance-id" />
+      </petals-extract-flow-step-info>
+      <petals-extract-flow-step-info refid="flows" row="0">
+         <!-- Retrieve the flow step that has launched the vacation request validation -->
+         <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
+         <flowStepCriteria name="flowStepInterfaceName"
+                           value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacation" />
+         <flowStepCriteria name="flowStepOperationName"
+                           value="{http://petals.ow2.org/samples/se-bpmn/vacationService}validate" />
+         <flowStepInfo attribute="flowInstanceId" property="validation-flow-instance-id" />
+         <flowStepInfo attribute="flowStepId" property="validation-flow-step-id" />
+      </petals-extract-flow-step-info>
+      <petals-assert-flow-instance refid="flows" flowInstanceId="${process-instance-flow-instance-id}">
+         <!-- Check flow step of the process instance execution -->
+         <assertFlowStep flowStepIdx="0">
+            <!-- The process instance starts -->
+            <attributeEquals name="traceCode" value="consumeFlowStepBegin" />
+            <attributeEquals name="correlatedFlowInstanceId" value="${initial-flow-instance-id}" />
+            <attributeEquals name="correlatedFlowStepId" value="${initial-flow-step-id}" />
+            <attributeEquals name="processDefinition" value="vacationRequest" />
+            <attributeSet name="processInstanceId" />
+            <flowStepInfo attribute="flowStepId" property="flowStep.0.id" />
+         </assertFlowStep>
+         <assertFlowStep flowStepIdx="1">
+            <!-- Service task invokes a Petals service ... -->
+            <attributeEquals name="traceCode" value="provideFlowStepBegin" />
+            <attributeEquals name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacation" />
+            <attributeEquals name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacationService" />
+            <attributeEquals name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}newVacationRequest" />
+            <attributeSet name="flowStepEndpointName" />
+            <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
+            <flowStepInfo attribute="flowStepId" property="flowStep.1.id" />
+         </assertFlowStep>
+         <assertFlowStep flowStepIdx="2">
+            <!-- ... as external web-service -->
+            <attributeEquals name="traceCode" value="provideExtFlowStepBegin" />
+            <attributeEquals name="flowPreviousStepId" value="${flowStep.1.id}" />
+            <attributeEquals name="requestedURL" value="http://localhost:8088/mockNotifyVacationService" />
+         </assertFlowStep>
+         <assertFlowStep flowStepIdx="3">
+            <!-- The vacation request validation user task  -->
+            <attributeEquals name="traceCode" value="provideFlowStepBegin" />
+            <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
+            <attributeEquals name="taskDefinition" value="handleVacationRequest" />
+            <attributeEquals onEnd="true" name="correlatedFlowInstanceId" value="${validation-flow-instance-id}" />
+            <attributeEquals onEnd="true" name="correlatedFlowStepId" value="${validation-flow-step-id}" />
+         </assertFlowStep>
+         <assertFlowStep flowStepIdx="4">
+            <!-- Service task invokes a Petals service ... -->
+            <attributeEquals name="traceCode" value="provideFlowStepBegin" />
+            <attributeEquals name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacation" />
+            <attributeEquals name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacationService" />
+            <attributeEquals name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}vacationRequestApproved" />
+            <attributeSet name="flowStepEndpointName" />
+            <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
+         </assertFlowStep>
+         <assertFlowStep flowStepIdx="6">
+            <!-- Service task invokes a Petals service ... -->
+            <attributeEquals name="traceCode" value="provideFlowStepBegin" />
+            <attributeEquals name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archive" />
+            <attributeEquals name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveService" />
+            <attributeEquals name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveVacationRequest" />
+            <attributeSet name="flowStepEndpointName" />
+            <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
+         </assertFlowStep>
+      </petals-assert-flow-instance>
 
       <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
          <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Nominal TestCase with adjustment&quot;" />
@@ -269,7 +354,7 @@
          </try>
          <finally>
             <!-- We force component uninstallation to avoid stack trace logged by SE Activiti when tests fail. The async job
-                 executor of SE Activiti try run SQL query on a database that is not running --> 
+                 executor of SE Activiti try run SQL query on a database that is not running -->
             <antcall target="cleanAll" />
          </finally>
       </trycatch>
