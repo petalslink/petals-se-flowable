@@ -268,15 +268,6 @@
                </execution>
             </executions>
          </plugin>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-               <systemPropertyVariables>
-                  <petals.log.dir>${project.build.directory}/logs</petals.log.dir>
-               </systemPropertyVariables>
-            </configuration>
-         </plugin>
       </plugins>
    </build>
 
