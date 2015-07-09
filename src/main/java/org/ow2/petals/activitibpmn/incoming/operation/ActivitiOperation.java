@@ -29,7 +29,6 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -169,14 +168,9 @@ public abstract class ActivitiOperation implements ActivitiService {
 
         try {
             final Document incomingPayload = exchange.getInMessageContentAsDocument();
-            final DOMSource domSource = new DOMSource(incomingPayload);
 
             if (this.logger.isLoggable(Level.FINE)) {
-                try {
-                    this.logger.fine("*** incomingPayload = " + XMLPrettyPrinter.prettyPrint(domSource));
-                } catch (final TransformerException e) {
-                    throw new MessagingException(e);
-                }
+                this.logger.fine("*** incomingPayload = " + XMLPrettyPrinter.prettyPrint(incomingPayload));
             }
 
             if (this.logger.isLoggable(Level.FINE)) {
@@ -191,7 +185,7 @@ public abstract class ActivitiOperation implements ActivitiService {
                 // Get the userId
                 final String userId;
                 try {
-                    userId = this.userIdXPathExpr.evaluate(domSource);
+                    userId = this.userIdXPathExpr.evaluate(incomingPayload);
                     if (userId == null || userId.trim().isEmpty()) {
                         throw new NoUserIdValueException(this.wsdlOperation);
                     }
@@ -208,7 +202,7 @@ public abstract class ActivitiOperation implements ActivitiService {
                 for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
                     final String variableName = variable.getKey();
                     try {
-                        final String variableValueAsStr = variable.getValue().evaluate(domSource);
+                        final String variableValueAsStr = variable.getValue().evaluate(incomingPayload);
                         if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
                             if (this.variableTypes.get(variableName).isRequired()) {
                                 throw new MessagingException("The task: " + this.getClass().getSimpleName()
@@ -277,7 +271,7 @@ public abstract class ActivitiOperation implements ActivitiService {
 
                 // Extract process flow data
                 final Map<QName, String> xslParameters = new HashMap<QName, String>();
-                this.doExecute(domSource, userId, variableValues, xslParameters, exchange);
+                this.doExecute(incomingPayload, userId, variableValues, xslParameters, exchange);
 
                 try {
                     exchange.setOutMessageContent(XslUtils.createXmlPayload(this.outputTemplate, xslParameters,
@@ -328,7 +322,7 @@ public abstract class ActivitiOperation implements ActivitiService {
      * @throws OperationProcessingException
      *             An error occurs when processing the operation
      */
-    protected abstract void doExecute(final DOMSource domSource, final String userId,
+    protected abstract void doExecute(final Document incomingPayload, final String userId,
             final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
             throws OperationProcessingException;
 

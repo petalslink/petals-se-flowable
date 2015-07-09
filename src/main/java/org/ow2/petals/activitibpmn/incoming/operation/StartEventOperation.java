@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
-import javax.xml.transform.dom.DOMSource;
 
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.IdentityService;
@@ -41,6 +40,7 @@ import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.w3c.dom.Document;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
@@ -102,9 +102,9 @@ public class StartEventOperation extends ActivitiOperation {
     }
 
     @Override
-    protected void doExecute(final DOMSource domSource, final String bpmnUserId, final Map<String, Object> processVars,
-            final Map<QName, String> outputNamedValues, final Exchange exchange)
-            throws OperationProcessingException {
+    protected void doExecute(final Document incomingPayload, final String bpmnUserId,
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
+                    throws OperationProcessingException {
 
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)
 

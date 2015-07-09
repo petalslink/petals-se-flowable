@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.activiti.engine.HistoryService;
@@ -48,6 +47,7 @@ import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.w3c.dom.Document;
 
 /**
  * The operation to complete the user task of process instance
@@ -94,13 +94,14 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
     }
 
     @Override
-    protected void doExecute(final DOMSource domSource, final String bpmnUserId, final Map<String, Object> taskVars,
-            final Map<QName, String> outputNamedValues, final Exchange exchange) throws OperationProcessingException {
+    protected void doExecute(final Document incomingPayload, final String bpmnUserId,
+            final Map<String, Object> taskVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
+                    throws OperationProcessingException {
 
         // Get the process instance identifier
         final String processInstanceId;
         try {
-            processInstanceId = this.proccesInstanceIdXPathExpr.evaluate(domSource);
+            processInstanceId = this.proccesInstanceIdXPathExpr.evaluate(incomingPayload);
             if (processInstanceId == null || processInstanceId.trim().isEmpty()) {
                 throw new NoProcessInstanceIdValueException(this.wsdlOperation);
             }
