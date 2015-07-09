@@ -18,13 +18,8 @@
 package org.ow2.petals.activitibpmn;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.logging.LogManager;
-
-import org.ow2.petals.commons.log.Level;
+import java.net.URL;
 
 /**
  * Abstract class for unit tests about request processing
@@ -35,14 +30,7 @@ import org.ow2.petals.commons.log.Level;
 public abstract class AbstractTest {
 
     static {
-        Level.initialize();
-
-        final InputStream logConfig = AbstractTest.class.getResourceAsStream("/logging.properties");
+        final URL logConfig = AbstractTest.class.getResource("/logging.properties");
         assertNotNull("Logging configuration file not found", logConfig);
-        try {
-            LogManager.getLogManager().readConfiguration(logConfig);
-        } catch (SecurityException | IOException e) {
-            fail(e.getMessage());
-        }
     }
 }
