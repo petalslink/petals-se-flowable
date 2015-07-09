@@ -20,9 +20,9 @@ package org.ow2.petals.activitibpmn;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.LogManager;
 
 import org.ow2.petals.commons.log.Level;
 
@@ -37,11 +37,11 @@ public abstract class AbstractTest {
     static {
         Level.initialize();
 
-        final URL logConfig = AbstractTest.class.getResource("/logging.properties");
+        final InputStream logConfig = AbstractTest.class.getResourceAsStream("/logging.properties");
         assertNotNull("Logging configuration file not found", logConfig);
         try {
-            System.setProperty("java.util.logging.config.file", new File(logConfig.toURI()).getAbsolutePath());
-        } catch (final URISyntaxException e) {
+            LogManager.getLogManager().readConfiguration(logConfig);
+        } catch (SecurityException | IOException e) {
             fail(e.getMessage());
         }
     }
