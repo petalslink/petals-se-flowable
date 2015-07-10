@@ -54,7 +54,7 @@ public final class UserTaskFlowStepBeginLogData extends ProvideFlowStepBeginLogD
             final String flowPreviousStepId, final String taskDefinitionKey, final String taskInstanceId) {
 
         // TODO: Remove "new MessageExchangeImpl()" when a dedicated step trace will be created
-        super(flowInstanceId, flowStepId, null, null, null, null, flowPreviousStepId, new MessageExchangeImpl());
+        super(flowInstanceId, flowStepId, null, null, null, null, flowPreviousStepId, new MessageExchangeImpl(""));
         this.putData(TASK_DEFINITION_KEY, taskDefinitionKey);
         this.putData(TASK_INSTANCE_ID_KEY, taskInstanceId);
 
