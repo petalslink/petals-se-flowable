@@ -56,7 +56,7 @@ import org.ow2.petals.activitibpmn.incoming.operation.annotated.StartEventAnnota
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.component.framework.AbstractComponent;
-import org.ow2.petals.component.framework.api.configuration.ConfigurationExtensions;
+import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
@@ -140,7 +140,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
         }
 
         // Get the extension configuration for the Activiti process(es) to be deployed from the SU jbi.xml
-        final ConfigurationExtensions extensions = suDataHandler.getConfigurationExtensions(provides);
+        final SuConfigurationParameters extensions = suDataHandler.getConfigurationExtensions(provides);
         if (extensions == null) {
             throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain any component extension.");
         }
@@ -247,7 +247,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      * @throws ProcessDefinitionDeclarationException
      *             A raw data of the SU JBI descriptor is invalid
      */
-    private Map<String, EmbeddedProcessDefinition> readBpmnModels(final ConfigurationExtensions extensions,
+    private Map<String, EmbeddedProcessDefinition> readBpmnModels(final SuConfigurationParameters extensions,
             final String suRootPath) throws ProcessDefinitionDeclarationException {
 
         assert extensions != null;
