@@ -18,7 +18,9 @@
 package org.ow2.petals.activitibpmn.incoming.integration;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 
+import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.PoolableObjectFactory;
 
 /**
@@ -27,7 +29,7 @@ import org.apache.commons.pool.PoolableObjectFactory;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class MarshalerFactory implements PoolableObjectFactory {
+public class MarshalerFactory extends BasePoolableObjectFactory<Marshaller> {
 
     private final JAXBContext jaxbContext;
 
@@ -36,28 +38,8 @@ public class MarshalerFactory implements PoolableObjectFactory {
     }
 
     @Override
-    public boolean validateObject(final Object obj) {
-        return true;
-    }
-
-    @Override
-    public void passivateObject(final Object obj) throws Exception {
-        // NOP
-    }
-
-    @Override
-    public Object makeObject() throws Exception {
+    public Marshaller makeObject() throws Exception {
         return jaxbContext.createMarshaller();
-    }
-
-    @Override
-    public void destroyObject(final Object obj) throws Exception {
-        // NOP
-    }
-
-    @Override
-    public void activateObject(final Object obj) throws Exception {
-        // NOP
     }
 
 }

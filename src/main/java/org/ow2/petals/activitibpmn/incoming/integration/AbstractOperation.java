@@ -45,12 +45,12 @@ public abstract class AbstractOperation<T, V> implements ActivitiService {
     /**
      * A pool of marshallers for Java-->XML binding of the operation responses
      */
-    protected final ObjectPool marshalerPool;
+    protected final ObjectPool<Marshaller> marshalerPool;
 
     /**
      * A pool of unmarshallers for XML-->Java binding of the operation request
      */
-    protected final ObjectPool unmarshalerPool;
+    protected final ObjectPool<Unmarshaller> unmarshalerPool;
 
     protected final Logger log;
 
@@ -76,8 +76,8 @@ public abstract class AbstractOperation<T, V> implements ActivitiService {
         try {
             final JAXBContext jaxbContext = JAXBContext.newInstance(classesToBeBound);
 
-            this.marshalerPool = new GenericObjectPool(new MarshalerFactory(jaxbContext));
-            this.unmarshalerPool = new GenericObjectPool(new UnmarshalerFactory(jaxbContext));
+            this.marshalerPool = new GenericObjectPool<Marshaller>(new MarshalerFactory(jaxbContext));
+            this.unmarshalerPool = new GenericObjectPool<Unmarshaller>(new UnmarshalerFactory(jaxbContext));
 
         } catch (final JAXBException e) {
             throw new OperationInitializationException(this.operationName, e);
@@ -92,7 +92,7 @@ public abstract class AbstractOperation<T, V> implements ActivitiService {
                 final Source incomingPayload = exchange.getInMessageContentAsSource();
                 if (incomingPayload != null) {
                     // Unmarshal incoming request
-                    final Unmarshaller unmarshaller = (Unmarshaller) this.unmarshalerPool.borrowObject();
+                    final Unmarshaller unmarshaller = this.unmarshalerPool.borrowObject();
                     final Object incomingObject;
                     try {
                         incomingObject = unmarshaller.unmarshal(incomingPayload);
@@ -109,7 +109,7 @@ public abstract class AbstractOperation<T, V> implements ActivitiService {
                         // with big payloads
                         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         try {
-                            final Marshaller marshaller = (Marshaller) this.marshalerPool.borrowObject();
+                            final Marshaller marshaller = this.marshalerPool.borrowObject();
                             try {
                                 marshaller.marshal(response, baos);
                             } finally {
