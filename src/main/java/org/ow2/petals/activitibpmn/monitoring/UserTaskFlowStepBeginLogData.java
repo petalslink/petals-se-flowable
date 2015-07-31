@@ -18,7 +18,7 @@
 package org.ow2.petals.activitibpmn.monitoring;
 
 import org.ow2.petals.component.framework.logger.ProvideFlowStepBeginLogData;
-import org.ow2.petals.jbi.messaging.exchange.MessageExchangeImpl;
+import org.ow2.petals.jbi.messaging.exchange.impl.MessageExchangeImpl;
 
 /**
  * @author Christophe DENEUX - Linagora
