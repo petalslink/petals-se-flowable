@@ -66,6 +66,7 @@ import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstancesResponse;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
+import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
 import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
@@ -262,7 +263,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
             final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
                     AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
                     ArchiverResponse.class, GetTasks.class, GetTasksResponse.class, GetProcessInstances.class,
-                    GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class);
+                    GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class, InvalidRequest.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

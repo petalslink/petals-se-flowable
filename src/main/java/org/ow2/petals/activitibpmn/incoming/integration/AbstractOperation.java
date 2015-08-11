@@ -19,10 +19,12 @@ package org.ow2.petals.activitibpmn.incoming.integration;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jbi.messaging.Fault;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -31,14 +33,15 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.EmptyRequestException;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.InvalidRequestException;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
-import org.ow2.petals.component.framework.api.exception.SOAP11FaultServerException;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 
 public abstract class AbstractOperation<T, V> implements ActivitiService {
 
@@ -105,40 +108,55 @@ public abstract class AbstractOperation<T, V> implements ActivitiService {
                     try {
                         final V response = this.doExecute((T) incomingObject);
                         
-                        // TODO: Avoid to use ByteArray(In|Out)put stream, try to pipe streams because of memory problem
-                        // with big payloads
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        try {
-                            final Marshaller marshaller = this.marshalerPool.borrowObject();
-                            try {
-                                marshaller.marshal(response, baos);
-                            } finally {
-                                this.marshalerPool.returnObject(marshaller);
-                            }
-                        } finally {
-                            baos.close();
-                        }
-
-                        final ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                        try {
-                            exchange.setOutMessageContent(new StreamSource(bais));
-                        } finally {
-                            bais.close();
+                        try (final InputStream isResponse = this.object2InputStream(response)) {
+                            exchange.setOutMessageContent(new StreamSource(isResponse));
                         }
                     } catch (final ClassCastException e) {
-                        throw new InvalidRequestException(this.operationName);
+                        throw new InvalidRequestException(this.operationName, e);
                     }
                 } else {
                     throw new EmptyRequestException(this.operationName);
                 }
             } catch (final InvalidRequestException e) {
                 this.log.log(Level.WARNING, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
-                exchange.setFault(new SOAP11FaultServerException(e.getMessage(), this.faultActor, e));
+                final Fault fault = exchange.createFault();
+                final InvalidRequest invalidRequest = new InvalidRequest();
+                invalidRequest.setMessage(e.getMessage());
+                invalidRequest.setStacktrace(ExceptionUtils.getStackTrace(e));
+                try (final InputStream isFault = this.object2InputStream(invalidRequest)) {
+                    fault.setContent(new StreamSource(isFault));
+                }
+                exchange.setFault(fault);
             }
         } catch (final Exception e) {
             this.log.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
             exchange.setError(e);
         }
+    }
+
+    /**
+     * Convert an Java object (associated to a WSDL element) to an {@link InputStream} 
+     * @param response The Java object to convert
+     * @return
+     * @throws Exception
+     */
+    private InputStream object2InputStream(final Object response) throws Exception {
+        // TODO: Avoid to use ByteArray(In|Out)put stream, try to pipe streams because of memory problem
+        // with big payloads
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            final Marshaller marshaller = this.marshalerPool.borrowObject();
+            try {
+                marshaller.marshal(response, baos);
+            } finally {
+                this.marshalerPool.returnObject(marshaller);
+            }
+        } finally {
+            baos.close();
+        }
+
+        return new ByteArrayInputStream(baos.toByteArray());
+
     }
 
     /**

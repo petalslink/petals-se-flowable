@@ -39,6 +39,7 @@ import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstancesResponse;
+import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 import org.ow2.petals.components.activiti.generic._1.ProcessInstances;
 import org.ow2.petals.components.activiti.generic._1.Variable;
 import org.ow2.petals.components.activiti.generic._1.Variables;
@@ -67,7 +68,7 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
     public GetProcessInstancesOperation(final RuntimeService runtimeService, final RepositoryService repositoryService,
             final Logger log) throws OperationInitializationException {
         super(ITG_OP_GETPROCESSINSTANCES, FAULT_ACTOR, new Class[] { GetProcessInstances.class,
-                GetProcessInstancesResponse.class }, log);
+                GetProcessInstancesResponse.class, InvalidRequest.class }, log);
         this.runtimeService = runtimeService;
         this.repositoryService = repositoryService;
     }

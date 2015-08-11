@@ -119,7 +119,6 @@ public class ActivitiJBIListener extends AbstractJBIListener {
 
                     } catch (final MessagingException e) {
                         logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
-                        // Technical error, it would be set as a Fault by the CDK
                         exchange.setError(e);
                     }
                 } else {

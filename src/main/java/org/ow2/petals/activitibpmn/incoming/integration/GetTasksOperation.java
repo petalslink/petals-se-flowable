@@ -32,6 +32,7 @@ import org.activiti.engine.task.TaskQuery;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
+import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 import org.ow2.petals.components.activiti.generic._1.Tasks;
 
 /**
@@ -56,7 +57,8 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
 
     public GetTasksOperation(final TaskService taskService, final RepositoryService repositoryService, final Logger log)
             throws OperationInitializationException {
-        super(ITG_OP_GETTASKS, FAULT_ACTOR, new Class[] { GetTasks.class, GetTasksResponse.class }, log);
+        super(ITG_OP_GETTASKS, FAULT_ACTOR,
+                new Class[] { GetTasks.class, GetTasksResponse.class, InvalidRequest.class }, log);
         this.taskService = taskService;
         this.repositoryService = repositoryService;
     }

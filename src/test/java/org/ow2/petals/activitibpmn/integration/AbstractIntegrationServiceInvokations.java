@@ -18,6 +18,7 @@
 package org.ow2.petals.activitibpmn.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -35,15 +36,12 @@ import javax.xml.namespace.QName;
 
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.activitibpmn.AbstractComponentTest;
-import org.ow2.petals.activitibpmn.incoming.integration.exception.EmptyRequestException;
-import org.ow2.petals.activitibpmn.incoming.integration.exception.InvalidRequestException;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
+import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
-
-import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 
 public abstract class AbstractIntegrationServiceInvokations extends AbstractComponentTest {
 
@@ -79,8 +77,11 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
 
-        final String getResponseStr = SourceHelper.toString(responseMsg.getFault());
-        assertTrue(getResponseStr.contains(InvalidRequestException.class.getName()));
+        final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
+        assertTrue(faultObj instanceof InvalidRequest);
+        final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
+        assertTrue(invalidRequest.getMessage().endsWith("is unexpected"));
+        assertFalse(invalidRequest.getStacktrace().isEmpty());
 
         // Check MONIT traces
         assertMonitLogsWithFailure(interfaceName, serviceName, operationName);
@@ -116,8 +117,11 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
 
-        final String responseStr = SourceHelper.toString(responseMsg.getFault());
-        assertTrue(responseStr.contains(InvalidRequestException.class.getName()));
+        final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
+        assertTrue(faultObj instanceof InvalidRequest);
+        final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
+        assertTrue(invalidRequest.getMessage().endsWith("is unexpected"));
+        assertFalse(invalidRequest.getStacktrace().isEmpty());
 
         // Check MONIT traces
         assertMonitLogsWithFailure(interfaceName, serviceName, operationName);
@@ -152,8 +156,12 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
 
-        final String responseStr = SourceHelper.toString(responseMsg.getFault());
-        assertTrue(responseStr.contains(EmptyRequestException.class.getName()));
+
+        final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
+        assertTrue(faultObj instanceof InvalidRequest);
+        final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
+        assertTrue(invalidRequest.getMessage().endsWith("is empty"));
+        assertFalse(invalidRequest.getStacktrace().isEmpty());
 
         // Check MONIT traces
         assertMonitLogsWithFailure(interfaceName, serviceName, operationName);

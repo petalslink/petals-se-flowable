@@ -134,11 +134,23 @@
                </xsd:extension>
             </xsd:simpleContent>
          </xsd:complexType>
+         
+         <xsd:element name="invalidRequest">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="message" type="xsd:string" maxOccurs="1" minOccurs="1" />
+                  <xsd:element name="stacktrace" type="xsd:string" maxOccurs="1" minOccurs="0" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
 
       </xsd:schema>
    </wsdl:types>
 
-	<!-- Message Part -->
+   <!-- Message Part -->
+   <wsdl:message name="invalidRequest">
+      <wsdl:part name="fault" element="activiti:invalidRequest" />
+   </wsdl:message>
    <wsdl:message name="getTasksRequest">
       <wsdl:part name="getTasksRequest" element="activiti:getTasks" />
    </wsdl:message>
@@ -156,6 +168,7 @@
       <wsdl:operation name="getTasks">
          <wsdl:input message="activiti:getTasksRequest" />
          <wsdl:output message="activiti:getTasksResponse" />
+         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
    </wsdl:portType>
 
@@ -163,6 +176,7 @@
       <wsdl:operation name="getProcessInstances">
          <wsdl:input message="activiti:getProcessInstancesRequest" />
          <wsdl:output message="activiti:getProcessInstancesResponse" />
+         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
    </wsdl:portType>
 
@@ -176,6 +190,9 @@
          <wsdl:output>
             <soap:body use="literal" />
          </wsdl:output>
+         <wsdl:fault name="invalidRequest">
+            <soap:fault name="invalidRequest" use="literal" />
+         </wsdl:fault>
       </wsdl:operation>
    </wsdl:binding>
 
@@ -189,6 +206,9 @@
          <wsdl:output>
             <soap:body use="literal" />
          </wsdl:output>
+         <wsdl:fault name="invalidRequest">
+            <soap:fault name="invalidRequest" use="literal" />
+         </wsdl:fault>
       </wsdl:operation>
    </wsdl:binding>
    
