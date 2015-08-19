@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<!--
+ Copyright (c) 2015 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses />
+ for the GNU Lesser General Public License version 2.1.
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+  layout:decorator="layout">
+  <head>
+    <title>My Requests</title>
+  </head>
+  <body>
+    <h1 layout:fragment="header">My Requests</h1>
+    <div layout:fragment="content" class="container">
+      <div class="alert alert-success"
+          th:if="${globalMessage}"
+          th:text="${globalMessage}">
+        Some Success message
+      </div>
+      <div class="pull-right">
+        <a href="form.html" th:href="@{/(create)}" class="btn btn-default">Create Request</a>
+      </div>
+            <h2>Refused Requests</h2>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <td>ID</td>
+            <td>Request</td>
+            <td>Reason</td>
+            <td>Edit</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${refusedRequests.empty}">
+            <td colspan="5">
+              No refused requests
+            </td>
+          </tr>
+          <tr th:each="request : ${refusedRequests}">
+            <td th:text="${request.id}">1</td>
+            <!-- Double {{ }} means thymeleaf will use Spring converters (and follow the bean annotations) -->
+            <td th:text="${{request.startDate}} + ' for ' + ${request.dayNumber} + ' day' + ${request.dayNumber > 1 ? 's' : ''} + ' (' + ${request.reason} + ')'">
+              11/10/2015 for 5 days (reason)
+            </td>
+            <td th:text="${request.rejectionReason}">
+              Some refusal reason
+            </td>
+            <td>
+              <a th:href="@{/(edit=${request.id})}">Edit</a>
+              <a th:href="@{/(cancel=${request.id})}">Cancel</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <!-- The rest is disabled for now, see RequestsController
+      <h2>Pending Requests</h2>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <td>ID</td>
+            <td>Start</td>
+            <td>Days</td>
+            <td>Reason</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${pendingRequests.empty}">
+            <td colspan="5">
+              No pending requests
+            </td>
+          </tr>
+          <tr th:each="request : ${pendingRequests}">
+            <td th:text="${request.id}">1</td>
+            <td th:text="${#dates.format(request.startDate)}">
+              July 11, 2012 2:17:16 PM CDT
+            </td>
+            <td th:text="${request.dayNumber}">
+              5
+            </td>
+            <td th:text="${request.reason}">
+              Some reason
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Archived Requests</h2>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <td>ID</td>
+            <td>Start</td>
+            <td>Days</td>
+            <td>Reason</td>
+            <td>Conclusion</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${archivedRequests.empty}">
+            <td colspan="5">
+              No archived requests
+            </td>
+          </tr>
+          <tr th:each="request : ${archivedRequests}">
+            <td th:text="${request.id}">1</td>
+            <td th:text="${#dates.format(request.startDate)}">
+              July 11, 2012 2:17:16 PM CDT
+            </td>
+            <td th:text="${request.dayNumber}">
+              5
+            </td>
+            <td th:text="${request.reason}">
+              Some reason
+            </td>
+            <td th:if="${request.accepted}" th:text="Yes">
+              Accepted
+            </td>
+            <td th:if="${not request.accepted}" th:text="No: ${request.rejectionReason}">
+              Cancelled
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      -->
+    </div>
+  </body>
+</html>

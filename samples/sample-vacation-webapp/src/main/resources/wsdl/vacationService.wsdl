@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014-2015 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<!-- ======================== DEFINITION ==================================== -->
+<wsdl:definitions name="vacationService"
+   targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationService"
+
+   xmlns:vacationService="http://petals.ow2.org/samples/se-bpmn/vacationService"
+   xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
+
+   xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <!-- ======================== TYPES ========================================== -->
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
+
+         <xsd:import namespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest" schemaLocation="vacationRequest.xsd" />
+
+         <xsd:element name="newVacationResponse">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="validationRequest">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="approved-by" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="rejection-reason" minOccurs="0" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="approval" minOccurs="1" maxOccurs="1">
+                     <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                           <xsd:enumeration id="Approved" value="true" />
+                           <xsd:enumeration id="Rejected" value="false" />
+                        </xsd:restriction>
+                     </xsd:simpleType>
+                  </xsd:element>
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="validationResponse">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="vacationUpdateRequest">
+            <xsd:complexType>
+               <xsd:complexContent>
+                  <xsd:extension base="vacationRequest:vacationRequestType">
+                     <xsd:sequence>
+                        <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+                        <xsd:element name="confirmed" minOccurs="1" maxOccurs="1">
+                           <xsd:simpleType>
+                              <xsd:restriction base="xsd:string">
+                                 <xsd:enumeration id="Updated" value="true" />
+                                 <xsd:enumeration id="Canceled" value="false" />
+                              </xsd:restriction>
+                           </xsd:simpleType>
+                        </xsd:element>
+                     </xsd:sequence>
+                  </xsd:extension>
+               </xsd:complexContent>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="vacationUpdateResponse">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="vacationRequestIdUnknown">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="vacationRequestAlreadyValidated">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="unexpectedUser">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="userId" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="taskId" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:schema>
+   </wsdl:types>
+   
+   <!-- ======================== MESSAGES ======================================= -->
+   <wsdl:message name="newVacationRequest">
+      <wsdl:part name="parameters" element="vacationRequest:vacationRequest" />
+   </wsdl:message>
+   <wsdl:message name="newVacationResponse">
+      <wsdl:part name="parameters" element="vacationService:newVacationResponse" />
+   </wsdl:message>
+   <wsdl:message name="validationRequest">
+      <wsdl:part name="parameters" element="vacationService:validationRequest" />
+   </wsdl:message>
+   <wsdl:message name="validationResponse">
+      <wsdl:part name="parameters" element="vacationService:validationResponse" />
+   </wsdl:message>
+   <wsdl:message name="updateRequest">
+      <wsdl:part name="parameters" element="vacationService:vacationUpdateRequest" />
+   </wsdl:message>
+   <wsdl:message name="updateResponse">
+      <wsdl:part name="parameters" element="vacationService:vacationUpdateResponse" />
+   </wsdl:message>
+   <wsdl:message name="vacationRequestIdUnknown">
+      <wsdl:part name="fault" element="vacationService:vacationRequestIdUnknown" />
+   </wsdl:message>
+   <wsdl:message name="vacationRequestAlreadyValidated">
+      <wsdl:part name="fault" element="vacationService:vacationRequestAlreadyValidated" />
+   </wsdl:message>
+   <wsdl:message name="unexpectedUser">
+      <wsdl:part name="fault" element="vacationService:unexpectedUser" />
+   </wsdl:message>
+   <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== -->
+   <wsdl:portType name="vacation">
+      <wsdl:operation name="new">
+         <wsdl:input message="vacationService:newVacationRequest" />
+         <wsdl:output message="vacationService:newVacationResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="validate">
+         <wsdl:input message="vacationService:validationRequest" />
+         <wsdl:output message="vacationService:validationResponse" />
+         <wsdl:fault message="vacationService:vacationRequestAlreadyValidated" name="vacationRequestAlreadyValidated" />
+         <wsdl:fault message="vacationService:vacationRequestIdUnknown" name="vacationRequestIdUnknown" />
+         <wsdl:fault message="vacationService:unexpectedUser" name="unexpectedUser" />
+      </wsdl:operation>
+      <wsdl:operation name="update">
+         <wsdl:input message="vacationService:updateRequest" />
+         <wsdl:output message="vacationService:updateResponse" />
+         <wsdl:fault message="vacationService:vacationRequestIdUnknown" name="vacationRequestIdUnknown" />
+      </wsdl:operation>
+   </wsdl:portType>
+   <!-- ======================== BINDINGS ======================================= -->
+   <wsdl:binding name="vacationBinding" type="vacationService:vacation">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="new">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-bpmn/vacationService/newVacationRequest" />
+         <bpmn:operation processDefinitionId="vacationRequest" action="startEvent" actionId="start" />
+         <bpmn:userId>/*[local-name()='vacationRequest']/*[local-name()='enquirer']</bpmn:userId>
+         <bpmn:variable name="numberOfDays">/*[local-name()='vacationRequest']/*[local-name()='day-number']</bpmn:variable>
+         <bpmn:variable name="startDate">/*[local-name()='vacationRequest']/*[local-name()='start-date']</bpmn:variable>
+         <bpmn:variable name="vacationMotivation">/*[local-name()='vacationRequest']/*[local-name()='reason']</bpmn:variable>
+         <bpmn:output>newVacationRequestResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="validate">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-bpmn/vacationService/handleRequest" />
+         <bpmn:operation processDefinitionId="vacationRequest" action="userTask" actionId="handleVacationRequest" />
+         <bpmn:processInstanceId>/*[local-name()='validationRequest']/*[local-name()='vacationRequestId']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='validationRequest']/*[local-name()='approved-by']</bpmn:userId>
+         <bpmn:variable name="vacationApproved">/*[local-name()='validationRequest']/*[local-name()='approval']</bpmn:variable>
+         <bpmn:variable name="managerMotivation">/*[local-name()='validationRequest']/*[local-name()='rejection-reason']</bpmn:variable>
+         <bpmn:output>validationResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="vacationRequestIdUnknown">
+            <bpmn:fault name="ProcessInstanceNotFoundException">vacationRequestIdUnknown.xsl</bpmn:fault>
+            <soap:fault name="vacationRequestIdUnknown" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="vacationRequestAlreadyValidated">
+            <bpmn:fault name="TaskCompletedException">vacationRequestAlreadyValidated.xsl</bpmn:fault>
+            <soap:fault name="vacationRequestAlreadyValidated" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="unexpectedUser">
+            <bpmn:fault name="UnexpectedUserException">unexpectedUser.xsl</bpmn:fault>
+            <soap:fault name="unexpectedUser" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="update">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-bpmn/vacationService/updateVacationRequest" />
+         <bpmn:operation processDefinitionId="vacationRequest" action="userTask" actionId="adjustVacationRequest" />
+         <bpmn:processInstanceId>/*[local-name()='vacationUpdateRequest']/*[local-name()='vacationRequestId']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='vacationUpdateRequest']/*[local-name()='enquirer']</bpmn:userId>
+         <bpmn:variable name="numberOfDays">/*[local-name()='vacationUpdateRequest']/*[local-name()='day-number']</bpmn:variable>
+         <bpmn:variable name="startDate">/*[local-name()='vacationUpdateRequest']/*[local-name()='start-date']</bpmn:variable>
+         <bpmn:variable name="vacationMotivation">/*[local-name()='vacationUpdateRequest']/*[local-name()='reason']</bpmn:variable>
+         <bpmn:variable name="resendRequest">/*[local-name()='vacationUpdateRequest']/*[local-name()='confirmed']</bpmn:variable>
+         <bpmn:output>adjustRequestResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="vacationRequestIdUnknown">
+            <bpmn:fault name="ProcessInstanceNotFoundException">vacationRequestIdUnknown.xsl</bpmn:fault>
+            <soap:fault name="vacationRequestIdUnknown" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+   <!-- ======================== SERVICE (SU jbi.xml service-name) ============== -->
+   <wsdl:service name="vacationService">
+      <wsdl:port name="autogenerate" binding="vacationService:vacationBinding">
+         <soap:address location="http://localhost:9003/vacationService" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

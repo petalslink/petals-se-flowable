@@ -35,6 +35,7 @@
     <module>su-SOAP-archiveService-provide</module>
     <module>su-SOAP-activitiIntegrationService-consume</module>
     <module>samples-SOAP-services</module>
+    <module>sample-vacation-webapp</module>
   </modules>
 
   <build>

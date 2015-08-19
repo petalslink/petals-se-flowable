@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!--
+ Copyright (c) 2015 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses />
+ for the GNU Lesser General Public License version 2.1.
+-->
+<html xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+  layout:decorator="layout">
+  <head>
+    <title>Manage Requests</title>
+  </head>
+  <body>
+    <h1 layout:fragment="header">Manage Requests</h1>
+    <div layout:fragment="content" class="container">
+      <div class="alert alert-success"
+          th:if="${globalMessage}"
+          th:text="${globalMessage}">
+        Some Success message
+      </div>
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <td>Enquirer</td>
+            <td>Request</td>
+            <td>Reason</td>
+            <td>Accept</td>
+            <td>Reject</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${requests.empty}">
+            <td colspan="6">
+              No archived requests
+            </td>
+          </tr>
+          <tr th:each="request : ${requests}">
+            <td th:text="${request.enquirer}">Who</td>
+            <!-- Double {{ }} means thymeleaf will use Spring converters (and follow the bean annotations) -->
+            <td th:text="${{request.startDate}} + ' for ' + ${request.dayNumber} + ' day' + ${request.dayNumber > 1 ? 's' : ''}">
+              11/10/2015
+            </td>
+            <td th:text="${request.reason}">
+              Some reason
+            </td>
+            <td>
+              <form id="acceptRequest" th:action="@{/manager/(accept=${request.id})}" action="#" method="post" class="form-inline">
+        		<button type="submit" class="btn btn-default">Accept</button>
+              </form>
+            </td>
+            <td>
+              <form id="rejectRequest" th:action="@{/manager/(reject=${request.id})}" action="#" method="post" class="form-inline">
+                <input type="text" placeholder="Reason" class="form-control" id="rejectionReason" name="rejectionReason" />
+          		<button type="submit" class="btn btn-default">Reject</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<!--
+ Copyright (c) 2015 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses />
+ for the GNU Lesser General Public License version 2.1.
+-->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout">
+  <head>
+    <title>Layout</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" />
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              <li><a th:href="@{/}" href="requests.html">My Requests</a></li>
+              <li><a th:href="@{/manager}" href="manager.html">Manage Requests</a></li>
+              <li><a th:href="@{/login}" href="login.html" th:text="'Login (currently as ' + ${session['scopedTarget.userSession'].username} + ')'"></a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <h1 layout:fragment="header">Layout</h1>      
+      <br />
+      <div layout:fragment="content">
+        Fake content
+      </div>
+    </div>
+  </body>
+</html>
