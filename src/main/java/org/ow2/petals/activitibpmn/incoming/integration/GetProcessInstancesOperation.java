@@ -80,8 +80,12 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
 
         // By default, we search active process instance
         final Boolean isActive = incomingObject.isActive();
-        if (isActive == null || isActive.booleanValue()) {
-            processInstanceQuery.active();
+        if (isActive != null) {
+            if (isActive) {
+                processInstanceQuery.active();
+            } else {
+                processInstanceQuery.suspended();
+            }
         }
 
         final String processDefinitionId = incomingObject.getProcessDefinitionIdentifier();
