@@ -83,6 +83,16 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
         if (processInstanceId != null && !processInstanceId.isEmpty()) {
             taskQuery.processInstanceId(processInstanceId);
         }
+        
+        final String processDefinitionId = incomingObject.getProcessDefinitionIdentifier();
+        if (processDefinitionId != null && !processDefinitionId.isEmpty()) {
+            taskQuery.processDefinitionKey(processDefinitionId);
+        }
+        
+        final String taskDefinitionId = incomingObject.getTaskDefinitionIdentifier();
+        if (taskDefinitionId != null && !taskDefinitionId.isEmpty()) {
+            taskQuery.taskDefinitionKey(taskDefinitionId);
+        }
 
         final GetTasksResponse response = new GetTasksResponse();
         final Tasks responseTasks = new Tasks();

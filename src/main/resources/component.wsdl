@@ -44,6 +44,16 @@
                         <xsd:documentation>Identifier of the process instance of tasks to retrieve</xsd:documentation>
                      </xsd:annotation>
                   </xsd:element>
+                  <xsd:element name="process-definition-identifier" type="xsd:string" maxOccurs="1" minOccurs="0">
+                     <xsd:annotation>
+                        <xsd:documentation>Identifier of the process definition of tasks to retrieve</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:element>
+                  <xsd:element name="task-definition-identifier" type="xsd:string" maxOccurs="1" minOccurs="0">
+                     <xsd:annotation>
+                        <xsd:documentation>Definition identifier of the tasks to retrieve</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:element>
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
