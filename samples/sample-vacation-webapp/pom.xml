@@ -17,6 +17,7 @@
    <properties>
       <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
       <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
+      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
    </properties>
 
    <dependencyManagement>
