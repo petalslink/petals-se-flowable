@@ -39,6 +39,7 @@ import org.ow2.petals.activitibpmn.incoming.operation.exception.OperationProcess
 import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.w3c.dom.Document;
 
@@ -113,7 +114,7 @@ public class StartEventOperation extends ActivitiOperation {
         final String flowStepId = this.simpleUUIDGenerator.getNewID();
         processVars.put(VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
         processVars.put(VAR_PETALS_FLOW_STEP_ID, flowStepId);
-        final FlowAttributes exchangeFlowAttibutes = exchange.getFlowAttributes();
+        final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
         processVars.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         processVars.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
 

@@ -46,6 +46,7 @@ import org.ow2.petals.activitibpmn.incoming.operation.exception.UnexpectedUserEx
 import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.w3c.dom.Document;
 
@@ -124,7 +125,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
 
         // Set flow attributes as task local variables that will be used by Activiti event listener to generate a MONIT
         // trace
-        final FlowAttributes exchangeFlowAttibutes = exchange.getFlowAttributes();
+        final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
         final Map<String, Object> taskLocalVariables = new HashMap<String, Object>(2);
         taskLocalVariables.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         taskLocalVariables.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
