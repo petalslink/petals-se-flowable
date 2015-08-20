@@ -26,12 +26,10 @@
       <relativePath>../parent/pom.xml</relativePath>
    </parent>
 
-   <groupId>org.ow2.petals.samples</groupId>
    <artifactId>samples-SOAP-services</artifactId>
    <packaging>war</packaging>
    <name>samples-SOAP-services</name>
-   <version>5.0.0-SNAPSHOT</version>
-   <description>Sample web-services used by Petals SE Actviiti sample</description>
+   <description>Sample web-services used by Petals SE Activiti sample</description>
 
    <properties>
       <maven-enforcer-plugin.rules.upperBound>false</maven-enforcer-plugin.rules.upperBound>
