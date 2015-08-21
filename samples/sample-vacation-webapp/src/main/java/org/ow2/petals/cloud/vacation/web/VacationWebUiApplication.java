@@ -96,6 +96,7 @@ public class VacationWebUiApplication extends SpringBootServletInitializer {
         return client;
     }
 
+
     /**
      * This is for the real servlet container
      */
