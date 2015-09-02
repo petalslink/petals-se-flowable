@@ -118,7 +118,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
         final List<Task> taskList = this.taskService.createTaskQuery().processInstanceId(processInstanceId)
                 .taskDefinitionKey(this.actionId).taskCandidateUser(bpmnUserId).list();
         if ((taskList == null) || (taskList.isEmpty())) {
-            this.investigateMissingTask(processInstanceId, bpmnUserId);
+            throw this.investigateMissingTask(processInstanceId, bpmnUserId);
         }
         final Task taskToComplete = taskList.get(0);
         final String taskId = taskToComplete.getId();
@@ -198,29 +198,28 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
      * @throws OperationProcessingException
      *             No cause found.
      */
-    private void investigateMissingTask(final String processInstanceId, final String bpmnUserId)
-            throws OperationProcessingFault, OperationProcessingException {
+    private OperationProcessingException investigateMissingTask(final String processInstanceId, final String bpmnUserId) {
 
         if (this.historyService.createHistoricProcessInstanceQuery().finished().processInstanceId(processInstanceId)
                 .singleResult() != null) {
             // The process instance is finished, so the task is finished !
-            throw new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
+            return new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
         } else if (this.runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult() == null) {
             // No active process instance found for the process instance identifier
-            throw new ProcessInstanceNotFoundException(this.wsdlOperation, processInstanceId);
+            return new ProcessInstanceNotFoundException(this.wsdlOperation, processInstanceId);
         } else if (this.historyService.createHistoricTaskInstanceQuery().finished()
                 .processInstanceId(processInstanceId).taskDefinitionKey(this.actionId).singleResult() != null) {
             // The task of the active process instance is finished
-            throw new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
+            return new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
         } else if (this.taskService.createTaskQuery().processInstanceId(processInstanceId)
                 .taskDefinitionKey(this.actionId).singleResult() != null) {
             // The task assignee is not the expected one
             // TODO: Add a unit test
-            throw new UnexpectedUserException(this.wsdlOperation, processInstanceId, this.actionId, bpmnUserId);
+            return new UnexpectedUserException(this.wsdlOperation, processInstanceId, this.actionId, bpmnUserId);
         } else {
             // This error case should not occur. If this error occurs, it is likely that an business error case is
             // missing from the above conditions
-            throw new OperationProcessingException(wsdlOperation, String.format(
+            return new OperationProcessingException(wsdlOperation, String.format(
                     "The task '%s' is not a current user task to complete for the process instance '%s'.",
                     this.actionId, processInstanceId));
         }
