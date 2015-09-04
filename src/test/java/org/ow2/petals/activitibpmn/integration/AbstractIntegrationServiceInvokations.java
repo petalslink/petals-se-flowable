@@ -147,9 +147,9 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
             throws Exception {
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(suName), operationName, AbsItfOperation.MEPPatternConstants.IN_OUT
-                .value(), null));
+        COMPONENT_UNDER_TEST.pushRequestToProvider(
+                new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                        AbsItfOperation.MEPPatternConstants.IN_OUT.value()));
 
         final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
         assertNull("An error is set in the response", responseMsg.getError());
