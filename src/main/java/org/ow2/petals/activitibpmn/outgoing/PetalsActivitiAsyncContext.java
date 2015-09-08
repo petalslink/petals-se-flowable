@@ -18,7 +18,6 @@
 package org.ow2.petals.activitibpmn.outgoing;
 
 import org.ow2.petals.activitibpmn.outgoing.cxf.transport.AsyncCallback;
-import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
 
 public class PetalsActivitiAsyncContext extends AsyncContext {
@@ -27,9 +26,8 @@ public class PetalsActivitiAsyncContext extends AsyncContext {
 
     final org.apache.cxf.message.Exchange cxfExchange;
 
-    public PetalsActivitiAsyncContext(final Exchange originalExchange,
-            final org.apache.cxf.message.Exchange cxfExchange, final AsyncCallback asyncCallback) {
-        super(originalExchange);
+    public PetalsActivitiAsyncContext(final org.apache.cxf.message.Exchange cxfExchange,
+            final AsyncCallback asyncCallback) {
         this.asyncCallback = asyncCallback;
         this.cxfExchange = cxfExchange;
     }

@@ -126,8 +126,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
             // TODO: Set the TTL of the async context
             // TODO: Add MONIT trace
-            this.sender.sendAsync(exchange, new PetalsActivitiAsyncContext(exchange, this.cxfExchange,
-                    this.asyncCallback));
+            this.sender.sendAsync(exchange, new PetalsActivitiAsyncContext(this.cxfExchange, this.asyncCallback));
         } catch (final MessagingException e) {
             throw new IOException(e);
         } catch (final PEtALSCDKException e) {
