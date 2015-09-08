@@ -154,7 +154,7 @@ public class ActivitiJBIListener extends AbstractJBIListener {
     }
 
     @Override
-    public boolean onExpiredAsyncJBIMessage(final Exchange asyncExchange, final AsyncContext asyncContext) {
+    public void onExpiredAsyncJBIMessage(final Exchange asyncExchange, final AsyncContext asyncContext) {
 
         // TODO: Add MONIT trace
         if (asyncContext instanceof PetalsActivitiAsyncContext) {
@@ -167,7 +167,5 @@ public class ActivitiJBIListener extends AbstractJBIListener {
             this.getLogger().warning(
                     "Unexpected expired asynchronous context received: " + asyncContext.getClass().getName());
         }
-
-        return true;
     }
 }
