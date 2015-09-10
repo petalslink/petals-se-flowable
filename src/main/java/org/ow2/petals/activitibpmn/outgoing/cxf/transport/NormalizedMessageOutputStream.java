@@ -170,8 +170,6 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             this.sender.sendAsync(exchange, new PetalsActivitiAsyncContext(this.cxfExchange, this.asyncCallback));
         } catch (final MessagingException e) {
             throw new IOException(e);
-        } catch (final PEtALSCDKException e) {
-            throw new IOException(e);
         }
     }
 }
