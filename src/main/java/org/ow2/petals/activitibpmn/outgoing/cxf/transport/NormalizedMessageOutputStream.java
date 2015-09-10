@@ -33,6 +33,7 @@ import org.apache.cxf.service.model.EndpointInfo;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.FlowAttributesExchangeHelper;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.Message.MEPConstants;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
@@ -74,6 +75,9 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
     @Override
     public void close() throws IOException {
         super.close();
+
+        // needed so that logs are put in the right flow instance folder
+        PetalsExecutionContext.putFlowAttributes(this.flowAttributes);
 
         final EndpointInfo endpointInfo = this.cxfExchange.getEndpoint().getEndpointInfo();
         final QName interfaceName = endpointInfo.getInterface().getName();
