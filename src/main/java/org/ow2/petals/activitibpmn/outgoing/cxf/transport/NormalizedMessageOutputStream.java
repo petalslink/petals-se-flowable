@@ -27,6 +27,7 @@ import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
+import javax.xml.transform.dom.DOMSource;
 
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.service.model.EndpointInfo;
@@ -115,10 +116,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                         "Body");
                 if (soapBodies.item(0).hasChildNodes()) {
                     final Node xmlPayload = soapBodies.item(0).getFirstChild();
-                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    com.ebmwebsourcing.easycommons.xml.DOMHelper.prettyPrint(xmlPayload, baos);
-                    exchange.setInMessageContent(new ByteArrayInputStream(baos.toByteArray()));
-                    // exchange.setInMessageContent(new ByteArrayInputStream(buf));
+                    exchange.setInMessageContent(new DOMSource(xmlPayload));
                 } else {
                     throw new IOException("Empty service task request");
                 }
