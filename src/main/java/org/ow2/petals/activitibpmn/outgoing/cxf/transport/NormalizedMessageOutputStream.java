@@ -87,18 +87,57 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
         final QName operationName = this.cxfExchange.getBindingOperationInfo().getOperationInfo().getName();
 
         try {
-            final Consumes consume = new Consumes();
-            // TODO: Create a unit test where the interface name is missing
-            consume.setInterfaceName(interfaceName);
-            // TODO: Create a unit test where the service name is missing
-            consume.setServiceName(serviceName);
-            // TODO: Find a way to define the endpoint name to use.
-            // TODO: Create a unit test where the endpoint name is missing
-            // TODO: Create a unit test where the operation name is missing
-            consume.setOperation(operationName);
+            Consumes consume = this.sender.getComponent().getServiceUnitManager().getConsumesFromDestination(null,
+                    serviceName, interfaceName);
+
+            if (consume == null) {
+                this.sender.getLogger().log(Level.WARNING,
+                        "No Consumes declared in the JBI descriptor for the request to send, using informations from the process.");
+                consume = new Consumes();
+                // TODO: Create a unit test where the interface name is missing
+                consume.setInterfaceName(interfaceName);
+                // TODO: Create a unit test where the service name is missing
+                consume.setServiceName(serviceName);
+                // TODO: Find a way to define the endpoint name to use.
+                // TODO: Create a unit test where the endpoint name is missing
+                // TODO: Create a unit test where the operation name is missing
+                consume.setOperation(operationName);
+            } else {
+                if (interfaceName != null && !consume.getInterfaceName().equals(interfaceName)) {
+                    this.sender.getLogger().log(Level.WARNING,
+                            "Mismatch between JBI Consumes interface name and process information (" + consume.getInterfaceName() + " vs "  + interfaceName + ")");
+                }
+                if (serviceName != null && !consume.getServiceName().equals(serviceName)) {
+                    this.sender.getLogger().log(Level.WARNING,
+                            "Mismatch between JBI Consumes service name and process information (" + consume.getServiceName() + " vs "  + serviceName + ")");
+                }
+                if (consume.getOperation() == null) {
+                    this.sender.getLogger().log(Level.WARNING,
+                            "No operation declared in the Consumes in the JBI descriptor for the request to send, using informations from the process.");
+                    if (operationName == null) {
+                        this.sender.getLogger().log(Level.WARNING,
+                                "No operation declared in the process definition for the request to send.");
+                    }
+                    consume.setOperation(operationName);
+                }
+
+                if (operationName != null && !consume.getOperation().equals(operationName)) {
+                    this.sender.getLogger().log(Level.WARNING,
+                            "Mismatch between JBI Consumes operation name and process information ("
+                                    + consume.getOperation() + " vs " + operationName + ")");
+                }
+            }
+
             // TODO: Find a way to define the MEP to use.
-            final org.ow2.petals.component.framework.api.message.Exchange exchange = this.sender.createConsumeExchange(
-                    consume, MEPConstants.IN_OUT_PATTERN);
+            final org.ow2.petals.component.framework.api.message.Exchange exchange;
+            if (consume.getMep() != null) {
+                exchange = this.sender.createConsumeExchange(consume);
+            } else {
+                this.sender.getLogger().log(Level.WARNING,
+                        "No MEP declared in the Consumes in the JBI descriptor for the request to send, using InOut pattern.");
+                exchange = this.sender.createConsumeExchange(consume, MEPConstants.IN_OUT_PATTERN);
+            }
+
             FlowAttributesExchangeHelper.setFlowAttributes(
                     ((org.ow2.petals.component.framework.message.ExchangeImpl) exchange).getMessageExchange(),
                     this.flowAttributes);
