@@ -17,13 +17,13 @@
  */
 package org.ow2.petals.activitibpmn.monitoring;
 
-import org.ow2.petals.component.framework.logger.ConsumeFlowStepEndLogData;
+import org.ow2.petals.component.framework.logger.ConsumeExtFlowStepEndLogData;
 
 
 /**
  * @author Christophe DENEUX - Linagora
  */
-public final class ProcessInstanceFlowStepEndLogData extends ConsumeFlowStepEndLogData {
+public final class ProcessInstanceFlowStepEndLogData extends ConsumeExtFlowStepEndLogData {
 
     private static final long serialVersionUID = -4045452523559316672L;
 

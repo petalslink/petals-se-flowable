@@ -110,7 +110,7 @@
       </petals-extract-flow-step-info>
       <petals-extract-flow-step-info refid="flows">
          <!-- Retrieve the flow associated to the process instance -->
-         <flowStepCriteria name="traceCode" value="consumeFlowStepBegin" />
+         <flowStepCriteria name="traceCode" value="consumeExtFlowStepBegin" />
          <flowStepCriteria name="correlatedFlowInstanceId" value="${initial-flow-instance-id}" />
          <flowStepCriteria name="correlatedFlowStepId" value="${initial-flow-step-id}" />
          <flowStepCriteria name="processDefinition" value="vacationRequest" />
@@ -130,7 +130,7 @@
          <!-- Check flow step of the process instance execution -->
          <assertFlowStep flowStepIdx="0">
             <!-- The process instance starts -->
-            <attributeEquals name="traceCode" value="consumeFlowStepBegin" />
+            <attributeEquals name="traceCode" value="consumeExtFlowStepBegin" />
             <attributeEquals name="correlatedFlowInstanceId" value="${initial-flow-instance-id}" />
             <attributeEquals name="correlatedFlowStepId" value="${initial-flow-step-id}" />
             <attributeEquals name="processDefinition" value="vacationRequest" />
