@@ -9,6 +9,7 @@
    </import>
 
    <property name="petals.home" value="${project.build.directory}/${project.artifactId}/container" />
+   <property name="bc-soap.properties" value="${petals.home}/conf/bc-soap.properties" />
    <property name="topology.container.name" value="sample-0" />
 
    <!-- Properties -->
@@ -27,7 +28,14 @@
    </target>
 
    <!-- Target : Prepare -->
-   <target name="prepare" />
+   <target name="prepare">
+      <!-- Create the properties file for BC SOAP -->
+      <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
+            file="${bc-soap.properties}" />
+      <echo message="notifyService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+            file="${bc-soap.properties}"
+            append="true" />
+   </target>
 
    <!-- Target : Deploy -->
    <target name="deploy">
@@ -47,6 +55,7 @@
                              username="${host1.username}"
                              password="${host1.password}">
          <param name="httpHost" value="localhost" />
+         <param name="propertiesFile" value="file://${bc-soap.properties}" />
       </jbi-install-component>
 
       <echo message="Starting components..." />
@@ -140,9 +149,12 @@
          <assertFlowStep flowStepIdx="1">
             <!-- Service task invokes a Petals service ... -->
             <attributeEquals name="traceCode" value="provideFlowStepBegin" />
-            <attributeEquals name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacation" />
-            <attributeEquals name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacationService" />
-            <attributeEquals name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}newVacationRequest" />
+            <attributeEquals name="flowStepInterfaceName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacation" />
+            <attributeEquals name="flowStepServiceName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacationService" />
+            <attributeEquals name="flowStepOperationName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}newVacationRequest" />
             <attributeSet name="flowStepEndpointName" />
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
             <flowStepInfo attribute="flowStepId" property="flowStep.1.id" />
@@ -164,18 +176,24 @@
          <assertFlowStep flowStepIdx="4">
             <!-- Service task invokes a Petals service ... -->
             <attributeEquals name="traceCode" value="provideFlowStepBegin" />
-            <attributeEquals name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacation" />
-            <attributeEquals name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacationService" />
-            <attributeEquals name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}vacationRequestApproved" />
+            <attributeEquals name="flowStepInterfaceName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacation" />
+            <attributeEquals name="flowStepServiceName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}notifyVacationService" />
+            <attributeEquals name="flowStepOperationName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/notifyVacationService}vacationRequestApproved" />
             <attributeSet name="flowStepEndpointName" />
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
          </assertFlowStep>
          <assertFlowStep flowStepIdx="6">
             <!-- Service task invokes a Petals service ... -->
             <attributeEquals name="traceCode" value="provideFlowStepBegin" />
-            <attributeEquals name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archive" />
-            <attributeEquals name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveService" />
-            <attributeEquals name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveVacationRequest" />
+            <attributeEquals name="flowStepInterfaceName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archive" />
+            <attributeEquals name="flowStepServiceName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveService" />
+            <attributeEquals name="flowStepOperationName"
+                             value="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveVacationRequest" />
             <attributeSet name="flowStepEndpointName" />
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
          </assertFlowStep>

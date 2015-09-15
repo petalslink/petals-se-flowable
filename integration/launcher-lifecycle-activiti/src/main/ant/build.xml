@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PEtALS integration - Integration tests about lifecycle of the Petals SE Activiti" default="all" basedir=".">
+<project name="PEtALS integration - Integration tests about lifecycle of the Petals SE Activiti"
+         default="all"
+         basedir=".">
 
    <!-- ******************************************************************* -->
    <taskdef resource="net/sf/antcontrib/antlib.xml" />
@@ -12,7 +14,8 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven_plugin_classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml"
+                    classpath="${maven_plugin_classpath}" />
    </import>
 
    <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
@@ -21,15 +24,16 @@
              value="${project.build.directory}/${project.artifactId}/petals-cli/${petalsCliDirName}" />
 
    <property name="topology.container.name" value="sample-0" />
-   <property name="topology.container.home"
-             value="${project.build.directory}/${project.artifactId}/container/" />
+   <property name="topology.container.home" value="${project.build.directory}/${project.artifactId}/container/" />
    <property name="topology.container.jmx.port" value="7700" />
+   <property name="bc-soap.properties" value="${topology.container.home}/conf/bc-soap.properties" />
 
    <property name="the-component.id" value="petals-se-activiti" />
    <property name="the-component.url" value="${org.ow2.petals:petals-se-activiti:jbi-component}" />
 
    <property name="the-sa.id" value="sa-activiti-vacationRequest" />
-   <property name="the-sa.url" value="${org.ow2.petals.integration.tests.se.activiti:sa-activiti-vacationRequest:jbi-service-assembly}" />
+   <property name="the-sa.url"
+             value="${org.ow2.petals.integration.tests.se.activiti:sa-activiti-vacationRequest:jbi-service-assembly}" />
    <property name="the-su.id" value="su-activiti-vacationService-provide-${project.version}" />
 
    <property name="activiti-db.file" value="/tmp/activiti.db" />
@@ -44,7 +48,14 @@
 
    <target name="clean" depends="killAllRegistryMembers, killAllContainers" />
 
-   <target name="prepare" />
+   <target name="prepare">
+      <!-- Create the properties file for BC SOAP -->
+      <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
+            file="${bc-soap.properties}" />
+      <echo message="notifyService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+            file="${bc-soap.properties}"
+            append="true" />
+   </target>
 
    <target name="launchContainer">
       <!-- No configuration required, we use the default configuration -->
@@ -77,11 +88,11 @@
          </try>
          <finally>
             <!-- We stop all to avoid stack trace logged by SE Activiti when tests fail. The async job
-                 executor of SE Activiti try run SQL query on a database that is not running --> 
+                 executor of SE Activiti try run SQL query on a database that is not running -->
             <antcall target="clean" />
          </finally>
       </trycatch>
-      
+
       <echo message="All task finished!" />
    </target>
 
@@ -112,6 +123,7 @@
                                  container.home="${topology.container.home}">
          <param-elements>
             <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
+            <param name="propertiesFile" value="file://${bc-soap.properties}" />
          </param-elements>
          <pre-deployments>
             <echo message="Hacking database Activiti" />
