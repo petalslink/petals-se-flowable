@@ -114,13 +114,6 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 			throw new PEtALSCDKException( "Invalid JBI descriptor: it does not contain a 'provides' section." );
         }
 
-		//TODO Manage consume for Activiti Petals Task
-		/*
-        if (jbiDescriptor.getServices().getConsumes().size() != 0) {
-            throw new PEtALSCDKException( "Invalid JBI descriptor: 'Consumes' sections are not till supported by this component." );
-        }
-        */
-
 		// Check that there is only one Provides section in the SU
         if (jbiDescriptor.getServices().getProvides().size() != 1) {
 			throw new PEtALSCDKException( "Invalid JBI descriptor: it must not have more than one 'provides' section." );

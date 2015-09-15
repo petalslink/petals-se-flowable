@@ -128,7 +128,8 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                 }
             }
 
-            // TODO: Find a way to define the MEP to use.
+            // TODO: Find a way to define the MEP to use per operation. The MEP at consume level is for all operations
+            // of the service provider.
             final org.ow2.petals.component.framework.api.message.Exchange exchange;
             if (consume.getMep() != null) {
                 exchange = this.sender.createConsumeExchange(consume);

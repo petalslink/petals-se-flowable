@@ -17,14 +17,16 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <jbi:jbi version="1.0" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:jbi="http://java.sun.com/xml/ns/jbi"
-	xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
-	xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0"
-	xmlns:process="http://petals.ow2.org/samples/se-bpmn/vacationService">
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0"
+   xmlns:process="http://petals.ow2.org/samples/se-bpmn/vacationService"
+   xmlns:archiveService="http://petals.ow2.org/samples/se-bpmn/archiveService"
+   xmlns:notifyService="http://petals.ow2.org/samples/se-bpmn/notifyVacationService">
 	
 	<!-- Import a Service into PEtALS or Expose a PEtALS Service => use a BC. -->
-	<jbi:services binding-component="false">
+   <jbi:services binding-component="false">
 		
 		<!-- Import a Service into PEtALS => provides a Service. -->
 		<jbi:provides
@@ -32,15 +34,31 @@
 			service-name="process:vacationService"
 			endpoint-name="autogenerate">
 			
-			<!-- WSDL file -->
-			<petalsCDK:wsdl>vacationService.wsdl</petalsCDK:wsdl>
+         <!-- WSDL file -->
+         <petalsCDK:wsdl>vacationService.wsdl</petalsCDK:wsdl>
 			
-			<!-- ACTIVITI specific fields -->
- 			<petals-se-activitibpmn:tenant_id>my-tenant</petals-se-activitibpmn:tenant_id>
-			<petals-se-activitibpmn:category_id>samples</petals-se-activitibpmn:category_id>
-			<petals-se-activitibpmn:process_file1>vacationRequest.bpmn20.xml</petals-se-activitibpmn:process_file1>
-			<petals-se-activitibpmn:version1>1</petals-se-activitibpmn:version1>
+         <!-- ACTIVITI specific fields -->
+         <petals-se-activitibpmn:tenant_id>my-tenant</petals-se-activitibpmn:tenant_id>
+         <petals-se-activitibpmn:category_id>samples</petals-se-activitibpmn:category_id>
+         <petals-se-activitibpmn:process_file1>vacationRequest.bpmn20.xml</petals-se-activitibpmn:process_file1>
+         <petals-se-activitibpmn:version1>1</petals-se-activitibpmn:version1>
 
-		</jbi:provides>
-	</jbi:services>
+      </jbi:provides>
+      
+      <!-- The service associated to the service tasks archiving the vacation request -->
+      <jbi:consumes
+           interface-name="archiveService:archive"
+           service-name="archiveService:archiveService">
+         <petalsCDK:timeout>15000</petalsCDK:timeout>
+         <petalsCDK:mep>InOut</petalsCDK:mep>
+      </jbi:consumes>
+      
+      <!-- The service associated to the service tasks notifying the vacation request processing -->
+      <jbi:consumes
+           interface-name="notifyService:notifyVacation"
+           service-name="notifyService:notifyVacationService">
+         <petalsCDK:timeout>15000</petalsCDK:timeout>
+         <petalsCDK:mep>InOut</petalsCDK:mep>
+      </jbi:consumes>
+   </jbi:services>
 </jbi:jbi>
