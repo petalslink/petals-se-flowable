@@ -77,6 +77,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
     public void close() throws IOException {
         super.close();
 
+
         // needed so that logs are put in the right flow instance folder
         PetalsExecutionContext.putFlowAttributes(this.flowAttributes);
 
@@ -98,35 +99,31 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                 consume.setInterfaceName(interfaceName);
                 // TODO: Create a unit test where the service name is missing
                 consume.setServiceName(serviceName);
-                // TODO: Find a way to define the endpoint name to use.
-                // TODO: Create a unit test where the endpoint name is missing
-                // TODO: Create a unit test where the operation name is missing
-                consume.setOperation(operationName);
             } else {
                 if (interfaceName != null && !consume.getInterfaceName().equals(interfaceName)) {
                     this.sender.getLogger().log(Level.WARNING,
-                            "Mismatch between JBI Consumes interface name and process information (" + consume.getInterfaceName() + " vs "  + interfaceName + ")");
+                            "Mismatch between JBI Consumes interface name and process information ("
+                                    + consume.getInterfaceName() + " vs " + interfaceName
+                                    + "), using Consumes information.");
                 }
                 if (serviceName != null && !consume.getServiceName().equals(serviceName)) {
                     this.sender.getLogger().log(Level.WARNING,
-                            "Mismatch between JBI Consumes service name and process information (" + consume.getServiceName() + " vs "  + serviceName + ")");
+                            "Mismatch between JBI Consumes service name and process information ("
+                                    + consume.getServiceName() + " vs " + serviceName
+                                    + "), using Consumes information.");
                 }
-                if (consume.getOperation() == null) {
+                if (consume.getOperation() != null) {
                     this.sender.getLogger().log(Level.WARNING,
-                            "No operation declared in the Consumes in the JBI descriptor for the request to send, using informations from the process.");
-                    if (operationName == null) {
-                        this.sender.getLogger().log(Level.WARNING,
-                                "No operation declared in the process definition for the request to send.");
-                    }
-                    consume.setOperation(operationName);
-                }
-
-                if (operationName != null && !consume.getOperation().equals(operationName)) {
-                    this.sender.getLogger().log(Level.WARNING,
-                            "Mismatch between JBI Consumes operation name and process information ("
-                                    + consume.getOperation() + " vs " + operationName + ")");
+                            "An operation is declared in the Consumes in the JBI descriptor for the request to send: IGNORED and using informations from the process.");
                 }
             }
+
+            // TODO: Find a way to define the endpoint name to use.
+            // TODO: Create a unit test where the endpoint name is missing
+            // TODO: Create a unit test where the operation name is missing
+            // we always use the operation from the process (the JBI Consumes defines the service used, not the
+            // operation)
+            consume.setOperation(operationName);
 
             // TODO: Find a way to define the MEP to use per operation. The MEP at consume level is for all operations
             // of the service provider.
