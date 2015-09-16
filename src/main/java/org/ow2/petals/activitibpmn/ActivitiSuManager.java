@@ -76,7 +76,7 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
     /**
      * Activation flag of the BPMN validation on process deployments into the Activiti engine
      */
-    private final boolean enableActivitiBpmnValidation;
+    private boolean enableActivitiBpmnValidation;
 
     /**
      * An UUID generator.
@@ -90,13 +90,18 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
      *            the ACTIVITI component
      * @param simpleUUIDGenerator
      *            An UUID generator
+     */
+    public ActivitiSuManager(final AbstractComponent component, final SimpleUUIDGenerator simpleUUIDGenerator) {
+        super(component);
+        this.simpleUUIDGenerator = simpleUUIDGenerator;
+    }
+
+    /**
+     * 
      * @param enableActivitiBpmnValidation
      *            Activation flag of the BPMN validation on process deployments into the Activiti engine
      */
-    public ActivitiSuManager(final AbstractComponent component, final SimpleUUIDGenerator simpleUUIDGenerator,
-            final boolean enableActivitiBpmnValidation) {
-		super(component);
-        this.simpleUUIDGenerator = simpleUUIDGenerator;
+    public void setEnableActivitiBpmnValidation(boolean enableActivitiBpmnValidation) {
         this.enableActivitiBpmnValidation = enableActivitiBpmnValidation;
     }
 

@@ -123,11 +123,6 @@ public class ActivitiSE extends AbstractServiceEngine {
     private boolean enableActivitiJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 
     /**
-     * Activation flag of the BPMN validation on process deployments into the Activiti engine
-     */
-    private boolean enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
-
-    /**
      * Event listener fired when a process is started
      */
     private AbstractEventListener processInstanceStartedEventListener;
@@ -374,17 +369,20 @@ public class ActivitiSE extends AbstractServiceEngine {
             // - otherwise, the default value is used.
             final String enableActivitiBpmnValidationConfigured = this.getComponentExtensions().get(
                     ENGINE_ENABLE_BPMN_VALIDATION);
+            final boolean enableActivitiBpmnValidation;
             if (enableActivitiBpmnValidationConfigured == null
                     || enableActivitiBpmnValidationConfigured.trim().isEmpty()) {
                 this.getLogger()
                         .info("The activation of the BPMN validation during process deployments is not configured. Default value used.");
-                this.enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
+                enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
             } else {
-                this.enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase(
+                enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase(
                         "false") ? false
                         : (enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
                                 : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
             }
+
+            ((ActivitiSuManager) getServiceUnitManager()).setEnableActivitiBpmnValidation(enableActivitiBpmnValidation);
 
             final Class<?> identityServiceClass = ActivitiParameterReader.getEngineIdentityServiceClassName(this
                     .getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CLASS_NAME), this.getLogger());
@@ -395,7 +393,7 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.getLogger().config("Activiti engine configuration:");
             this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableActivitiJobExecutor);
             this.getLogger()
-                    .config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + this.enableActivitiBpmnValidation);
+.config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + enableActivitiBpmnValidation);
             this.getLogger().config(
                     "   - " + ENGINE_IDENTITY_SERVICE_CLASS_NAME + " = " + identityServiceClass.getName());
             this.getLogger().config(
@@ -673,7 +671,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 
     @Override
     protected AbstractServiceUnitManager createServiceUnitManager() {
-        return new ActivitiSuManager(this, this.simpleUUIDGenerator, this.enableActivitiBpmnValidation);
+        return new ActivitiSuManager(this, this.simpleUUIDGenerator);
     }
 
     private void registerCxfPetalsTransport() {
