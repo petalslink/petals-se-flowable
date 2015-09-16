@@ -31,13 +31,16 @@ public class NotifyVacationServiceImpl implements NotifyVacation {
     public String vacationRequestUpdated(final String enquirer, final long dayNumber,
             final XMLGregorianCalendar startDate, final String reason, final String vacationRequestId,
             final String confirmed) {
+        
+        final StringBuffer message = new StringBuffer();
+        message.append("Vacation request updated #" + vacationRequestId + ":").append('\n');
+        message.append("\t- Enquirer: " + enquirer).append('\n');
+        message.append("\t- Day number: " + dayNumber).append('\n');
+        message.append("\t- Start date: " + startDate).append('\n');
+        message.append("\t- Reason: " + reason).append('\n');
+        message.append("\t- Confirmed:" + confirmed);
 
-        LOG.info("Vacation request updated #" + vacationRequestId + ":");
-        LOG.info("\t- Enquirer: " + enquirer);
-        LOG.info("\t- Day number: " + dayNumber);
-        LOG.info("\t- Start date: " + startDate);
-        LOG.info("\t- Reason: " + reason);
-        LOG.info("\t- Confirmed:" + confirmed);
+        LOG.info(message.toString());
 
         return vacationRequestId;
     }
@@ -46,28 +49,34 @@ public class NotifyVacationServiceImpl implements NotifyVacation {
     public String newVacationRequest(final String enquirer, final long dayNumber, final XMLGregorianCalendar startDate,
             final String reason, final String vacationRequestId) {
 
-        LOG.info("New vacation request #" + vacationRequestId + ":");
-        LOG.info("\t- Enquirer: " + enquirer);
-        LOG.info("\t- Day number: " + dayNumber);
-        LOG.info("\t- Start date: " + startDate);
-        LOG.info("\t- Reason: " + reason);
+        final StringBuffer message = new StringBuffer();
+        message.append("New vacation request #" + vacationRequestId + ":").append('\n');
+        message.append("\t- Enquirer: " + enquirer).append('\n');
+        message.append("\t- Day number: " + dayNumber).append('\n');
+        message.append("\t- Start date: " + startDate).append('\n');
+        message.append("\t- Reason: " + reason);
+
+        LOG.info(message.toString());
 
         return vacationRequestId;
     }
 
     @Override
-    public OkResponse vacationRequestApproved(final VacationRequestApproved parameters) {
+    public String vacationRequestApproved(final String enquirer, final long dayNumber,
+            final XMLGregorianCalendar startDate, final String reason, final String vacationRequestId,
+            final String approvedBy) {
 
-        LOG.info("Vacation request approved #" + parameters.getVacationRequestId() + ":");
-        LOG.info("\t- Enquirer: " + parameters.getEnquirer());
-        LOG.info("\t- Day number: " + parameters.getDayNumber());
-        LOG.info("\t- Start date: " + parameters.getStartDate());
-        LOG.info("\t- Reason: " + parameters.getReason());
-        LOG.info("\t- Approved by: " + parameters.getApprovedBy());
+        final StringBuffer message = new StringBuffer();
+        message.append("Vacation request approved #" + vacationRequestId + ":").append('\n');
+        message.append("\t- Enquirer: " + enquirer).append('\n');
+        message.append("\t- Day number: " + dayNumber).append('\n');
+        message.append("\t- Start date: " + startDate).append('\n');
+        message.append("\t- Reason: " + reason).append('\n');
+        message.append("\t- Approved by: " + approvedBy);
 
-        final OkResponse okResponse = new OkResponse();
-        okResponse.setOk(parameters.getApprovedBy().isEmpty() ? "ko" : "ok");
-        return okResponse;
+        LOG.info(message.toString());
+
+        return approvedBy.isEmpty() ? "ko" : "ok";
     }
 
 }

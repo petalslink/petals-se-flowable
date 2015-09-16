@@ -32,12 +32,15 @@ public class ArchiveServiceImpl implements Archive {
             final XMLGregorianCalendar startDate, final String reason, final String vacationRequestId,
             final String approvedBy) {
 
-        LOG.info("Archive vacation request #" + vacationRequestId + ":");
-        LOG.info("\t- Enquirer: " + enquirer);
-        LOG.info("\t- Day number: " + dayNumber);
-        LOG.info("\t- Start date: " + startDate);
-        LOG.info("\t- Reason: " + reason);
-        LOG.info("\t- Approved by:" + approvedBy);
+        final StringBuffer message = new StringBuffer();
+        message.append("Archive vacation request #" + vacationRequestId + ":").append('\n');
+        message.append("\t- Enquirer: " + enquirer).append('\n');
+        message.append("\t- Day number: " + dayNumber).append('\n');
+        message.append("\t- Start date: " + startDate).append('\n');
+        message.append("\t- Reason: " + reason).append('\n');
+        message.append("\t- Approved by:" + approvedBy);
+
+        LOG.info(message.toString());
 
         return vacationRequestId;
 

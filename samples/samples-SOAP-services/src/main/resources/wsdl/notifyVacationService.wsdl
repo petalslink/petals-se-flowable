@@ -52,7 +52,9 @@
                <xsd:complexContent>
                   <xsd:extension base="vacationRequest:vacationRequestType">
                      <xsd:sequence>
-                        <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" />
+                        <!-- TODO: replace declaration of vacationRequestId by an element reference when BARE mode will be supported -->
+                        <!-- xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1" /-->
+                        <xsd:element name="vacationRequestId" type="xsd:string"  minOccurs="1" maxOccurs="1" />
                         <xsd:element name="approved-by" type="xsd:string" minOccurs="1" maxOccurs="1" />
                      </xsd:sequence>
                   </xsd:extension>
