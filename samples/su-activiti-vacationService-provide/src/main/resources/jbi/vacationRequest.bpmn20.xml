@@ -162,6 +162,10 @@
                <from>${resendRequest}</from>
                <to>${dataInputOfNotifyVacationRequestUpdated.confirmed}</to>
             </assignment>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfNotifyVacationRequestUpdated.vacationRequestId}</to>
+            </assignment>
          </dataInputAssociation>
       </serviceTask>
       <sequenceFlow id="flow11" sourceRef="notifyVacationRequestUpdated" targetRef="handleVacationRequest"></sequenceFlow>
