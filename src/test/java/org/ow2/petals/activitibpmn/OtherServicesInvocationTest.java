@@ -31,7 +31,7 @@ import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedStatusFromConsumerMessage;
 
 /**
- * Unit tests about request processing not dedicated to BPMN services ({@link BpmnServicesInvocationTest}) or
+ * Unit tests about request processing not dedicated to BPMN services ({@link tryToRetrieveUserTask}) or
  * integration services ({@link GetTasksInvocationTest}).
  * 
  * @author Christophe DENEUX - Linagora

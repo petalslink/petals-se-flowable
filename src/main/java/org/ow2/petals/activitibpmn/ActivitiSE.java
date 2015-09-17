@@ -40,8 +40,10 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_MAX_
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_PASSWORD;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_ACTIVATEPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_SUSPENDPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE_NAME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE_NAME;
 
@@ -82,8 +84,10 @@ import org.ow2.petals.activitibpmn.identity.IdentityService;
 import org.ow2.petals.activitibpmn.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.activitibpmn.identity.file.FileConfigurator;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
+import org.ow2.petals.activitibpmn.incoming.integration.ActivateProcessInstancesOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.GetProcessInstancesOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
+import org.ow2.petals.activitibpmn.incoming.integration.SuspendProcessInstancesOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.activitibpmn.outgoing.PetalsSender;
 import org.ow2.petals.activitibpmn.outgoing.cxf.transport.PetalsCxfTransportFactory;
@@ -470,10 +474,20 @@ public class ActivitiSE extends AbstractServiceEngine {
                     final QName integrationInterfaceName = endpoint.getService().getInterface().getQName();
                     try {
                         if (ITG_PROCESSINSTANCES_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
-                            this.activitiServices.put(new EndpointOperationKey(integrationEndpointName,
-                                    integrationInterfaceName, ITG_OP_GETPROCESSINSTANCES),
+                            this.activitiServices.put(
+                                    new EndpointOperationKey(integrationEndpointName, integrationInterfaceName,
+                                            ITG_OP_GETPROCESSINSTANCES),
                                     new GetProcessInstancesOperation(this.activitiEngine.getRuntimeService(),
-                                            this.activitiEngine.getRepositoryService(), this.getLogger()));
+                                            this.activitiEngine.getHistoryService(), this.activitiEngine
+                                                    .getRepositoryService(), this.getLogger()));
+                            this.activitiServices.put(new EndpointOperationKey(integrationEndpointName,
+                                    integrationInterfaceName, ITG_OP_SUSPENDPROCESSINSTANCES),
+                                    new SuspendProcessInstancesOperation(this.activitiEngine.getRuntimeService(), this.getLogger()));
+                            this.activitiServices.put(
+                                    new EndpointOperationKey(integrationEndpointName, integrationInterfaceName,
+                                            ITG_OP_ACTIVATEPROCESSINSTANCES),
+                                    new ActivateProcessInstancesOperation(this.activitiEngine.getRuntimeService(), this
+                                            .getLogger()));
                         } else if (ITG_TASK_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
                             this.activitiServices.put(new EndpointOperationKey(integrationEndpointName,
                                     integrationInterfaceName, ITG_OP_GETTASKS), new GetTasksOperation(

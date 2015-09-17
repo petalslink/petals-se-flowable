@@ -327,6 +327,28 @@ public final class ActivitiSEConstants {
          */
         public static final QName ITG_OP_GETPROCESSINSTANCES = new QName(ITG_NAMESPACE, ITG_OP_GETPROCESSINSTANCES_NAME);
 
+        /**
+         * Name (local part) of the integration operation to suspend process instances
+         */
+        public static final String ITG_OP_SUSPENDPROCESSINSTANCES_NAME = "suspendProcessInstances";
+
+        /**
+         * Name of the integration operation to suspend process instances
+         */
+        public static final QName ITG_OP_SUSPENDPROCESSINSTANCES = new QName(ITG_NAMESPACE,
+                ITG_OP_SUSPENDPROCESSINSTANCES_NAME);
+
+        /**
+         * Name (local part) of the integration operation to activate process instances
+         */
+        public static final String ITG_OP_ACTIVATEPROCESSINSTANCES_NAME = "activateProcessInstances";
+
+        /**
+         * Name of the integration operation to activate process instances
+         */
+        public static final QName ITG_OP_ACTIVATEPROCESSINSTANCES = new QName(ITG_NAMESPACE,
+                ITG_OP_ACTIVATEPROCESSINSTANCES_NAME);
+
         private IntegrationOperation() {
             // NOP: Utility class => No constructor
         }

@@ -18,13 +18,16 @@
 package org.ow2.petals.activitibpmn;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_ACTIVATEPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_OP_SUSPENDPROCESSINSTANCES;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
@@ -37,6 +40,7 @@ import static org.ow2.petals.component.framework.junit.Assert.assertMonitProvide
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.LogRecord;
@@ -44,6 +48,8 @@ import java.util.logging.LogRecord;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.bind.JAXBException;
+import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.Source;
 
@@ -61,11 +67,18 @@ import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.WrappedResponseToConsumerMessage;
+import org.ow2.petals.components.activiti.generic._1.ActivateProcessInstances;
+import org.ow2.petals.components.activiti.generic._1.ActivateProcessInstancesResponse;
+import org.ow2.petals.components.activiti.generic._1.ActivationResult;
+import org.ow2.petals.components.activiti.generic._1.AdjournmentResult;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstancesResponse;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
 import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
 import org.ow2.petals.components.activiti.generic._1.ProcessInstance;
+import org.ow2.petals.components.activiti.generic._1.ProcessInstanceState;
+import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstances;
+import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstancesResponse;
 import org.ow2.petals.components.activiti.generic._1.Task;
 import org.ow2.petals.components.activiti.generic._1.Variable;
 import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
@@ -87,7 +100,7 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class BpmnServicesInvocationTest extends AbstractComponentTest {
+public class tryToRetrieveUserTask extends AbstractComponentTest {
 
     /**
      * <p>
@@ -165,7 +178,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -240,98 +253,46 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
                 this.activitiClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
                         ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID));
 
-        // Try to retrieve the process instance using the integration service
-        final GetProcessInstances getProcessInstancesReq = new GetProcessInstances();
-        getProcessInstancesReq.setActive(true);
-        getProcessInstancesReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
-        getProcessInstancesReq.setProcessInstanceIdentifier(response_1.getNumeroDde());
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.ACTIVE,
+                processStartedBeginFlowLogData, true);
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, false);
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.FINISHED,
+                processStartedBeginFlowLogData, false);
 
-        IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG), ITG_OP_GETPROCESSINSTANCES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(getProcessInstancesReq))));
-        {
-            final ResponseMessage getProcessInstancesRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
-            assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
-            final Object getProcessInstancesRespObj = BpmnServicesInvocationTest.UNMARSHALLER
-                    .unmarshal(getProcessInstancesRespMsg.getPayload());
-            assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
-            final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
-            assertNotNull(getProcessInstancesResp.getProcessInstances());
-            assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
-            assertEquals(1, getProcessInstancesResp.getProcessInstances().getProcessInstance().size());
-            final ProcessInstance processInstance = getProcessInstancesResp.getProcessInstances().getProcessInstance()
-                    .get(0);
-            assertEquals(BPMN_PROCESS_DEFINITION_KEY, processInstance.getProcessDefinitionIdentifier());
-            assertEquals(response_1.getNumeroDde(), processInstance.getProcessInstanceIdentifier());
-            assertNotNull(processInstance.getVariables());
-            final List<Variable> variables = processInstance.getVariables().getVariable();
-            assertNotNull(variables);
-            assertTrue(variables.size() > 5);
-            for (final Variable variable : variables) {
-                if ("startDate".equals(variable.getName())) {
-                    assertEquals(
-                            0,
-                            startDate.compareTo(DatatypeFactory.newInstance()
-                                    .newXMLGregorianCalendar(variable.getValue()).toGregorianCalendar()));
-                } else if ("vacationMotivation".equals(variable.getName())) {
-                    assertEquals(motivation, variable.getValue());
-                } else if ("numberOfDays".equals(variable.getName())) {
-                    assertEquals(String.valueOf(numberOfDays), variable.getValue());
-                } else if ("employeeName".equals(variable.getName())) {
-                    assertEquals(BPMN_USER_DEMANDEUR, variable.getValue());
-                } else if ("petals.flow.instance.id".equals(variable.getName())) {
-                    assertEquals(
-                            processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                            variable.getValue());
-                }
-            }
-        }
-        // Check MONIT traces about the task basket invocation
-        final List<LogRecord> monitLogs_getProcessInstances = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(2, monitLogs_getProcessInstances.size());
-        final FlowLogData providerBegin_getProcessInstances = assertMonitProviderBeginLog(
-                ITG_PROCESSINSTANCES_PORT_TYPE,
-                ITG_PROCESSINSTANCES_SERVICE, COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_PROCESSINSTANCES_SERVICE),
-                ITG_OP_GETPROCESSINSTANCES, monitLogs_getProcessInstances.get(0));
-        assertMonitProviderEndLog(providerBegin_getProcessInstances, monitLogs_getProcessInstances.get(1));
-        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_getProcessInstances);
+        this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), true, processStartedBeginFlowLogData, true);
+        this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), false, processStartedBeginFlowLogData,
+                false);
 
-        // Verify the task basket using integration service
-        final GetTasks getTasksReq = new GetTasks();
-        getTasksReq.setActive(true);
-        getTasksReq.setAssignee(BPMN_USER_VALIDEUR);
-        getTasksReq.setProcessInstanceIdentifier(response_1.getNumeroDde());
+        this.tryToSuspendProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
+                AdjournmentResult.SUSPENDED);
+        this.tryToSuspendProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
+                AdjournmentResult.ALREADY_SUSPENDED);
+        this.tryToSuspendProcessInstance("not-found", processStartedBeginFlowLogData, AdjournmentResult.NOT_FOUND);
 
-        IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(NATIVE_TASKS_SVC_CFG), ITG_OP_GETTASKS,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(getTasksReq))));
-        {
-            final ResponseMessage getTaskRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
-            assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
-            final Object getTaskRespObj = BpmnServicesInvocationTest.UNMARSHALLER
-                    .unmarshal(getTaskRespMsg.getPayload());
-            assertTrue(getTaskRespObj instanceof GetTasksResponse);
-            final GetTasksResponse getTaskResp = (GetTasksResponse) getTaskRespObj;
-            assertNotNull(getTaskResp.getTasks());
-            assertNotNull(getTaskResp.getTasks().getTask());
-            assertEquals(1, getTaskResp.getTasks().getTask().size());
-            final Task task = getTaskResp.getTasks().getTask().get(0);
-            assertEquals(BPMN_PROCESS_DEFINITION_KEY, task.getProcessDefinitionIdentifier());
-            assertEquals(response_1.getNumeroDde(), task.getProcessInstanceIdentifier());
-            assertEquals(BPMN_PROCESS_1ST_USER_TASK_KEY, task.getTaskIdentifier());
-        }
-        // Check MONIT traces about the task basket invocation
-        final List<LogRecord> monitLogs_taskBasket = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(2, monitLogs_taskBasket.size());
-        final FlowLogData providerBegin_taskBasket = assertMonitProviderBeginLog(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
-                COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_TASK_SERVICE), ITG_OP_GETTASKS,
-                monitLogs_taskBasket.get(0));
-        assertMonitProviderEndLog(providerBegin_taskBasket, monitLogs_taskBasket.get(1));
-        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_taskBasket);
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, false);
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.SUSPENDED,
+                processStartedBeginFlowLogData, true);
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, false);
+
+        this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), false, processStartedBeginFlowLogData,
+                true);
+        this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), true, processStartedBeginFlowLogData,
+                false);
+
+        this.tryToActivateProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
+                ActivationResult.ACTIVATED);
+        this.tryToActivateProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
+                ActivationResult.ALREADY_ACTIVATED);
+        this.tryToActivateProcessInstance("not-found", processStartedBeginFlowLogData, ActivationResult.NOT_FOUND);
+
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, true);
 
         // ------------------------------------------------------------------
         // ---- Complete the first user task (validate the vacation request)
@@ -343,7 +304,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
@@ -359,7 +320,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
             assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
             assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
             assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
-            final Object archiveRequestObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(archiveRequestMsg_1
+            final Object archiveRequestObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(archiveRequestMsg_1
                     .getPayload());
             assertTrue(archiveRequestObj_1 instanceof Archiver);
             final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
@@ -415,7 +376,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final Source fault_2 = responseMsg_2.getFault();
         assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
         assertNotNull("No XML payload in response", responseMsg_2.getPayload());
-        final Object responseObj_2 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
+        final Object responseObj_2 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
         assertTrue(responseObj_2 instanceof AckResponse);
         final AckResponse response_2 = (AckResponse) responseObj_2;
         {
@@ -464,6 +425,14 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         }
         assertProcessInstanceFinished(response_1.getNumeroDde());
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, false);
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, false);
+        this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
+                ProcessInstanceState.FINISHED,
+                processStartedBeginFlowLogData, true);
 
         // --------------------------------------------------------
         // ---- Try to complete AGAIN the first user task
@@ -573,7 +542,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         request.setMotifDde("hollidays");
 
         // Send the request
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST
                 .pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
                         .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                         AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
@@ -638,7 +607,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
@@ -663,7 +632,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -679,7 +648,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
@@ -745,7 +714,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
@@ -770,7 +739,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -787,7 +756,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
@@ -853,7 +822,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
@@ -894,7 +863,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
@@ -960,7 +929,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
@@ -1002,7 +971,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_2))));
@@ -1054,7 +1023,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         request.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST
                 .pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
                         .getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
                         AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
@@ -1132,7 +1101,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         request_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_1))));
@@ -1224,14 +1193,13 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
 
         // Send the 3rd valid request for the user task 'handleRequest'
         IN_MEMORY_LOG_HANDLER.clear();
-        BpmnServicesInvocationTest.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
+        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
                         .toByteArray(request_3))));
 
         // Assert the response of the 3rd valid request
-        final ResponseMessage responseMsg_3 = BpmnServicesInvocationTest.COMPONENT_UNDER_TEST
-                .pollResponseFromProvider();
+        final ResponseMessage responseMsg_3 = tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pollResponseFromProvider();
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_3 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -1244,7 +1212,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertNull("XML payload in response", responseMsg_3.getPayload());
         final Source fault_3 = responseMsg_3.getFault();
         assertNotNull("No fault returns", fault_3);
-        final Object responseObj_3 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(fault_3);
+        final Object responseObj_3 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(fault_3);
         assertTrue(responseObj_3 instanceof DemandeDejaValidee);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
@@ -1291,7 +1259,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
             assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
             assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
             assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
-            final Object archiveRequestObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(archiveRequestMsg_1
+            final Object archiveRequestObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(archiveRequestMsg_1
                     .getPayload());
             assertTrue(archiveRequestObj_1 instanceof Archiver);
             final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
@@ -1320,7 +1288,7 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = BpmnServicesInvocationTest.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -1375,5 +1343,268 @@ public class BpmnServicesInvocationTest extends AbstractComponentTest {
         assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_1.get(4));
         // Check the last MONIT trace of the BPMN process
         assertMonitConsumerEndLog(processStartedBeginFlowLogData, monitLogs_1.get(5));
+    }
+
+    /**
+     * Retrieve a process instance.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the process instance to retrieve
+     * @param expectedStartDate
+     *            The expected start date of the retrieved process instance.
+     * @param expectedMotivation
+     *            The expected value of the field 'motivation' of the retrieved process instance.
+     * @param expectedNumberOfDays
+     *            The expected value of the field 'numberOfDays' of the retrieved process instance.
+     * @param state
+     *            {@link ProcessInstanceState} of the process instances to retrieve.
+     * @param processStartedBeginFlowLogData
+     *            The first MONIT trace of the process instance execution.
+     * @param isRetrievedProcessInstanceExpected
+     *            Expected result: <code>true</code> if a process instance must be retrieved; <code>false</code> if no
+     *            process instance must be retrieved
+     * @throws JAXBException
+     * @throws IOException
+     */
+    private final void tryToRetrieveProcessInstance(final String processInstanceId,
+            final GregorianCalendar expectedStartDate, final String expectedMotivation, final int expectedNumberOfDays,
+            final ProcessInstanceState state, final FlowLogData processStartedBeginFlowLogData,
+            final boolean isRetrievedProcessInstanceExpected) throws DatatypeConfigurationException, JAXBException,
+            IOException {
+
+        // Try to retrieve the process instance using the integration service
+        final GetProcessInstances getProcessInstancesReq = new GetProcessInstances();
+        getProcessInstancesReq.setState(state);
+        getProcessInstancesReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+        getProcessInstancesReq.setProcessInstanceIdentifier(processInstanceId);
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG), ITG_OP_GETPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(getProcessInstancesReq))));
+        {
+            final ResponseMessage getProcessInstancesRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
+            final Object getProcessInstancesRespObj = tryToRetrieveUserTask.UNMARSHALLER
+                    .unmarshal(getProcessInstancesRespMsg.getPayload());
+            assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+            final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
+            assertNotNull(getProcessInstancesResp.getProcessInstances());
+            assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
+            if (isRetrievedProcessInstanceExpected) {
+                assertEquals(1, getProcessInstancesResp.getProcessInstances().getProcessInstance().size());
+                final ProcessInstance processInstance = getProcessInstancesResp.getProcessInstances()
+                        .getProcessInstance().get(0);
+                assertEquals(BPMN_PROCESS_DEFINITION_KEY, processInstance.getProcessDefinitionIdentifier());
+                assertEquals(processInstanceId, processInstance.getProcessInstanceIdentifier());
+                assertNotNull(processInstance.getVariables());
+                final List<Variable> variables = processInstance.getVariables().getVariable();
+                assertNotNull(variables);
+                assertTrue(variables.size() > 5);
+                for (final Variable variable : variables) {
+                    if ("startDate".equals(variable.getName())) {
+                        assertEquals(
+                                0,
+                                expectedStartDate.compareTo(DatatypeFactory.newInstance()
+                                        .newXMLGregorianCalendar(variable.getValue()).toGregorianCalendar()));
+                    } else if ("vacationMotivation".equals(variable.getName())) {
+                        assertEquals(expectedMotivation, variable.getValue());
+                    } else if ("numberOfDays".equals(variable.getName())) {
+                        assertEquals(String.valueOf(expectedNumberOfDays), variable.getValue());
+                    } else if ("employeeName".equals(variable.getName())) {
+                        assertEquals(BPMN_USER_DEMANDEUR, variable.getValue());
+                    } else if ("petals.flow.instance.id".equals(variable.getName())) {
+                        assertEquals(
+                                processStartedBeginFlowLogData
+                                        .get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                                variable.getValue());
+                    }
+                }
+            } else {
+                assertEquals(0, getProcessInstancesResp.getProcessInstances().getProcessInstance().size());
+            }
+        }
+        // Check MONIT traces about the service integration invocation
+        final List<LogRecord> monitLogs_getProcessInstances = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs_getProcessInstances.size());
+        final FlowLogData providerBegin_getProcessInstances = assertMonitProviderBeginLog(
+                ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
+                COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_PROCESSINSTANCES_SERVICE), ITG_OP_GETPROCESSINSTANCES,
+                monitLogs_getProcessInstances.get(0));
+        assertMonitProviderEndLog(providerBegin_getProcessInstances, monitLogs_getProcessInstances.get(1));
+        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_getProcessInstances);
+    }
+
+    /**
+     * Retrieve a user task.
+     * 
+     * @param user
+     *            The user to which the task is assigned
+     * @param processInstanceId
+     *            The process instance of the task to retrieve
+     * @param isActive
+     *            <code>true</code> if the process instance is active, <code>false</code> if it is suspended,
+     * @param processStartedBeginFlowLogData
+     *            The first MONIT trace of the process instance execution.
+     * @param isRetrievedTaskExpected
+     *            Expected result: <code>true</code> if a task must be retrieved; <code>false</code> if no task must be
+     *            retrieved
+     * @throws JAXBException
+     * @throws IOException
+     */
+    private final void retrieveUserTask(final String user, final String processInstanceId, final boolean isActive,
+            final FlowLogData processStartedBeginFlowLogData, final boolean isRetrievedTaskExpected)
+            throws JAXBException, IOException {
+
+        // Verify the task basket using integration service
+        final GetTasks getTasksReq = new GetTasks();
+        getTasksReq.setActive(isActive);
+        getTasksReq.setAssignee(user);
+        getTasksReq.setProcessInstanceIdentifier(processInstanceId);
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(NATIVE_TASKS_SVC_CFG), ITG_OP_GETTASKS,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(getTasksReq))));
+        {
+            final ResponseMessage getTaskRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
+            final Object getTaskRespObj = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(getTaskRespMsg.getPayload());
+            assertTrue(getTaskRespObj instanceof GetTasksResponse);
+            final GetTasksResponse getTaskResp = (GetTasksResponse) getTaskRespObj;
+            assertNotNull(getTaskResp.getTasks());
+            assertNotNull(getTaskResp.getTasks().getTask());
+            if (isRetrievedTaskExpected) {
+                assertEquals(1, getTaskResp.getTasks().getTask().size());
+                final Task task = getTaskResp.getTasks().getTask().get(0);
+                assertEquals(BPMN_PROCESS_DEFINITION_KEY, task.getProcessDefinitionIdentifier());
+                assertEquals(processInstanceId, task.getProcessInstanceIdentifier());
+                assertEquals(BPMN_PROCESS_1ST_USER_TASK_KEY, task.getTaskIdentifier());
+            } else {
+                assertEquals(0, getTaskResp.getTasks().getTask().size());
+            }
+        }
+        // Check MONIT traces about the task basket invocation
+        final List<LogRecord> monitLogs_taskBasket = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs_taskBasket.size());
+        final FlowLogData providerBegin_taskBasket = assertMonitProviderBeginLog(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_TASK_SERVICE), ITG_OP_GETTASKS,
+                monitLogs_taskBasket.get(0));
+        assertMonitProviderEndLog(providerBegin_taskBasket, monitLogs_taskBasket.get(1));
+        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_taskBasket);
+    }
+
+    private final void tryToSuspendProcessInstance(final String processInstanceId,
+            final FlowLogData processStartedBeginFlowLogData, final AdjournmentResult expectedResult)
+            throws JAXBException, IOException {
+
+        if (expectedResult == AdjournmentResult.SUSPENDED) {
+            // Check at Activiti level that the process instance is suspended
+            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.activitiClient
+                    .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
+            assertNotNull(processInstances);
+            assertEquals(1, processInstances.size());
+            assertFalse(processInstances.get(0).isSuspended());
+        }
+
+        final SuspendProcessInstances suspendProcessInstancesReq = new SuspendProcessInstances();
+        suspendProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG), ITG_OP_SUSPENDPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(suspendProcessInstancesReq))));
+        {
+            final ResponseMessage suspendProcessInstancesRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            assertNotNull("No XML payload in response", suspendProcessInstancesRespMsg.getPayload());
+            final Object suspendProcessInstancesRespObj = tryToRetrieveUserTask.UNMARSHALLER
+                    .unmarshal(suspendProcessInstancesRespMsg.getPayload());
+            assertTrue(suspendProcessInstancesRespObj instanceof SuspendProcessInstancesResponse);
+            final SuspendProcessInstancesResponse suspendProcessInstancesResp = (SuspendProcessInstancesResponse) suspendProcessInstancesRespObj;
+            assertNotNull(suspendProcessInstancesResp.getProcessInstanceIdentifier());
+            assertEquals(1, suspendProcessInstancesResp.getProcessInstanceIdentifier().size());
+            assertNotNull(suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0));
+            assertEquals(processInstanceId, suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0)
+                    .getValue());
+            assertEquals(expectedResult, suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0).getResult());
+        }
+
+        // Check MONIT traces about the process instance adjournment
+        final List<LogRecord> monitLogs_suspendProcessInstance = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs_suspendProcessInstance.size());
+        final FlowLogData providerBegin_suspendProcessInstance = assertMonitProviderBeginLog(
+                ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
+                COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_PROCESSINSTANCES_SERVICE),
+                ITG_OP_SUSPENDPROCESSINSTANCES, monitLogs_suspendProcessInstance.get(0));
+        assertMonitProviderEndLog(providerBegin_suspendProcessInstance, monitLogs_suspendProcessInstance.get(1));
+        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_suspendProcessInstance);
+
+        if (expectedResult == AdjournmentResult.SUSPENDED) {
+            // Check at Activiti level that the process instance is suspended
+            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.activitiClient
+                    .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
+            assertNotNull(processInstances);
+            assertEquals(1, processInstances.size());
+            assertTrue(processInstances.get(0).isSuspended());
+        }
+    }
+
+    private final void tryToActivateProcessInstance(final String processInstanceId,
+            final FlowLogData processStartedBeginFlowLogData, final ActivationResult expectedResult)
+            throws JAXBException, IOException {
+
+        if (expectedResult == ActivationResult.ACTIVATED) {
+            // Check at Activiti level that the process instance is activated
+            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.activitiClient
+                    .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
+            assertNotNull(processInstances);
+            assertEquals(1, processInstances.size());
+            assertTrue(processInstances.get(0).isSuspended());
+        }
+
+        final ActivateProcessInstances activateProcessInstancesReq = new ActivateProcessInstances();
+        activateProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
+                .getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG), ITG_OP_ACTIVATEPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
+                        .toByteArray(activateProcessInstancesReq))));
+        {
+            final ResponseMessage activateProcessInstancesRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            assertNotNull("No XML payload in response", activateProcessInstancesRespMsg.getPayload());
+            final Object activateProcessInstancesRespObj = tryToRetrieveUserTask.UNMARSHALLER
+                    .unmarshal(activateProcessInstancesRespMsg.getPayload());
+            assertTrue(activateProcessInstancesRespObj instanceof ActivateProcessInstancesResponse);
+            final ActivateProcessInstancesResponse activateProcessInstancesResp = (ActivateProcessInstancesResponse) activateProcessInstancesRespObj;
+            assertNotNull(activateProcessInstancesResp.getProcessInstanceIdentifier());
+            assertEquals(1, activateProcessInstancesResp.getProcessInstanceIdentifier().size());
+            assertNotNull(activateProcessInstancesResp.getProcessInstanceIdentifier().get(0));
+            assertEquals(processInstanceId, activateProcessInstancesResp.getProcessInstanceIdentifier().get(0)
+                    .getValue());
+            assertEquals(expectedResult, activateProcessInstancesResp.getProcessInstanceIdentifier().get(0).getResult());
+        }
+
+        // Check MONIT traces about the process instance activation
+        final List<LogRecord> monitLogs_activateProcessInstance = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs_activateProcessInstance.size());
+        final FlowLogData providerBegin_activateProcessInstance = assertMonitProviderBeginLog(
+                ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
+                COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_PROCESSINSTANCES_SERVICE),
+                ITG_OP_ACTIVATEPROCESSINSTANCES, monitLogs_activateProcessInstance.get(0));
+        assertMonitProviderEndLog(providerBegin_activateProcessInstance, monitLogs_activateProcessInstance.get(1));
+        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_activateProcessInstance);
+
+        if (expectedResult == ActivationResult.ACTIVATED) {
+            // Check at Activiti level that the process instance is activated
+            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.activitiClient
+                    .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
+            assertNotNull(processInstances);
+            assertEquals(1, processInstances.size());
+            assertFalse(processInstances.get(0).isSuspended());
+        }
     }
 }

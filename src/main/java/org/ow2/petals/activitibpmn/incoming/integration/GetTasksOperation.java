@@ -70,7 +70,9 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
 
         // By default, we search active tasks
         final Boolean isActive = incomingObject.isActive();
-        if (isActive == null || isActive.booleanValue()) {
+        if (isActive != null && !isActive.booleanValue()) {
+            taskQuery.suspended();
+        } else {
             taskQuery.active();
         }
 
