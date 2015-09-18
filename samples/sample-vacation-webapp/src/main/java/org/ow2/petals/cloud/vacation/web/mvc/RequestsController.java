@@ -65,10 +65,10 @@ public class RequestsController extends AbstractController {
         modelAndView.addObject("refusedRequests",
                 activitiTaskClient.getRefusedRequests(userSession.getUsernameWithChecks()));
 
-        // modelAndView.addObject("pendingRequests",
-        // activitiProcessClient.getMyPendingRequests(userSession.getUsernameWithChecks()));
-        // modelAndView.addObject("archivedRequests",
-        // activitiProcessClient.getMyFinishedRequests(userSession.getUsernameWithChecks()));
+        modelAndView.addObject("pendingRequests",
+                activitiProcessClient.getMyPendingRequests(userSession.getUsernameWithChecks()));
+        modelAndView.addObject("archivedRequests",
+                activitiProcessClient.getMyFinishedRequests(userSession.getUsernameWithChecks()));
 
         return modelAndView;
     }

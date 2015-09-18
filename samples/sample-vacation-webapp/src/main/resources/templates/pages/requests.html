@@ -65,7 +65,7 @@
           </tr>
         </tbody>
       </table>
-      <!-- The rest is disabled for now, see RequestsController
+
       <h2>Pending Requests</h2>
       <table class="table table-bordered table-striped">
         <thead>
@@ -125,16 +125,15 @@
             <td th:text="${request.reason}">
               Some reason
             </td>
-            <td th:if="${request.accepted}" th:text="Yes">
+            <td th:if="${request.accepted}" th:text="Accepted">
               Accepted
             </td>
-            <td th:if="${not request.accepted}" th:text="No: ${request.rejectionReason}">
+            <td th:if="${not request.accepted}" th:text="' Refused: ' + ${request.rejectionReason}">
               Cancelled
             </td>
           </tr>
         </tbody>
       </table>
-      -->
     </div>
   </body>
 </html>

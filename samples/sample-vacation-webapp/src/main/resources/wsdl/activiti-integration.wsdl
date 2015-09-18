@@ -79,12 +79,10 @@
          <xsd:element name="getProcessInstances">
             <xsd:complexType>
                <xsd:sequence>
-                  <xsd:element name="active" type="xsd:boolean" maxOccurs="1" minOccurs="0" default="true">
+                  <xsd:element name="state" type="activiti:ProcessInstanceState" maxOccurs="1" minOccurs="0" default="active">
                      <xsd:annotation>
                         <xsd:documentation>
-                           If "true", only select process instances which are active, which means that
-                           neither the process instance nor the corresponding process definition are suspended. Default
-                           value: true.
+                           The state of process instances to select. Default value: 'active'.
                         </xsd:documentation>
                      </xsd:annotation>
                   </xsd:element>
@@ -103,6 +101,14 @@
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
+         
+         <xsd:simpleType name="ProcessInstanceState">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="active" />
+               <xsd:enumeration value="suspended" />
+               <xsd:enumeration value="finished" />
+            </xsd:restriction>
+         </xsd:simpleType>
 
          <xsd:element name="getProcessInstancesResponse">
             <xsd:complexType>
@@ -112,6 +118,85 @@
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
+
+         <xsd:element name="suspendProcessInstances">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-identifier" type="xsd:string" maxOccurs="unbounded" minOccurs="0">
+                     <xsd:annotation>
+                        <xsd:documentation>Identifier of a process instance to suspend</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="suspendProcessInstancesResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-identifier" maxOccurs="unbounded" minOccurs="0">
+                     <xsd:annotation>
+                        <xsd:documentation>Identifier of the process instance suspended</xsd:documentation>
+                     </xsd:annotation>
+                     <xsd:complexType>
+                        <xsd:simpleContent>
+                           <xsd:extension base="xsd:string">
+                              <xsd:attribute name="result" type="activiti:AdjournmentResult"/>
+                           </xsd:extension>
+                        </xsd:simpleContent>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:simpleType name="AdjournmentResult">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="suspended" />
+               <xsd:enumeration value="not-found" />
+               <xsd:enumeration value="already-suspended" />
+            </xsd:restriction>
+         </xsd:simpleType>
+
+         <xsd:element name="activateProcessInstances">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-identifier" type="xsd:string" maxOccurs="unbounded" minOccurs="0">
+                     <xsd:annotation>
+                        <xsd:documentation>Identifier of a process instance to activate</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="activateProcessInstancesResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-identifier" maxOccurs="unbounded" minOccurs="0">
+                     <xsd:annotation>
+                        <xsd:documentation>Identifier of the process instance activated</xsd:documentation>
+                     </xsd:annotation>
+                     <xsd:complexType>
+                        <xsd:simpleContent>
+                           <xsd:extension base="xsd:string">
+                              <xsd:attribute name="result" type="activiti:ActivationResult"/>
+                           </xsd:extension>
+                        </xsd:simpleContent>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:simpleType name="ActivationResult">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="activated" />
+               <xsd:enumeration value="not-found" />
+               <xsd:enumeration value="already-activated" />
+            </xsd:restriction>
+         </xsd:simpleType>
+
          <xsd:complexType name="ProcessInstances">
             <xsd:sequence>
                <xsd:element name="process-instance" type="activiti:ProcessInstance" maxOccurs="unbounded"
@@ -173,6 +258,18 @@
    <wsdl:message name="getProcessInstancesResponse">
       <wsdl:part name="getProcessInstancesResponse" element="activiti:getProcessInstancesResponse" />
    </wsdl:message>
+   <wsdl:message name="suspendProcessInstancesRequest">
+      <wsdl:part name="suspendProcessInstancesRequest" element="activiti:suspendProcessInstances" />
+   </wsdl:message>
+   <wsdl:message name="suspendProcessInstancesResponse">
+      <wsdl:part name="suspendProcessInstancesResponse" element="activiti:suspendProcessInstancesResponse" />
+   </wsdl:message>
+   <wsdl:message name="activateProcessInstancesRequest">
+      <wsdl:part name="activateProcessInstancesRequest" element="activiti:activateProcessInstances" />
+   </wsdl:message>
+   <wsdl:message name="activateProcessInstancesResponse">
+      <wsdl:part name="activateProcessInstancesResponse" element="activiti:activateProcessInstancesResponse" />
+   </wsdl:message>
 
    <wsdl:portType name="Task">
       <wsdl:operation name="getTasks">
@@ -186,6 +283,16 @@
       <wsdl:operation name="getProcessInstances">
          <wsdl:input message="activiti:getProcessInstancesRequest" />
          <wsdl:output message="activiti:getProcessInstancesResponse" />
+         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="suspendProcessInstances">
+         <wsdl:input message="activiti:suspendProcessInstancesRequest" />
+         <wsdl:output message="activiti:suspendProcessInstancesResponse" />
+         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="activateProcessInstances">
+         <wsdl:input message="activiti:activateProcessInstancesRequest" />
+         <wsdl:output message="activiti:activateProcessInstancesResponse" />
          <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
    </wsdl:portType>
@@ -210,6 +317,30 @@
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="getProcessInstances">
          <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/getProcessInstances" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="invalidRequest">
+            <soap:fault name="invalidRequest" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="suspendProcessInstances">
+         <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/suspendProcessInstances" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="invalidRequest">
+            <soap:fault name="invalidRequest" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="activateProcessInstances">
+         <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/activateProcessInstances" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>

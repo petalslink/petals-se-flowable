@@ -268,7 +268,7 @@
       <wsdl:part name="activateProcessInstancesRequest" element="activiti:activateProcessInstances" />
    </wsdl:message>
    <wsdl:message name="activateProcessInstancesResponse">
-      <wsdl:part name="activateProcessInstancesResponse" element="activiti:sactivateProcessInstancesResponse" />
+      <wsdl:part name="activateProcessInstancesResponse" element="activiti:activateProcessInstancesResponse" />
    </wsdl:message>
 
    <wsdl:portType name="Task">

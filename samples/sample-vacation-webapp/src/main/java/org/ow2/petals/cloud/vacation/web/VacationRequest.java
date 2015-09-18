@@ -105,4 +105,18 @@ public abstract class VacationRequest {
             this.rejectionReason = rejectionReason;
         }
     }
+
+    public static class ArchivedVacationRequest extends RefusedVacationRequest {
+
+        private boolean accepted;
+
+        public boolean getAccepted() {
+            return this.accepted;
+        }
+
+        public void setAccepted(final boolean accepted) {
+            this.accepted = accepted;
+        }
+
+    }
 }

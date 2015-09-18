@@ -25,12 +25,14 @@ import java.util.Map;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.ow2.petals.cloud.vacation.web.VacationRequest;
+import org.ow2.petals.cloud.vacation.web.VacationRequest.ArchivedVacationRequest;
 import org.ow2.petals.cloud.vacation.web.VacationRequest.PendingVacationRequest;
 import org.ow2.petals.cloud.vacation.web.VacationRequest.RefusedVacationRequest;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstancesResponse;
 import org.ow2.petals.components.activiti.generic._1.ObjectFactory;
 import org.ow2.petals.components.activiti.generic._1.ProcessInstance;
+import org.ow2.petals.components.activiti.generic._1.ProcessInstanceState;
 import org.ow2.petals.components.activiti.generic._1.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
@@ -54,7 +56,7 @@ public class ActivitiProcessClient extends WebServiceGatewaySupport {
         
         final GetProcessInstances request = activitiOF.createGetProcessInstances();
         request.setProcessDefinitionIdentifier("vacationRequest");
-        request.setActive(true);
+        request.setState(ProcessInstanceState.ACTIVE);
 
         final GetProcessInstancesResponse response = (GetProcessInstancesResponse) getWebServiceTemplate()
                 .marshalSendAndReceive(request, new SoapActionCallback(
@@ -63,8 +65,35 @@ public class ActivitiProcessClient extends WebServiceGatewaySupport {
         final List<PendingVacationRequest> res = new LinkedList<>();
         for (final ProcessInstance processInstance : response.getProcessInstances().getProcessInstance()) {
             final PendingVacationRequest pendingRequest = toPendingRequest(processInstance);
+            // TODO: The Activiti integration service should filter on the user that starts the process instance
             if (username.equals(pendingRequest.getEnquirer())) {
                 res.add(pendingRequest);
+            }
+        }
+
+        return res;
+    }
+
+    public Iterable<RefusedVacationRequest> getMyFinishedRequests(final String username) {
+
+        assert username != null;
+
+        final GetProcessInstances request = activitiOF.createGetProcessInstances();
+        request.setProcessDefinitionIdentifier("vacationRequest");
+        request.setState(ProcessInstanceState.FINISHED);
+
+        final GetProcessInstancesResponse response = (GetProcessInstancesResponse) getWebServiceTemplate()
+                .marshalSendAndReceive(
+                        request,
+                        new SoapActionCallback(
+                                "http://petals.ow2.org/components/activiti/generic/1.0/getProcessInstances"));
+
+        final List<RefusedVacationRequest> res = new LinkedList<>();
+        for (final ProcessInstance processInstance : response.getProcessInstances().getProcessInstance()) {
+            final RefusedVacationRequest archivedRequest = toFinishedRequest(processInstance);
+            // TODO: The Activiti integration service should filter on the user that starts the process instance
+            if (username.equals(archivedRequest.getEnquirer())) {
+                res.add(archivedRequest);
             }
         }
 
@@ -93,6 +122,19 @@ public class ActivitiProcessClient extends WebServiceGatewaySupport {
         return request;
     }
 
+    private RefusedVacationRequest toFinishedRequest(final ProcessInstance processInstance) {
+
+        final Map<String, String> vars = extractVariables(processInstance);
+
+        final ArchivedVacationRequest request = new ArchivedVacationRequest();
+        populate(request, processInstance, vars);
+        // TODO add manager name? not available apparently...
+        request.setRejectionReason(vars.get("managerMotivation"));
+        request.setAccepted(vars.get("resendRequest") == null || Boolean.parseBoolean(vars.get("resendRequest")));
+
+        return request;
+    }
+
     private Map<String, String> extractVariables(final ProcessInstance processInstance) {
         final Map<String, String> vars = new HashMap<>();
 
@@ -117,7 +159,7 @@ public class ActivitiProcessClient extends WebServiceGatewaySupport {
         final GetProcessInstances request = activitiOF.createGetProcessInstances();
         request.setProcessDefinitionIdentifier("vacationRequest");
         request.setProcessInstanceIdentifier(id);
-        request.setActive(true);
+        request.setState(ProcessInstanceState.ACTIVE);
 
         final GetProcessInstancesResponse response = (GetProcessInstancesResponse) getWebServiceTemplate()
                 .marshalSendAndReceive(request, new SoapActionCallback(
