@@ -20,17 +20,7 @@
         <groupId>com.smartbear.soapui</groupId>
         <artifactId>soapui-maven-plugin</artifactId>
         <version>4.6.4</version>
-        <configuration>
-          <projectFile>resources/soapui/Vacation-Process-soapui-project.xml</projectFile>
-          <testCase>${testCase}</testCase>
-          <mockService>${mockService}</mockService>
-        </configuration>
       </plugin>
     </plugins>
   </build>
-  
-  <scm>
-    <connection>scm:svn:https://svn.petalslink.org/svnroot/trunk/product/integration/petals-integration/tests/petals-bc-soap/launcher-standalone-soap/src/main/ant</connection>
-    <developerConnection>${project.scm.connection}</developerConnection>
-  </scm>
 </project>

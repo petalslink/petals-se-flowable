@@ -7,7 +7,10 @@
    <import>
       <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
    </import>
-
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+         
    <property name="petals.home" value="${project.build.directory}/${project.artifactId}/container" />
    <property name="bc-soap.properties" value="${petals.home}/conf/bc-soap.properties" />
    <property name="topology.container.name" value="sample-0" />
@@ -19,6 +22,9 @@
    <property name="host1.password" value="petals" />
    <property name="activiti-db.file" value="/tmp/activiti.db" />
 
+   <!-- Used by soapui tasks -->
+   <property name="soapui.projectFile" value="${project.build.directory}/${project.artifactId}/resources/soapui/Vacation-Process-soapui-project.xml" />
+   
    <target name="startDatabaseActiviti">
       <delete file="${activiti-db.file}.mv.db" />
       <!-- Start Database Activiti -->
@@ -100,9 +106,7 @@
    <target name="run">
       <echo message="Launching Activiti component tests..." />
 
-      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
-         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Nominal TestCase without adjustment&quot;" />
-      </exec>
+      <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
       <!-- Assertions about MONIT traces -->
       <echo message="Checking MONIT trace of this first process instance" />
@@ -199,18 +203,9 @@
          </assertFlowStep>
       </petals-assert-flow-instance>
 
-      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
-         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Nominal TestCase with adjustment&quot;" />
-      </exec>
-
-      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
-         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Faulty TestCase - Unexpected validator&quot;" />
-      </exec>
-
-      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
-         <arg line="-B -s${basedir}/settings.xml soapui:test -DtestCase=&quot;Faulty TestCase - Unexpected vacation request id&quot;" />
-      </exec>
-
+      <petals-soapui-test testCase="Nominal TestCase with adjustment" />
+      <petals-soapui-test testCase="Faulty TestCase - Unexpected validator" />
+      <petals-soapui-test testCase="Faulty TestCase - Unexpected vacation request id" />
    </target>
 
 
@@ -257,74 +252,24 @@
                                     failOnError="true" />
    </target>
 
-   <!-- Target : Start mocks SoapUI -->
-   <target name="startMocks">
-      <echo message="Starting SoapUI mocks..." />
-
-      <exec executable="mvn" searchpath="true" failonerror="yes" failifexecutionfails="yes">
-         <arg line="-B -s${basedir}/settings.xml soapui:mock" />
-      </exec>
-   </target>
-
-   <!-- Target : Stop mock SoapUI -->
-   <target name="stopMock" depends="mockAvailable" if="isAvailable_${mockServiceAddress}">
-      <echo message="Stopping SoapUI mock ${mockServiceAddress}..." />
-
-      <get src="${mockServiceAddress}?cmd=stop" dest="stopMock" />
-   </target>
-
-   <!-- Target : Wait mock SoapUI -->
-   <target name="waitMock">
-      <echo message="Waiting SoapUI mock ${mockServiceAddress}..." />
-
-      <waitfor maxwait="15" maxwaitunit="minute" timeoutproperty="isStarted_${mockServiceAddress}">
-         <http url="${mockServiceAddress}?wsdl" />
-      </waitfor>
-
-      <fail message="SoapUI mock not started">
-         <condition>
-            <isset property="isStarted_${mockServiceAddress}" />
-         </condition>
-      </fail>
-   </target>
-
-   <!-- Target : Mock available -->
-   <target name="mockAvailable">
-      <echo message="Checking SoapUI mock ${mockServiceAddress}..." />
-
-      <condition property="isAvailable_${mockServiceAddress}">
-         <http url="${mockServiceAddress}?wsdl" />
-      </condition>
-   </target>
-
    <!-- Target : Start Web services -->
    <target name="startWebservices">
-      <parallel failonany="yes">
-         <antcall target="startMocks" />
-      </parallel>
+      <startMocks />
    </target>
 
    <!-- Target : Wait Web services -->
    <target name="waitWebservices">
       <parallel failonany="yes">
-         <antcall target="waitMock">
-            <param name="mockServiceAddress" value="http://localhost:8088/mockNotifyVacationService" />
-         </antcall>
-         <antcall target="waitMock">
-            <param name="mockServiceAddress" value="http://localhost:8088/mockArchiveService" />
-         </antcall>
+         <waitMock url="http://localhost:8088/mockNotifyVacationService" />
+         <waitMock url="http://localhost:8088/mockArchiveService" />
       </parallel>
    </target>
 
    <!-- Target : Stop Web services -->
    <target name="stopWebservices">
       <parallel failonany="yes">
-         <antcall target="stopMock">
-            <param name="mockServiceAddress" value="http://localhost:8088/mockNotifyVacationService" />
-         </antcall>
-         <antcall target="stopMock">
-            <param name="mockServiceAddress" value="http://localhost:8088/mockArchiveService" />
-         </antcall>
+         <stopMock url="http://localhost:8088/mockNotifyVacationService" />
+         <stopMock url="http://localhost:8088/mockArchiveService" />
       </parallel>
    </target>
 
@@ -356,12 +301,14 @@
                </daemons>
                <antcall target="startWebservices" />
                <sequential>
-                  <antcall target="prepare" />
-                  <antcall target="deploy" />
-                  <antcall target="waitWebservices" />
                   <trycatch>
                      <try>
-                        <antcall target="run" />
+                        <sequential>
+	                        <antcall target="prepare" />
+	                        <antcall target="deploy" />
+	                        <antcall target="waitWebservices" />
+	                        <antcall target="run" />
+                        </sequential>
                      </try>
                      <finally>
                         <antcall target="stopWebservices" />
