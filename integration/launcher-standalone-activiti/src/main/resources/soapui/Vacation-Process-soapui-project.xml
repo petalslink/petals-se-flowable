@@ -536,7 +536,7 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:element name="vacationRequestId" type="xsd:string"/>
-</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://cdeneux-laptop:8088/mockArchiveService</con:endpoint><con:endpoint>http://localhost:9003/archiveService</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-bpmn/archiveService}archive</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/samples/services/archive" name="archiveVacationRequest" bindingOperationName="archiveVacationRequest" inputName="archiveVacationRequest" sendsAttachments="false" anonymous="optional" type="Request-Response" receivesAttachments="false"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="TaskServiceSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/components/activiti/generic/1.0}TaskServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/processInstancesService?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/processInstancesService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/processInstancesService?wsdl</con:url><con:content><![CDATA[<w:definitions name="ActivitiGenericWsdl" targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:activiti="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="http://petals.ow2.org/wsdlExtensions" xmlns:ns10_="ns13" xmlns:ns11="activiti" xmlns:ns13="wsdl" xmlns:ns14="ns34" xmlns:ns15="ns11" xmlns:ns16="xsd" xmlns:ns17="ns22" xmlns:ns19="w" xmlns:ns20="ns7" xmlns:ns21="ns22_" xmlns:ns22="ns9" xmlns:ns22_="ns20" xmlns:ns23="ns15" xmlns:ns25="ns19" xmlns:ns27="soap12" xmlns:ns27_="ns27" xmlns:ns28="xml" xmlns:ns29="ns33" xmlns:ns31="ns29" xmlns:ns32="mime" xmlns:ns32_="ns17" xmlns:ns33="ns16" xmlns:ns33_="ns35" xmlns:ns34="ns21" xmlns:ns34_="ns23" xmlns:ns35="ns14" xmlns:ns36="ns6" xmlns:ns37="ns25" xmlns:ns41="ns10_" xmlns:ns42="ns8" xmlns:ns44="ns5" xmlns:ns45="http" xmlns:ns47="ns28" xmlns:ns48="ns32" xmlns:ns5="http://www.w3.org/ns/wsdl" xmlns:ns6="http://www.w3.org/ns/wsdl/soap" xmlns:ns7="http://www.w3.org/ns/wsdl/http" xmlns:ns8="ns10" xmlns:ns9="soap" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://cdeneux-laptop:8088/mockArchiveService</con:endpoint><con:endpoint>http://localhost:9003/archiveService</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-bpmn/archiveService}archive</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/samples/services/archive" name="archiveVacationRequest" bindingOperationName="archiveVacationRequest" inputName="archiveVacationRequest" sendsAttachments="false" anonymous="optional" type="Request-Response" receivesAttachments="false"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="TaskServiceSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/components/activiti/generic/1.0}TaskServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/processInstancesService?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/processInstancesService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/processInstancesService?wsdl</con:url><con:content><![CDATA[<w:definitions name="ActivitiGenericWsdl" targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:activiti="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="wsdl" xmlns:ns10_="ns13" xmlns:ns11="activiti" xmlns:ns12="ns10" xmlns:ns13="xml" xmlns:ns14="ns34" xmlns:ns15="ns11" xmlns:ns16="xsd" xmlns:ns17="ns22" xmlns:ns19="w" xmlns:ns20="ns7" xmlns:ns21="ns22_" xmlns:ns22="ns9" xmlns:ns22_="ns20" xmlns:ns23="ns15" xmlns:ns25="ns19" xmlns:ns27="soap12" xmlns:ns27_="ns27" xmlns:ns29="ns33" xmlns:ns31="soap" xmlns:ns31_="ns29" xmlns:ns32="mime" xmlns:ns32_="ns17" xmlns:ns33="ns16" xmlns:ns33_="ns35" xmlns:ns34="ns21" xmlns:ns34_="ns23" xmlns:ns35="ns14" xmlns:ns36="ns8" xmlns:ns37="ns25" xmlns:ns41="ns10_" xmlns:ns42="ns12" xmlns:ns44="ns6" xmlns:ns45="http" xmlns:ns47="ns31" xmlns:ns48="ns32" xmlns:ns6="http://www.w3.org/ns/wsdl" xmlns:ns7="http://www.w3.org/ns/wsdl/http" xmlns:ns8="http://www.w3.org/ns/wsdl/soap" xmlns:ns9="http://petals.ow2.org/wsdlExtensions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <w:types>
     <xs:schema elementFormDefault="qualified" targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0">
       <xs:element name="getTasks">
@@ -555,6 +555,16 @@
             <xs:element maxOccurs="1" minOccurs="0" name="process-instance-identifier" type="xs:string">
               <xs:annotation>
                 <xs:documentation>Identifier of the process instance of tasks to retrieve</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element maxOccurs="1" minOccurs="0" name="process-definition-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Identifier of the process definition of tasks to retrieve</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element maxOccurs="1" minOccurs="0" name="task-definition-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Definition identifier of the tasks to retrieve</xs:documentation>
               </xs:annotation>
             </xs:element>
           </xs:sequence>
@@ -580,11 +590,9 @@
       <xs:element name="getProcessInstances">
         <xs:complexType>
           <xs:sequence>
-            <xs:element default="true" maxOccurs="1" minOccurs="0" name="active" type="xs:boolean">
+            <xs:element default="active" maxOccurs="1" minOccurs="0" name="state" type="activiti:ProcessInstanceState">
               <xs:annotation>
-                <xs:documentation>If "true", only select process instances which are active, which means that
-                           neither the process instance nor the corresponding process definition are suspended. Default
-                           value: true.</xs:documentation>
+                <xs:documentation>The state of process instances to select. Default value: 'active'.</xs:documentation>
               </xs:annotation>
             </xs:element>
             <xs:element maxOccurs="1" minOccurs="0" name="process-definition-identifier" type="xs:string">
@@ -600,6 +608,13 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
+      <xs:simpleType name="ProcessInstanceState">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="active"/>
+          <xs:enumeration value="suspended"/>
+          <xs:enumeration value="finished"/>
+        </xs:restriction>
+      </xs:simpleType>
       <xs:element name="getProcessInstancesResponse">
         <xs:complexType>
           <xs:sequence>
@@ -607,6 +622,78 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
+      <xs:element name="suspendProcessInstances">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Identifier of a process instance to suspend</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="suspendProcessInstancesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier">
+              <xs:annotation>
+                <xs:documentation>Identifier of the process instance suspended</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="xs:string">
+                    <xs:attribute name="result" type="activiti:AdjournmentResult"/>
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:simpleType name="AdjournmentResult">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="suspended"/>
+          <xs:enumeration value="not-found"/>
+          <xs:enumeration value="already-suspended"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="activateProcessInstances">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Identifier of a process instance to activate</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="activateProcessInstancesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier">
+              <xs:annotation>
+                <xs:documentation>Identifier of the process instance activated</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="xs:string">
+                    <xs:attribute name="result" type="activiti:ActivationResult"/>
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:simpleType name="ActivationResult">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="activated"/>
+          <xs:enumeration value="not-found"/>
+          <xs:enumeration value="already-activated"/>
+        </xs:restriction>
+      </xs:simpleType>
       <xs:complexType name="ProcessInstances">
         <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance" type="activiti:ProcessInstance"/>
@@ -636,8 +723,19 @@
           </xs:extension>
         </xs:simpleContent>
       </xs:complexType>
+      <xs:element name="invalidRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="message" type="xs:string"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="stacktrace" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
     </xs:schema>
   </w:types>
+  <w:message name="invalidRequest">
+    <w:part element="activiti:invalidRequest" name="fault"/>
+  </w:message>
   <w:message name="getTasksRequest">
     <w:part element="activiti:getTasks" name="getTasksRequest"/>
   </w:message>
@@ -650,16 +748,40 @@
   <w:message name="getProcessInstancesResponse">
     <w:part element="activiti:getProcessInstancesResponse" name="getProcessInstancesResponse"/>
   </w:message>
+  <w:message name="suspendProcessInstancesRequest">
+    <w:part element="activiti:suspendProcessInstances" name="suspendProcessInstancesRequest"/>
+  </w:message>
+  <w:message name="suspendProcessInstancesResponse">
+    <w:part element="activiti:suspendProcessInstancesResponse" name="suspendProcessInstancesResponse"/>
+  </w:message>
+  <w:message name="activateProcessInstancesRequest">
+    <w:part element="activiti:activateProcessInstances" name="activateProcessInstancesRequest"/>
+  </w:message>
+  <w:message name="activateProcessInstancesResponse">
+    <w:part element="activiti:sactivateProcessInstancesResponse" name="activateProcessInstancesResponse"/>
+  </w:message>
   <w:portType name="Task">
     <w:operation name="getTasks">
       <w:input message="activiti:getTasksRequest"/>
       <w:output message="activiti:getTasksResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
     </w:operation>
   </w:portType>
   <w:portType name="ProcessInstances">
     <w:operation name="getProcessInstances">
       <w:input message="activiti:getProcessInstancesRequest"/>
       <w:output message="activiti:getProcessInstancesResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
+    </w:operation>
+    <w:operation name="suspendProcessInstances">
+      <w:input message="activiti:suspendProcessInstancesRequest"/>
+      <w:output message="activiti:suspendProcessInstancesResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
+    </w:operation>
+    <w:operation name="activateProcessInstances">
+      <w:input message="activiti:activateProcessInstancesRequest"/>
+      <w:output message="activiti:activateProcessInstancesResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
     </w:operation>
   </w:portType>
   <w:binding name="TaskServiceSoapBinding" type="activiti:Task">
@@ -672,6 +794,9 @@
       <w:output>
         <soap:body use="literal"/>
       </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
     </w:operation>
   </w:binding>
   <w:binding name="ProcessInstancesServiceSoapBinding" type="activiti:ProcessInstances">
@@ -684,19 +809,46 @@
       <w:output>
         <soap:body use="literal"/>
       </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
+    </w:operation>
+    <w:operation name="suspendProcessInstances">
+      <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/suspendProcessInstances"/>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
+    </w:operation>
+    <w:operation name="activateProcessInstances">
+      <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/activateProcessInstances"/>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
     </w:operation>
   </w:binding>
   <w:service name="TaskService">
-    <w:port binding="activiti:TaskServiceSoapBinding" name="edpt-cf69fd70-14ee-11e5-aca4-56847afe9799">
+    <w:port binding="activiti:TaskServiceSoapBinding" name="edpt-f7caf600-5e01-11e5-89c2-0090f5fbc4a1">
       <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
     </w:port>
   </w:service>
   <w:service name="ProcessInstancesService">
-    <w:port binding="activiti:ProcessInstancesServiceSoapBinding" name="edpt-cf69fd71-14ee-11e5-aca4-56847afe9799">
+    <w:port binding="activiti:ProcessInstancesServiceSoapBinding" name="edpt-f7caf601-5e01-11e5-89c2-0090f5fbc4a1">
       <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
     </w:port>
   </w:service>
-</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/taskService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/getTasks" name="getTasks" bindingOperationName="getTasks" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="ProcessInstancesServiceSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/components/activiti/generic/1.0}ProcessInstancesServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/processInstancesService?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/processInstancesService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/processInstancesService?wsdl</con:url><con:content><![CDATA[<w:definitions name="ActivitiGenericWsdl" targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:activiti="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="http://petals.ow2.org/wsdlExtensions" xmlns:ns10_="ns13" xmlns:ns11="activiti" xmlns:ns13="wsdl" xmlns:ns14="ns34" xmlns:ns15="ns11" xmlns:ns16="xsd" xmlns:ns17="ns22" xmlns:ns19="w" xmlns:ns20="ns7" xmlns:ns21="ns22_" xmlns:ns22="ns9" xmlns:ns22_="ns20" xmlns:ns23="ns15" xmlns:ns25="ns19" xmlns:ns27="soap12" xmlns:ns27_="ns27" xmlns:ns28="xml" xmlns:ns29="ns33" xmlns:ns31="ns29" xmlns:ns32="mime" xmlns:ns32_="ns17" xmlns:ns33="ns16" xmlns:ns33_="ns35" xmlns:ns34="ns21" xmlns:ns34_="ns23" xmlns:ns35="ns14" xmlns:ns36="ns6" xmlns:ns37="ns25" xmlns:ns41="ns10_" xmlns:ns42="ns8" xmlns:ns44="ns5" xmlns:ns45="http" xmlns:ns47="ns28" xmlns:ns48="ns32" xmlns:ns5="http://www.w3.org/ns/wsdl" xmlns:ns6="http://www.w3.org/ns/wsdl/soap" xmlns:ns7="http://www.w3.org/ns/wsdl/http" xmlns:ns8="ns10" xmlns:ns9="soap" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint><con:endpoint>http://localhost:8084/petals/services/taskService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/getTasks" name="getTasks" bindingOperationName="getTasks" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="ProcessInstancesServiceSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/components/activiti/generic/1.0}ProcessInstancesServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/processInstancesService?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/processInstancesService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/processInstancesService?wsdl</con:url><con:content><![CDATA[<w:definitions name="ActivitiGenericWsdl" targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:activiti="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="wsdl" xmlns:ns10_="ns13" xmlns:ns11="activiti" xmlns:ns12="ns10" xmlns:ns13="xml" xmlns:ns14="ns34" xmlns:ns15="ns11" xmlns:ns16="xsd" xmlns:ns17="ns22" xmlns:ns19="w" xmlns:ns20="ns7" xmlns:ns21="ns22_" xmlns:ns22="ns9" xmlns:ns22_="ns20" xmlns:ns23="ns15" xmlns:ns25="ns19" xmlns:ns27="soap12" xmlns:ns27_="ns27" xmlns:ns29="ns33" xmlns:ns31="soap" xmlns:ns31_="ns29" xmlns:ns32="mime" xmlns:ns32_="ns17" xmlns:ns33="ns16" xmlns:ns33_="ns35" xmlns:ns34="ns21" xmlns:ns34_="ns23" xmlns:ns35="ns14" xmlns:ns36="ns8" xmlns:ns37="ns25" xmlns:ns41="ns10_" xmlns:ns42="ns12" xmlns:ns44="ns6" xmlns:ns45="http" xmlns:ns47="ns31" xmlns:ns48="ns32" xmlns:ns6="http://www.w3.org/ns/wsdl" xmlns:ns7="http://www.w3.org/ns/wsdl/http" xmlns:ns8="http://www.w3.org/ns/wsdl/soap" xmlns:ns9="http://petals.ow2.org/wsdlExtensions" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <w:types>
     <xs:schema elementFormDefault="qualified" targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0">
       <xs:element name="getTasks">
@@ -715,6 +867,16 @@
             <xs:element maxOccurs="1" minOccurs="0" name="process-instance-identifier" type="xs:string">
               <xs:annotation>
                 <xs:documentation>Identifier of the process instance of tasks to retrieve</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element maxOccurs="1" minOccurs="0" name="process-definition-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Identifier of the process definition of tasks to retrieve</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+            <xs:element maxOccurs="1" minOccurs="0" name="task-definition-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Definition identifier of the tasks to retrieve</xs:documentation>
               </xs:annotation>
             </xs:element>
           </xs:sequence>
@@ -740,11 +902,9 @@
       <xs:element name="getProcessInstances">
         <xs:complexType>
           <xs:sequence>
-            <xs:element default="true" maxOccurs="1" minOccurs="0" name="active" type="xs:boolean">
+            <xs:element default="active" maxOccurs="1" minOccurs="0" name="state" type="activiti:ProcessInstanceState">
               <xs:annotation>
-                <xs:documentation>If "true", only select process instances which are active, which means that
-                           neither the process instance nor the corresponding process definition are suspended. Default
-                           value: true.</xs:documentation>
+                <xs:documentation>The state of process instances to select. Default value: 'active'.</xs:documentation>
               </xs:annotation>
             </xs:element>
             <xs:element maxOccurs="1" minOccurs="0" name="process-definition-identifier" type="xs:string">
@@ -760,6 +920,13 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
+      <xs:simpleType name="ProcessInstanceState">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="active"/>
+          <xs:enumeration value="suspended"/>
+          <xs:enumeration value="finished"/>
+        </xs:restriction>
+      </xs:simpleType>
       <xs:element name="getProcessInstancesResponse">
         <xs:complexType>
           <xs:sequence>
@@ -767,6 +934,78 @@
           </xs:sequence>
         </xs:complexType>
       </xs:element>
+      <xs:element name="suspendProcessInstances">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Identifier of a process instance to suspend</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="suspendProcessInstancesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier">
+              <xs:annotation>
+                <xs:documentation>Identifier of the process instance suspended</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="xs:string">
+                    <xs:attribute name="result" type="activiti:AdjournmentResult"/>
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:simpleType name="AdjournmentResult">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="suspended"/>
+          <xs:enumeration value="not-found"/>
+          <xs:enumeration value="already-suspended"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="activateProcessInstances">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier" type="xs:string">
+              <xs:annotation>
+                <xs:documentation>Identifier of a process instance to activate</xs:documentation>
+              </xs:annotation>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="activateProcessInstancesResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance-identifier">
+              <xs:annotation>
+                <xs:documentation>Identifier of the process instance activated</xs:documentation>
+              </xs:annotation>
+              <xs:complexType>
+                <xs:simpleContent>
+                  <xs:extension base="xs:string">
+                    <xs:attribute name="result" type="activiti:ActivationResult"/>
+                  </xs:extension>
+                </xs:simpleContent>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:simpleType name="ActivationResult">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="activated"/>
+          <xs:enumeration value="not-found"/>
+          <xs:enumeration value="already-activated"/>
+        </xs:restriction>
+      </xs:simpleType>
       <xs:complexType name="ProcessInstances">
         <xs:sequence>
           <xs:element maxOccurs="unbounded" minOccurs="0" name="process-instance" type="activiti:ProcessInstance"/>
@@ -796,8 +1035,19 @@
           </xs:extension>
         </xs:simpleContent>
       </xs:complexType>
+      <xs:element name="invalidRequest">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="message" type="xs:string"/>
+            <xs:element maxOccurs="1" minOccurs="0" name="stacktrace" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
     </xs:schema>
   </w:types>
+  <w:message name="invalidRequest">
+    <w:part element="activiti:invalidRequest" name="fault"/>
+  </w:message>
   <w:message name="getTasksRequest">
     <w:part element="activiti:getTasks" name="getTasksRequest"/>
   </w:message>
@@ -810,16 +1060,40 @@
   <w:message name="getProcessInstancesResponse">
     <w:part element="activiti:getProcessInstancesResponse" name="getProcessInstancesResponse"/>
   </w:message>
+  <w:message name="suspendProcessInstancesRequest">
+    <w:part element="activiti:suspendProcessInstances" name="suspendProcessInstancesRequest"/>
+  </w:message>
+  <w:message name="suspendProcessInstancesResponse">
+    <w:part element="activiti:suspendProcessInstancesResponse" name="suspendProcessInstancesResponse"/>
+  </w:message>
+  <w:message name="activateProcessInstancesRequest">
+    <w:part element="activiti:activateProcessInstances" name="activateProcessInstancesRequest"/>
+  </w:message>
+  <w:message name="activateProcessInstancesResponse">
+    <w:part element="activiti:sactivateProcessInstancesResponse" name="activateProcessInstancesResponse"/>
+  </w:message>
   <w:portType name="Task">
     <w:operation name="getTasks">
       <w:input message="activiti:getTasksRequest"/>
       <w:output message="activiti:getTasksResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
     </w:operation>
   </w:portType>
   <w:portType name="ProcessInstances">
     <w:operation name="getProcessInstances">
       <w:input message="activiti:getProcessInstancesRequest"/>
       <w:output message="activiti:getProcessInstancesResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
+    </w:operation>
+    <w:operation name="suspendProcessInstances">
+      <w:input message="activiti:suspendProcessInstancesRequest"/>
+      <w:output message="activiti:suspendProcessInstancesResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
+    </w:operation>
+    <w:operation name="activateProcessInstances">
+      <w:input message="activiti:activateProcessInstancesRequest"/>
+      <w:output message="activiti:activateProcessInstancesResponse"/>
+      <w:fault message="activiti:invalidRequest" name="invalidRequest"/>
     </w:operation>
   </w:portType>
   <w:binding name="TaskServiceSoapBinding" type="activiti:Task">
@@ -832,6 +1106,9 @@
       <w:output>
         <soap:body use="literal"/>
       </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
     </w:operation>
   </w:binding>
   <w:binding name="ProcessInstancesServiceSoapBinding" type="activiti:ProcessInstances">
@@ -844,19 +1121,46 @@
       <w:output>
         <soap:body use="literal"/>
       </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
+    </w:operation>
+    <w:operation name="suspendProcessInstances">
+      <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/suspendProcessInstances"/>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
+    </w:operation>
+    <w:operation name="activateProcessInstances">
+      <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/activateProcessInstances"/>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
     </w:operation>
   </w:binding>
   <w:service name="TaskService">
-    <w:port binding="activiti:TaskServiceSoapBinding" name="edpt-cf69fd70-14ee-11e5-aca4-56847afe9799">
+    <w:port binding="activiti:TaskServiceSoapBinding" name="edpt-f7caf600-5e01-11e5-89c2-0090f5fbc4a1">
       <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
     </w:port>
   </w:service>
   <w:service name="ProcessInstancesService">
-    <w:port binding="activiti:ProcessInstancesServiceSoapBinding" name="edpt-cf69fd71-14ee-11e5-aca4-56847afe9799">
+    <w:port binding="activiti:ProcessInstancesServiceSoapBinding" name="edpt-f7caf601-5e01-11e5-89c2-0090f5fbc4a1">
       <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
     </w:port>
   </w:service>
-</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>1019</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
+</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/suspendProcessInstances" name="suspendProcessInstances" bindingOperationName="suspendProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/activateProcessInstances" name="activateProcessInstances" bindingOperationName="activateProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>1019</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
    <soapenv:Header/>
    <soapenv:Body>
       <vac:vacationRequest>
