@@ -16,8 +16,7 @@
  along with this program/library; If not, see <http://www.gnu.org/licenses />
  for the GNU Lesser General Public License version 2.1.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
    <parent>
@@ -33,7 +32,7 @@
    <name>Petals ESB - Components - SE Activiti BPMN</name>
    <artifactId>petals-se-activiti</artifactId>
    <groupId>org.ow2.petals</groupId>
-   <version>1.0.0-SNAPSHOT</version>
+   <version>1.0.0</version>
    <packaging>jbi-component</packaging>
    <description>BPMN Service Engine based on Activiti</description>
 
@@ -274,6 +273,7 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-activiti.git</developerConnection>
-   </scm>
+     <tag>petals-se-activiti-1.0.0</tag>
+  </scm>
 
 </project>
