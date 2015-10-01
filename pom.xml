@@ -24,7 +24,7 @@
       <artifactId>petals-cdkbased-components-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath>../cdk-based-parent/pom.xml</relativePath>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
    </parent>
 	
 	<!-- ============== -->
@@ -33,7 +33,7 @@
    <name>Petals ESB - Components - SE Activiti BPMN</name>
    <artifactId>petals-se-activiti</artifactId>
    <groupId>org.ow2.petals</groupId>
-   <version>1.1.0-SNAPSHOT</version>
+   <version>1.0.0-SNAPSHOT</version>
    <packaging>jbi-component</packaging>
    <description>BPMN Service Engine based on Activiti</description>
 
@@ -52,7 +52,7 @@
    </developers>
 
    <properties>
-      <activiti.version>5.18.0-PETALS-1-SNAPSHOT</activiti.version>
+      <activiti.version>5.18.0-PETALS-1</activiti.version>
       <!-- For now disable that check because jaxb is required to be 2.2.5
            and we use 2.2.4
            TODO: use the latest jaxb version everywhere? -->
@@ -103,7 +103,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-message-exchange</artifactId>
-         <version>1.2.3-SNAPSHOT</version>
+         <version>1.2.3</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals.activiti</groupId>
@@ -206,7 +206,7 @@
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-log</artifactId>
          <!-- TODO: move the version in parent POM when all components will be based on petals-cdk-junit -->
-         <version>1.0.3-SNAPSHOT</version>
+         <version>1.0.3</version>
          <scope>test</scope>
       </dependency>
    </dependencies>
