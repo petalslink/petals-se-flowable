@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014-2015 Linagora
+ Copyright (c) 2015 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -18,39 +18,43 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <artifactId>petals-activiti</artifactId>
+    <groupId>org.ow2.petals.samples</groupId>
+    <version>5.0.0-SNAPSHOT</version>
+    <relativePath>../parent/pom.xml</relativePath>
+  </parent>
   
-  <name>petals-activiti-rootbuilder</name>
   <groupId>org.ow2.petals.samples</groupId>
-  <artifactId>petals-activiti-rootbuilder</artifactId>
-  <version>0-SNAPSHOT</version>
-  <description>Petals samples artifacts for SE ACTIVITI BPMN.</description>
-  <packaging>pom</packaging>
+  <artifactId>su-SOAP-notifyVacationService-consume</artifactId>
+  <packaging>jbi-service-unit</packaging>
+  <name>su-SOAP-notifyVacationService-consume</name>
+  <version>5.0.0-SNAPSHOT</version>
   
-  <modules>
-    <module>parent</module>
-    <module>su-activiti-vacationService-provide</module>
-    <module>sa-vacation-sample</module>
-    <module>su-SOAP-vacationService-consume</module>
-    <module>su-SOAP-notifyVacationService-provide</module>
-    <module>su-SOAP-archiveService-provide</module>
-    <module>su-SOAP-activitiIntegrationService-consume</module>
-    <module>samples-SOAP-services</module>
-    <module>sample-vacation-webapp</module>
-    <module>su-SOAP-notifyVacationService-consume</module>
-    <module>su-SOAP-archiveService-consume</module>
-  </modules>
+  <properties>
+    <!-- Skip dependency check for service unit. -->
+    <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
+  </properties>
 
+   <dependencies>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-bc-soap</artifactId>
+         <type>jbi-component</type>
+      </dependency>
+   </dependencies>
+  
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <!-- Do not deploy, because mvn deploy is called on this on the CI server -->
-          <skip>true</skip>
-        </configuration>
+        <groupId>org.ow2.petals</groupId>
+        <artifactId>maven-petals-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
-  
+
+  <scm>
+    <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
+    <developerConnection>${project.scm.connection}</developerConnection>
+  </scm>
 </project>
