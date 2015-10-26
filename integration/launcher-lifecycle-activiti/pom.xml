@@ -20,9 +20,9 @@
    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <parent>
       <artifactId>parent</artifactId>
-      <groupId>org.ow2.petals.integration.tests</groupId>
+      <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
       <version>5.0.0-SNAPSHOT</version>
-      <relativePath>../../parent/pom.xml</relativePath>
+      <relativePath>../parent/pom.xml</relativePath>
    </parent>
 
    <modelVersion>4.0.0</modelVersion>

@@ -29,6 +29,7 @@
     <module>launcher-lifecycle-activiti</module>
     <module>launcher-standalone-activiti</module>
     <module>launcher-sl-postgresql</module>
+    <module>parent</module>
   </modules>
 
   <scm>
