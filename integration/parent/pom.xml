@@ -37,6 +37,7 @@
             <artifactId>petals-se-activiti</artifactId>
             <groupId>org.ow2.petals</groupId>
             <version>1.0.1-SNAPSHOT</version>
+            <type>jbi-component</type>
          </dependency>
       </dependencies>
    </dependencyManagement>
