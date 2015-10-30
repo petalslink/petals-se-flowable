@@ -10,7 +10,7 @@
    <import>
       <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven_plugin_classpath}" />
    </import>
-         
+
    <property name="petals.home" value="${project.build.directory}/${project.artifactId}/container" />
    <property name="bc-soap.properties" value="${petals.home}/conf/bc-soap.properties" />
    <property name="topology.container.name" value="sample-0" />
@@ -23,8 +23,9 @@
    <property name="activiti-db.file" value="/tmp/activiti.db" />
 
    <!-- Used by soapui tasks -->
-   <property name="soapui.projectFile" value="${project.build.directory}/${project.artifactId}/resources/soapui/Vacation-Process-soapui-project.xml" />
-   
+   <property name="soapui.projectFile"
+             value="${project.build.directory}/${project.artifactId}/resources/soapui/Vacation-Process-soapui-project.xml" />
+
    <target name="startDatabaseActiviti">
       <delete file="${activiti-db.file}.mv.db" />
       <!-- Start Database Activiti -->
@@ -213,43 +214,11 @@
    <target name="cleanAll">
       <echo message="Cleaning Activiti component tests..." />
 
-      <petals-stop-all-service-assemblies port="${host1.port}"
-                                          host="${host1.ip}"
-                                          username="${host1.username}"
-                                          password="${host1.password}"
-                                          failOnError="true" />
-      <petals-shut-down-all-service-assemblies port="${host1.port}"
-                                               host="${host1.ip}"
-                                               username="${host1.username}"
-                                               password="${host1.password}"
-                                               failOnError="true" />
-      <petals-undeploy-all-service-assemblies port="${host1.port}"
-                                              host="${host1.ip}"
-                                              username="${host1.username}"
-                                              password="${host1.password}"
-                                              failOnError="true" />
+      <cleanContainerArtifacts jmx.host="${host1.ip}"
+                               jmx.port="${host1.port}"
+                               jmx.user="${host1.username}"
+                               jmx.pwd="${host1.password}" />
 
-      <petals-stop-all-components port="${host1.port}"
-                                  host="${host1.ip}"
-                                  username="${host1.username}"
-                                  password="${host1.password}"
-                                  failOnError="true" />
-      <petals-shut-down-all-components port="${host1.port}"
-                                       host="${host1.ip}"
-                                       username="${host1.username}"
-                                       password="${host1.password}"
-                                       failOnError="true" />
-      <petals-uninstall-all-components port="${host1.port}"
-                                       host="${host1.ip}"
-                                       username="${host1.username}"
-                                       password="${host1.password}"
-                                       failOnError="true" />
-
-      <petals-unload-all-installers port="${host1.port}"
-                                    host="${host1.ip}"
-                                    username="${host1.username}"
-                                    password="${host1.password}"
-                                    failOnError="true" />
    </target>
 
    <!-- Target : Start Web services -->
@@ -304,10 +273,10 @@
                   <trycatch>
                      <try>
                         <sequential>
-	                        <antcall target="prepare" />
-	                        <antcall target="deploy" />
-	                        <antcall target="waitWebservices" />
-	                        <antcall target="run" />
+                           <antcall target="prepare" />
+                           <antcall target="deploy" />
+                           <antcall target="waitWebservices" />
+                           <antcall target="run" />
                         </sequential>
                      </try>
                      <finally>
