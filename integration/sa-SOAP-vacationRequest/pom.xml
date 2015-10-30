@@ -26,11 +26,11 @@
   </parent>
   
   <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
-  <artifactId>sa-activiti-vacationRequest</artifactId>
+  <artifactId>sa-SOAP-vacationRequest</artifactId>
   <packaging>jbi-service-assembly</packaging>
-  <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - SA (the vacation process)</name>
+  <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - SA (All SOAP JBI artifacts)</name>
   <version>5.0.0-SNAPSHOT</version>
-  <description>sa-activiti-vacationRequest description</description>
+  <description>sa-SOAP-vacationRequest description</description>
 
   <properties>
     <!-- Skip dependency check for service assembly because it has Java no source code. -->
@@ -40,7 +40,37 @@
   <dependencies>
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
-      <artifactId>su-activiti-vacationService-provide</artifactId>
+      <artifactId>su-SOAP-activitiIntegrationService-consume</artifactId>
+      <version>5.0.0-SNAPSHOT</version>
+      <type>jbi-service-unit</type>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.petals.samples</groupId>
+      <artifactId>su-SOAP-vacationService-consume</artifactId>
+      <version>5.0.0-SNAPSHOT</version>
+      <type>jbi-service-unit</type>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.petals.samples</groupId>
+      <artifactId>su-SOAP-archiveService-consume</artifactId>
+      <version>5.0.0-SNAPSHOT</version>
+      <type>jbi-service-unit</type>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.petals.samples</groupId>
+      <artifactId>su-SOAP-archiveService-provide</artifactId>
+      <version>5.0.0-SNAPSHOT</version>
+      <type>jbi-service-unit</type>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.petals.samples</groupId>
+      <artifactId>su-SOAP-notifyVacationService-consume</artifactId>
+      <version>5.0.0-SNAPSHOT</version>
+      <type>jbi-service-unit</type>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.petals.samples</groupId>
+      <artifactId>su-SOAP-notifyVacationService-provide</artifactId>
       <version>5.0.0-SNAPSHOT</version>
       <type>jbi-service-unit</type>
     </dependency>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014-2015 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<tns:topology xmlns:tns="http://petals.ow2.org/topology"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://petals.ow2.org/topology petalsTopology.xsd">
+   <tns:domain name="Another PEtALS domain" mode="static">
+      <tns:description>A sample domain configuration: target domain</tns:description>
+      
+      <!-- Registry implementation to used over the domain, -->
+      <!-- The default implementation "Petals Registry Overlay Client" is loaded from the classloader -->
+      <!--tns:registry-implementation>org.ow2.petals.microkernel.registry.overlay.RegistryOverlayImpl</tns:registry-implementation--> 
+      
+      <!-- Containers of the domain -->
+      <tns:container name="container-0">
+         <tns:description>description of the container 0</tns:description>
+         <tns:host>localhost</tns:host>
+         <tns:user>petals</tns:user>
+         <tns:password>petals</tns:password>
+         <tns:jmx-service>
+            <tns:rmi-port>7700</tns:rmi-port>
+         </tns:jmx-service>
+         <tns:transport-service>
+            <tns:tcp-port>7800</tns:tcp-port>
+         </tns:transport-service>
+      </tns:container>
+      <tns:container name="container-1">
+         <tns:description>description of the container 1</tns:description>
+         <tns:host>localhost</tns:host>
+         <tns:user>petals</tns:user>
+         <tns:password>petals</tns:password>
+         <tns:jmx-service>
+            <tns:rmi-port>7701</tns:rmi-port>
+         </tns:jmx-service>
+         <tns:transport-service>
+            <tns:tcp-port>7801</tns:tcp-port>
+         </tns:transport-service>
+      </tns:container>
+      <tns:container name="container-2">
+         <tns:description>description of the container 2</tns:description>
+         <tns:host>localhost</tns:host>
+         <tns:user>petals</tns:user>
+         <tns:password>petals</tns:password>
+         <tns:jmx-service>
+            <tns:rmi-port>7702</tns:rmi-port>
+         </tns:jmx-service>
+         <tns:transport-service>
+            <tns:tcp-port>7802</tns:tcp-port>
+         </tns:transport-service>
+      </tns:container>
+      
+      <!-- Default configuration of the default registry implementation -->
+      <registry:configuration xmlns:registry="http://petals.ow2.org/petals-registry-overlay-client/configuration">
+         <registry:group-name>default-sample</registry:group-name>
+         <registry:group-password>s3cr3t</registry:group-password>
+         <registry:overlay-members>
+            <registry:overlay-member port="7900">localhost</registry:overlay-member>
+         </registry:overlay-members>
+      </registry:configuration>
+   </tns:domain>
+</tns:topology>

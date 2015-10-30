@@ -30,6 +30,8 @@
     <module>launcher-standalone-activiti</module>
     <module>launcher-sl-postgresql</module>
     <module>parent</module>
+    <module>launcher-ha-activiti</module>
+    <module>sa-SOAP-vacationRequest</module>
   </modules>
 
   <scm>

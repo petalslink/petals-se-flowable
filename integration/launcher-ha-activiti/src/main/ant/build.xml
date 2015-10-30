@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PEtALS integration Activiti component HA tests" default="all" basedir=".">
+
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+   <taskdef resource="org/ow2/petals/ant/petals-ant.properties" />
+
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven_plugin_classpath}" />
+   </import>
+
+   <basename property="petalsRegistryDirName" file="${org.ow2.petals:petals-registry-overlay-zip:zip}" suffix=".zip" />
+   <property name="registry.home" value="${project.build.directory}/${project.artifactId}/registry/${petalsRegistryDirName}" />
+   <property name="petals.home.0" value="${project.build.directory}/${project.artifactId}/container-0" />
+   <property name="petals.home.1" value="${project.build.directory}/${project.artifactId}/container-1" />
+   <property name="petals.home.2" value="${project.build.directory}/${project.artifactId}/container-2" />
+   <property name="bc-soap.properties" value="${petals.home.0}/conf/bc-soap.properties" />
+   <property name="topology.container.name.0" value="container-0" />
+   <property name="topology.container.name.1" value="container-1" />
+      <property name="topology.container.name.2" value="container-2" />
+
+   <!-- Properties -->
+   <property name="container-0.port" value="7700" />
+   <property name="container-0.ip" value="localhost" />
+   <property name="container-0.username" value="petals" />
+   <property name="container-0.password" value="petals" />
+
+   <property name="container-1.port" value="7701" />
+   <property name="container-1.ip" value="localhost" />
+   <property name="container-1.username" value="petals" />
+   <property name="container-1.password" value="petals" />
+
+   <property name="container-2.port" value="7702" />
+   <property name="container-2.ip" value="localhost" />
+   <property name="container-2.username" value="petals" />
+   <property name="container-2.password" value="petals" />
+
+   <property name="activiti-db.file" value="/tmp/activiti.db" />
+
+   <!-- Used by soapui tasks -->
+   <property name="soapui.projectFile"
+             value="${project.build.directory}/${project.artifactId}/resources/soapui/HA-Vacation-Process-soapui-project.xml" />
+
+   <target name="startDatabaseActiviti">
+      <delete file="${activiti-db.file}.mv.db" />
+      <!-- Start Database Activiti -->
+      <java jar="${com.h2database:h2:jar}" fork="true">
+         <arg value="-tcp" />
+      </java>
+   </target>
+
+   <!-- Target : Prepare -->
+   <target name="prepare">
+      <!-- Create the properties file for BC SOAP -->
+      <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
+            file="${bc-soap.properties}" />
+      <echo message="notifyService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+            file="${bc-soap.properties}"
+            append="true" />
+   </target>
+
+   <!-- Target : Deploy -->
+   <target name="deploy">
+      <echo message="Installing components..." />
+
+      <!-- Container #0 -->
+      <jbi-install-component file="${org.ow2.petals:petals-bc-soap:jbi-component}"
+                             port="${container-0.port}"
+                             host="${container-0.ip}"
+                             username="${container-0.username}"
+                             password="${container-0.password}">
+         <param name="httpHost" value="localhost" />
+         <param name="propertiesFile" value="file://${bc-soap.properties}" />
+      </jbi-install-component>
+
+      <!-- Container #1 -->
+      <jbi-install-component file="${org.ow2.petals:petals-se-activiti:jbi-component}"
+                             port="${container-1.port}"
+                             host="${container-1.ip}"
+                             username="${container-1.username}"
+                             password="${container-1.password}">
+         <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
+      </jbi-install-component>
+
+      <!-- Container #2 -->
+      <jbi-install-component file="${org.ow2.petals:petals-se-activiti:jbi-component}"
+                             port="${container-2.port}"
+                             host="${container-2.ip}"
+                             username="${container-2.username}"
+                             password="${container-2.password}">
+         <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
+      </jbi-install-component>
+
+
+
+      <echo message="Starting components..." />
+
+      <!-- Container #0 -->
+      <jbi-start-component name="petals-bc-soap"
+                           port="${container-0.port}"
+                           host="${container-0.ip}"
+                           username="${container-0.username}"
+                           password="${container-0.password}" />
+
+      <!-- Container #1 -->
+      <jbi-start-component name="petals-se-activiti"
+                           port="${container-1.port}"
+                           host="${container-1.ip}"
+                           username="${container-1.username}"
+                           password="${container-1.password}" />
+
+      <!-- Container #2 -->
+      <jbi-start-component name="petals-se-activiti"
+                           port="${container-2.port}"
+                           host="${container-2.ip}"
+                           username="${container-2.username}"
+                           password="${container-2.password}" />
+
+      <echo message="Hacking database Activiti" />
+      <sql driver="org.h2.Driver" url="jdbc:h2:tcp://localhost/${activiti-db.file}" userid="sa" password="">
+         <classpath>
+            <pathelement location="${com.h2database:h2:jar}" />
+         </classpath>
+         <transaction>
+               ALTER TABLE ACT_GE_BYTEARRAY ALTER COLUMN NAME_ VARCHAR(512);
+         </transaction>
+      </sql>
+
+      <echo message="Deploying service assemblies..." />
+      <!-- Container #0 -->
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.activiti:sa-SOAP-vacationRequest:jbi-service-assembly}"
+                                   port="${container-0.port}"
+                                   host="${container-0.ip}"
+                                   username="${container-0.username}"
+                                   password="${container-0.password}" />
+
+      <!-- Container #1 -->
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.activiti:sa-activiti-vacationRequest:jbi-service-assembly}"
+                                   port="${container-1.port}"
+                                   host="${container-1.ip}"
+                                   username="${container-1.username}"
+                                   password="${container-1.password}" />
+      <!-- Container #2 -->
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.activiti:sa-activiti-vacationRequest:jbi-service-assembly}"
+                                   port="${container-2.port}"
+                                   host="${container-2.ip}"
+                                   username="${container-2.username}"
+                                   password="${container-2.password}" />
+
+      <echo message="Starting service assemblies..." />
+      <!-- Container #0 -->
+      <jbi-start-service-assembly name="sa-SOAP-vacationRequest"
+                                  port="${container-0.port}"
+                                  host="${container-0.ip}"
+                                  username="${container-0.username}"
+                                  password="${container-0.password}" />
+
+      <!-- Container #1 -->
+      <jbi-start-service-assembly name="sa-activiti-vacationRequest"
+                                  port="${container-1.port}"
+                                  host="${container-1.ip}"
+                                  username="${container-1.username}"
+                                  password="${container-1.password}" />
+      <!-- Container #2 -->
+      <jbi-start-service-assembly name="sa-activiti-vacationRequest"
+                                  port="${container-2.port}"
+                                  host="${container-2.ip}"
+                                  username="${container-2.username}"
+                                  password="${container-2.password}" />
+   </target>
+
+
+   <!-- Target : Run -->
+   <target name="run">
+      <echo message="Launching Activiti component tests..." />
+
+      <petals-soapui-test testCase="Nominal TestCase without adjustment" />
+      
+      <petals-soapui-load-test testCase="Nominal TestCase without adjustment" loadTest="Loop on concurrent WS clients"/>
+
+   </target>
+
+
+   <!-- Target : Clean all -->
+   <target name="cleanAll">
+      <echo message="Cleaning Activiti component tests..." />
+
+      <cleanContainerArtifacts jmx.port="${container-0.port}" />
+      <cleanContainerArtifacts jmx.port="${container-1.port}" />
+      <cleanContainerArtifacts jmx.port="${container-2.port}" />
+
+   </target>
+
+   <!-- Target : Start Web services -->
+   <target name="startWebservices">
+      <startMocks />
+   </target>
+
+   <!-- Target : Wait Web services -->
+   <target name="waitWebservices">
+      <parallel failonany="yes">
+         <waitMock url="http://localhost:8088/mockNotifyVacationService" />
+         <waitMock url="http://localhost:8088/mockArchiveService" />
+      </parallel>
+   </target>
+
+   <!-- Target : Stop Web services -->
+   <target name="stopWebservices">
+      <parallel failonany="yes">
+         <stopMock url="http://localhost:8088/mockNotifyVacationService" />
+         <stopMock url="http://localhost:8088/mockArchiveService" />
+      </parallel>
+   </target>
+
+   <macrodef name="launchContainer">
+      <attribute name="home" />
+      <attribute name="name" />
+      <attribute name="jmx.port" />
+      <sequential>
+            <!-- Configure the container -->
+			<copy file="${project.build.directory}/${project.artifactId}/resources/topology.xml" tofile="@{home}/conf/topology.xml" overwrite="true" />
+			<replaceregexp file="@{home}/conf/server.properties"
+			               match="petals.container.name.*"
+			               replace="petals.container.name=@{name}"
+			               byline="true" />
+			<replaceregexp file="@{home}/conf/env.sh" match="^(.*-Xmx1024m.*)$" replace="#\1" byline="true" />
+         <replaceregexp file="@{home}/conf/loggers.properties"
+                        match="org.ow2.petals.log.handler.PetalsFileHandler.level.*"
+                        replace="org.ow2.petals.log.handler.PetalsFileHandler.level=FINEST"
+                        byline="true" />
+         <replaceregexp file="@{home}/conf/loggers.properties"
+                        match="Petals.Container.Components.level.*"
+                        replace="Petals.Container.Components.level=FINEST"
+                        byline="true" />
+
+         <startContainer name="@{name}" home="@{home}" jmx.port="@{jmx.port}" />
+      </sequential>
+   </macrodef>
+
+   <!-- Target : All -->
+   <target name="all">
+      <antcall target="killAllContainers" />
+      <antcall target="killAllRegistryMembers" />
+      <startRegistryMember home="${registry.home}" />
+      <launchContainer home="${petals.home.0}" name="${topology.container.name.0}" jmx.port="${container-0.port}" />
+      <launchContainer home="${petals.home.1}" name="${topology.container.name.1}" jmx.port="${container-1.port}" />
+      <launchContainer home="${petals.home.2}" name="${topology.container.name.2}" jmx.port="${container-2.port}" />
+
+      <trycatch>
+         <try>
+            <parallel failonany="yes">
+               <daemons>
+                  <antcall target="startDatabaseActiviti" />
+               </daemons>
+               <antcall target="startWebservices" />
+               <sequential>
+                  <trycatch>
+                     <try>
+                        <sequential>
+                           <antcall target="prepare" />
+                           <antcall target="deploy" />
+                           <antcall target="waitWebservices" />
+                           <antcall target="run" />
+                        </sequential>
+                     </try>
+                     <finally>
+                        <antcall target="stopWebservices" />
+                     </finally>
+                  </trycatch>
+               </sequential>
+            </parallel>
+         </try>
+         <finally>
+            <!-- We force component uninstallation to avoid stack trace logged by SE Activiti when tests fail. The async job
+                 executor of SE Activiti try run SQL query on a database that is not running -->
+            <antcall target="cleanAll" />
+         </finally>
+      </trycatch>
+      <stopContainer name="${topology.container.name.0}" home="${petals.home.0}" />
+      <stopContainer name="${topology.container.name.1}" home="${petals.home.1}" />
+      <stopContainer name="${topology.container.name.2}" home="${petals.home.2}" />
+
+   </target>
+
+</project>
