@@ -23,7 +23,7 @@
       <artifactId>petals-cdkbased-components-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath>../cdk-based-parent/pom.xml</relativePath>
-      <version>1.0.0</version>
+      <version>1.0.1-SNAPSHOT</version>
    </parent>
 	
 	<!-- ============== -->
