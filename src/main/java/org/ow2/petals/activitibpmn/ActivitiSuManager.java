@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
 import org.activiti.bpmn.converter.BpmnXMLConverter;
@@ -207,10 +206,8 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
     protected void doUndeploy(final String serviceUnitName) throws PEtALSCDKException {
         this.logger.fine("Start ActivitiSuManager.doUndeploy(SU =" + serviceUnitName + ")");
         try {
-            // Get the service end point associated to the service Unit Name
-            final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
-            // set the serviceEndPoint Name of the Provides
-            final String edptName = serviceEndpoint.getEndpointName();
+            final String edptName = this.getSUDataHandler(serviceUnitName).getDescriptor().getServices().getProvides()
+                    .iterator().next().getEndpointName();
             // Remove the ActivitiOperation in the map with the corresponding end-point
             ((ActivitiSE) this.component).removeActivitiService(edptName);
 
@@ -518,8 +515,9 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
         
-        final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
-        final Document wsdlDocument = this.getSUDataHandler(serviceUnitName).getEndpointDescription(serviceEndpoint);
+        final ServiceUnitDataHandler handler = this.getSUDataHandler(serviceUnitName);
+        final Provides provides = handler.getDescriptor().getServices().getProvides().iterator().next();
+        final Document wsdlDocument = handler.getEndpointDescription(provides);
         final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
                 suRootPath);
         // Log all WSDL errors before to process each annotated operations

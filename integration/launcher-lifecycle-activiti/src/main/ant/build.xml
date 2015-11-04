@@ -117,7 +117,7 @@
                                  sa.url="${the-sa.url}"
                                  sa.id="${the-sa.id}"
                                  su.id="${the-su.id}"
-                                 su.auto-generated.endpoint="true"
+                                 su.services="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacationService"
                                  container.jmx.port="${topology.container.jmx.port}"
                                  container.name="${topology.container.name}"
                                  container.home="${topology.container.home}">
