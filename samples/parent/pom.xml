@@ -21,10 +21,10 @@
   <parent>
     <artifactId>petals-parent</artifactId>
     <groupId>org.ow2.petals</groupId>
-    <version>20.2.3</version>
+    <version>20.2.4-SNAPSHOT</version>
     <relativePath />
   </parent>
-  
+
   <groupId>org.ow2.petals.samples</groupId>
   <artifactId>petals-activiti</artifactId>
   <name>petals-activiti</name>
@@ -62,7 +62,7 @@
          </plugins>
       </pluginManagement>
    </build>
-  
+
   <scm>
     <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
     <developerConnection>${project.scm.connection}</developerConnection>
