@@ -145,8 +145,7 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
         for (final EmbeddedProcessDefinition embeddedBpmnModel : embeddedBpmnModels.values()) {
             bpmnModels.add(embeddedBpmnModel.getModel());
         }
-        final List<ActivitiOperation> operations = this.createProcessingOperations(suDH.getName(), bpmnModels,
-                suDH.getInstallRoot());
+        final List<ActivitiOperation> operations = this.createProcessingOperations(suDH, bpmnModels);
         
         // Deploy processes from the BPMN models into the BPMN engine
         this.deployBpmnModels(embeddedBpmnModels, operations, suDH.getInstallRoot());
@@ -483,26 +482,21 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
     /**
      * Create the processing operations ({@link ActivitiOperation} reading annotations of the WSDL
      * 
-     * @param serviceUnitName
-     *            The service unit name, required to retrieve the WSDL
      * @param bpmnModels
      *            The BPMN models embedded into the service unit
-     * @param suRootPath
-     *            The root directory of the service unit. Not <code>null</code>.
      * @return The list of {@link ActivitiOperation} created from WSDL
      * @throws ProcessDefinitionDeclarationException
      *             An error was detected about annotations
      */
-    private List<ActivitiOperation> createProcessingOperations(final String serviceUnitName,
-            final List<BpmnModel> bpmnModels, final String suRootPath) throws ProcessDefinitionDeclarationException {
+    private List<ActivitiOperation> createProcessingOperations(final ServiceUnitDataHandler suDH,
+            final List<BpmnModel> bpmnModels) throws ProcessDefinitionDeclarationException {
 
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
         
-        final ServiceUnitDataHandler handler = this.getSUDataHandler(serviceUnitName);
-        final Provides provides = handler.getDescriptor().getServices().getProvides().iterator().next();
-        final Document wsdlDocument = handler.getEndpointDescription(provides);
+        final Provides provides = suDH.getDescriptor().getServices().getProvides().iterator().next();
+        final Document wsdlDocument = suDH.getEndpointDescription(provides);
         final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
-                suRootPath);
+                suDH.getInstallRoot());
         // Log all WSDL errors before to process each annotated operations
         if (this.logger.isLoggable(Level.WARNING)) {
             for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {
