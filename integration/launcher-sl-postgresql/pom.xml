@@ -72,51 +72,14 @@
                   </configuration>
                </execution>
             </executions>
-            <configuration>
-               <verbose>true</verbose>
-            </configuration>
          </plugin>
          <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
             <groupId>org.apache.maven.plugins</groupId>
-            <executions>
-               <execution>
-                  <id>assembly</id>
-                  <configuration>
-                     <finalName>${project.artifactId}</finalName>
-                     <appendAssemblyId>false</appendAssemblyId>
-                     <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
-                     <attach>false</attach>
-                     <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
-                     </descriptors>
-                  </configuration>
-                  <phase>package</phase>
-                  <goals>
-                     <goal>attached</goal>
-                  </goals>
-               </execution>
-            </executions>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>run-it</id>
-                  <phase>integration-test</phase>
-                  <goals>
-                     <goal>run</goal>
-                  </goals>
-                  <configuration>
-                     <target description="tests" unless="maven.test.skip">
-                        <property name="maven_plugin_classpath" refid="maven.plugin.classpath" />
-
-                        <ant antfile="${project.build.directory}/${project.artifactId}/build.xml" dir="${project.build.directory}/${project.artifactId}" />
-                     </target>
-                  </configuration>
-               </execution>
-            </executions>
             <dependencies>
                <dependency>
                   <groupId>org.apache.tomcat</groupId>

@@ -32,7 +32,7 @@
 
    <target name="run">
 
-      <jmx:open url="service:jmx:rmi:///jndi/rmi://${host1.ip}:${host1.port}/jmxRmiConnector"
+      <jmx:open url="service:jmx:rmi:///jndi/rmi://${host1.ip}:${host1.port}/PetalsJMX"
                 username="${host1.username}"
                 password="${host1.password}"
                 echo="true" />
