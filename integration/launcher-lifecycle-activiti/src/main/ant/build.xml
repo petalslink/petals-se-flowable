@@ -72,7 +72,7 @@
       <echo message="   - A database" />
    </target>
 
-   <target name="all">
+   <target name="all2">
       <antcall target="clean" />
 
       <trycatch>
@@ -94,6 +94,18 @@
       </trycatch>
 
       <echo message="All task finished!" />
+   </target>
+
+   <target name="all">
+      <trycatch>
+         <try>
+            <antcall target="all2" />
+         </try>
+         <finally>
+            <antcall target="killAllContainers" />
+            <antcall target="killAllRegistryMembers" />
+         </finally>
+      </trycatch>
    </target>
 
    <target name="run">
