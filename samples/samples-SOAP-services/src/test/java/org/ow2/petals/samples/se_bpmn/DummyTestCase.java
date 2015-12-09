@@ -17,12 +17,12 @@
  */
 package org.ow2.petals.samples.se_bpmn;
 
-import junit.framework.TestCase;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
 //TODO: Add real unit tests
-public class DummyTestCase extends TestCase {
+@Ignore
+public class DummyTestCase {
 
     @Test
     public void test() {

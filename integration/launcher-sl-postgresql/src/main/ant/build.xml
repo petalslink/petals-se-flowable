@@ -10,6 +10,9 @@
    <import>
       <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
    </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven_plugin_classpath}" />
+   </import>
 
    <property name="petals.home"
              value="${project.build.directory}/${project.artifactId}/container" />
@@ -32,7 +35,7 @@
 
    <target name="run">
 
-      <jmx:open url="service:jmx:rmi:///jndi/rmi://${host1.ip}:${host1.port}/jmxRmiConnector"
+      <jmx:open url="service:jmx:rmi:///jndi/rmi://${host1.ip}:${host1.port}/PetalsJMX"
                 username="${host1.username}"
                 password="${host1.password}"
                 echo="true" />
@@ -110,7 +113,7 @@
    </target>
 
    <!-- Target : All -->
-   <target name="all">
+   <target name="all2">
       <antcall target="killAllContainers" />
       <antcall target="launchContainer" />
 
@@ -123,6 +126,18 @@
 
       <stopContainer name="${topology.container.name}" home="${petals.home}" />
 
+   </target>
+   
+   <target name="all">
+      <trycatch>
+         <try>
+            <antcall target="all2" />
+         </try>
+         <finally>
+            <antcall target="killAllContainers" />
+            <antcall target="killAllRegistryMembers" />
+         </finally>
+      </trycatch>
    </target>
 
 </project>

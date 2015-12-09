@@ -243,7 +243,7 @@
    </macrodef>
 
    <!-- Target : All -->
-   <target name="all">
+   <target name="all2">
       <antcall target="killAllContainers" />
       <antcall target="killAllRegistryMembers" />
       <startRegistryMember home="${registry.home}" />
@@ -284,7 +284,20 @@
       <stopContainer name="${topology.container.name.0}" home="${petals.home.0}" />
       <stopContainer name="${topology.container.name.1}" home="${petals.home.1}" />
       <stopContainer name="${topology.container.name.2}" home="${petals.home.2}" />
+      <stopRegistryMember name="registry" home="${registry.home}" />
 
+   </target>
+   
+   <target name="all">
+      <trycatch>
+         <try>
+            <antcall target="all2" />
+         </try>
+         <finally>
+            <antcall target="killAllContainers" />
+            <antcall target="killAllRegistryMembers" />
+         </finally>
+      </trycatch>
    </target>
 
 </project>

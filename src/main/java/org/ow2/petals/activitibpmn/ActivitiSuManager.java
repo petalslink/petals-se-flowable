@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import javax.jbi.servicedesc.ServiceEndpoint;
 import javax.xml.namespace.QName;
 
 import org.activiti.bpmn.converter.BpmnXMLConverter;
@@ -60,7 +59,7 @@ import org.ow2.petals.component.framework.api.configuration.SuConfigurationParam
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
-import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.su.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.w3c.dom.Document;
@@ -71,7 +70,7 @@ import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 /**
  * @author Bertrand ESCUDIE - Linagora
  */
-public class ActivitiSuManager extends AbstractServiceUnitManager {
+public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
 
     /**
      * Activation flag of the BPMN validation on process deployments into the Activiti engine
@@ -106,11 +105,12 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
     }
 
     @Override
-    protected void doDeploy(final String serviceUnitName, final String suRootPath, final Jbi jbiDescriptor)
-            throws PEtALSCDKException {
+    protected void doDeploy(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         if (this.logger.isLoggable(Level.FINE)) {
-            this.logger.fine("Start ActivitiSuManager.doDeploy(SU =" + serviceUnitName + ")");
+            this.logger.fine("Start ActivitiSuManager.doDeploy(SU =" + suDH.getName() + ")");
         }
+
+        final Jbi jbiDescriptor = suDH.getDescriptor();
 
 		// Check the JBI descriptor
 		if( jbiDescriptor == null || jbiDescriptor.getServices() == null
@@ -130,33 +130,25 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 			throw new PEtALSCDKException( "Invalid JBI descriptor: the 'provides' section is invalid." );
         }
 
-        // Get the SU Data handler
-        final ServiceUnitDataHandler suDataHandler = this.getSUDataHandler(serviceUnitName);
-        if (suDataHandler == null) {
-            throw new PEtALSCDKException(
-                    "Error while processing the JBI descriptor in the component. The SU data handler was null.");
-        }
-
         // Get the extension configuration for the Activiti process(es) to be deployed from the SU jbi.xml
-        final SuConfigurationParameters extensions = suDataHandler.getConfigurationExtensions(provides);
+        final SuConfigurationParameters extensions = suDH.getConfigurationExtensions(provides);
         if (extensions == null) {
             throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain any component extension.");
         }
 
         // Read BPMN models from files of the service-unit
         final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels = this.readBpmnModels(extensions,
-                suDataHandler.getInstallRoot());
+                suDH.getInstallRoot());
 
         // Create processing operations
         final List<BpmnModel> bpmnModels = new ArrayList<BpmnModel>(embeddedBpmnModels.size());
         for (final EmbeddedProcessDefinition embeddedBpmnModel : embeddedBpmnModels.values()) {
             bpmnModels.add(embeddedBpmnModel.getModel());
         }
-        final List<ActivitiOperation> operations = this.createProcessingOperations(serviceUnitName, bpmnModels,
-                suDataHandler.getInstallRoot());
+        final List<ActivitiOperation> operations = this.createProcessingOperations(suDH, bpmnModels);
         
         // Deploy processes from the BPMN models into the BPMN engine
-        this.deployBpmnModels(embeddedBpmnModels, operations, suRootPath);
+        this.deployBpmnModels(embeddedBpmnModels, operations, suDH.getInstallRoot());
         
         // Enable processing operations
         final String edptName = provides.getEndpointName();
@@ -174,43 +166,30 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
 		}
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    protected void doStart(final String serviceUnitName) throws PEtALSCDKException {
-        this.logger.fine("Start ActivitiSuManager.doStart(SU =" + serviceUnitName + ")");
+    protected void doStart(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
+        this.logger.fine("Start ActivitiSuManager.doStart(SU =" + suDH.getName() + ")");
 
 		// TODO Manage the process suspension State be careful of multi-SU deployment for the same process
     	
         this.logger.fine("End ActivitiSuManager.doStart()");
     }
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    protected void doStop(final String serviceUnitName) throws PEtALSCDKException {
-        this.logger.fine("Start ActivitiSuManager.doStop(SU =" + serviceUnitName + ")");
+    protected void doStop(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
+        this.logger.fine("Start ActivitiSuManager.doStop(SU =" + suDH.getName() + ")");
 
 		// TODO Manage the process suspension State: be careful of multi SU deployement for the same process
 
         this.logger.fine("End ActivitiSuManager.doStop()");
     }
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    protected void doUndeploy(final String serviceUnitName) throws PEtALSCDKException {
-        this.logger.fine("Start ActivitiSuManager.doUndeploy(SU =" + serviceUnitName + ")");
+    protected void doUndeploy(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
+        this.logger.fine("Start ActivitiSuManager.doUndeploy(SU =" + suDH.getName() + ")");
         try {
-            // Get the service end point associated to the service Unit Name
-            final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
-            // set the serviceEndPoint Name of the Provides
-            final String edptName = serviceEndpoint.getEndpointName();
+            final String edptName = suDH.getDescriptor().getServices().getProvides()
+                    .iterator().next().getEndpointName();
             // Remove the ActivitiOperation in the map with the corresponding end-point
             ((ActivitiSE) this.component).removeActivitiService(edptName);
 
@@ -503,25 +482,21 @@ public class ActivitiSuManager extends AbstractServiceUnitManager {
     /**
      * Create the processing operations ({@link ActivitiOperation} reading annotations of the WSDL
      * 
-     * @param serviceUnitName
-     *            The service unit name, required to retrieve the WSDL
      * @param bpmnModels
      *            The BPMN models embedded into the service unit
-     * @param suRootPath
-     *            The root directory of the service unit. Not <code>null</code>.
      * @return The list of {@link ActivitiOperation} created from WSDL
      * @throws ProcessDefinitionDeclarationException
      *             An error was detected about annotations
      */
-    private List<ActivitiOperation> createProcessingOperations(final String serviceUnitName,
-            final List<BpmnModel> bpmnModels, final String suRootPath) throws ProcessDefinitionDeclarationException {
+    private List<ActivitiOperation> createProcessingOperations(final ServiceUnitDataHandler suDH,
+            final List<BpmnModel> bpmnModels) throws ProcessDefinitionDeclarationException {
 
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
         
-        final ServiceEndpoint serviceEndpoint = this.getEndpointsForServiceUnit(serviceUnitName).iterator().next();
-        final Document wsdlDocument = this.getSUDataHandler(serviceUnitName).getEndpointDescription(serviceEndpoint);
+        final Provides provides = suDH.getDescriptor().getServices().getProvides().iterator().next();
+        final Document wsdlDocument = suDH.getEndpointDescription(provides);
         final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
-                suRootPath);
+                suDH.getInstallRoot());
         // Log all WSDL errors before to process each annotated operations
         if (this.logger.isLoggable(Level.WARNING)) {
             for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {

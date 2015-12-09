@@ -72,7 +72,7 @@
       <echo message="   - A database" />
    </target>
 
-   <target name="all">
+   <target name="all2">
       <antcall target="clean" />
 
       <trycatch>
@@ -96,6 +96,18 @@
       <echo message="All task finished!" />
    </target>
 
+   <target name="all">
+      <trycatch>
+         <try>
+            <antcall target="all2" />
+         </try>
+         <finally>
+            <antcall target="killAllContainers" />
+            <antcall target="killAllRegistryMembers" />
+         </finally>
+      </trycatch>
+   </target>
+
    <target name="run">
       <echo message="Launching integration tests about life cycle of Petals SE Activiti" />
 
@@ -117,7 +129,7 @@
                                  sa.url="${the-sa.url}"
                                  sa.id="${the-sa.id}"
                                  su.id="${the-su.id}"
-                                 su.auto-generated.endpoint="true"
+                                 su.services="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacationService"
                                  container.jmx.port="${topology.container.jmx.port}"
                                  container.name="${topology.container.name}"
                                  container.home="${topology.container.home}">
