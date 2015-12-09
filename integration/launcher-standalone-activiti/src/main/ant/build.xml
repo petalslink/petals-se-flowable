@@ -46,36 +46,39 @@
 
    <!-- Target : Deploy -->
    <target name="deploy">
-      <echo message="Installing components..." />
+      <echo message="Installing and starting components..." />
 
-      <jbi-install-component file="${org.ow2.petals:petals-se-activiti:jbi-component}"
-                             port="${host1.port}"
-                             host="${host1.ip}"
-                             username="${host1.username}"
-                             password="${host1.password}">
-         <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
-      </jbi-install-component>
-
-      <jbi-install-component file="${org.ow2.petals:petals-bc-soap:jbi-component}"
-                             port="${host1.port}"
-                             host="${host1.ip}"
-                             username="${host1.username}"
-                             password="${host1.password}">
-         <param name="httpHost" value="localhost" />
-         <param name="propertiesFile" value="file://${bc-soap.properties}" />
-      </jbi-install-component>
-
-      <echo message="Starting components..." />
-      <jbi-start-component name="petals-se-activiti"
-                           port="${host1.port}"
-                           host="${host1.ip}"
-                           username="${host1.username}"
-                           password="${host1.password}" />
-      <jbi-start-component name="petals-bc-soap"
-                           port="${host1.port}"
-                           host="${host1.ip}"
-                           username="${host1.username}"
-                           password="${host1.password}" />
+      <parallel>
+         <sequential>
+            <jbi-install-component file="${org.ow2.petals:petals-se-activiti:jbi-component}"
+                                   port="${host1.port}"
+                                   host="${host1.ip}"
+                                   username="${host1.username}"
+                                   password="${host1.password}">
+               <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
+            </jbi-install-component>
+            <jbi-start-component name="petals-se-activiti"
+                                 port="${host1.port}"
+                                 host="${host1.ip}"
+                                 username="${host1.username}"
+                                 password="${host1.password}" />
+         </sequential>
+         <sequential>
+            <jbi-install-component file="${org.ow2.petals:petals-bc-soap:jbi-component}"
+                                   port="${host1.port}"
+                                   host="${host1.ip}"
+                                   username="${host1.username}"
+                                   password="${host1.password}">
+               <param name="httpHost" value="localhost" />
+               <param name="propertiesFile" value="file://${bc-soap.properties}" />
+            </jbi-install-component>
+            <jbi-start-component name="petals-bc-soap"
+                                 port="${host1.port}"
+                                 host="${host1.ip}"
+                                 username="${host1.username}"
+                                 password="${host1.password}" />
+         </sequential>
+      </parallel>
 
       <echo message="Hacking database Activiti" />
       <sql driver="org.h2.Driver" url="jdbc:h2:tcp://localhost/${activiti-db.file}" userid="sa" password="">
