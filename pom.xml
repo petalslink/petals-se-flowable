@@ -51,7 +51,7 @@
    </developers>
 
    <properties>
-      <activiti.version>5.18.0-PETALS-1</activiti.version>
+      <activiti.version>5.19.0.1</activiti.version>
    </properties>
 
    <dependencies>
@@ -118,7 +118,7 @@
          <version>1.2.3</version>
       </dependency>
       <dependency>
-         <groupId>org.ow2.petals.activiti</groupId>
+         <groupId>org.activiti</groupId>
          <artifactId>activiti-engine</artifactId>
          <version>${activiti.version}</version>
          <exclusions>
@@ -136,18 +136,18 @@
          </exclusions>
       </dependency>
       <dependency>
-         <groupId>org.ow2.petals.activiti</groupId>
+         <groupId>org.activiti</groupId>
          <artifactId>activiti-bpmn-converter</artifactId>
          <version>${activiti.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.ow2.petals.activiti</groupId>
+         <groupId>org.activiti</groupId>
          <artifactId>activiti-bpmn-model</artifactId>
          <version>${activiti.version}</version>
       </dependency>
       <dependency>
          <!-- activiti-cxf add support of WSDL-based services to the Activity engine to call Petals services -->
-         <groupId>org.ow2.petals.activiti</groupId>
+         <groupId>org.activiti</groupId>
          <artifactId>activiti-cxf</artifactId>
          <version>${activiti.version}</version>
          <scope>runtime</scope>
@@ -215,7 +215,7 @@
                   <configuration>
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
-                        <usedDependency>org.ow2.petals.activiti:activiti-cxf</usedDependency>
+                        <usedDependency>org.activiti:activiti-cxf</usedDependency>
                         <usedDependency>org.ow2.petals:petals-log</usedDependency>
                      </usedDependencies>
                   </configuration>

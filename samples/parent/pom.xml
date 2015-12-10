@@ -45,7 +45,7 @@
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>
             <type>jbi-component</type>
-            <version>4.4.0</version>
+            <version>4.4.1-SNAPSHOT</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
