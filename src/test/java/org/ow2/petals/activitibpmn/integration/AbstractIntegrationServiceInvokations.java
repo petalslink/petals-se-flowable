@@ -27,11 +27,9 @@ import static org.ow2.petals.component.framework.junit.Assert.assertMonitProvide
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.logging.LogRecord;
 
-import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
@@ -39,7 +37,7 @@ import org.ow2.petals.activitibpmn.AbstractComponentTest;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
-import org.ow2.petals.component.framework.junit.impl.message.WrappedRequestToProviderMessage;
+import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
 
@@ -68,11 +66,12 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         final Demande request = new Demande();
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(suName), operationName, AbsItfOperation.MEPPatternConstants.IN_OUT
-                .value(), new ByteArrayInputStream(this.toByteArray(request))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request)));
 
-        final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg = COMPONENT.send(requestM, 2000);
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
@@ -108,11 +107,12 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
             final QName operationName, final Object request) throws Exception {
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(suName), operationName, AbsItfOperation.MEPPatternConstants.IN_OUT
-                .value(), new ByteArrayInputStream(this.toByteArray(request))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request)));
 
-        final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg = COMPONENT.send(requestM, 2000);
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
@@ -147,11 +147,11 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
             throws Exception {
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(
-                new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
-                        AbsItfOperation.MEPPatternConstants.IN_OUT.value()));
+        final RequestToProviderMessage request = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value());
 
-        final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg = COMPONENT.send(request, 2000);
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
@@ -184,15 +184,15 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
      * </p>
      */
     protected Object testValidRequest_NoArguments(final String suName, final QName interfaceName,
-            final QName serviceName,
-            final QName operationName, final Object request) throws JAXBException, IOException {
+            final QName serviceName, final QName operationName, final Object request) throws Exception {
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new WrappedRequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(suName), operationName, AbsItfOperation.MEPPatternConstants.IN_OUT
-                .value(), new ByteArrayInputStream(this.toByteArray(request))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                new ByteArrayInputStream(this.toByteArray(request)));
 
-        final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg = COMPONENT.send(requestM, 2000);
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A fault is set in the response", responseMsg.getFault());
         assertNotNull("No XML payload in response", responseMsg.getPayload());

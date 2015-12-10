@@ -24,10 +24,6 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperati
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 
-import java.io.IOException;
-
-import javax.xml.bind.JAXBException;
-
 import org.junit.Test;
 import org.ow2.petals.activitibpmn.incoming.integration.GetProcessInstancesOperation;
 import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
@@ -130,7 +126,7 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
      * </p>
      */
     @Test
-    public void noArguments() throws JAXBException, IOException {
+    public void noArguments() throws Exception {
 
         final Object getProcessInstancesRespObj = this.testValidRequest_NoArguments(NATIVE_PROCESSINSTANCES_SVC_CFG,
                 ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE, ITG_OP_GETPROCESSINSTANCES,

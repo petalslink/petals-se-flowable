@@ -24,10 +24,6 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperati
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 
-import java.io.IOException;
-
-import javax.xml.bind.JAXBException;
-
 import org.junit.Test;
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.components.activiti.generic._1.GetTasks;
@@ -127,7 +123,7 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
      * </p>
      */
     @Test
-    public void noArguments() throws JAXBException, IOException {
+    public void noArguments() throws Exception {
 
         final Object getTasksRespObj = this.testValidRequest_NoArguments(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE,
                 ITG_TASK_SERVICE,

@@ -56,6 +56,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.ow2.petals.activitibpmn.junit.ActivitiClient;
+import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
@@ -256,6 +257,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
             .around(COMPONENT_UNDER_TEST);
+
+    protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
 
     @Rule
     public ActivitiClient activitiClient = new ActivitiClient(new File(new File(
