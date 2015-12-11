@@ -108,10 +108,10 @@
 
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
-      <!-- Assertions about MONIT traces -->
-      <echo message="Checking MONIT trace of this first process instance" />
-      <petals-monit-read-logfiles id="flows" dir="${petals.home}/logs/flow-monitoring" />
-      <petals-extract-flow-step-info refid="flows">
+      <!-- Wait that the last service invocation from the business process ends -->
+      <echo message="Waiting the last service task execution of the business process..." />
+      <petals-monit-read-logfiles id="partial-flows" dir="${petals.home}/logs/flow-monitoring" />
+      <petals-extract-flow-step-info refid="partial-flows">
          <!-- Retrieve the initial flow that has created the process instance -->
          <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
          <flowStepCriteria name="flowStepInterfaceName"
@@ -121,7 +121,7 @@
          <flowStepInfo attribute="flowInstanceId" property="initial-flow-instance-id" />
          <flowStepInfo attribute="flowStepId" property="initial-flow-step-id" />
       </petals-extract-flow-step-info>
-      <petals-extract-flow-step-info refid="flows">
+      <petals-extract-flow-step-info refid="partial-flows">
          <!-- Retrieve the flow associated to the process instance -->
          <flowStepCriteria name="traceCode" value="consumeExtFlowStepBegin" />
          <flowStepCriteria name="correlatedFlowInstanceId" value="${initial-flow-instance-id}" />
@@ -129,6 +129,29 @@
          <flowStepCriteria name="processDefinition" value="vacationRequest" />
          <flowStepInfo attribute="flowInstanceId" property="process-instance-flow-instance-id" />
       </petals-extract-flow-step-info>
+      <local name="serviceTaskExecutionFailed" />
+      <waitfor maxwait="2"
+               maxwaitunit="minute"
+               checkevery="1"
+               checkeveryunit="second"
+               timeoutproperty="serviceTaskExecutionFailed">
+         <resourcecontains resource="${petals.home}/logs/flow-monitoring/${process-instance-flow-instance-id}/petals.log"
+                           substring="flowStepOperationName = '{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveVacationRequest'"
+                           casesensitive="true" />
+      </waitfor>
+      <fail message="Last service task invocation not found (flowInstanceId = ${process-instance-flow-instance-id})">
+         <condition>
+            <isset property="serviceTaskExecutionFailed" />
+         </condition>
+      </fail>
+
+      <!--
+         Assertions about MONIT traces
+         Caution: new MONIT traces can have occured since the last use of 'petals-monit-read-logfiles' because of ansynchronous service
+                  tasks. So it is needed to reload all MONIT traces in a new object.
+      -->
+      <echo message="Checking MONIT trace of this first process instance" />
+      <petals-monit-read-logfiles id="flows" dir="${petals.home}/logs/flow-monitoring" />
       <petals-extract-flow-step-info refid="flows" row="0">
          <!-- Retrieve the flow step that has launched the vacation request validation -->
          <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
