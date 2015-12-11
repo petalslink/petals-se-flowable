@@ -39,7 +39,6 @@ import static org.ow2.petals.component.framework.junit.Assert.assertMonitProvide
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -66,7 +65,7 @@ import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.StatusMessage;
-import org.ow2.petals.component.framework.junit.helpers.ExternalServiceImplementation;
+import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.ResponseToConsumerMessage;
 import org.ow2.petals.components.activiti.generic._1.ActivateProcessInstances;
@@ -168,19 +167,18 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_1))));
+        final RequestToProviderMessage request = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), this.toByteArray(request_1));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(request);
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -306,79 +304,56 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        
+        final ServiceProviderImplementation service = new ServiceProviderImplementation() {
+            private MessageExchange archiveMessageExchange_1;
+
+            @Override
+            public Message provides(final RequestMessage archiveRequestMsg_1) throws Exception {
+             // Assert the 1st request sent by Activiti on orchestrated service
+                archiveMessageExchange_1 = archiveRequestMsg_1.getMessageExchange();
+                assertNotNull(archiveMessageExchange_1);
+                assertEquals(ARCHIVE_INTERFACE, archiveMessageExchange_1.getInterfaceName());
+                assertEquals(ARCHIVE_SERVICE, archiveMessageExchange_1.getService());
+                assertNotNull(archiveMessageExchange_1.getEndpoint());
+                assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
+                assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
+                assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
+                final Object archiveRequestObj_1 = UNMARSHALLER.unmarshal(archiveRequestMsg_1
+                        .getPayload());
+                assertTrue(archiveRequestObj_1 instanceof Archiver);
+                final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
+                assertEquals(response_1.getNumeroDde(), archiveRequest_1.getItem());
+
+                // Returns the reply of the service provider to the Activiti service task
+                final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
+                archiverResponse_1.setItem("value of item");
+                archiverResponse_1.setItem2("value of item2");
+                return new ResponseToConsumerMessage(archiveRequestMsg_1, toByteArray(archiverResponse_1));
+            }
+            
+            @Override
+            public void handleStatus(StatusMessage statusDoneMsg_1) throws Exception {
+                // Assert the status DONE on the message exchange
+                assertNotNull(statusDoneMsg_1);
+                // It's the same message exchange instance
+                assertSame(statusDoneMsg_1.getMessageExchange(), archiveMessageExchange_1);
+                assertEquals(statusDoneMsg_1.getMessageExchange().getStatus(), ExchangeStatus.DONE);
+            }
+        };
+
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_2))));
-
-        {
-            // Assert the 1st request sent by Activiti on orchestrated service
-            final RequestMessage archiveRequestMsg_1 = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
-            final MessageExchange archiveMessageExchange_1 = archiveRequestMsg_1.getMessageExchange();
-            assertNotNull(archiveMessageExchange_1);
-            assertEquals(ARCHIVE_INTERFACE, archiveMessageExchange_1.getInterfaceName());
-            assertEquals(ARCHIVE_SERVICE, archiveMessageExchange_1.getService());
-            assertNotNull(archiveMessageExchange_1.getEndpoint());
-            assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
-            assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
-            assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
-            final Object archiveRequestObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(archiveRequestMsg_1
-                    .getPayload());
-            assertTrue(archiveRequestObj_1 instanceof Archiver);
-            final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
-            assertEquals(response_1.getNumeroDde(), archiveRequest_1.getItem());
-
-            // Returns the reply of the service provider to the Activiti service task
-            final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
-            archiverResponse_1.setItem("value of item");
-            archiverResponse_1.setItem2("value of item2");
-            final ResponseMessage otherResponse_1 = new ResponseToConsumerMessage(archiveMessageExchange_1,
-                    new ByteArrayInputStream(this.toByteArray(archiverResponse_1)));
-            COMPONENT_UNDER_TEST.pushResponseToConsumer(otherResponse_1);
-
-            // Assert the status DONE on the message exchange
-            final RequestMessage statusDoneMsg_1 = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
-            assertNotNull(statusDoneMsg_1);
-            // It's the same message exchange instance
-            assertSame(statusDoneMsg_1.getMessageExchange(), archiveRequestMsg_1.getMessageExchange());
-            assertEquals(statusDoneMsg_1.getMessageExchange().getStatus(), ExchangeStatus.DONE);
-        }
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), this.toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
-
-        // Wait the end of a service task (a service task is executed asynchronously by SE Activiti, see
-        // PETALSSEACTIVITI-4)
-        this.waitEndOfServiceTask(response_1.getNumeroDde(), "archiverLaDemandeService");
-
-        // Check MONIT traces
-        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(6, monitLogs_2.size());
-        final FlowLogData completionTaskInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
-                VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
-        final FlowLogData userTaskHandleRequestEndFlowLogData = assertMonitProviderEndLog(
-                userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
-        assertEquals(
-                userTaskHandleRequestEndFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY),
-                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME));
-        assertEquals(userTaskHandleRequestEndFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY),
-                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME));
-        assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(2));
-        // TODO: Should we have MONIT traces about the service call on the consumer side ?
-        // Check the MONIT traces of the invoked services: the service is responsible to generate them, not the SE
-        // Activiti.
-        final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(
-                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
-                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(3));
-        assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(4));
-        assertMonitConsumerExtEndLog(processStartedBeginFlowLogData, monitLogs_2.get(5));
-
+        final ResponseMessage responseMsg_2 = COMPONENT.sendAndGetResponse(requestM, service);
+        
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
         assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
         assertNotNull("No XML payload in response", responseMsg_2.getPayload());
-        final Object responseObj_2 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
+        final Object responseObj_2 = UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
         assertTrue(responseObj_2 instanceof AckResponse);
         final AckResponse response_2 = (AckResponse) responseObj_2;
         {
@@ -425,6 +400,36 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             assertTrue(approvedFound);
             assertTrue(motivationFound);
         }
+
+        COMPONENT.sendDoneStatus(responseMsg_2, service);
+
+        // Wait the end of a service task (a service task is executed asynchronously by SE Activiti, see
+        // PETALSSEACTIVITI-4)
+        this.waitEndOfServiceTask(response_1.getNumeroDde(), "archiverLaDemandeService");
+        
+        // Check MONIT traces
+        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(6, monitLogs_2.size());
+        final FlowLogData completionTaskInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
+                VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
+        final FlowLogData userTaskHandleRequestEndFlowLogData = assertMonitProviderEndLog(
+                userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
+        assertEquals(
+                userTaskHandleRequestEndFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY),
+                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME));
+        assertEquals(userTaskHandleRequestEndFlowLogData.get(ActivitiActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY),
+                completionTaskInteractionRequestFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME));
+        assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(2));
+        // TODO: Should we have MONIT traces about the service call on the consumer side ?
+        // Check the MONIT traces of the invoked services: the service is responsible to generate them, not the SE
+        // Activiti.
+        final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                (String) processStartedBeginFlowLogData.get(PetalsExecutionContext.FLOW_STEP_ID_PROPERTY_NAME),
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(3));
+        assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(4));
+        assertMonitConsumerExtEndLog(processStartedBeginFlowLogData, monitLogs_2.get(5));
+
         assertProcessInstanceFinished(response_1.getNumeroDde());
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
@@ -440,13 +445,13 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // ---- Try to complete AGAIN the first user task
         // --------------------------------------------------------
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_2))));
+
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 3rd valid request
-        final ResponseMessage responseMsg_3 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_3 = COMPONENT.sendAndGetResponse(requestM2);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_3 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -463,6 +468,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertTrue(responseObj_3 instanceof DemandeDejaValidee);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg_3);
     }
 
     /**
@@ -492,14 +499,12 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request.setMotifDde("hollidays");
 
         // Send the request
-        COMPONENT_UNDER_TEST
-                .pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                        .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                        AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                                .toByteArray(request))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the request
-        final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final StatusMessage responseMsg = COMPONENT.sendAndGetStatus(requestM);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -512,7 +517,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final Exception error = responseMsg.getError();
         assertNotNull("No error returns", error);
         assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg.getPayload());
+        assertNull("XML payload in response", responseMsg.getOut());
 
         assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
     }
@@ -544,14 +549,12 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request.setMotifDde("hollidays");
 
         // Send the request
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST
-                .pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                        .getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                        AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                                .toByteArray(request))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the request
-        final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final StatusMessage responseMsg = COMPONENT.sendAndGetStatus(requestM);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -564,7 +567,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final Exception error = responseMsg.getError();
         assertNotNull("No error returns", error);
         assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg.getPayload());
+        assertNull("XML payload in response", responseMsg.getOut());
 
         assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
     }
@@ -609,13 +612,23 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_1))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
+
+        // Check the reply
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -630,15 +643,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
-        // Check the reply
-        final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
-        final Numero response_1 = (Numero) responseObj_1;
-        assertNotNull(response_1.getNumeroDde());
-
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
@@ -650,13 +654,13 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_2))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -669,7 +673,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final Exception error = responseMsg_2.getError();
         assertNotNull("No error returns", error);
         assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getPayload());
+        assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -716,13 +720,23 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_1))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
+
+        // Check the reply
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -737,15 +751,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
-        // Check the reply
-        final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
-        final Numero response_1 = (Numero) responseObj_1;
-        assertNotNull(response_1.getNumeroDde());
-
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
@@ -758,13 +763,12 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_2))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -777,7 +781,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final Exception error = responseMsg_2.getError();
         assertNotNull("No error returns", error);
         assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getPayload());
+        assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -824,13 +828,23 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_1))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
+
+        // Check the reply
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -845,15 +859,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
-        // Check the reply
-        final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
-        final Numero response_1 = (Numero) responseObj_1;
-        assertNotNull(response_1.getNumeroDde());
-
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
@@ -865,13 +870,12 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_2))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -884,7 +888,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final Exception error = responseMsg_2.getError();
         assertNotNull("No error returns", error);
         assertTrue("Unexpected fault", error.getCause() instanceof NoProcessInstanceIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getPayload());
+        assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -931,13 +935,23 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_1))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
+
+        // Check the reply
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -952,15 +966,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
-        // Check the reply
-        final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
-        final Numero response_1 = (Numero) responseObj_1;
-        assertNotNull(response_1.getNumeroDde());
-
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
@@ -973,13 +978,12 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_2))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -992,7 +996,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final Exception error = responseMsg_2.getError();
         assertNotNull("No error returns", error);
         assertTrue("Unexpected fault", error.getCause() instanceof NoProcessInstanceIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getPayload());
+        assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -1025,21 +1029,13 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST
-                .pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                        .getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                        AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                                .toByteArray(request))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST
+                .getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the valid request
-        final ResponseMessage responseMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
-
-        // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(2, monitLogs.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs.get(0)), monitLogs.get(1));
+        final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
 
         // Check the reply
         assertNull("XML payload in response", responseMsg.getPayload());
@@ -1049,6 +1045,15 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertTrue(responseObj instanceof NumeroDemandeInconnu);
         final NumeroDemandeInconnu response = (NumeroDemandeInconnu) responseObj;
         assertEquals(unknownProcessInstanceId, response.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg);
+
+        // Check MONIT traces
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs.size());
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs.get(0)), monitLogs.get(1));
+
     }
 
     /**
@@ -1103,13 +1108,23 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_1))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
+
+        // Check the reply
+        final Source fault_1 = responseMsg_1.getFault();
+        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
+        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        assertTrue(responseObj_1 instanceof Numero);
+        final Numero response_1 = (Numero) responseObj_1;
+        assertNotNull(response_1.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -1123,15 +1138,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
-
-        // Check the reply
-        final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
-        final Numero response_1 = (Numero) responseObj_1;
-        assertNotNull(response_1.getNumeroDde());
 
         // Check Activiti engine against the process instance creation
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -1150,13 +1156,23 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request for the user task 'handleRequest
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_2))));
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+        final ResponseMessage responseMsg_2 = COMPONENT.sendAndGetResponse(requestM2);
+
+        // Check the reply
+        final Source fault_2 = responseMsg_2.getFault();
+        assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
+        assertNotNull("No XML payload in response", responseMsg_2.getPayload());
+        final Object responseObj_2 = UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
+        assertTrue(responseObj_2 instanceof AckResponse);
+        final AckResponse response_2 = (AckResponse) responseObj_2;
+        assertNotNull(response_2);
+
+        COMPONENT.sendDoneStatus(responseMsg_2);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -1169,15 +1185,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertMonitProviderEndLog(
                 assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                         OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
-
-        // Check the reply
-        final Source fault_2 = responseMsg_2.getFault();
-        assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
-        assertNotNull("No XML payload in response", responseMsg_2.getPayload());
-        final Object responseObj_2 = UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
-        assertTrue(responseObj_2 instanceof AckResponse);
-        final AckResponse response_2 = (AckResponse) responseObj_2;
-        assertNotNull(response_2);
 
         // Check Activiti engine against the current user task
         assertProcessInstanceFinished(response_1.getNumeroDde());
@@ -1195,29 +1202,29 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 3rd valid request for the user task 'handleRequest'
         IN_MEMORY_LOG_HANDLER.clear();
-        tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(
+        final RequestToProviderMessage requestM3 = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(request_3))));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_3));
 
         // Assert the response of the 3rd valid request
-        final ResponseMessage responseMsg_3 = tryToRetrieveUserTask.COMPONENT_UNDER_TEST.pollResponseFromProvider();
-
-        // Check MONIT traces
-        final List<LogRecord> monitLogs_3 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(2, monitLogs_3.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
+        final ResponseMessage responseMsg_3 = COMPONENT.sendAndGetResponse(requestM3);
 
         // Check the reply
         assertNull("XML payload in response", responseMsg_3.getPayload());
         final Source fault_3 = responseMsg_3.getFault();
         assertNotNull("No fault returns", fault_3);
-        final Object responseObj_3 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(fault_3);
+        final Object responseObj_3 = UNMARSHALLER.unmarshal(fault_3);
         assertTrue(responseObj_3 instanceof DemandeDejaValidee);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
+
+        COMPONENT.sendDoneStatus(responseMsg_3);
+
+        // Check MONIT traces
+        final List<LogRecord> monitLogs_3 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs_3.size());
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
 
         // Check Activiti engine against the current user task
         assertProcessInstanceFinished(response_1.getNumeroDde());
@@ -1244,14 +1251,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final String numberOfDays = "10";
         request_1.setNbJourDde(numberOfDays);
 
-        // Send the 1st valid request for start event 'request'
-        final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_JIRA,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream(this.toByteArray(request_1)));
-
-        // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT.send(request, new ExternalServiceImplementation() {
+        final ServiceProviderImplementation service = new ServiceProviderImplementation() {
 
             private MessageExchange archiveMessageExchange_1;
 
@@ -1267,7 +1267,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                 assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
                 assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
                 assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
-                final Object archiveRequestObj_1 = tryToRetrieveUserTask.UNMARSHALLER
+                final Object archiveRequestObj_1 = UNMARSHALLER
                         .unmarshal(archiveRequestMsg_1.getPayload());
                 assertTrue(archiveRequestObj_1 instanceof Archiver);
                 final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
@@ -1277,25 +1277,31 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                 final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
                 archiverResponse_1.setItem("value of item");
                 archiverResponse_1.setItem2("value of item2");
-                return new ResponseToConsumerMessage(archiveMessageExchange_1,
-                        new ByteArrayInputStream(toByteArray(archiverResponse_1)));
+                return new ResponseToConsumerMessage(archiveRequestMsg_1, toByteArray(archiverResponse_1));
             }
 
             @Override
-            public void acknowledge(StatusMessage statusDoneMsg_1) throws Exception {
+            public void handleStatus(StatusMessage statusDoneMsg_1) throws Exception {
                 // Assert the status DONE on the message exchange
                 assertNotNull(statusDoneMsg_1);
                 // It's the same message exchange instance
                 assertSame(statusDoneMsg_1.getMessageExchange(), archiveMessageExchange_1);
                 assertEquals(statusDoneMsg_1.getMessageExchange().getStatus(), ExchangeStatus.DONE);
             }
-        }, 2000, 2000);
+        };
+
+        // Send the 1st valid request for start event 'request'
+        final RequestToProviderMessage request = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_JIRA,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
+
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(request, service);
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
         assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
         assertNotNull("No XML payload in response", responseMsg_1.getPayload());
-        final Object responseObj_1 = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
+        final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
         assertTrue(responseObj_1 instanceof Numero);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
@@ -1321,9 +1327,12 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             assertTrue(numberOfDaysFound);
         }
 
+        COMPONENT.sendDoneStatus(responseMsg_1, service);
+
         // Wait end of process instance
         this.waitEndOfProcessInstance(response_1.getNumeroDde());
 
+        
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(6, monitLogs_1.size());
@@ -1388,12 +1397,12 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final RequestToProviderMessage request = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG),
                 ITG_OP_GETPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream(this.toByteArray(getProcessInstancesReq)));
+                toByteArray(getProcessInstancesReq));
 
         {
-            final ResponseMessage getProcessInstancesRespMsg = COMPONENT.send(request, 2000);
+            final ResponseMessage getProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(request);
             assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
-            final Object getProcessInstancesRespObj = tryToRetrieveUserTask.UNMARSHALLER
+            final Object getProcessInstancesRespObj = UNMARSHALLER
                     .unmarshal(getProcessInstancesRespMsg.getPayload());
             assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
             final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
@@ -1431,7 +1440,10 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             } else {
                 assertEquals(0, getProcessInstancesResp.getProcessInstances().getProcessInstance().size());
             }
+
+            COMPONENT.sendDoneStatus(getProcessInstancesRespMsg);
         }
+
         // Check MONIT traces about the service integration invocation
         final List<LogRecord> monitLogs_getProcessInstances = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_getProcessInstances.size());
@@ -1461,8 +1473,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
      * @throws IOException
      */
     private final void retrieveUserTask(final String user, final String processInstanceId, final boolean isActive,
-            final FlowLogData processStartedBeginFlowLogData, final boolean isRetrievedTaskExpected)
-            throws JAXBException, IOException {
+            final FlowLogData processStartedBeginFlowLogData, final boolean isRetrievedTaskExpected) throws Exception {
 
         // Verify the task basket using integration service
         final GetTasks getTasksReq = new GetTasks();
@@ -1471,14 +1482,14 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         getTasksReq.setProcessInstanceIdentifier(processInstanceId);
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(NATIVE_TASKS_SVC_CFG), ITG_OP_GETTASKS,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(getTasksReq))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_TASKS_SVC_CFG), ITG_OP_GETTASKS,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getTasksReq));
+
         {
-            final ResponseMessage getTaskRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            final ResponseMessage getTaskRespMsg = COMPONENT.sendAndGetResponse(requestM);
             assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
-            final Object getTaskRespObj = tryToRetrieveUserTask.UNMARSHALLER.unmarshal(getTaskRespMsg.getPayload());
+            final Object getTaskRespObj = UNMARSHALLER.unmarshal(getTaskRespMsg.getPayload());
             assertTrue(getTaskRespObj instanceof GetTasksResponse);
             final GetTasksResponse getTaskResp = (GetTasksResponse) getTaskRespObj;
             assertNotNull(getTaskResp.getTasks());
@@ -1492,6 +1503,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             } else {
                 assertEquals(0, getTaskResp.getTasks().getTask().size());
             }
+
+            COMPONENT.sendDoneStatus(getTaskRespMsg);
         }
         // Check MONIT traces about the task basket invocation
         final List<LogRecord> monitLogs_taskBasket = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -1504,8 +1517,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
     }
 
     private final void tryToSuspendProcessInstance(final String processInstanceId,
-            final FlowLogData processStartedBeginFlowLogData, final AdjournmentResult expectedResult)
-            throws JAXBException, IOException {
+            final FlowLogData processStartedBeginFlowLogData, final AdjournmentResult expectedResult) throws Exception {
 
         if (expectedResult == AdjournmentResult.SUSPENDED) {
             // Check at Activiti level that the process instance is suspended
@@ -1520,14 +1532,15 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         suspendProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG), ITG_OP_SUSPENDPROCESSINSTANCES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(suspendProcessInstancesReq))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG),
+                ITG_OP_SUSPENDPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                toByteArray(suspendProcessInstancesReq));
+
         {
-            final ResponseMessage suspendProcessInstancesRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            final ResponseMessage suspendProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(requestM);
             assertNotNull("No XML payload in response", suspendProcessInstancesRespMsg.getPayload());
-            final Object suspendProcessInstancesRespObj = tryToRetrieveUserTask.UNMARSHALLER
+            final Object suspendProcessInstancesRespObj = UNMARSHALLER
                     .unmarshal(suspendProcessInstancesRespMsg.getPayload());
             assertTrue(suspendProcessInstancesRespObj instanceof SuspendProcessInstancesResponse);
             final SuspendProcessInstancesResponse suspendProcessInstancesResp = (SuspendProcessInstancesResponse) suspendProcessInstancesRespObj;
@@ -1537,6 +1550,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             assertEquals(processInstanceId, suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0)
                     .getValue());
             assertEquals(expectedResult, suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0).getResult());
+
+            COMPONENT.sendDoneStatus(suspendProcessInstancesRespMsg);
         }
 
         // Check MONIT traces about the process instance adjournment
@@ -1560,8 +1575,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
     }
 
     private final void tryToActivateProcessInstance(final String processInstanceId,
-            final FlowLogData processStartedBeginFlowLogData, final ActivationResult expectedResult)
-            throws JAXBException, IOException {
+            final FlowLogData processStartedBeginFlowLogData, final ActivationResult expectedResult) throws Exception {
 
         if (expectedResult == ActivationResult.ACTIVATED) {
             // Check at Activiti level that the process instance is activated
@@ -1576,14 +1590,15 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         activateProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
 
         IN_MEMORY_LOG_HANDLER.clear();
-        COMPONENT_UNDER_TEST.pushRequestToProvider(new RequestToProviderMessage(COMPONENT_UNDER_TEST
-                .getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG), ITG_OP_ACTIVATEPROCESSINSTANCES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), new ByteArrayInputStream(this
-                        .toByteArray(activateProcessInstancesReq))));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(
+                COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG),
+                ITG_OP_ACTIVATEPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                toByteArray(activateProcessInstancesReq));
+
         {
-            final ResponseMessage activateProcessInstancesRespMsg = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            final ResponseMessage activateProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(requestM);
             assertNotNull("No XML payload in response", activateProcessInstancesRespMsg.getPayload());
-            final Object activateProcessInstancesRespObj = tryToRetrieveUserTask.UNMARSHALLER
+            final Object activateProcessInstancesRespObj = UNMARSHALLER
                     .unmarshal(activateProcessInstancesRespMsg.getPayload());
             assertTrue(activateProcessInstancesRespObj instanceof ActivateProcessInstancesResponse);
             final ActivateProcessInstancesResponse activateProcessInstancesResp = (ActivateProcessInstancesResponse) activateProcessInstancesRespObj;
@@ -1593,6 +1608,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             assertEquals(processInstanceId, activateProcessInstancesResp.getProcessInstanceIdentifier().get(0)
                     .getValue());
             assertEquals(expectedResult, activateProcessInstancesResp.getProcessInstanceIdentifier().get(0).getResult());
+
+            COMPONENT.sendDoneStatus(activateProcessInstancesRespMsg);
         }
 
         // Check MONIT traces about the process instance activation

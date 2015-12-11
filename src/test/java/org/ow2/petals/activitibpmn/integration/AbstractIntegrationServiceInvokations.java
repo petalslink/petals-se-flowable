@@ -26,7 +26,6 @@ import static org.ow2.petals.component.framework.junit.Assert.assertMonitProvide
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
 import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -68,10 +67,9 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream(this.toByteArray(request)));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
-        final ResponseMessage responseMsg = COMPONENT.send(requestM, 2000);
+        final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
@@ -81,6 +79,8 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
         assertTrue(invalidRequest.getMessage().endsWith("is unexpected"));
         assertFalse(invalidRequest.getStacktrace().isEmpty());
+
+        COMPONENT.sendDoneStatus(responseMsg);
 
         // Check MONIT traces
         assertMonitLogsWithFailure(interfaceName, serviceName, operationName);
@@ -109,10 +109,9 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream(this.toByteArray(request)));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
-        final ResponseMessage responseMsg = COMPONENT.send(requestM, 2000);
+        final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
@@ -122,6 +121,8 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
         assertTrue(invalidRequest.getMessage().endsWith("is unexpected"));
         assertFalse(invalidRequest.getStacktrace().isEmpty());
+
+        COMPONENT.sendDoneStatus(responseMsg);
 
         // Check MONIT traces
         assertMonitLogsWithFailure(interfaceName, serviceName, operationName);
@@ -151,17 +152,18 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
                 COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value());
 
-        final ResponseMessage responseMsg = COMPONENT.send(request, 2000);
+        final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(request);
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A XML payload is set in response", responseMsg.getPayload());
         assertNotNull("No fault in response", responseMsg.getFault());
-
 
         final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
         assertTrue(faultObj instanceof InvalidRequest);
         final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
         assertTrue(invalidRequest.getMessage().endsWith("is empty"));
         assertFalse(invalidRequest.getStacktrace().isEmpty());
+
+        COMPONENT.sendDoneStatus(responseMsg);
 
         // Check MONIT traces
         assertMonitLogsWithFailure(interfaceName, serviceName, operationName);
@@ -189,14 +191,16 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                new ByteArrayInputStream(this.toByteArray(request)));
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
-        final ResponseMessage responseMsg = COMPONENT.send(requestM, 2000);
+        final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
+
         assertNull("An error is set in the response", responseMsg.getError());
         assertNull("A fault is set in the response", responseMsg.getFault());
         assertNotNull("No XML payload in response", responseMsg.getPayload());
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getPayload());
+
+        COMPONENT.sendDoneStatus(responseMsg);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
