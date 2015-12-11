@@ -19,10 +19,30 @@ package org.ow2.petals.activitibpmn;
 
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
@@ -55,11 +75,13 @@ import org.ow2.petals.component.framework.DefaultBootstrap;
 
 /**
  * The component class of the Activiti BPMN Service Engine.
+ * 
  * @author Bertrand Escudie - Linagora
  */
 public class ActivitiSEBootstrap extends DefaultBootstrap {
 
     private static final String ATTR_NAME_JDBC_DRIVER = "jdbcDriver";
+
     private static final String ATTR_NAME_JDBC_URL = "jdbcUrl";
 
     private static final String ATTR_NAME_JDBC_USERNAME = "jdbcUsername";
@@ -78,21 +100,30 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 
     private static final String ATTR_NAME_DATABASE_SCHEMA_UPDATE = "databaseSchemaUpdate";
 
-    private static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
-
     private static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
 
     private static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME = "engineIdentityServiceClassName";
 
     private static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE = "engineIdentityServiceCfgFile";
-	
+
+    // Parameters of the Activiti job executor
+    private static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
+
+    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_COREPOOLSIZE = "engineJobExecutorCorePoolSize";
+
+    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE = "engineJobExecutorMaxPoolSize";
+
+    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME = "engineJobExecutorKeepAliveTime";
+
+    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE = "engineJobExecutorQueueSize";
+
     /**
      * {@inheritDoc}
      */
     @Override
     public List<String> getAttributeList() {
         this.getLogger().fine("Start ActivitiSEBootstrap.getAttributeList()");
-        
+
         try {
             final List<String> attributes = super.getAttributeList();
 
@@ -106,17 +137,22 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_JDBC_MAX_WAIT_TIME);
             attributes.add(ATTR_NAME_DATABASE_TYPE);
             attributes.add(ATTR_NAME_DATABASE_SCHEMA_UPDATE);
-            attributes.add(ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION);
             attributes.add(ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME);
             attributes.add(ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE);
+
+            // Parameters of the Activiti job executor
+            attributes.add(ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
 
             return attributes;
         } finally {
             this.getLogger().fine("End ActivitiSEBootstrap.getAttributeList()");
         }
     }
-	
+
     /**
      * Get the jdbc Driver
      * 
@@ -127,7 +163,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
         return ActivitiParameterReader.getJdbcDriver(this.getParam(ActivitiSEConstants.DBServer.JDBC_DRIVER),
                 this.getLogger());
     }
- 
+
     /**
      * Set the jdbc Driver
      * 
@@ -164,7 +200,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
         }
 
     }
-  
+
     /**
      * Get the jdbc URL
      * 
@@ -173,11 +209,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public String getJdbcUrl() {
         return this.getParam(JDBC_URL);
     }
- 
+
     /**
      * Set the jdbc URL
      * 
-     * @param value the jdbc URL
+     * @param value
+     *            the jdbc URL
      */
     public void setJdbcUrl(final String value) throws InvalidAttributeValueException {
 
@@ -194,7 +231,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             this.setParam(JDBC_URL, null);
         }
     }
-  
+
     /**
      * Get the jdbc User Name
      * 
@@ -203,16 +240,17 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public String getJdbcUsername() {
         return this.getParam(JDBC_USERNAME);
     }
- 
+
     /**
      * Set the jdbc User Name
      * 
-     * @param value the User Name
+     * @param value
+     *            the User Name
      */
     public void setJdbcUsername(final String value) {
         this.setParam(JDBC_USERNAME, value);
     }
-  
+
     /**
      * Get the jdbc Password
      * 
@@ -221,158 +259,93 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public String getJdbcPassword() {
         return this.getParam(JDBC_PASSWORD);
     }
- 
+
     /**
      * Set the jdbc UserName
      * 
-     * @param value the UserName
+     * @param value
+     *            the UserName
      */
     public void setJdbcPassword(final String value) {
         this.setParam(JDBC_PASSWORD, value);
     }
-  
+
     /**
      * Get the jdbc MaxActiveConnections
      * 
      * @return the jdbc MaxActiveConnections
      */
     public int getJdbcMaxActiveConnections() {
-        int jdbcMaxActiveConnections;
-
-        final String jdbcMaxActiveConnectionsString = this.getParam(JDBC_MAX_ACTIVE_CONNECTIONS);
-        if (jdbcMaxActiveConnectionsString != null && !jdbcMaxActiveConnectionsString.trim().isEmpty()) {
-            try {
-                jdbcMaxActiveConnections = Integer.parseInt(jdbcMaxActiveConnectionsString);
-            } catch (final NumberFormatException e) {
-                // Invalid value, we use the default one
-                this.getLogger().warning(
-                        "Invalid value (" + jdbcMaxActiveConnectionsString + ") for the configuration parameter: "
-                                + JDBC_MAX_ACTIVE_CONNECTIONS + ". Default value used: "
-                                + DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS);
-                jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
-            }
-        } else {
-            jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
-        }
-
-        return jdbcMaxActiveConnections;
+        return this.getParamAsInteger(JDBC_MAX_ACTIVE_CONNECTIONS, DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS);
     }
- 
+
     /**
      * Set the jdbc MaxActiveConnections
      * 
-     * @param value the MaxActiveConnections
+     * @param value
+     *            the MaxActiveConnections
      */
     public void setJdbcMaxActiveConnections(final int value) {
         this.setParam(JDBC_MAX_ACTIVE_CONNECTIONS, Integer.toString(value));
     }
-  
+
     /**
      * Get the jdbc MaxIdleConnections
      * 
      * @return the jdbc MaxIdleConnections
      */
     public int getJdbcMaxIdleConnections() {
-        int jdbcMaxIdleConnections;
-
-        final String jdbcMaxIdleConnectionsString = this.getParam(JDBC_MAX_IDLE_CONNECTIONS);
-        if (jdbcMaxIdleConnectionsString != null && !jdbcMaxIdleConnectionsString.trim().isEmpty()) {
-            try {
-                jdbcMaxIdleConnections = Integer.parseInt(jdbcMaxIdleConnectionsString);
-            } catch (final NumberFormatException e) {
-                // Invalid value, we use the default one
-                this.getLogger().warning(
-                        "Invalid value (" + jdbcMaxIdleConnectionsString + ") for the configuration parameter: "
-                                + JDBC_MAX_IDLE_CONNECTIONS + ". Default value used: "
-                                + DEFAULT_JDBC_MAX_IDLE_CONNECTIONS);
-                jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
-            }
-        } else {
-            jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
-        }
-
-        return jdbcMaxIdleConnections;
+        return this.getParamAsInteger(JDBC_MAX_IDLE_CONNECTIONS, DEFAULT_JDBC_MAX_IDLE_CONNECTIONS);
     }
- 
+
     /**
      * Set the jdbc MaxIdleConnections
      * 
-     * @param value the MaxIdleConnections
+     * @param value
+     *            the MaxIdleConnections
      */
     public void setJdbcMaxIdleConnections(final int value) {
         this.setParam(JDBC_MAX_IDLE_CONNECTIONS, Integer.toString(value));
     }
-  
+
     /**
      * Get the jdbc MaxCheckoutTime
      * 
      * @return the jdbc MaxCheckoutTime
      */
     public int getJdbcMaxCheckoutTime() {
-        int jdbcMaxCheckoutTime = 0;
-
-        final String jdbcMaxCheckoutTimeString = this.getParam(JDBC_MAX_CHECKOUT_TIME);
-        if (jdbcMaxCheckoutTimeString != null && !jdbcMaxCheckoutTimeString.trim().isEmpty()) {
-            try {
-                jdbcMaxCheckoutTime = Integer.parseInt(jdbcMaxCheckoutTimeString);
-            } catch (final NumberFormatException e) {
-                // Invalid value, we use the default one
-                this.getLogger().warning(
-                        "Invalid value (" + jdbcMaxCheckoutTimeString + ") for the configuration parameter: "
-                                + JDBC_MAX_CHECKOUT_TIME + ". Default value used: " + DEFAULT_JDBC_MAX_CHECKOUT_TIME);
-                jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
-            }
-        } else {
-            jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
-        }
-
-        return jdbcMaxCheckoutTime;
+        return this.getParamAsInteger(JDBC_MAX_CHECKOUT_TIME, DEFAULT_JDBC_MAX_CHECKOUT_TIME);
     }
- 
+
     /**
      * Set the jdbc MaxCheckoutTime
      * 
-     * @param value the MaxCheckoutTime
+     * @param value
+     *            the MaxCheckoutTime
      */
     public void setJdbcMaxCheckoutTime(final int value) {
         this.setParam(JDBC_MAX_CHECKOUT_TIME, Integer.toString(value));
     }
- 
+
     /**
      * Get the jdbc MaxWaitTime
      * 
      * @return the jdbc MaxWaitTime
      */
     public int getJdbcMaxWaitTime() {
-        int jdbcMaxWaitTime = 0;
-
-        final String jdbcMaxWaitTimeString = this.getParam(JDBC_MAX_WAIT_TIME);
-        if (jdbcMaxWaitTimeString != null && !jdbcMaxWaitTimeString.trim().isEmpty()) {
-            try {
-                jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeString);
-            } catch (final NumberFormatException e) {
-                // Invalid value, we use the default one
-                this.getLogger().warning(
-                        "Invalid value (" + jdbcMaxWaitTimeString + ") for the configuration parameter: "
-                                + JDBC_MAX_WAIT_TIME + ". Default value used: " + DEFAULT_JDBC_MAX_WAIT_TIME);
-                jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
-            }
-        } else {
-            jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
-        }
-
-        return jdbcMaxWaitTime;
+        return this.getParamAsInteger(JDBC_MAX_WAIT_TIME, DEFAULT_JDBC_MAX_WAIT_TIME);
     }
- 
+
     /**
      * Set the jdbc MaxWaitTime
      * 
-     * @param value the MaxWaitTime
+     * @param value
+     *            the MaxWaitTime
      */
     public void setJdbcMaxWaitTime(final int value) {
         this.setParam(JDBC_MAX_WAIT_TIME, Integer.toString(value));
     }
- 
+
     /**
      * Get the databaseType
      * 
@@ -381,17 +354,18 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     public String getDatabaseType() {
         return this.getParam(DATABASE_TYPE);
     }
-     
+
     /**
      * Set the databaseType
      * 
-     * @param value the databaseType
+     * @param value
+     *            the databaseType
      */
     public void setDatabaseType(final String value) {
         // TODO: Add a check about valid values
         this.setParam(DATABASE_TYPE, value);
     }
-  
+
     /**
      * Get the databaseSchemaUpdate
      * 
@@ -403,8 +377,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
         final String databaseSchemaUpdateString = this.getParam(DATABASE_SCHEMA_UPDATE);
         if (databaseSchemaUpdateString == null || databaseSchemaUpdateString.trim().isEmpty()) {
             databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
-        } else if (databaseSchemaUpdateString.trim().equals("false")
-                || databaseSchemaUpdateString.trim().equals("true")
+        } else if (databaseSchemaUpdateString.trim().equals("false") || databaseSchemaUpdateString.trim().equals("true")
                 || databaseSchemaUpdateString.trim().equals("create-drop")) {
             databaseSchemaUpdate = databaseSchemaUpdateString.trim();
         } else {
@@ -413,11 +386,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 
         return databaseSchemaUpdate;
     }
-     
+
     /**
      * Set the databaseSchemaUpdate
      * 
-     * @param value the databaseSchemaUpdate
+     * @param value
+     *            the databaseSchemaUpdate
      */
     public void setDatabaseSchemaUpdate(final String value) {
         // TODO: Add a check about valid values
@@ -460,6 +434,220 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
     }
 
     /**
+     * Get the Activiti async job executor core pool size
+     * 
+     * @return the Activiti async job executor core pool size
+     */
+    public int getEngineJobExecutorCorePoolSize() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_COREPOOLSIZE, DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
+    }
+
+    /**
+     * Set the Activiti async job executor core pool size
+     * 
+     * @param value
+     *            the Activiti async job executor core pool size
+     */
+    public void setEngineJobExecutorCorePoolSize(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_COREPOOLSIZE, Integer.toString(value));
+    }
+
+    /**
+     * Get the Activiti async job executor max pool size
+     * 
+     * @return the Activiti async job executor max pool size
+     */
+    public int getEngineJobExecutorMaxPoolSize() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_MAXPOOLSIZE, DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
+    }
+
+    /**
+     * Set the Activiti async job executor max pool size
+     * 
+     * @param value
+     *            the Activiti async job executor max pool size
+     */
+    public void setEngineJobExecutorMaxPoolSize(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_MAXPOOLSIZE, Integer.toString(value));
+    }
+
+    /**
+     * Get the keep alive time of idle thread of the Activiti async job executor
+     * 
+     * @return the keep alive time of idle thread of the Activiti async job executor
+     */
+    public long getEngineJobExecutorKeepAliveTime() {
+        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_KEEPALIVETIME, DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
+    }
+
+    /**
+     * Set the keep alive time of idle thread of the Activiti async job executor
+     * 
+     * @param value
+     *            the keep alive time of idle thread of the Activiti async job executor
+     */
+    public void setEngineJobExecutorKeepAliveTime(final long value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_KEEPALIVETIME, Long.toString(value));
+    }
+
+    /**
+     * Get the queue size of the Activiti async job executor
+     * 
+     * @return the queue size of the Activiti async job executor
+     */
+    public int getEngineJobExecutorQueueSize() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_QUEUESIZE, DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE);
+    }
+
+    /**
+     * Set the queue size of the Activiti async job executor
+     * 
+     * @param value
+     *            the queue size of the Activiti async job executor
+     */
+    public void setEngineJobExecutorQueueSize(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_QUEUESIZE, Integer.toString(value));
+    }
+
+    /**
+     * Get the max number of timer jobs that are fetched from the database in one query by the Activiti async job
+     * executor.
+     * 
+     * @return the max number of timer jobs that are fetched from the database in one query by the Activiti async job
+     *         executor.
+     */
+    public int getEngineJobExecutorMaxTimerJobsPerAcquisition() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION,
+                DEFAULT_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
+    }
+
+    /**
+     * Set the max number of timer jobs that are fetched from the database in one query by the Activiti async job
+     * executor.
+     * 
+     * @param value
+     *            the max number of timer jobs that are fetched from the database in one query by the Activiti async job
+     *            executor.
+     */
+    public void setEngineJobExecutorMaxTimerJobsPerAcquisition(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION, Integer.toString(value));
+    }
+
+    /**
+     * Get the max number of asynchronous jobs due that are fetched from the database in one query by the Activiti async
+     * job executor.
+     * 
+     * @return the max number of asynchronous jobs due that are fetched from the database in one query by the Activiti
+     *         async job executor.
+     */
+    public int getEngineJobExecutorMaxAsyncJobsDuePerAcquisition() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION,
+                DEFAULT_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
+    }
+
+    /**
+     * Set the max number of asynchronous jobs due that are fetched from the database in one query by the Activiti async
+     * job executor.
+     * 
+     * @param value
+     *            the max number of asynchronous jobs due that are fetched from the database in one query by the
+     *            Activiti async job executor.
+     */
+    public void setEngineJobExecutorMaxAsyncJobsDuePerAcquisition(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION, Integer.toString(value));
+    }
+
+    /**
+     * Get the time, in milliseconds, between asynchronous jobs due queries being executed by the Activiti async
+     * 
+     * @return the time, in milliseconds, between asynchronous jobs due queries being executed by the Activiti async
+     */
+    public long getEngineJobExecutorAsyncJobDueAcquireWaitTime() {
+        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME,
+                DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME);
+    }
+
+    /**
+     * Set the time, in milliseconds, between asynchronous jobs due queries being executed by the Activiti async job
+     * executor.
+     * 
+     * @param value
+     *            the time, in milliseconds, between asynchronous jobs due queries being executed by the Activiti async.
+     */
+    public void setEngineJobExecutorAsyncJobDueAcquireWaitTime(final long value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME, Long.toString(value));
+    }
+
+    /**
+     * Get the time, in milliseconds, between timer jobs queries being executed by the Activiti async job executor.
+     * 
+     * @return the time, in milliseconds, between timer jobs queries being executed by the Activiti async job executor.
+     */
+    public long getEngineJobExecutorTimerJobAcquireWaitTime() {
+        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
+                DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
+    }
+
+    /**
+     * Set the time, in milliseconds, between timer jobs queries being executed by the Activiti async job executor.
+     * 
+     * @param value
+     *            the time, in milliseconds, between timer jobs queries being executed by the Activiti async job
+     *            executor.
+     */
+    public void setEngineJobExecutorTimerJobAcquireWaitTime(final long value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME, Long.toString(value));
+    }
+
+    /**
+     * Get the time, in milliseconds, that a timer job is locked before being retried again by the Activiti async job
+     * executor. The Activiti engine considers the timer job to have failed after this period of time and will retry.
+     * 
+     * @return the time, in milliseconds, that a timer job is locked before being retried again by the Activiti async
+     *         job executor.
+     */
+    public long getEngineJobExecutorTimerLockTime() {
+        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_TIMERLOCKTIME, DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+    }
+
+    /**
+     * Set the time, in milliseconds, that a timer job is locked before being retried again by the Activiti async job
+     * executor. The Activiti engine considers the timer job to have failed after this period of time and will retry.
+     * 
+     * @param value
+     *            the time, in milliseconds, that a timer job is locked before being retried again by the Activiti async
+     *            job executor.
+     */
+    public void setEngineJobExecutorTimerLockTime(final long value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_TIMERLOCKTIME, Long.toString(value));
+    }
+
+    /**
+     * Get the time, in milliseconds, that an asynchronous job is locked before being retried again by the Activiti
+     * async job executor. The Activiti engine considers the timer job to have failed after this period of time and will
+     * retry.
+     * 
+     * @return the time, in milliseconds, that an asynchronous job is locked before being retried again by the Activiti
+     *         async job executor.
+     */
+    public long getEngineJobExecutorAsyncJobLockTime() {
+        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME, DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+    }
+
+    /**
+     * Set the time, in milliseconds, that an asynchronous job is locked before being retried again by the Activiti
+     * async job executor. The Activiti engine considers the timer job to have failed after this period of time and will
+     * retry.
+     * 
+     * @param value
+     *            the time, in milliseconds, that an asynchronous job is locked before being retried again by the
+     *            Activiti async job executor.
+     */
+    public void setEngineJobExecutorAsyncJobLockTime(final long value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME, Long.toString(value));
+    }
+
+    /**
      * Get the engineEnableBpmnValidation
      * 
      * @return the engineEnableBpmnValidation
@@ -473,11 +661,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
         final boolean enableActivitiBpmnValidation;
         final String enableActivitiBpmnValidationConfigured = this.getParam(ENGINE_ENABLE_BPMN_VALIDATION);
         if (enableActivitiBpmnValidationConfigured == null || enableActivitiBpmnValidationConfigured.trim().isEmpty()) {
-            this.getLogger()
-                    .info("The activation of the BPMN validation on process deployments into Activiti engine is not configured. Default value used.");
+            this.getLogger().info(
+                    "The activation of the BPMN validation on process deployments into Activiti engine is not configured. Default value used.");
             enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
         } else {
-            enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("false") ? false
+            enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("false")
+                    ? false
                     : (enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
                             : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
         }
@@ -526,8 +715,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             try {
                 final Class<?> identityServiceClass = ActivitiSE.class.getClassLoader().loadClass(value.trim());
                 if (!IdentityService.class.isAssignableFrom(identityServiceClass)) {
-                    throw new InvalidAttributeValueException("Identity service does not implement "
-                            + IdentityService.class.getName() + ".");
+                    throw new InvalidAttributeValueException(
+                            "Identity service does not implement " + IdentityService.class.getName() + ".");
                 } else {
                     this.setParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME, value);
                 }
@@ -568,16 +757,16 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
                 // TODO: Add a check to verify that the resource
                 this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, value.trim());
             } else if (!tmpFile.exists()) {
-                throw new InvalidAttributeValueException("The identity service configuration file (" + value.trim()
-                        + ") does not exist.");
+                throw new InvalidAttributeValueException(
+                        "The identity service configuration file (" + value.trim() + ") does not exist.");
             } else if (!tmpFile.isFile()) {
-                throw new InvalidAttributeValueException("The identity service configuration file (" + value.trim()
-                        + ") is not a file.");
+                throw new InvalidAttributeValueException(
+                        "The identity service configuration file (" + value.trim() + ") is not a file.");
             } else {
                 this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, value.trim());
             }
         }
 
     }
-     
+
 }

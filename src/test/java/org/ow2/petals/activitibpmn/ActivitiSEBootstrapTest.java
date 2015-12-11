@@ -65,8 +65,8 @@ public class ActivitiSEBootstrapTest {
      * descriptor are set to null or empty)
      */
     @Test
-    public void defaultConfiguration_definedInComponentSourceCode() throws SecurityException, NoSuchFieldException,
-            IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_definedInComponentSourceCode()
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -95,6 +95,38 @@ public class ActivitiSEBootstrapTest {
         final Element eltEnableEngineJobExecutor = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEngineJobExecutorCorePoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
+        params.add(eltEngineJobExecutorCorePoolSize);
+        final Element eltEngineJobExecutorMaxPoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
+        params.add(eltEngineJobExecutorMaxPoolSize);
+        final Element eltEngineJobExecutorKeepAliveTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
+        params.add(eltEngineJobExecutorKeepAliveTime);
+        final Element eltEngineJobExecutorQueueSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE);
+        params.add(eltEngineJobExecutorQueueSize);
+        final Element eltEngineJobExecutorMaxTimerJobsPerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
+        params.add(eltEngineJobExecutorMaxTimerJobsPerAcquisition);
+        final Element eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
+        params.add(eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition);
+        final Element eltEngineJobExecutorAsyncJobDueAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME);
+        params.add(eltEngineJobExecutorAsyncJobDueAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerJobAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
+        params.add(eltEngineJobExecutorTimerJobAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+        params.add(eltEngineJobExecutorTimerLockTime);
+        final Element eltEngineJobExecutorAsyncJobLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+        params.add(eltEngineJobExecutorAsyncJobLockTime);
+
         final Element eltEnableEngineBpmnValidation = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         params.add(eltEnableEngineBpmnValidation);
@@ -113,8 +145,8 @@ public class ActivitiSEBootstrapTest {
      * the component JBI descriptor are set to 'space'.
      */
     @Test
-    public void defaultConfiguration_ValuesSetToSpace() throws SecurityException, NoSuchFieldException,
-            IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_ValuesSetToSpace()
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -149,6 +181,48 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         eltEnableEngineJobExecutor.setTextContent(" ");
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEngineJobExecutorCorePoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
+        eltEngineJobExecutorCorePoolSize.setTextContent(" ");
+        params.add(eltEngineJobExecutorCorePoolSize);
+        final Element eltEngineJobExecutorMaxPoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
+        eltEngineJobExecutorMaxPoolSize.setTextContent(" ");
+        params.add(eltEngineJobExecutorMaxPoolSize);
+        final Element eltEngineJobExecutorKeepAliveTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
+        eltEngineJobExecutorKeepAliveTime.setTextContent(" ");
+        params.add(eltEngineJobExecutorKeepAliveTime);
+        final Element eltEngineJobExecutorQueueSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE);
+        eltEngineJobExecutorQueueSize.setTextContent(" ");
+        params.add(eltEngineJobExecutorQueueSize);
+        final Element eltEngineJobExecutorMaxTimerJobsPerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
+        eltEngineJobExecutorMaxTimerJobsPerAcquisition.setTextContent(" ");
+        params.add(eltEngineJobExecutorMaxTimerJobsPerAcquisition);
+        final Element eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
+        eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition.setTextContent(" ");
+        params.add(eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition);
+        final Element eltEngineJobExecutorAsyncJobDueAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME);
+        eltEngineJobExecutorAsyncJobDueAcquireWaitTime.setTextContent(" ");
+        params.add(eltEngineJobExecutorAsyncJobDueAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerJobAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
+        eltEngineJobExecutorTimerJobAcquireWaitTime.setTextContent(" ");
+        params.add(eltEngineJobExecutorTimerJobAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+        eltEngineJobExecutorTimerLockTime.setTextContent(" ");
+        params.add(eltEngineJobExecutorTimerLockTime);
+        final Element eltEngineJobExecutorAsyncJobLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+        eltEngineJobExecutorAsyncJobLockTime.setTextContent(" ");
+        params.add(eltEngineJobExecutorAsyncJobLockTime);
+
         final Element eltEnableEngineBpmnValidation = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         eltEnableEngineBpmnValidation.setTextContent(" ");
@@ -170,8 +244,8 @@ public class ActivitiSEBootstrapTest {
      * the component JBI descriptor are set to invalid values.
      */
     @Test
-    public void defaultConfiguration_InvalidValues() throws SecurityException, NoSuchFieldException,
-            IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_InvalidValues()
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -206,6 +280,48 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         eltEnableEngineJobExecutor.setTextContent("invalid-value");
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEngineJobExecutorCorePoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
+        eltEngineJobExecutorCorePoolSize.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorCorePoolSize);
+        final Element eltEngineJobExecutorMaxPoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
+        eltEngineJobExecutorMaxPoolSize.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorMaxPoolSize);
+        final Element eltEngineJobExecutorKeepAliveTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
+        eltEngineJobExecutorKeepAliveTime.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorKeepAliveTime);
+        final Element eltEngineJobExecutorQueueSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE);
+        eltEngineJobExecutorQueueSize.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorQueueSize);
+        final Element eltEngineJobExecutorMaxTimerJobsPerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
+        eltEngineJobExecutorMaxTimerJobsPerAcquisition.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorMaxTimerJobsPerAcquisition);
+        final Element eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
+        eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition);
+        final Element eltEngineJobExecutorAsyncJobDueAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME);
+        eltEngineJobExecutorAsyncJobDueAcquireWaitTime.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorAsyncJobDueAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerJobAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
+        eltEngineJobExecutorTimerJobAcquireWaitTime.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorTimerJobAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+        eltEngineJobExecutorTimerLockTime.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorTimerLockTime);
+        final Element eltEngineJobExecutorAsyncJobLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+        eltEngineJobExecutorAsyncJobLockTime.setTextContent("invalid-value");
+        params.add(eltEngineJobExecutorAsyncJobLockTime);
+
         final Element eltEnableEngineBpmnValidation = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         eltEnableEngineBpmnValidation.setTextContent("invalid-value");
@@ -227,8 +343,8 @@ public class ActivitiSEBootstrapTest {
      * values into the component JBI descriptor.
      */
     @Test
-    public void defaultConfiguration_ValidValues() throws SecurityException, NoSuchFieldException,
-            IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_ValidValues()
+            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -274,6 +390,61 @@ public class ActivitiSEBootstrapTest {
         final String engineEnableJobExecutor = Boolean.FALSE.toString();
         eltEnableEngineJobExecutor.setTextContent(engineEnableJobExecutor);
         params.add(eltEnableEngineJobExecutor);
+        final Element eltEngineJobExecutorCorePoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
+        final int jobExecutorCorePoolSize = 10;
+        eltEngineJobExecutorCorePoolSize.setTextContent(String.valueOf(jobExecutorCorePoolSize));
+        params.add(eltEngineJobExecutorCorePoolSize);
+        final Element eltEngineJobExecutorMaxPoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
+        final int jobExecutorMaxPoolSize = 100;
+        eltEngineJobExecutorMaxPoolSize.setTextContent(String.valueOf(jobExecutorMaxPoolSize));
+        params.add(eltEngineJobExecutorMaxPoolSize);
+        final Element eltEngineJobExecutorKeepAliveTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
+        final int jobExecutorKeepAliveTime = 105000;
+        eltEngineJobExecutorKeepAliveTime.setTextContent(String.valueOf(jobExecutorKeepAliveTime));
+        params.add(eltEngineJobExecutorKeepAliveTime);
+        final Element eltEngineJobExecutorQueueSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE);
+        final int jobExecutorQueueSize = 1050;
+        eltEngineJobExecutorQueueSize.setTextContent(String.valueOf(jobExecutorQueueSize));
+        params.add(eltEngineJobExecutorQueueSize);
+        final Element eltEngineJobExecutorMaxTimerJobsPerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
+        final int jobExecutorMaxTimerJobsPerAcquisition = 50;
+        eltEngineJobExecutorMaxTimerJobsPerAcquisition
+                .setTextContent(String.valueOf(jobExecutorMaxTimerJobsPerAcquisition));
+        params.add(eltEngineJobExecutorMaxTimerJobsPerAcquisition);
+        final Element eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
+        final int jobExecutorMaxAsyncJobsDuePerAcquisition = 50;
+        eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition
+                .setTextContent(String.valueOf(jobExecutorMaxAsyncJobsDuePerAcquisition));
+        params.add(eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition);
+        final Element eltEngineJobExecutorAsyncJobDueAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME);
+        final int jobExecutorAsyncJobDueAcquireWaitTime = 50000;
+        eltEngineJobExecutorAsyncJobDueAcquireWaitTime
+                .setTextContent(String.valueOf(jobExecutorAsyncJobDueAcquireWaitTime));
+        params.add(eltEngineJobExecutorAsyncJobDueAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerJobAcquireWaitTime = doc.createElementNS(
+                ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
+        final int jobExecutorTimerJobAcquireWaitTime = 50000;
+        eltEngineJobExecutorTimerJobAcquireWaitTime.setTextContent(String.valueOf(jobExecutorTimerJobAcquireWaitTime));
+        params.add(eltEngineJobExecutorTimerJobAcquireWaitTime);
+        final Element eltEngineJobExecutorTimerLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+        final int jobExecutorTimerLockTime = 50000;
+        eltEngineJobExecutorTimerLockTime.setTextContent(String.valueOf(jobExecutorTimerLockTime));
+        params.add(eltEngineJobExecutorTimerLockTime);
+        final Element eltEngineJobExecutorAsyncJobLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+        final int jobExecutorAsyncJobLockTime = 50000;
+        eltEngineJobExecutorAsyncJobLockTime.setTextContent(String.valueOf(jobExecutorAsyncJobLockTime));
+        params.add(eltEngineJobExecutorAsyncJobLockTime);
+
         final Element eltEnableEngineBpmnValidation = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         final String engineEnableBpmnValidation = Boolean.FALSE.toString();
@@ -298,6 +469,17 @@ public class ActivitiSEBootstrapTest {
         assertEquals(jdbcMaxWaitTime, bootstrap.getJdbcMaxWaitTime());
         assertEquals(databaseSchemaUpdate, bootstrap.getDatabaseSchemaUpdate());
         assertEquals(engineEnableJobExecutor, bootstrap.getEngineEnableJobExecutor());
+        assertEquals(jobExecutorCorePoolSize, bootstrap.getEngineJobExecutorCorePoolSize());
+        assertEquals(jobExecutorMaxPoolSize, bootstrap.getEngineJobExecutorMaxPoolSize());
+        assertEquals(jobExecutorKeepAliveTime, bootstrap.getEngineJobExecutorKeepAliveTime());
+        assertEquals(jobExecutorQueueSize, bootstrap.getEngineJobExecutorQueueSize());
+        assertEquals(jobExecutorMaxTimerJobsPerAcquisition, bootstrap.getEngineJobExecutorMaxTimerJobsPerAcquisition());
+        assertEquals(jobExecutorMaxAsyncJobsDuePerAcquisition,
+                bootstrap.getEngineJobExecutorMaxAsyncJobsDuePerAcquisition());
+        assertEquals(jobExecutorAsyncJobDueAcquireWaitTime, bootstrap.getEngineJobExecutorAsyncJobDueAcquireWaitTime());
+        assertEquals(jobExecutorTimerJobAcquireWaitTime, bootstrap.getEngineJobExecutorTimerJobAcquireWaitTime());
+        assertEquals(jobExecutorTimerLockTime, bootstrap.getEngineJobExecutorTimerLockTime());
+        assertEquals(jobExecutorAsyncJobLockTime, bootstrap.getEngineJobExecutorAsyncJobLockTime());
         assertEquals(engineEnableBpmnValidation, bootstrap.getEngineEnableBpmnValidation());
         assertEquals(engineIdentityServiceClassName, bootstrap.getEngineIdentityServiceClassName());
         assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE, bootstrap.getEngineIdentityServiceCfgFile());
@@ -314,8 +496,8 @@ public class ActivitiSEBootstrapTest {
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
     }
@@ -352,6 +534,26 @@ public class ActivitiSEBootstrapTest {
         assertEquals(ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE, bootstrap.getDatabaseSchemaUpdate());
         assertEquals(Boolean.toString(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR),
                 bootstrap.getEngineEnableJobExecutor());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
+                bootstrap.getEngineJobExecutorCorePoolSize());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
+                bootstrap.getEngineJobExecutorMaxPoolSize());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME,
+                bootstrap.getEngineJobExecutorKeepAliveTime());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE,
+                bootstrap.getEngineJobExecutorQueueSize());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION,
+                bootstrap.getEngineJobExecutorMaxTimerJobsPerAcquisition());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION,
+                bootstrap.getEngineJobExecutorMaxAsyncJobsDuePerAcquisition());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME,
+                bootstrap.getEngineJobExecutorAsyncJobDueAcquireWaitTime());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
+                bootstrap.getEngineJobExecutorTimerJobAcquireWaitTime());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME,
+                bootstrap.getEngineJobExecutorTimerLockTime());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME,
+                bootstrap.getEngineJobExecutorAsyncJobLockTime());
         assertEquals(Boolean.toString(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION),
                 bootstrap.getEngineEnableBpmnValidation());
         assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
@@ -377,8 +579,8 @@ public class ActivitiSEBootstrapTest {
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -404,8 +606,8 @@ public class ActivitiSEBootstrapTest {
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -438,8 +640,8 @@ public class ActivitiSEBootstrapTest {
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final String expectedDriver = Driver.class.getName();
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
@@ -466,8 +668,8 @@ public class ActivitiSEBootstrapTest {
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -500,8 +702,8 @@ public class ActivitiSEBootstrapTest {
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -519,15 +721,15 @@ public class ActivitiSEBootstrapTest {
      * Check to set a not loadable class as identity service class name
      */
     @Test(expected = InvalidAttributeValueException.class)
-    public void setEngineIdentityServiceCfgFile_ClassNotLoadable() throws JBIDescriptorException,
-            IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchFieldException,
-            InvalidAttributeValueException, IOException {
+    public void setEngineIdentityServiceCfgFile_ClassNotLoadable()
+            throws JBIDescriptorException, IllegalArgumentException, IllegalAccessException, SecurityException,
+            NoSuchFieldException, InvalidAttributeValueException, IOException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -538,15 +740,15 @@ public class ActivitiSEBootstrapTest {
      * Check to set a class not implementing {@link IdentityService} as identity service class name
      */
     @Test(expected = InvalidAttributeValueException.class)
-    public void setEngineIdentityServiceCfgFile_ClassNotImplementingIdentityService() throws JBIDescriptorException,
-            IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchFieldException,
-            InvalidAttributeValueException, IOException {
+    public void setEngineIdentityServiceCfgFile_ClassNotImplementingIdentityService()
+            throws JBIDescriptorException, IllegalArgumentException, IllegalAccessException, SecurityException,
+            NoSuchFieldException, InvalidAttributeValueException, IOException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -563,8 +765,8 @@ public class ActivitiSEBootstrapTest {
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 
@@ -582,15 +784,15 @@ public class ActivitiSEBootstrapTest {
      * Check to set an inexisting absolute file as identity service configuration file
      */
     @Test(expected = InvalidAttributeValueException.class)
-    public void setEngineIdentityServiceCfgFile_InexistingFile() throws JBIDescriptorException,
-            IllegalArgumentException, IllegalAccessException, SecurityException, NoSuchFieldException,
-            InvalidAttributeValueException, IOException {
+    public void setEngineIdentityServiceCfgFile_InexistingFile()
+            throws JBIDescriptorException, IllegalArgumentException, IllegalAccessException, SecurityException,
+            NoSuchFieldException, InvalidAttributeValueException, IOException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
         assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance().buildJavaJBIDescriptor(
-                defaultJbiDescriptorStream);
+        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
+                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
         final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
 

@@ -189,6 +189,115 @@ public final class ActivitiSEConstants {
     public static final boolean DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR = true;
 
     /**
+     * Tag name of the component JBI descriptor about the core pool size of the Activiti job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_COREPOOLSIZE = "engine-job-executor-core-pool-size";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_COREPOOLSIZE}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE = 2;
+
+    /**
+     * Tag name of the component JBI descriptor about the max pool size of the Activiti job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_MAXPOOLSIZE = "engine-job-executor-max-pool-size";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_MAXPOOLSIZE}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE = 10;
+
+    /**
+     * Tag name of the component JBI descriptor about the keep alive time, in milliseconds, of idle thread of the
+     * Activiti async job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_KEEPALIVETIME = "engine-job-executor-keep-alive-time";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_KEEPALIVETIME}.
+     */
+    public static final long DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME = 5000;
+
+    /**
+     * Tag name of the component JBI descriptor about the queue size of the Activiti async job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_QUEUESIZE = "engine-job-executor-queue-size";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_QUEUESIZE}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE = 100;
+
+    /**
+     * Tag name of the component JBI descriptor about the max number of timer jobs that are fetched from the database in
+     * one query by the Activiti async job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION = "engine-job-executor-max-timer-jobs-per-acquisition";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION = 1;
+
+    /**
+     * Tag name of the component JBI descriptor about the max number of asynchronous jobs due that are fetched from the
+     * database in one query by the Activiti async job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION = "engine-job-executor-max-async-jobs-due-per-acquisition";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION = 1;
+
+    /**
+     * Tag name of the component JBI descriptor about the time, in milliseconds, between asynchronous jobs due queries
+     * being executed by the Activiti async job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME = "engine-job-executor-async-job-due-acquire-wait-time";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME = 10000;
+
+    /**
+     * Tag name of the component JBI descriptor about the time, in milliseconds, between timer jobs queries being
+     * executed by the Activiti async job executor.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME = "engine-job-executor-timer-job-acquire-wait-time";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME = 10000;
+
+    /**
+     * Tag name of the component JBI descriptor about the time, in milliseconds, that a timer job is locked before being
+     * retried again by the Activiti async job executor. The Activiti engine considers the timer job to have failed
+     * after this period of time and will retry.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_TIMERLOCKTIME = "engine-job-executor-timer-lock-time";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_TIMERLOCKTIME}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME = 300000;
+
+    /**
+     * Tag name of the component JBI descriptor about the time, in milliseconds, that an asynchronous timer job is
+     * locked before being retried again by the Activiti async job executor. The Activiti engine considers the timer job
+     * to have failed after this period of time and will retry.
+     */
+    public static final String ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME = "engine-job-executor-async-job-lock-time";
+
+    /**
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME}.
+     */
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME = 300000;
+
+    /**
      * Tag name of the component JBI descriptor about the activation of the Activiti BPMN validation during processes
      * deployment.
      */

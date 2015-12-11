@@ -85,7 +85,8 @@
          <xs:documentation>The number of active connections that the connection pool at maximum at any time can contain
          </xs:documentation>
          <xs:documentation xml:lang="fr">Nombre de connexions actives simultanées que le pool de connexion
-            peut accepter au maximum</xs:documentation>
+            peut accepter au maximum
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
@@ -94,35 +95,42 @@
          <xs:documentation>The number of idle connections that the connection pool at maximum at any time can contain
          </xs:documentation>
          <xs:documentation xml:lang="fr">Nombre de connexions inactives simultanées que le pool de connexion
-            peut accepter au maximum</xs:documentation>
+            peut accepter au maximum
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
    <xs:element name="jdbc_max_checkout_time" type="petalsCDK:settableint" default="20000">
       <xs:annotation>
          <xs:documentation>The amount of time in milliseconds a connection can be 'checked out' from the connection pool
-            before it is forcefully returned</xs:documentation>
+            before it is forcefully returned
+         </xs:documentation>
          <xs:documentation xml:lang="fr">Durée en millisecondes avant qu'une connexion soit 'vérifiée' du
-            pool de connexion avant d'être renvoyé de force</xs:documentation>
+            pool de connexion avant d'être renvoyé de force
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
    <xs:element name="jdbc_max_wait_time" type="petalsCDK:settableint" default="20000">
       <xs:annotation>
          <xs:documentation>This is a low level setting that gives the pool a chance to print a log status and re-attempt
-            the acquisition of a connection in the case that it’s taking unusually long</xs:documentation>
+            the acquisition of a connection in the case that it’s taking unusually long
+         </xs:documentation>
          <xs:documentation xml:lang="fr">Paramètre de bas niveau qui donne au pool une chance pour imprimer
             un état ​​de journal et re-tenter l'acquisition d'une connexion dans le cas où elle est exceptionnellement
-            longue </xs:documentation>
+            longue
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
    <xs:element name="database_type" type="petals-se-activitibpmn:DatabaseType" default="h2">
       <xs:annotation>
          <xs:documentation>Should only be specified in case automatic detection fails. Possible values:
-            (h2/mysql/oracle/postgres/mssql/db2)</xs:documentation>
+            (h2/mysql/oracle/postgres/mssql/db2)
+         </xs:documentation>
          <xs:documentation xml:lang="fr">Doit être précisé en cas de non fonctionnement de la détection
-            automatique. Valeurs possibles: (h2/mysql/oracle/postgres/mssql/db2)</xs:documentation>
+            automatique. Valeurs possibles: (h2/mysql/oracle/postgres/mssql/db2)
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
@@ -131,7 +139,8 @@
          <xs:documentation>Allows to set the strategy to handle the database schema on process engine boot and shutdown
          </xs:documentation>
          <xs:documentation xml:lang="fr">Permet de définir la stratégie pour gérer le schéma de base de
-            données lors du démarrage et l'arrêt du moteur de processus</xs:documentation>
+            données lors du démarrage et l'arrêt du moteur de processus
+         </xs:documentation>
       </xs:annotation>
    </xs:element>	
 
@@ -153,27 +162,33 @@
          <xs:enumeration value="false">
             <xs:annotation>
                <xs:documentation>Checks the version of the DB schema against the library when the process engine is
-                  being created and throws an exception if the versions don't match</xs:documentation>
+                  being created and throws an exception if the versions don't match.
+               </xs:documentation>
                <xs:documentation xml:lang="fr">Vérifie la version du schéma DB à la bibliothèque lorsque le
                   moteur de processus est en cours de création et lève une exception si les versions ne correspondent
-                  pas</xs:documentation>
+                  pas.
+               </xs:documentation>
             </xs:annotation>
          </xs:enumeration>
          <xs:enumeration value="true">
             <xs:annotation>
                <xs:documentation>Upon building the process engine, a check is performed and an update of the schema is
-                  performed if it is necessary. If the schema doesn't exist, it is created</xs:documentation>
+                  performed if it is necessary. If the schema doesn't exist, it is created.
+               </xs:documentation>
                <xs:documentation xml:lang="fr">Lors de la construction du moteur de processus, une
                   vérification est effectuée et une mise à jour du schéma est effectuée si cela est nécessaire. Si le
-                  schéma n'existe pas, il est créé</xs:documentation>
+                  schéma n'existe pas, il est créé.
+               </xs:documentation>
             </xs:annotation>
          </xs:enumeration>
          <xs:enumeration value="create-drop">
             <xs:annotation>
                <xs:documentation>Creates the schema when the process engine is being created and drops the schema when
-                  the process engine is being closed</xs:documentation>
+                  the process engine is being closed.
+               </xs:documentation>
                <xs:documentation xml:lang="fr">Crée le schéma lors de la construction du moteur de processus
-                  et détruit le schéma quand le moteur de processus est arrêté</xs:documentation>
+                  et détruit le schéma quand le moteur de processus est arrêté.
+               </xs:documentation>
             </xs:annotation>
          </xs:enumeration>
       </xs:restriction>
@@ -182,28 +197,141 @@
    <xs:element name="engine-enable-job-executor" type="petalsCDK:settableboolean" default="true">
       <xs:annotation>
          <xs:documentation>Enable/Disable the job executor of Activiti engine.</xs:documentation>
-         <xs:documentation xml:lang="fr">Active/Désactive le job executor du moteur Activiti</xs:documentation>
+         <xs:documentation xml:lang="fr">Active/Désactive le job executor du moteur Activiti
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
+   <xs:element name="engine-job-executor-core-pool-size" type="petalsCDK:settableint" default="2">
+      <xs:annotation>
+         <xs:documentation>Core pool size of the Activiti engine job executor.</xs:documentation>
+         <xs:documentation xml:lang="fr">Core pool size du job executor du moteur Activiti
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-max-pool-size" type="petalsCDK:settableint" default="10">
+      <xs:annotation>
+         <xs:documentation>Max pool size of the Activiti engine job executor.</xs:documentation>
+         <xs:documentation xml:lang="fr">Max pool size du job executor du moteur Activiti</xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-keep-alive-time" type="petalsCDK:settablelong" default="5000">
+      <xs:annotation>
+         <xs:documentation>Keep alive time, in milliseconds, of idle threads of the Activiti engine job executor.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Keep alive time, en milli-secondes, des threads idles du job
+            executor du moteur Activiti
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-queue-size" type="petalsCDK:settableint" default="100">
+      <xs:annotation>
+         <xs:documentation>Queue size of the Activiti engine job executor.</xs:documentation>
+         <xs:documentation xml:lang="fr">Taille de la queue du job executor du moteur Activiti
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-max-timer-jobs-per-acquisition" type="petalsCDK:settableint"
+      default="1">
+      <xs:annotation>
+         <xs:documentation>Max number of timer jobs that are fetched from the database in one query by the Activiti
+            async job executor.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Nombre maximal de jobs 'timer' pouvant être obtenus en une seule
+            requête en base de données par le job executor du moteur Activiti.
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-max-async-jobs-due-per-acquisition" type="petalsCDK:settableint"
+      default="1">
+      <xs:annotation>
+         <xs:documentation>Max number of asynchronous jobs due that are fetched from the database in one query by the
+            Activiti async job executor.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Nombre maximal de jobs 'asynchrones' terminés pouvant être obtenus
+            en une seule requête en base de données par le job executor du moteur Activiti.
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-async-job-due-acquire-wait-time" type="petalsCDK:settablelong"
+      default="10000">
+      <xs:annotation>
+         <xs:documentation>The time, in milliseconds, between asynchronous jobs due queries being executed by the
+            Activiti async job executor.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Durée, en milli-secondes, entre les obtentions de jobs
+            'asynchrones' terminés par le job executor du moteur Activiti.
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-timer-job-acquire-wait-time" type="petalsCDK:settablelong" default="10000">
+      <xs:annotation>
+         <xs:documentation>The time, in milliseconds, between timer jobs queries being executed by the Activiti async
+            job executor.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Durée, en milli-secondes, entre les obtentions de jobs 'timer' par
+            le job executor du moteur Activiti.
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-timer-lock-time" type="petalsCDK:settablelong" default="300000">
+      <xs:annotation>
+         <xs:documentation>The time, in milliseconds, that a timer job is locked before being retried again by the
+            Activiti async job executor. The Activiti engine considers the timer job to have failed after this period of
+            time and will retry.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Durée, en milli-secondes, qu'un job 'timer' est locké avant d'être
+            rejoué par le job executor du moteur Activiti. Le moteur Activiti considère qu'un job 'timer' échoue lorsque
+            cette période de temps arrive à échéance, et réessaie.
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+   <xs:element name="engine-job-executor-async-job-lock-time" type="petalsCDK:settablelong" default="300000">
+      <xs:annotation>
+         <xs:documentation>The time, in milliseconds, that an asynchronous job is locked before being retried again by
+            the Activiti async job executor. The Activiti engine considers the timer job to have failed after this
+            period of time and will retry.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Durée, en milli-secondes, qu'un job 'asynchrone' est locké avant
+            d'être rejoué par le job executor du moteur Activiti. Le moteur Activiti considère qu'un job 'timer' échoue
+            lorsque cette période de temps arrive à échéance, et réessaie.
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+
+
    <xs:element name="engine-enable-bpmn-validation" type="petalsCDK:settableboolean" default="true">
       <xs:annotation>
-         <xs:documentation>Enable/Disable the BPMN validation on process deployments into the Activiti engine.</xs:documentation>
-         <xs:documentation xml:lang="fr">Active/Désactive la validation BPMN des processus déployés dans le moteur Activiti</xs:documentation>
+         <xs:documentation>Enable/Disable the BPMN validation on process deployments into the Activiti engine.
+         </xs:documentation>
+         <xs:documentation xml:lang="fr">Active/Désactive la validation BPMN des processus déployés dans le
+            moteur Activiti.
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
    <xs:element name="engine-identity-service-class-name" type="petalsCDK:settablestring" default="true">
       <xs:annotation>
          <xs:documentation>Define the identity service to push into Activiti engine.</xs:documentation>
-         <xs:documentation xml:lang="fr">Défini le service d'identité à utiliser avec le moteur Activiti</xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le service d'identité à utiliser avec le moteur Activiti
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 
    <xs:element name="engine-identity-service-config-file" type="petalsCDK:settablestring" default="true">
       <xs:annotation>
          <xs:documentation>Define the configuration file of the identity service</xs:documentation>
-         <xs:documentation xml:lang="fr">Défini le fichier de configuration du service d'identité</xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le fichier de configuration du service d'identité
+         </xs:documentation>
       </xs:annotation>
    </xs:element>
 

@@ -18,8 +18,7 @@
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://java.sun.com/xml/ns/jbi"
    xmlns:jbi="http://java.sun.com/xml/ns/jbi" xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
-   xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0"
-   elementFormDefault="qualified">
+   xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0" elementFormDefault="qualified">
 
    <xs:import namespace="http://petals.ow2.org/components/petals-se-activitibpmn/1.0" schemaLocation="ActivitiSEextensions.xsd" />
 
@@ -67,6 +66,26 @@
                   <xs:element ref="petals-se-activitibpmn:database_schema_update" maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-enable-job-executor" maxOccurs="1"
                      minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-core-pool-size" maxOccurs="1"
+                     minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-max-pool-size" maxOccurs="1"
+                     minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-keep-alive-time" maxOccurs="1"
+                     minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-queue-size" maxOccurs="1"
+                     minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-max-timer-jobs-per-acquisition"
+                     maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-timer-job-acquire-wait-time"
+                     maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-timer-lock-time"
+                     maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-max-async-jobs-due-per-acquisition"
+                     maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-async-job-due-acquire-wait-time"
+                     maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-async-job-lock-time"
+                     maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-enable-bpmn-validation" maxOccurs="1"
                      minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-identity-service-class-name" maxOccurs="1"
@@ -80,8 +99,8 @@
    </xs:redefine>
 
 	<!--
-		The definition of the root element here takes account of the redefined
-		types
+	  The definition of the root element here takes account of the redefined
+	  types
 	-->
    <xs:element name="jbi" type="jbi:Jbi" />
 </xs:schema>
