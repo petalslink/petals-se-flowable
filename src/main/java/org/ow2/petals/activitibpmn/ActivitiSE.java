@@ -93,7 +93,7 @@ import org.ow2.petals.activitibpmn.outgoing.PetalsSender;
 import org.ow2.petals.activitibpmn.outgoing.cxf.transport.PetalsCxfTransportFactory;
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
-import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 
@@ -684,7 +684,7 @@ public class ActivitiSE extends AbstractServiceEngine {
     }
 
     @Override
-    protected AbstractServiceUnitManager createServiceUnitManager() {
+    protected ServiceEngineServiceUnitManager createServiceUnitManager() {
         return new ActivitiSuManager(this, this.simpleUUIDGenerator);
     }
 

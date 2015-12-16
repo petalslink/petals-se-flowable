@@ -54,12 +54,12 @@ import org.ow2.petals.activitibpmn.incoming.operation.annotated.CompleteUserTask
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.StartEventAnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.UnsupportedActionException;
-import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
-import org.ow2.petals.component.framework.su.ServiceEngineServiceUnitManager;
+import org.ow2.petals.component.framework.se.AbstractServiceEngine;
+import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 import org.ow2.petals.component.framework.util.EndpointOperationKey;
 import org.w3c.dom.Document;
@@ -90,7 +90,7 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
      * @param simpleUUIDGenerator
      *            An UUID generator
      */
-    public ActivitiSuManager(final AbstractComponent component, final SimpleUUIDGenerator simpleUUIDGenerator) {
+    public ActivitiSuManager(final AbstractServiceEngine component, final SimpleUUIDGenerator simpleUUIDGenerator) {
         super(component);
         this.simpleUUIDGenerator = simpleUUIDGenerator;
     }
@@ -157,9 +157,9 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
             // Store the ActivitiOperation in the map with the corresponding end-point
             final EndpointOperationKey eptAndOperation = new EndpointOperationKey(edptName, interfaceName,
                     operation.getWsdlOperation());
-            ((ActivitiSE) this.component).registerActivitiService(eptAndOperation, operation);
+            getComponent().registerActivitiService(eptAndOperation, operation);
         }
-        ((ActivitiSE) this.component).logEptOperationToActivitiOperation(this.logger, Level.FINEST);
+        getComponent().logEptOperationToActivitiOperation(this.logger, Level.FINEST);
         
         if (this.logger.isLoggable(Level.FINE)) {
             this.logger.fine("End ActivitiSuManager.doDeploy()");
@@ -191,7 +191,7 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
             final String edptName = suDH.getDescriptor().getServices().getProvides()
                     .iterator().next().getEndpointName();
             // Remove the ActivitiOperation in the map with the corresponding end-point
-            ((ActivitiSE) this.component).removeActivitiService(edptName);
+            getComponent().removeActivitiService(edptName);
 
             /**
              * // Get the operation Name of the end point ServiceUnitDataHandler suDataHandler
@@ -399,7 +399,7 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
             // This allow to deploy the same SU (process.bpmn20.xml) on several petals-se-activitibpmn for high
             // availability, ie. to create several service endpoints for the same process/tenantId/categoryId/version on
             // different Petals ESB container.
-            final RepositoryService repositoryService = ((ActivitiSE) this.component).getProcessEngine()
+            final RepositoryService repositoryService = getComponent().getProcessEngine()
                     .getRepositoryService();
             final List<ProcessDefinition> processDefinitionSearchList = repositoryService
                     .createProcessDefinitionQuery().processDefinitionResourceName(process.getProcessFileName())
@@ -516,15 +516,17 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
 
             // create the right ActivitiOperation according to the bpmnActionType
             if (annotatedOperation instanceof StartEventAnnotatedOperation) {
-                operations.add(new StartEventOperation(annotatedOperation, ((ActivitiSE) this.component)
-                        .getProcessEngine().getIdentityService(), ((ActivitiSE) this.component).getProcessEngine()
-                        .getRuntimeService(), ((ActivitiSE) this.component).getProcessEngine().getHistoryService(),
+                operations.add(new StartEventOperation(annotatedOperation,
+                        getComponent().getProcessEngine().getIdentityService(),
+                        getComponent().getProcessEngine().getRuntimeService(),
+                        getComponent().getProcessEngine().getHistoryService(),
                         this.simpleUUIDGenerator, this.logger));
             } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
-                operations.add(new CompleteUserTaskOperation(annotatedOperation, ((ActivitiSE) this.component)
-                        .getProcessEngine().getTaskService(), ((ActivitiSE) this.component).getProcessEngine()
-                        .getIdentityService(), ((ActivitiSE) this.component).getProcessEngine().getHistoryService(),
-                        ((ActivitiSE) this.component).getProcessEngine().getRuntimeService(),
+                operations.add(new CompleteUserTaskOperation(annotatedOperation,
+                        getComponent().getProcessEngine().getTaskService(),
+                        getComponent().getProcessEngine().getIdentityService(),
+                        getComponent().getProcessEngine().getHistoryService(),
+                        getComponent().getProcessEngine().getRuntimeService(),
                         this.logger));
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported
@@ -537,4 +539,9 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
         return operations;
     }
     
+    @Override
+    protected ActivitiSE getComponent() {
+        return (ActivitiSE) super.getComponent();
+    }
+
 }
