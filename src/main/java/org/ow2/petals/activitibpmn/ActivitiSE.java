@@ -396,8 +396,7 @@ public class ActivitiSE extends AbstractServiceEngine {
 
             this.getLogger().config("Activiti engine configuration:");
             this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableActivitiJobExecutor);
-            this.getLogger()
-.config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + enableActivitiBpmnValidation);
+            this.getLogger().config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + enableActivitiBpmnValidation);
             this.getLogger().config(
                     "   - " + ENGINE_IDENTITY_SERVICE_CLASS_NAME + " = " + identityServiceClass.getName());
             this.getLogger().config(
@@ -442,8 +441,7 @@ public class ActivitiSE extends AbstractServiceEngine {
             // Caution: Configuration beans are initialized when building the process engine
             if (pec instanceof ProcessEngineConfigurationImpl) {
                 // We add to the BPMN engine the bean in charge of sending Petals message exchange
-                final AbstractListener petalsSender = new PetalsSender();
-                petalsSender.init(this);
+                final AbstractListener petalsSender = new PetalsSender(this);
                 ((ProcessEngineConfigurationImpl) pec).getBeans().put(PETALS_SENDER_COMP_NAME, petalsSender);
             } else {
                 this.getLogger()

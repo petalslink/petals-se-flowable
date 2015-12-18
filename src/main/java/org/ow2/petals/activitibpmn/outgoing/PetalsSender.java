@@ -17,8 +17,13 @@
  */
 package org.ow2.petals.activitibpmn.outgoing;
 
+import org.ow2.petals.activitibpmn.ActivitiSE;
 import org.ow2.petals.component.framework.listener.AbstractListener;
 
 public class PetalsSender extends AbstractListener {
+
+    public PetalsSender(final ActivitiSE activitiSE) {
+        init(activitiSE);
+    }
 
 }
