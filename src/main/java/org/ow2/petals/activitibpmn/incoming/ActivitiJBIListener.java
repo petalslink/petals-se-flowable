@@ -108,7 +108,7 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                                 operation);
 
                         // Get the Activiti Service from the registered services
-                        final ActivitiService activitiService = ((ActivitiSE) this.component)
+                        final ActivitiService activitiService = ((ActivitiSE) getComponent())
                                 .getActivitiServices(eptAndOperation);
                         if (activitiService == null) {
                             // TODO: Create a unit test
