@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/Assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/Assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0-SNAPSHOT.xsd">
+   <id>full</id>
+   <formats>
+      <format>dir</format>
+   </formats>
+
+   <includeBaseDirectory>false</includeBaseDirectory>
+
+   <dependencySets>
+		<!-- Petals ESB container -->
+      <dependencySet>
+         <outputDirectory>/container</outputDirectory>
+         <includes>
+            <include>org.ow2.petals:petals-esb-minimal-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
+      
+      <!-- Petals CLI -->
+      <dependencySet>
+         <outputDirectory>/petals-cli</outputDirectory>
+         <includes>
+            <include>org.ow2.petals:petals-cli-distrib-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
+   </dependencySets>
+
+   <fileSets>
+      <fileSet>
+         <directory>src/main/ant</directory>
+         <outputDirectory>/</outputDirectory>
+         <fileMode>644</fileMode>
+      </fileSet>
+      <fileSet>
+         <directory>src/main/resources</directory>
+         <outputDirectory>/resources</outputDirectory>
+         <fileMode>644</fileMode>
+      </fileSet>
+   </fileSets>
+</assembly>
+
+

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014-2016 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ for the GNU Lesser General Public License version 2.1.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+      <artifactId>parent</artifactId>
+      <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
+      <version>5.0.0-SNAPSHOT</version>
+      <relativePath>../parent/pom.xml</relativePath>
+   </parent>
+
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
+   <artifactId>launcher-lifecycle-activiti</artifactId>
+   <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - Lifecycle</name>
+   <packaging>pom</packaging>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
+         <artifactId>sa-activiti-vacationRequest</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <artifactId>petals-se-activiti</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <artifactId>petals-se-rmi</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-esb-minimal-zip</artifactId>
+         <type>zip</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cli-distrib-zip</artifactId>
+         <type>zip</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals.integration</groupId>
+         <artifactId>petals-integration-rmi-client</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <version>1.4.178</version>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <groupId>org.apache.maven.plugins</groupId>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-maven-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+</project>
