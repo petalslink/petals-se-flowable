@@ -17,10 +17,6 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml"
                     classpath="${maven_plugin_classpath}" />
    </import>
-   <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-rmi-client.xml"
-                    classpath="${maven_plugin_classpath}" />
-   </import>
 
    <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
 
