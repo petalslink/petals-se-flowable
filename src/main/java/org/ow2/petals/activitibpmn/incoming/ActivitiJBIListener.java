@@ -29,7 +29,7 @@ import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
-import org.ow2.petals.component.framework.util.EndpointOperationKey;
+import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 
 
 /**
@@ -89,13 +89,14 @@ public class ActivitiJBIListener extends AbstractJBIListener {
                         }
 
                         final String eptName = exchange.getEndpointName();
+                        final QName service = exchange.getService();
                         final QName interfaceName = exchange.getInterfaceName();
                         final QName operation = exchange.getOperation();
 
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine(logHint + " was received and is started to be processed.");
                             logger.fine("interfaceName = " + interfaceName);
-                            logger.fine("Service       = " + exchange.getService());
+                            logger.fine("Service       = " + service);
                             logger.fine("EndpointName  = " + eptName);
                             logger.fine("OperationName = " + operation.toString());
                             logger.fine("Pattern " + exchange.getPattern());
@@ -104,7 +105,7 @@ public class ActivitiJBIListener extends AbstractJBIListener {
 
                         // TODO Validate Message
 
-                        final EndpointOperationKey eptAndOperation = new EndpointOperationKey(eptName, interfaceName,
+                        final ServiceEndpointOperationKey eptAndOperation = new ServiceEndpointOperationKey(service, eptName,
                                 operation);
 
                         // Get the Activiti Service from the registered services

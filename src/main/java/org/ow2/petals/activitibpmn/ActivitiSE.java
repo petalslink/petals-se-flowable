@@ -94,7 +94,7 @@ import org.ow2.petals.activitibpmn.outgoing.cxf.transport.PetalsCxfTransportFact
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
-import org.ow2.petals.component.framework.util.EndpointOperationKey;
+import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
@@ -114,7 +114,7 @@ public class ActivitiSE extends AbstractServiceEngine {
     /**
      * A map used to get the Activiti Operation associated with (end-point Name + Operation)
      */
-    private final Map<EndpointOperationKey, ActivitiService> activitiServices = new ConcurrentHashMap<EndpointOperationKey, ActivitiService>();
+    private final Map<ServiceEndpointOperationKey, ActivitiService> activitiServices = new ConcurrentHashMap<ServiceEndpointOperationKey, ActivitiService>();
 
     /**
      * The Activiti Async Executor service
@@ -175,7 +175,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      *            the Activiti service
      * @return the map with the inserted elements
      */
-    public void registerActivitiService(final EndpointOperationKey eptAndOperation,
+    public void registerActivitiService(final ServiceEndpointOperationKey eptAndOperation,
             final ActivitiService activitiservice) {
         this.activitiServices.put(eptAndOperation, activitiservice);
     }
@@ -186,10 +186,10 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
     public void removeActivitiService(final String eptName) {
 
-        final Iterator<Entry<EndpointOperationKey, ActivitiService>> itEptOperationToActivitiOperation = this.activitiServices
+        final Iterator<Entry<ServiceEndpointOperationKey, ActivitiService>> itEptOperationToActivitiOperation = this.activitiServices
                 .entrySet().iterator();
         while (itEptOperationToActivitiOperation.hasNext()) {
-            final Entry<EndpointOperationKey, ActivitiService> entry = itEptOperationToActivitiOperation.next();
+            final Entry<ServiceEndpointOperationKey, ActivitiService> entry = itEptOperationToActivitiOperation.next();
             if (entry.getKey().getEndpointName().equals(eptName)) {
                 itEptOperationToActivitiOperation.remove();
             }
@@ -201,8 +201,8 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
     public void logEptOperationToActivitiOperation(final Logger logger, final Level logLevel) {
         if (logger.isLoggable(logLevel)) {
-            for (final Map.Entry<EndpointOperationKey, ActivitiService> entry : this.activitiServices.entrySet()) {
-                final EndpointOperationKey key = entry.getKey();
+            for (final Map.Entry<ServiceEndpointOperationKey, ActivitiService> entry : this.activitiServices.entrySet()) {
+                final ServiceEndpointOperationKey key = entry.getKey();
                 logger.log(logLevel, "*** Endpoint Operation ");
                 logger.log(logLevel, key.toString());
                 logger.log(logLevel, "------------------------------------------------------ ");
@@ -217,7 +217,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      *            the end-point Name and operation Name
      * @return the Activiti Service associated with this end-point name and operation Name
      */
-    public ActivitiService getActivitiServices(final EndpointOperationKey eptAndOperation) {
+    public ActivitiService getActivitiServices(final ServiceEndpointOperationKey eptAndOperation) {
         return this.activitiServices.get(eptAndOperation);
     }
 
@@ -469,26 +469,27 @@ public class ActivitiSE extends AbstractServiceEngine {
             try {
                 for (final Endpoint endpoint : integrationEndpoints) {
                     final String integrationEndpointName = endpoint.getName();
+                    final QName integrationServiceName = endpoint.getService().getQName();
                     final QName integrationInterfaceName = endpoint.getService().getInterface().getQName();
                     try {
                         if (ITG_PROCESSINSTANCES_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
                             this.activitiServices.put(
-                                    new EndpointOperationKey(integrationEndpointName, integrationInterfaceName,
+                                    new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
                                             ITG_OP_GETPROCESSINSTANCES),
                                     new GetProcessInstancesOperation(this.activitiEngine.getRuntimeService(),
                                             this.activitiEngine.getHistoryService(), this.activitiEngine
                                                     .getRepositoryService(), this.getLogger()));
-                            this.activitiServices.put(new EndpointOperationKey(integrationEndpointName,
-                                    integrationInterfaceName, ITG_OP_SUSPENDPROCESSINSTANCES),
+                            this.activitiServices.put(new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
+                                    ITG_OP_SUSPENDPROCESSINSTANCES),
                                     new SuspendProcessInstancesOperation(this.activitiEngine.getRuntimeService(), this.getLogger()));
                             this.activitiServices.put(
-                                    new EndpointOperationKey(integrationEndpointName, integrationInterfaceName,
+                                    new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
                                             ITG_OP_ACTIVATEPROCESSINSTANCES),
                                     new ActivateProcessInstancesOperation(this.activitiEngine.getRuntimeService(), this
                                             .getLogger()));
                         } else if (ITG_TASK_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
-                            this.activitiServices.put(new EndpointOperationKey(integrationEndpointName,
-                                    integrationInterfaceName, ITG_OP_GETTASKS), new GetTasksOperation(
+                            this.activitiServices.put(new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
+                                    ITG_OP_GETTASKS), new GetTasksOperation(
                                     this.activitiEngine.getTaskService(), this.activitiEngine.getRepositoryService(),
                                     this.getLogger()));
                         } else {

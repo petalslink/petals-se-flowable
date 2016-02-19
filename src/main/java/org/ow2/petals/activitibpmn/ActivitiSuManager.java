@@ -61,7 +61,7 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
-import org.ow2.petals.component.framework.util.EndpointOperationKey;
+import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.w3c.dom.Document;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
@@ -152,10 +152,10 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
         
         // Enable processing operations
         final String edptName = provides.getEndpointName();
-        final QName interfaceName = provides.getInterfaceName();
+        final QName serviceName = provides.getServiceName();
         for (final ActivitiOperation operation : operations) {
             // Store the ActivitiOperation in the map with the corresponding end-point
-            final EndpointOperationKey eptAndOperation = new EndpointOperationKey(edptName, interfaceName,
+            final ServiceEndpointOperationKey eptAndOperation = new ServiceEndpointOperationKey(serviceName, edptName,
                     operation.getWsdlOperation());
             getComponent().registerActivitiService(eptAndOperation, operation);
         }
