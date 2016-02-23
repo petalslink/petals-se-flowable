@@ -43,8 +43,8 @@ import org.ow2.petals.activitibpmn.exception.IncoherentProcessDefinitionDeclarat
 import org.ow2.petals.activitibpmn.exception.InvalidVersionDeclaredException;
 import org.ow2.petals.activitibpmn.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.activitibpmn.exception.UnexistingProcessFileException;
+import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.jbi.descriptor.JBIDescriptorException;
@@ -118,11 +118,7 @@ public class ActivitiSuManagerTest extends AbstractTest {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
-
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
-
-                    return serviceConfiguration;
+                    return new ProvidesServiceConfiguration(INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
                 }
             });
         } catch (final DeploymentException e) {
@@ -162,8 +158,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -212,8 +208,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -264,8 +260,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -317,8 +313,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
                             ActivitiSEConstants.VERSION), version);
@@ -368,8 +364,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
                             ActivitiSEConstants.PROCESS_FILE), "");
@@ -423,8 +419,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
                             ActivitiSEConstants.PROCESS_FILE), processFile);
@@ -481,8 +477,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -540,8 +536,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -602,8 +598,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -665,8 +661,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -725,8 +721,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 @Override
                 public ServiceConfiguration create() {
 
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(INTERFACE_NAME,
-                            SERVICE_NAME, ENDPOINT_NAME, ServiceType.PROVIDE);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU,
@@ -781,9 +777,9 @@ public class ActivitiSuManagerTest extends AbstractTest {
                 final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
                         .getResource("su/valid/vacationRequest.wsdl");
                 assertNotNull("WSDl not found", wsdlUrl);
-                final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(
+                final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                         AbstractComponentTest.VACATION_INTERFACE, AbstractComponentTest.VACATION_SERVICE,
-                        AbstractComponentTest.VACATION_ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
+                        AbstractComponentTest.VACATION_ENDPOINT, wsdlUrl);
 
                 final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource("su/valid/demanderCongesResponse.xsl");

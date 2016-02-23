@@ -57,8 +57,9 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.ow2.petals.activitibpmn.junit.ActivitiClient;
 import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
+import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
+import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration.ServiceType;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
 import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
@@ -164,8 +165,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("su/valid/vacationRequest.wsdl");
                     assertNotNull("WSDl not found", wsdlUrl);
-                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration(VACATION_INTERFACE,
-                            VACATION_SERVICE, VACATION_ENDPOINT, ServiceType.PROVIDE, wsdlUrl);
+                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                            VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, wsdlUrl);
 
                     final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("su/valid/demanderCongesResponse.xsl");
@@ -204,8 +205,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     // Consume service 'archiver'
                     // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
                     // between Activiti and other services
-                    final ServiceConfiguration consumeServiceConfiguration = new ServiceConfiguration(
-                            ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ServiceType.CONSUME);
+                    final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(
+                            ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
                     serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
 
                     return serviceConfiguration;
@@ -218,11 +219,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("component.wsdl");
                     assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
-                    final ServiceConfiguration nativeServiceConfiguration = new ServiceConfiguration(
-                            ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE, nativeEndpointName, ServiceType.PROVIDE,
+                    return new ProvidesServiceConfiguration(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE, nativeEndpointName,
                             nativeServiceWsdlUrl);
-
-                    return nativeServiceConfiguration;
                 }
 
                 @Override
@@ -237,11 +235,8 @@ public abstract class AbstractComponentTest extends AbstractTest {
                     final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("component.wsdl");
                     assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
-                    final ServiceConfiguration nativeServiceConfiguration = new ServiceConfiguration(
-                            ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE, nativeEndpointName,
-                            ServiceType.PROVIDE, nativeServiceWsdlUrl);
-
-                    return nativeServiceConfiguration;
+                    return new ProvidesServiceConfiguration(ITG_PROCESSINSTANCES_PORT_TYPE,
+                            ITG_PROCESSINSTANCES_SERVICE, nativeEndpointName, nativeServiceWsdlUrl);
                 }
 
                 @Override
