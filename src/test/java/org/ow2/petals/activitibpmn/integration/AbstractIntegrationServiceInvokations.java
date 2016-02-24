@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.logging.LogRecord;
 
 import javax.xml.namespace.QName;
+import javax.xml.transform.Source;
 
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.activitibpmn.AbstractComponentTest;
@@ -150,7 +151,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage request = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value());
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), (Source) null);
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(request);
         assertNull("An error is set in the response", responseMsg.getError());
