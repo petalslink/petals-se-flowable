@@ -31,6 +31,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.service.model.EndpointInfo;
+import org.apache.cxf.service.model.OperationInfo;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.commons.log.FlowAttributes;
@@ -38,6 +39,7 @@ import org.ow2.petals.commons.log.FlowAttributesExchangeHelper;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
+import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -84,16 +86,20 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
         final EndpointInfo endpointInfo = this.cxfExchange.getEndpoint().getEndpointInfo();
         final QName interfaceName = endpointInfo.getInterface().getName();
         final QName serviceName = endpointInfo.getService().getName();
-        // TODO: Find a way to define the endpoint name to use.
-        final QName operationName = this.cxfExchange.getBindingOperationInfo().getOperationInfo().getName();
+        final OperationInfo operationInfo = this.cxfExchange.getBindingOperationInfo().getOperationInfo();
+        final QName operationName = operationInfo.getName();
 
         try {
             Consumes consume = this.sender.getComponent().getServiceUnitManager().getConsumesFromDestination(null,
                     serviceName, interfaceName);
 
+            final MEPPatternConstants mep = getMEP(operationInfo, consume);
+            
             if (consume == null) {
                 this.sender.getLogger().log(Level.WARNING,
-                        "No Consumes declared in the JBI descriptor for the request to send, using informations from the process.");
+                        String.format(
+                                "No Consumes declared in the JBI descriptor for the request to send, using informations from the process: interface=%s, serviceName=%s, operation=%s, mep=%s",
+                                interfaceName, serviceName, operationName, mep));
                 consume = new Consumes();
                 // TODO: Create a unit test where the interface name is missing
                 consume.setInterfaceName(interfaceName);
@@ -114,23 +120,22 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                 }
                 if (consume.getOperation() != null) {
                     this.sender.getLogger().log(Level.WARNING,
-                            "An operation is declared in the Consumes in the JBI descriptor for the request to send: IGNORED and using informations from the process.");
+                            "An operation is declared in the Consumes in the JBI descriptor for the request to send: IGNORED and using informations from the process: "
+                                    + operationName);
+                }
+                if (consume.getMep() != null) {
+                    this.sender.getLogger().log(Level.WARNING,
+                            "A MEP is declared in the Consumes in the JBI descriptor for the request to send: IGNORED and using informations from the process: "
+                                    + mep);
                 }
             }
 
-            // TODO: Find a way to define the endpoint name to use.
+            // TODO: Find a way to define the endpoint name to use: maybe the address could contain it in endpointInfo?
             // TODO: Create a unit test where the endpoint name is missing
             // TODO: Create a unit test where the operation name is missing
 
-            // TODO: choose the MEP based on OperationInfo and hasIn, hasOut, hasFault, to compute it
-            final org.ow2.petals.component.framework.api.message.Exchange exchange;
-            if (consume.getMep() != null) {
-                exchange = this.sender.createConsumeExchange(consume);
-            } else {
-                this.sender.getLogger().log(Level.WARNING,
-                        "No MEP declared in the Consumes in the JBI descriptor for the request to send, using InOut pattern.");
-                exchange = this.sender.createConsumeExchange(consume, MEPPatternConstants.IN_OUT);
-            }
+            final org.ow2.petals.component.framework.api.message.Exchange exchange = this.sender
+                    .createConsumeExchange(consume, mep);
 
             // we always use the operation from the process (the JBI Consumes defines the service used, not the
             // operation)
@@ -168,6 +173,28 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             this.sender.sendAsync(exchange, new PetalsActivitiAsyncContext(this.cxfExchange, this.asyncCallback));
         } catch (final MessagingException e) {
             throw new IOException(e);
+        }
+    }
+
+    /**
+     * TODO should we really use the consume MEP if it does not specify an operation...?!
+     */
+    private static MEPPatternConstants getMEP(final OperationInfo op, final Consumes consume) {
+        if (!op.hasOutput()) {
+            // let's consider the consume could be used to force the MEP
+            if (op.hasFaults() || (consume != null && consume.getMep() == MEPType.ROBUST_IN_ONLY)) {
+                return MEPPatternConstants.ROBUST_IN_ONLY;
+            } else {
+                return MEPPatternConstants.IN_ONLY;
+            }
+        } else {
+            // TODO not sure how to determine if it's inout or inoptout from the info...
+            // but at least we can consider the consume could be used to force it
+            if (consume != null && consume.getMep() == MEPType.IN_OPTIONAL_OUT) {
+                return MEPPatternConstants.IN_OPTIONAL_OUT;
+            } else {
+                return MEPPatternConstants.IN_OUT;
+            }
         }
     }
 }
