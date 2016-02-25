@@ -243,7 +243,7 @@ public abstract class AbstractComponentTest extends AbstractTest {
                 public QName getNativeService() {
                     return ITG_PROCESSINSTANCES_SERVICE;
                 }
-            }).registerExternalServiceProvider(ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
+            }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE);
 
     private static Marshaller MARSHALLER;
 

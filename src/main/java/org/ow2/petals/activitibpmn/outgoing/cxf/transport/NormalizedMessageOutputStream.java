@@ -31,11 +31,11 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.service.model.EndpointInfo;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.FlowAttributesExchangeHelper;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
-import org.ow2.petals.component.framework.api.Message.MEPConstants;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.listener.AbstractListener;
@@ -121,20 +121,20 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             // TODO: Find a way to define the endpoint name to use.
             // TODO: Create a unit test where the endpoint name is missing
             // TODO: Create a unit test where the operation name is missing
-            // we always use the operation from the process (the JBI Consumes defines the service used, not the
-            // operation)
-            consume.setOperation(operationName);
 
-            // TODO: Find a way to define the MEP to use per operation. The MEP at consume level is for all operations
-            // of the service provider.
+            // TODO: choose the MEP based on OperationInfo and hasIn, hasOut, hasFault, to compute it
             final org.ow2.petals.component.framework.api.message.Exchange exchange;
             if (consume.getMep() != null) {
                 exchange = this.sender.createConsumeExchange(consume);
             } else {
                 this.sender.getLogger().log(Level.WARNING,
                         "No MEP declared in the Consumes in the JBI descriptor for the request to send, using InOut pattern.");
-                exchange = this.sender.createConsumeExchange(consume, MEPConstants.IN_OUT_PATTERN);
+                exchange = this.sender.createConsumeExchange(consume, MEPPatternConstants.IN_OUT);
             }
+
+            // we always use the operation from the process (the JBI Consumes defines the service used, not the
+            // operation)
+            exchange.setOperation(operationName);
 
             FlowAttributesExchangeHelper.setFlowAttributes(
                     ((org.ow2.petals.component.framework.message.ExchangeImpl) exchange).getMessageExchange(),
