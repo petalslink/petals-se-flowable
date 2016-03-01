@@ -17,8 +17,10 @@
  */
 package org.ow2.petals.activitibpmn.monitoring;
 
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.component.framework.logger.ProvideFlowStepBeginLogData;
 import org.ow2.petals.jbi.messaging.exchange.impl.MessageExchangeImpl;
+import org.ow2.petals.jbi.servicedesc.endpoint.Location;
 
 /**
  * @author Christophe DENEUX - Linagora
@@ -54,7 +56,8 @@ public final class UserTaskFlowStepBeginLogData extends ProvideFlowStepBeginLogD
             final String flowPreviousStepId, final String taskDefinitionKey, final String taskInstanceId) {
 
         // TODO: Remove "new MessageExchangeImpl()" when a dedicated step trace will be created
-        super(flowInstanceId, flowStepId, null, null, null, null, flowPreviousStepId, new MessageExchangeImpl(""));
+        super(flowInstanceId, flowStepId, null, null, null, null, flowPreviousStepId,
+                new MessageExchangeImpl("", MEPPatternConstants.IN_OUT.value(), new Location("", "")));
         this.putData(TASK_DEFINITION_KEY, taskDefinitionKey);
         this.putData(TASK_INSTANCE_ID_KEY, taskInstanceId);
 
