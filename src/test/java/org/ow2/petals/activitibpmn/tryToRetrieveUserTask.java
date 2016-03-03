@@ -461,7 +461,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                         OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
 
         // Check the reply
-        assertNull("XML payload in response", responseMsg_3.getPayload());
+        assertNull("Out in response", responseMsg_3.getOut());
         final Source fault_3 = responseMsg_3.getFault();
         assertNotNull("No fault returns", fault_3);
         final Object responseObj_3 = UNMARSHALLER.unmarshal(fault_3);
@@ -1038,7 +1038,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
 
         // Check the reply
-        assertNull("XML payload in response", responseMsg.getPayload());
+        assertNull("Out in response", responseMsg.getOut());
         final Source fault = responseMsg.getFault();
         assertNotNull("No fault returns", fault);
         final Object responseObj = UNMARSHALLER.unmarshal(fault);
@@ -1210,7 +1210,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final ResponseMessage responseMsg_3 = COMPONENT.sendAndGetResponse(requestM3);
 
         // Check the reply
-        assertNull("XML payload in response", responseMsg_3.getPayload());
+        assertNull("Out in response", responseMsg_3.getOut());
         final Source fault_3 = responseMsg_3.getFault();
         assertNotNull("No fault returns", fault_3);
         final Object responseObj_3 = UNMARSHALLER.unmarshal(fault_3);

@@ -72,7 +72,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
         assertNull("An error is set in the response", responseMsg.getError());
-        assertNull("A XML payload is set in response", responseMsg.getPayload());
+        assertNull("An out is set in response", responseMsg.getOut());
         assertNotNull("No fault in response", responseMsg.getFault());
 
         final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
@@ -114,7 +114,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
         assertNull("An error is set in the response", responseMsg.getError());
-        assertNull("A XML payload is set in response", responseMsg.getPayload());
+        assertNull("An out is set in response", responseMsg.getOut());
         assertNotNull("No fault in response", responseMsg.getFault());
 
         final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
@@ -155,7 +155,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(request);
         assertNull("An error is set in the response", responseMsg.getError());
-        assertNull("A XML payload is set in response", responseMsg.getPayload());
+        assertNull("An out is set in response", responseMsg.getOut());
         assertNotNull("No fault in response", responseMsg.getFault());
 
         final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
