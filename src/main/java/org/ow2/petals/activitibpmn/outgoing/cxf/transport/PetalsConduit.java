@@ -58,7 +58,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
     private static final Logger LOG = LogUtils.getL7dLogger(PetalsConduit.class);
 
-    public static ThreadLocal<FlowAttributes> flowAttributes = new ThreadLocal<FlowAttributes>();
+    public static final ThreadLocal<FlowAttributes> flowAttributes = new ThreadLocal<FlowAttributes>();
 
     private final Bus bus;
 

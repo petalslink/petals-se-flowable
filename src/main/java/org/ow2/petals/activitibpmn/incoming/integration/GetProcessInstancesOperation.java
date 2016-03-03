@@ -90,10 +90,10 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
         final ProcessInstanceState state = incomingObject.getState();
         if (state == null || state == ProcessInstanceState.ACTIVE) {
             return this.searchProcessInstances(incomingObject, ProcessInstanceState.ACTIVE);
-        } else if (state != null && state == ProcessInstanceState.SUSPENDED) {
+        } else if (state == ProcessInstanceState.SUSPENDED) {
             return this.searchProcessInstances(incomingObject, ProcessInstanceState.SUSPENDED);
         } else {
-            // state == ProcessInstanceState.FINISHED
+            assert state == ProcessInstanceState.FINISHED;
             return this.searchHistoricProcessInstances(incomingObject, ProcessInstanceState.FINISHED);
         }
     }
