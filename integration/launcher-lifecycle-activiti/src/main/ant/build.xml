@@ -117,22 +117,22 @@
    </target>
 
    <!-- 
-     See details on 'component-lifecycle-tests' to get more information on the test suite
+     See details on 'component-lifecycle-vs-sa-lifecycle' to get more information on the test suite
     -->
    <target name="run-tests" depends="start-infra">
 
-      <component-lifecycle-tests component.name="Petals SE BPMN"
-                                 component.url="${the-component.url}"
-                                 component.id="${the-component.id}"
-                                 component.native-services="{http://petals.ow2.org/components/activiti/generic/1.0}TaskService, {http://petals.ow2.org/components/activiti/generic/1.0}ProcessInstancesService"
-                                 is-service-engine="true"
-                                 sa.url="${the-sa.url}"
-                                 sa.id="${the-sa.id}"
-                                 su.id="${the-su.id}"
-                                 su.services="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacationService"
-                                 container.jmx.port="${topology.container.jmx.port}"
-                                 container.name="${topology.container.name}"
-                                 container.home="${topology.container.home}">
+      <component-lifecycle-vs-sa-lifecycle component.name="Petals SE BPMN"
+                                           component.url="${the-component.url}"
+                                           component.id="${the-component.id}"
+                                           component.native-services="{http://petals.ow2.org/components/activiti/generic/1.0}TaskService, {http://petals.ow2.org/components/activiti/generic/1.0}ProcessInstancesService"
+                                           is-service-engine="true"
+                                           sa.url="${the-sa.url}"
+                                           sa.id="${the-sa.id}"
+                                           su.id="${the-su.id}"
+                                           su.services="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacationService"
+                                           container.jmx.port="${topology.container.jmx.port}"
+                                           container.name="${topology.container.name}"
+                                           container.home="${topology.container.home}">
          <param-elements>
             <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${activiti-db.file}" />
             <param name="propertiesFile" value="file://${bc-soap.properties}" />
