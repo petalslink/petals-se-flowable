@@ -148,7 +148,7 @@
 	           </transaction>
             </sql>
          </pre-deployments>
-      </component-lifecycle-tests>
+      </component-lifecycle-vs-sa-lifecycle>
    </target>
 
 </project>
