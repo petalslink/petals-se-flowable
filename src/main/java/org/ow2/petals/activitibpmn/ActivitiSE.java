@@ -672,8 +672,9 @@ public class ActivitiSE extends AbstractServiceEngine {
         this.getLogger().fine("Start ActivitiSE.doShutdown()");
 
         try {
-
-            this.activitiEngine.close();
+            if (this.activitiEngine != null) {
+                this.activitiEngine.close();
+            }
 
         } catch (final ActivitiException e) {
             throw new JBIException("An error occurred while shutdowning the Activiti BPMN Engine.", e);
