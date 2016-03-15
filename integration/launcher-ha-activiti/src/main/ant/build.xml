@@ -15,14 +15,15 @@
    </import>
 
    <basename property="petalsRegistryDirName" file="${org.ow2.petals:petals-registry-overlay-zip:zip}" suffix=".zip" />
-   <property name="registry.home" value="${project.build.directory}/${project.artifactId}/registry/${petalsRegistryDirName}" />
+   <property name="registry.home"
+             value="${project.build.directory}/${project.artifactId}/registry/${petalsRegistryDirName}" />
    <property name="petals.home.0" value="${project.build.directory}/${project.artifactId}/container-0" />
    <property name="petals.home.1" value="${project.build.directory}/${project.artifactId}/container-1" />
    <property name="petals.home.2" value="${project.build.directory}/${project.artifactId}/container-2" />
    <property name="bc-soap.properties" value="${petals.home.0}/conf/bc-soap.properties" />
    <property name="topology.container.name.0" value="container-0" />
    <property name="topology.container.name.1" value="container-1" />
-      <property name="topology.container.name.2" value="container-2" />
+   <property name="topology.container.name.2" value="container-2" />
 
    <!-- Properties -->
    <property name="container-0.port" value="7700" />
@@ -180,8 +181,9 @@
       <echo message="Launching Activiti component tests..." />
 
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
-      
-      <petals-soapui-load-test testCase="Nominal TestCase without adjustment" loadTest="Loop on concurrent WS clients"/>
+
+      <petals-soapui-load-test testCase="Nominal TestCase without adjustment"
+                               loadTest="Loop on concurrent WS clients" />
 
    </target>
 
@@ -222,13 +224,15 @@
       <attribute name="name" />
       <attribute name="jmx.port" />
       <sequential>
-            <!-- Configure the container -->
-			<copy file="${project.build.directory}/${project.artifactId}/resources/topology.xml" tofile="@{home}/conf/topology.xml" overwrite="true" />
-			<replaceregexp file="@{home}/conf/server.properties"
-			               match="petals.container.name.*"
-			               replace="petals.container.name=@{name}"
-			               byline="true" />
-			<replaceregexp file="@{home}/conf/env.sh" match="^(.*-Xmx1024m.*)$" replace="#\1" byline="true" />
+         <!-- Configure the container -->
+         <copy file="${project.build.directory}/${project.artifactId}/resources/topology.xml"
+               tofile="@{home}/conf/topology.xml"
+               overwrite="true" />
+         <replaceregexp file="@{home}/conf/server.properties"
+                        match="petals.container.name.*"
+                        replace="petals.container.name=@{name}"
+                        byline="true" />
+         <replaceregexp file="@{home}/conf/env.sh" match="^(.*-Xmx1024m.*)$" replace="#\1" byline="true" />
          <replaceregexp file="@{home}/conf/loggers.properties"
                         match="org.ow2.petals.log.handler.PetalsFileHandler.level.*"
                         replace="org.ow2.petals.log.handler.PetalsFileHandler.level=FINEST"
@@ -281,13 +285,27 @@
             <antcall target="cleanAll" />
          </finally>
       </trycatch>
-      <stopContainer name="${topology.container.name.0}" home="${petals.home.0}" />
-      <stopContainer name="${topology.container.name.1}" home="${petals.home.1}" />
-      <stopContainer name="${topology.container.name.2}" home="${petals.home.2}" />
+
+      <!-- MONIT trace checking must be done overall containers -->
+      <stopContainer name="${topology.container.name.0}" home="${petals.home.0}" check-MONIT-traces="false" />
+      <stopContainer name="${topology.container.name.1}" home="${petals.home.1}" check-MONIT-traces="false" />
+      <stopContainer name="${topology.container.name.2}" home="${petals.home.2}" check-MONIT-traces="false" />
+      <petals-monit-read-logfiles id="flow-when-stopping-container" failOnError="true">
+         <dirset dir="${petals.home.0}">
+            <include name="**/flow-monitoring" />
+         </dirset>
+         <dirset dir="${petals.home.1}">
+            <include name="**/flow-monitoring" />
+         </dirset>
+         <dirset dir="${petals.home.2}">
+            <include name="**/flow-monitoring" />
+         </dirset>
+      </petals-monit-read-logfiles>
+      <echo message="No error detected in MONIT traces." />
       <stopRegistryMember name="registry" home="${registry.home}" />
 
    </target>
-   
+
    <target name="all">
       <trycatch>
          <try>
