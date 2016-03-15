@@ -64,8 +64,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.List;
 
 import javax.jbi.JBIException;
 import javax.management.InvalidAttributeValueException;
@@ -117,15 +117,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 
     private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE = "engineJobExecutorQueueSize";
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public List<String> getAttributeList() {
+    public Collection<String> getMBeanAttributesNames() {
         this.getLogger().fine("Start ActivitiSEBootstrap.getAttributeList()");
 
         try {
-            final List<String> attributes = super.getAttributeList();
+            final Collection<String> attributes = super.getMBeanAttributesNames();
 
             attributes.add(ATTR_NAME_JDBC_DRIVER);
             attributes.add(ATTR_NAME_JDBC_URL);
