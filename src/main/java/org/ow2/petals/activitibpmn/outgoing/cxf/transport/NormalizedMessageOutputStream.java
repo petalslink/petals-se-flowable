@@ -35,7 +35,6 @@ import org.apache.cxf.service.model.OperationInfo;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.commons.log.FlowAttributes;
-import org.ow2.petals.commons.log.FlowAttributesExchangeHelper;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
@@ -78,7 +77,6 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
     @Override
     public void close() throws IOException {
         super.close();
-
 
         // needed so that logs are put in the right flow instance folder
         PetalsExecutionContext.putFlowAttributes(this.flowAttributes);
@@ -141,10 +139,6 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             // operation)
             exchange.setOperation(operationName);
 
-            FlowAttributesExchangeHelper.setFlowAttributes(
-                    ((org.ow2.petals.component.framework.message.ExchangeImpl) exchange).getMessageExchange(),
-                    this.flowAttributes);
-
             // TODO: Add support for attachments
             // TODO: MUST be optimized generating directly an XML message by CXF or Activiti
             // The buffer contains a SOAP message, we just remove the SOAP enveloppe
@@ -169,7 +163,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             }
 
             // TODO: Set the TTL of the async context
-            // TODO: Add MONIT trace
+            // TODO: Add MONIT trace (do not forget to log success, error and timeouts!)
             this.sender.sendAsync(exchange, new PetalsActivitiAsyncContext(this.cxfExchange, this.asyncCallback));
         } catch (final MessagingException e) {
             throw new IOException(e);

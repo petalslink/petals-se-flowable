@@ -17,9 +17,9 @@
  */
 package org.ow2.petals.activitibpmn;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.net.URL;
+
+import org.ow2.petals.component.framework.junit.Assert;
 
 /**
  * Abstract class for unit tests about request processing
@@ -27,7 +27,7 @@ import java.net.URL;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public abstract class AbstractTest {
+public abstract class AbstractTest extends Assert {
 
     static {
         final URL logConfig = AbstractTest.class.getResource("/logging.properties");
