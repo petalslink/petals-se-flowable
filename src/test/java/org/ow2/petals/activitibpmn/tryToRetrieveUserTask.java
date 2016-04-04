@@ -154,7 +154,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 1st valid request for start event 'request
         final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), this.toByteArray(request_1));
 
         // Assert the response of the 1st valid request
@@ -326,7 +326,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         };
 
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), this.toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
@@ -428,7 +428,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         IN_MEMORY_LOG_HANDLER.clear();
 
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 3rd valid request
@@ -481,7 +481,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the request
@@ -531,7 +531,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the request
@@ -594,7 +594,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 1st valid request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
@@ -633,7 +633,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         IN_MEMORY_LOG_HANDLER.clear();
 
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
@@ -698,7 +698,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 1st valid request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
@@ -737,7 +737,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
@@ -802,7 +802,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 1st valid request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
@@ -840,7 +840,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
@@ -905,7 +905,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 1st valid request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
@@ -944,7 +944,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
@@ -996,7 +996,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Send the 2nd valid request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
                 COMPONENT_UNDER_TEST
-                .getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                , VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the valid request
@@ -1074,7 +1074,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 1st valid request for start event 'request
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_DEMANDERCONGES,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
@@ -1119,7 +1119,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Send the 2nd valid request for the user task 'handleRequest
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
@@ -1163,7 +1163,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Send the 3rd valid request for the user task 'handleRequest'
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM3 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_VALIDERDEMANDE,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_3));
 
         // Assert the response of the 3rd valid request
@@ -1252,7 +1252,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 1st valid request for start event 'request'
         final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(VALID_SU), OPERATION_JIRA,
+                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_JIRA,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(request, service);
@@ -1352,7 +1352,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG),
+                COMPONENT_UNDER_TEST, NATIVE_PROCESSINSTANCES_SVC_CFG,
                 ITG_OP_GETPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                 toByteArray(getProcessInstancesReq));
 
@@ -1440,7 +1440,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_TASKS_SVC_CFG), ITG_OP_GETTASKS,
+                COMPONENT_UNDER_TEST, NATIVE_TASKS_SVC_CFG, ITG_OP_GETTASKS,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getTasksReq));
 
         {
@@ -1490,7 +1490,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG),
+                COMPONENT_UNDER_TEST, NATIVE_PROCESSINSTANCES_SVC_CFG,
                 ITG_OP_SUSPENDPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                 toByteArray(suspendProcessInstancesReq));
 
@@ -1548,7 +1548,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(NATIVE_PROCESSINSTANCES_SVC_CFG),
+                COMPONENT_UNDER_TEST, NATIVE_PROCESSINSTANCES_SVC_CFG,
                 ITG_OP_ACTIVATEPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                 toByteArray(activateProcessInstancesReq));
 

@@ -17,15 +17,6 @@
  */
 package org.ow2.petals.activitibpmn.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderBeginLog;
-import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderEndLog;
-import static org.ow2.petals.component.framework.junit.Assert.assertMonitProviderFailureLog;
-
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -67,7 +58,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                COMPONENT_UNDER_TEST, suName, operationName,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
@@ -109,7 +100,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                COMPONENT_UNDER_TEST, suName, operationName,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
@@ -150,7 +141,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                COMPONENT_UNDER_TEST, suName, operationName,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), (Source) null);
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(request);
@@ -191,7 +182,7 @@ public abstract class AbstractIntegrationServiceInvokations extends AbstractComp
 
         IN_MEMORY_LOG_HANDLER.clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST.getServiceConfiguration(suName), operationName,
+                COMPONENT_UNDER_TEST, suName, operationName,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
