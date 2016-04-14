@@ -33,7 +33,6 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.ow2.petals.activitibpmn.incoming.ActivitiService;
@@ -41,7 +40,8 @@ import org.ow2.petals.activitibpmn.incoming.integration.exception.EmptyRequestEx
 import org.ow2.petals.activitibpmn.incoming.integration.exception.InvalidRequestException;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.component.framework.api.message.Exchange;
-import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
+
+import com.ebmwebsourcing.easycommons.lang.ExceptionHelper;
 
 public abstract class AbstractOperation<T, V> implements ActivitiService {
 
@@ -122,7 +122,7 @@ public abstract class AbstractOperation<T, V> implements ActivitiService {
                 final Fault fault = exchange.createFault();
                 final InvalidRequest invalidRequest = new InvalidRequest();
                 invalidRequest.setMessage(e.getMessage());
-                invalidRequest.setStacktrace(ExceptionUtils.getStackTrace(e));
+                invalidRequest.setStacktrace(ExceptionHelper.getStackTrace(e));
                 try (final InputStream isFault = this.object2InputStream(invalidRequest)) {
                     fault.setContent(new StreamSource(isFault));
                 }

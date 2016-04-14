@@ -30,7 +30,8 @@ import org.activiti.engine.impl.Page;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.persistence.AbstractManager;
 import org.activiti.engine.impl.persistence.entity.GroupIdentityManager;
-import org.apache.commons.lang.StringUtils;
+
+import com.ebmwebsourcing.easycommons.lang.StringHelper;
 
 public class FileGroupManager extends AbstractManager implements GroupIdentityManager {
     
@@ -80,7 +81,7 @@ public class FileGroupManager extends AbstractManager implements GroupIdentityMa
     @Override
     public List<Group> findGroupByQueryCriteria(final GroupQueryImpl query, final Page page) {
         // Only support for groupMember() at the moment
-        if (StringUtils.isNotEmpty(query.getUserId())) {
+        if (!StringHelper.isNullOrEmpty(query.getUserId())) {
           return this.findGroupsByUser(query.getUserId());
         } else {
           throw new ActivitiIllegalArgumentException("This query is not supported by the LDAPGroupManager");
