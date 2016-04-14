@@ -40,6 +40,7 @@ import org.ow2.petals.activitibpmn.incoming.integration.exception.EmptyRequestEx
 import org.ow2.petals.activitibpmn.incoming.integration.exception.InvalidRequestException;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 
 import com.ebmwebsourcing.easycommons.lang.ExceptionHelper;
 
