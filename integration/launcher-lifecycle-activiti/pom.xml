@@ -63,47 +63,10 @@
          <plugin>
             <artifactId>maven-assembly-plugin</artifactId>
             <groupId>org.apache.maven.plugins</groupId>
-            <executions>
-               <execution>
-                  <id>assembly</id>
-                  <configuration>
-                     <finalName>${project.artifactId}</finalName>
-                     <appendAssemblyId>false</appendAssemblyId>
-                     <attach>false</attach>
-                     <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
-                     </descriptors>
-                  </configuration>
-                  <phase>pre-integration-test</phase>
-                  <goals>
-                     <goal>single</goal>
-                  </goals>
-               </execution>
-            </executions>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>run-it</id>
-                  <phase>integration-test</phase>
-                  <goals>
-                     <goal>run</goal>
-                  </goals>
-                  <configuration>
-                     <target description="tests" unless="maven.test.skip">
-                        <property name="maven_plugin_classpath" refid="maven.plugin.classpath" />
-
-                        <ant antfile="build.xml" dir="${project.build.directory}/${project.artifactId}" />
-                     </target>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-maven-plugin</artifactId>
          </plugin>
       </plugins>
    </build>
