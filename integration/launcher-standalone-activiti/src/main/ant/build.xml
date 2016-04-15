@@ -1,24 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="PEtALS integration Activiti component tests" default="all" basedir=".">
 
-   <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-   <taskdef resource="org/ow2/petals/ant/petals-ant.properties" />
-
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml"
-                    classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-esb-sa.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-sa.xml" classpath="${maven.plugin.classpath}" />
    </import>
 
    <property name="petals.home" value="${project.build.directory}/${project.artifactId}/container" />

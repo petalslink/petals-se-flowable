@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="PEtALS integration Activiti component HA tests" default="all" basedir=".">
 
-   <taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-   <taskdef resource="org/ow2/petals/ant/petals-ant.properties" />
-
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven_plugin_classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven.plugin.classpath}" />
    </import>
 
    <basename property="petalsRegistryDirName" file="${org.ow2.petals:petals-registry-overlay-zip:zip}" suffix=".zip" />
