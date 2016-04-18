@@ -11,7 +11,8 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven.plugin.classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml"
+                    classpath="${maven.plugin.classpath}" />
    </import>
    <import>
       <javaresource name="org/ow2/petals/integration/ant/petals-esb-sa.xml" classpath="${maven.plugin.classpath}" />
@@ -147,6 +148,7 @@
                   tasks. So it is needed to reload all MONIT traces in a new object.
       -->
       <echo message="Checking MONIT trace of this first process instance" />
+      <echo message="a) Checking that MONIT traces are correctly read" />
       <petals-monit-read-logfiles id="flows" dir="${petals.home}/logs/flow-monitoring" />
       <petals-extract-flow-step-info refid="flows" row="0">
          <!-- Retrieve the flow step that has launched the vacation request validation -->
@@ -221,6 +223,35 @@
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
          </assertFlowStep>
       </petals-assert-flow-instance>
+      
+      <echo message="b) Checking that flows are correctly correlated" />
+      <echo message="b-1) Checking that flow trees are correctly built" />
+      <petals-monit-build-flow-trees refid="flows" id="flow-trees" />
+      <echo message="b-2) Checking that we retrieve the expected number of flow trees" />
+      <petals-assert-flow-trees refid="flow-trees" assertsize="6" />
+      <echo message="b-3) Checking that we retrieve a flow associated to the Activiti process instance" />
+      <petals-extract-flow-step-info refid="flows" row="0">
+         <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
+         <flowStepCriteria name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacation" />
+         <flowStepCriteria name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacationService" />
+         <flowStepCriteria name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/vacationService}new" />
+         <flowStepInfo attribute="flowInstanceId" property="initial-flow-instance-id" />
+         <flowStepInfo attribute="flowStepId" property="initial-flow-step-id" />
+      </petals-extract-flow-step-info>
+      <petals-extract-flow-step-info refid="flows" row="0">
+         <flowStepCriteria name="traceCode" value="consumeExtFlowStepBegin" />
+         <flowStepCriteria name="correlatedFlowInstanceId" value="${initial-flow-instance-id}" />
+         <flowStepCriteria name="correlatedFlowStepId" value="${initial-flow-step-id}" />
+         <flowStepInfo attribute="flowInstanceId" property="process-flow-instance-id" />
+      </petals-extract-flow-step-info>
+      <petals-assert-flow-tree refid="flow-trees" flowInstanceId="${initial-flow-instance-id}">
+         <assertFlowTreeNode path="">
+            <flowInstanceIdEquals expected="${initial-flow-instance-id}" />
+         </assertFlowTreeNode>
+         <assertFlowTreeNode path="0">
+            <flowInstanceIdEquals expected="${process-flow-instance-id}" />
+         </assertFlowTreeNode>
+      </petals-assert-flow-tree>
 
       <petals-soapui-test testCase="Nominal TestCase with adjustment" />
       <petals-soapui-test testCase="Faulty TestCase - Unexpected validator" />
