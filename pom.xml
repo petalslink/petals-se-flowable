@@ -51,7 +51,7 @@
    </developers>
 
    <properties>
-      <activiti.version>5.19.0.1</activiti.version>
+      <activiti.version>5.20.0</activiti.version>
    </properties>
 
    <dependencies>
