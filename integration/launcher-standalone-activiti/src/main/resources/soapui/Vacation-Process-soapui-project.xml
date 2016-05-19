@@ -11,10 +11,9 @@
  for more details.
 
  You should have received a copy of the New BSD License (3-clause license)
- along with this program/library; If not, see <http://directory.fsf.org/wiki/License:BSD_3Clause/>
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
  for the New BSD License (3-clause license).
--->
-<con:soapui-project activeEnvironment="Default" name="Petals Trunk - Petals SE Activiti integration tests - Vacation Process" resourceRoot="" soapui-version="5.2.1" abortOnError="false" runType="SEQUENTIAL" id="9b8744d7-5a0c-4939-bca7-b4c395894267" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+--><con:soapui-project activeEnvironment="Default" name="Petals Trunk - Petals SE Activiti integration tests - Vacation Process" resourceRoot="" soapui-version="5.2.1" abortOnError="false" runType="SEQUENTIAL" id="9b8744d7-5a0c-4939-bca7-b4c395894267" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
   <con:entry key="Environment" value="Default"/>
   <con:entry key="Global Properties" value=""/>
   <con:entry key="TestSuite" value="&lt;all>"/>
@@ -297,7 +296,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <!--======================== DEFINITION ====================================-->
 <wsdl:definitions name="notifyVacationService" targetNamespace="http://petals.ow2.org/samples/se-bpmn/notifyVacationService" xmlns:notifyService="http://petals.ow2.org/samples/se-bpmn/notifyVacationService" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
@@ -434,7 +433,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
   <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
@@ -460,7 +459,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <!--======================== DEFINITION ====================================-->
 <wsdl:definitions name="archiveService" targetNamespace="http://petals.ow2.org/samples/se-bpmn/archiveService" xmlns:archiveService="http://petals.ow2.org/samples/se-bpmn/archiveService" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
@@ -538,7 +537,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
   <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
@@ -1175,7 +1174,7 @@
       <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
     </w:port>
   </w:service>
-</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="42841b1a-196c-4d67-a9e6-fc5316439e5d"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/suspendProcessInstances" name="suspendProcessInstances" bindingOperationName="suspendProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="36ddc83d-961c-4c11-a8b7-516fc8088709"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/activateProcessInstances" name="activateProcessInstances" bindingOperationName="activateProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="a7587071-30d0-421a-9890-9a8cdc1afe3b"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1" id="d321bdb1-1509-4a46-9bf2-75c1c1824db0"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>1019</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="7c065596-0bd9-4c52-a78e-4682e049e6b4"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
+</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="42841b1a-196c-4d67-a9e6-fc5316439e5d"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/suspendProcessInstances" name="suspendProcessInstances" bindingOperationName="suspendProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="36ddc83d-961c-4c11-a8b7-516fc8088709"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/activiti/generic/1.0/activateProcessInstances" name="activateProcessInstances" bindingOperationName="activateProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="a7587071-30d0-421a-9890-9a8cdc1afe3b"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1" id="d321bdb1-1509-4a46-9bf2-75c1c1824db0"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>5</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="7c065596-0bd9-4c52-a78e-4682e049e6b4"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
    <soapenv:Header/>
    <soapenv:Body>
       <vac:vacationRequest>
@@ -1219,7 +1218,7 @@ declare namespace ns='http://petals.ow2.org/components/activiti/generic/1.0';
          <!--Optional:-->
          <!--ns:process-definition-identifier>?</ns:process-definition-identifier-->
          <!--Optional:-->
-         <ns:process-instance-identifier>1019</ns:process-instance-identifier>
+         <ns:process-instance-identifier>5</ns:process-instance-identifier>
       </ns:getProcessInstances>
    </soapenv:Body>
 </soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="bda4e891-7b86-45b9-80e9-12ca6485b2f7"/><con:assertion type="Schema Compliance" id="0197bb6f-e233-4889-901a-361b2bbecb57"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" id="38c4a499-41ec-49b3-bf39-80394d478498"/><con:assertion type="XPath Match" name="XPath Match - Expected number of process instance returned" id="4081441f-9f82-432d-a6b4-3b686f031111"><con:configuration><path>declare namespace soap='http://schemas.xmlsoap.org/soap/envelope/';
@@ -1232,7 +1231,7 @@ declare namespace ns='http://petals.ow2.org/components/activiti/generic/1.0';
       <ns:getTasks>
          <ns:active>true</ns:active>
          <ns:assignee>kermit</ns:assignee>
-         <ns:process-instance-identifier>1019</ns:process-instance-identifier>
+         <ns:process-instance-identifier>5</ns:process-instance-identifier>
       </ns:getTasks>
    </soapenv:Body>
 </soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="49d38004-c4b1-46ab-a521-1c92832db19c"/><con:assertion type="Schema Compliance" id="f6eef380-15f3-4fc2-aad5-69e3ae01f9c9"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" id="235ec1b7-99e8-4670-be9f-7467e35b0c67"/><con:assertion type="XPath Match" name="XPath Match - Only one task returns" id="7157a7d1-b4ef-40f9-9fd9-86e28c1177e8"><con:configuration><path>declare namespace soap='http://schemas.xmlsoap.org/soap/envelope/';
@@ -1244,7 +1243,7 @@ declare namespace ns1='http://petals.ow2.org/components/activiti/generic/1.0';
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>1019</vac1:vacationRequestId>
+         <vac1:vacationRequestId>5</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <approval>true</approval>
       </vac:validationRequest>
@@ -1254,14 +1253,14 @@ declare namespace ns1='http://petals.ow2.org/components/activiti/generic/1.0';
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>1019</vac1:vacationRequestId>
+         <vac1:vacationRequestId>5</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <approval>true</approval>
       </vac:validationRequest>
    </soapenv:Body>
 </soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="7b63ba57-850e-496e-a443-25905fd1c20c"/><con:assertion type="Schema Compliance" id="5003a2c2-a83a-4889-8638-394695d67528"><con:configuration/></con:assertion><con:assertion type="Not SOAP Fault Assertion" name="SOAP Fault" id="60f31f59-f173-4a88-aa1a-79d45ec80bdc"/><con:assertion type="XPath Match" name="XPath Match - Expected fault" id="d98d647e-7103-4684-99fe-441d7de3b24f"><con:configuration><path>declare namespace soapenv='http://schemas.xmlsoap.org/soap/envelope/';
 declare namespace ns='http://petals.ow2.org/samples/se-bpmn/vacationService';
-count(//soapenv:Envelope/soapenv:Body/soapenv:Fault/detail/ns:vacationRequestAlreadyValidated)</path><content>1</content><allowWildcards>false</allowWildcards><ignoreNamspaceDifferences>false</ignoreNamspaceDifferences><ignoreComments>false</ignoreComments></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase with adjustment" searchProperties="true" id="821d56d3-64a5-4085-8942-09d4f3d29453"><con:settings/><con:testStep type="properties" name="Properties" id="14bad904-c21e-4e8a-9ef6-e78615010cf4"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>141</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="65213bd5-4799-4f53-b6ff-2db4680e9643"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="70fadffa-fa43-4edd-b79f-dfa7787dfd5b"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
+count(//soapenv:Envelope/soapenv:Body/soapenv:Fault/detail/ns:vacationRequestAlreadyValidated)</path><content>1</content><allowWildcards>false</allowWildcards><ignoreNamspaceDifferences>false</ignoreNamspaceDifferences><ignoreComments>false</ignoreComments></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase with adjustment" searchProperties="true" id="821d56d3-64a5-4085-8942-09d4f3d29453"><con:settings/><con:testStep type="properties" name="Properties" id="14bad904-c21e-4e8a-9ef6-e78615010cf4"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>37</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="65213bd5-4799-4f53-b6ff-2db4680e9643"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="70fadffa-fa43-4edd-b79f-dfa7787dfd5b"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
    <soapenv:Header/>
    <soapenv:Body>
       <vac:vacationRequest>
@@ -1320,7 +1319,7 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task)</path><
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>141</vac1:vacationRequestId>
+         <vac1:vacationRequestId>37</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <rejection-reason>Delivery week of your project</rejection-reason>
          <approval>false</approval>
@@ -1356,7 +1355,7 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task)</path><
          <vac1:day-number>10</vac1:day-number>
          <vac1:start-date>2015-05-03</vac1:start-date>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>141</vac1:vacationRequestId>
+         <vac1:vacationRequestId>37</vac1:vacationRequestId>
          <confirmed>true</confirmed>
       </vac:vacationUpdateRequest>
    </soapenv:Body>
@@ -1387,7 +1386,7 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task)</path><
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>141</vac1:vacationRequestId>
+         <vac1:vacationRequestId>37</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <approval>true</approval>
       </vac:validationRequest>
