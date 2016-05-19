@@ -11,10 +11,9 @@
  for more details.
 
  You should have received a copy of the New BSD License (3-clause license)
- along with this program/library; If not, see <http://directory.fsf.org/wiki/License:BSD_3Clause/>
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
  for the New BSD License (3-clause license).
--->
-<con:soapui-project activeEnvironment="Default" name="Petals Trunk - HA - Petals SE Activiti - Integration tests - Vacation Process" resourceRoot="" soapui-version="5.2.1" abortOnError="false" runType="SEQUENTIAL" id="fe34074f-f024-4da5-a94c-bdc6e2f8f285" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+--><con:soapui-project activeEnvironment="Default" name="Petals Trunk - HA - Petals SE Activiti - Integration tests - Vacation Process" resourceRoot="" soapui-version="5.2.1" abortOnError="false" runType="SEQUENTIAL" id="fe34074f-f024-4da5-a94c-bdc6e2f8f285" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
   <con:entry key="Environment" value="Default"/>
   <con:entry key="Global Properties" value=""/>
   <con:entry key="TestSuite" value="&lt;all>"/>
@@ -297,7 +296,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <!--======================== DEFINITION ====================================-->
 <wsdl:definitions name="notifyVacationService" targetNamespace="http://petals.ow2.org/samples/se-bpmn/notifyVacationService" xmlns:notifyService="http://petals.ow2.org/samples/se-bpmn/notifyVacationService" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
@@ -434,7 +433,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
   <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
@@ -460,7 +459,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <!--======================== DEFINITION ====================================-->
 <wsdl:definitions name="archiveService" targetNamespace="http://petals.ow2.org/samples/se-bpmn/archiveService" xmlns:archiveService="http://petals.ow2.org/samples/se-bpmn/archiveService" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
@@ -538,7 +537,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
 <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest" elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
   <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>

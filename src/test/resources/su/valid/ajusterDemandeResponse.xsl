@@ -13,7 +13,7 @@
  for more details.
  
  You should have received a copy of the GNU Lesser General Public License
- along with this program/library; If not, see <http://www.gnu.org/licenses/>
+ along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:bpmn-se-params="http://petals.ow2.org/se/bpmn/output-params/1.0">
