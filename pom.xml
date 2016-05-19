@@ -32,7 +32,7 @@
    <name>Petals ESB - Components - SE Activiti BPMN</name>
    <artifactId>petals-se-activiti</artifactId>
    <groupId>org.ow2.petals</groupId>
-   <version>1.0.2-SNAPSHOT</version>
+   <version>1.0.1-SNAPSHOT</version>
    <packaging>jbi-component</packaging>
    <description>BPMN Service Engine based on Activiti</description>
 
