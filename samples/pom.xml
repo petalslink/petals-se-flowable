@@ -16,41 +16,69 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  
-  <name>petals-activiti-rootbuilder</name>
-  <groupId>org.ow2.petals.samples</groupId>
-  <artifactId>petals-activiti-rootbuilder</artifactId>
-  <version>0-SNAPSHOT</version>
-  <description>Petals samples artifacts for SE ACTIVITI BPMN.</description>
-  <packaging>pom</packaging>
-  
-  <modules>
-    <module>parent</module>
-    <module>su-activiti-vacationService-provide</module>
-    <module>sa-vacation-sample</module>
-    <module>su-SOAP-vacationService-consume</module>
-    <module>su-SOAP-notifyVacationService-provide</module>
-    <module>su-SOAP-archiveService-provide</module>
-    <module>su-SOAP-activitiIntegrationService-consume</module>
-    <module>samples-SOAP-services</module>
-    <module>sample-vacation-webapp</module>
-    <module>su-SOAP-notifyVacationService-consume</module>
-    <module>su-SOAP-archiveService-consume</module>
-  </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-parent</artifactId>
+      <groupId>org.ow2.petals</groupId>
+      <version>20.2.4</version>
+      <relativePath />
+   </parent>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <!-- Do not deploy, because mvn deploy is called on this on the CI server -->
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  
+   <groupId>org.ow2.petals.samples</groupId>
+   <artifactId>petals-activiti-parent</artifactId>
+   <name>petals-activiti</name>
+   <version>5.0.0-SNAPSHOT</version>
+   <packaging>pom</packaging>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <artifactId>petals-se-activiti</artifactId>
+            <groupId>org.ow2.petals</groupId>
+            <scope>provided</scope>
+            <type>jbi-component</type>
+            <version>1.0.1</version>
+         </dependency>
+         <dependency>
+            <artifactId>petals-bc-soap</artifactId>
+            <groupId>org.ow2.petals</groupId>
+            <scope>provided</scope>
+            <type>jbi-component</type>
+            <version>4.4.1</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <build>
+      <pluginManagement>
+         <plugins>
+            <plugin>
+               <artifactId>petals-maven-plugin</artifactId>
+               <groupId>org.ow2.petals</groupId>
+               <version>3.0.0</version>
+               <extensions>true</extensions>
+            </plugin>
+         </plugins>
+      </pluginManagement>
+   </build>
+
+   <modules>
+      <module>su-activiti-vacationService-provide</module>
+      <module>sa-vacation-sample</module>
+      <module>su-SOAP-vacationService-consume</module>
+      <module>su-SOAP-notifyVacationService-provide</module>
+      <module>su-SOAP-archiveService-provide</module>
+      <module>su-SOAP-activitiIntegrationService-consume</module>
+      <module>samples-SOAP-services</module>
+      <module>sample-vacation-webapp</module>
+      <module>su-SOAP-notifyVacationService-consume</module>
+      <module>su-SOAP-archiveService-consume</module>
+   </modules>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-activiti.git</developerConnection>
+   </scm>
 </project>
