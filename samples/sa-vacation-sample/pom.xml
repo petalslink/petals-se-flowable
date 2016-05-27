@@ -22,7 +22,7 @@
    <parent>
       <artifactId>petals-activiti-parent</artifactId>
       <groupId>org.ow2.petals.samples</groupId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>1.0.1-1.0.0-SNAPSHOT</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
 
@@ -44,31 +44,31 @@
       <dependency>
          <groupId>org.ow2.petals.samples</groupId>
          <artifactId>su-activiti-vacationService-provide</artifactId>
-         <version>5.0.0-SNAPSHOT</version>
+         <version>${project.version}</version>
          <type>jbi-service-unit</type>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals.samples</groupId>
          <artifactId>su-SOAP-vacationService-consume</artifactId>
-         <version>5.0.0-SNAPSHOT</version>
+         <version>${project.version}</version>
          <type>jbi-service-unit</type>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals.samples</groupId>
          <artifactId>su-SOAP-notifyVacationService-provide</artifactId>
-         <version>5.0.0-SNAPSHOT</version>
+         <version>${project.version}</version>
          <type>jbi-service-unit</type>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals.samples</groupId>
          <artifactId>su-SOAP-archiveService-provide</artifactId>
-         <version>5.0.0-SNAPSHOT</version>
+         <version>${project.version}</version>
          <type>jbi-service-unit</type>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals.samples</groupId>
          <artifactId>su-SOAP-activitiIntegrationService-consume</artifactId>
-         <version>5.0.0-SNAPSHOT</version>
+         <version>${project.version}</version>
          <type>jbi-service-unit</type>
       </dependency>
    </dependencies>
