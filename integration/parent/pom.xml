@@ -30,7 +30,7 @@
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-activiti.version>1.0.1-SNAPSHOT</petals-se-activiti.version>
+      <petals-se-activiti.version>1.0.2-SNAPSHOT</petals-se-activiti.version>
    </properties>
 
    <scm>
