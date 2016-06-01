@@ -23,7 +23,7 @@
       <artifactId>petals-cdkbased-components-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath>../cdk-based-parent/pom.xml</relativePath>
-      <version>1.0.1</version>
+      <version>1.0.2-SNAPSHOT</version>
    </parent>
 
 	<!-- ============== -->
@@ -111,7 +111,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-message-exchange</artifactId>
-         <version>1.2.4</version>
+         <version>1.2.5-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.activiti</groupId>
@@ -156,12 +156,6 @@
          </exclusions>
       </dependency>
       <dependency>
-         <!-- Dependency required to get log traces of Activiti engine -->
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-jdk14</artifactId>
-         <scope>runtime</scope>
-      </dependency>
-      <dependency>
          <!-- Dependency required by the Petals transporter -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-api</artifactId>
@@ -192,12 +186,6 @@
          <artifactId>petals-junit-external-resources</artifactId>
          <scope>test</scope>
       </dependency>
-      <dependency>
-         <!-- Used in logging.properties -->
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-log</artifactId>
-         <scope>test</scope>
-      </dependency>
    </dependencies>
 
    <build>
@@ -212,7 +200,6 @@
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
                         <usedDependency>org.activiti:activiti-cxf</usedDependency>
-                        <usedDependency>org.ow2.petals:petals-log</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>
@@ -278,11 +265,6 @@
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-xjc</artifactId>
             <version>2.2.5.1</version>
-         </dependency>
-         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.6</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
