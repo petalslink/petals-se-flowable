@@ -105,7 +105,7 @@
 
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
-      <!-- Wait that the last service invocation from the business process ends -->
+      <!-- Wait the end of the process instance execution -->
       <echo message="Waiting the last service task execution of the business process..." />
       <petals-monit-read-logfiles id="partial-flows" dir="${petals.home}/logs/flow-monitoring" />
       <petals-extract-flow-step-info refid="partial-flows">
@@ -133,7 +133,7 @@
                checkeveryunit="second"
                timeoutproperty="serviceTaskExecutionFailed">
          <resourcecontains resource="${petals.home}/logs/flow-monitoring/${process-instance-flow-instance-id}/petals.log"
-                           substring="flowStepOperationName = '{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveVacationRequest'"
+                           substring="traceCode = 'consumeExtFlowStepEnd'"
                            casesensitive="true" />
       </waitfor>
       <fail message="Last service task invocation not found (flowInstanceId = ${process-instance-flow-instance-id})">
