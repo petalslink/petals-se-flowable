@@ -60,6 +60,11 @@
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-registryoverlay-client-zip</artifactId>
+         <type>zip</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
          <artifactId>petals-registry-overlay-zip</artifactId>
          <type>zip</type>
       </dependency>

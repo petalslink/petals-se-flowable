@@ -25,6 +25,13 @@
          <unpack>true</unpack>
       </dependencySet>
       <dependencySet>
+         <outputDirectory>/container-0/lib/implementations</outputDirectory>
+         <includes>
+            <include>org.ow2.petals:petals-registryoverlay-client-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
+      <dependencySet>
          <outputDirectory>/container-1</outputDirectory>
          <includes>
             <include>org.ow2.petals:petals-esb-minimal-zip:zip</include>
@@ -32,9 +39,23 @@
          <unpack>true</unpack>
       </dependencySet>
       <dependencySet>
+         <outputDirectory>/container-1/lib/implementations</outputDirectory>
+         <includes>
+            <include>org.ow2.petals:petals-registryoverlay-client-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
+      <dependencySet>
          <outputDirectory>/container-2</outputDirectory>
          <includes>
             <include>org.ow2.petals:petals-esb-minimal-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
+      <dependencySet>
+         <outputDirectory>/container-2/lib/implementations</outputDirectory>
+         <includes>
+            <include>org.ow2.petals:petals-registryoverlay-client-zip:zip</include>
          </includes>
          <unpack>true</unpack>
       </dependencySet>
