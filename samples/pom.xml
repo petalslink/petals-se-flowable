@@ -28,7 +28,7 @@
    <groupId>org.ow2.petals.samples</groupId>
    <artifactId>petals-activiti-parent</artifactId>
    <name>petals-activiti</name>
-   <version>1.0.2-1.0.0</version>
+   <version>1.0.2-1.0.1-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <dependencyManagement>
@@ -79,6 +79,6 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-activiti.git</developerConnection>
-     <tag>petals-samples-activiti-1.0.2-1.0.0</tag>
+     <tag>HEAD</tag>
   </scm>
 </project>
