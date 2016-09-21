@@ -22,7 +22,7 @@
    <parent>
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <version>20.2.4</version>
+      <version>20.2.5</version>
       <relativePath />
    </parent>
 
@@ -39,14 +39,14 @@
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>
             <type>jbi-component</type>
-            <version>1.0.2-SNAPSHOT</version>
+            <version>1.0.2</version>
          </dependency>
          <dependency>
             <artifactId>petals-bc-soap</artifactId>
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>
             <type>jbi-component</type>
-            <version>4.4.2-SNAPSHOT</version>
+            <version>4.4.2</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
