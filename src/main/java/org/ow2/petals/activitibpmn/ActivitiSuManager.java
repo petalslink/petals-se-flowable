@@ -478,7 +478,6 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
 		}
     }
 
-
     /**
      * Create the processing operations ({@link ActivitiOperation} reading annotations of the WSDL
      * 
