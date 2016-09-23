@@ -20,7 +20,7 @@
    <parent>
       <artifactId>parent</artifactId>
       <groupId>org.ow2.petals.integration.tests</groupId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.1-SNAPSHOT</version>
       <relativePath />
    </parent>
 
@@ -30,8 +30,21 @@
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-activiti.version>1.0.2-SNAPSHOT</petals-se-activiti.version>
+      <petals-se-activiti.version>1.0.3-SNAPSHOT</petals-se-activiti.version>
    </properties>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <!-- We override here the component version defined in the integration test parent POM
+                 file to defined the version of the component to test. -->
+            <artifactId>petals-se-activiti</artifactId>
+            <groupId>org.ow2.petals</groupId>
+            <version>${petals-se-activiti.version}</version>
+            <type>jbi-component</type>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>

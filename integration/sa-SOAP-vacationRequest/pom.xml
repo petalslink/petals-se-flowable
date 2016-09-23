@@ -19,7 +19,7 @@
   <parent>
     <artifactId>parent</artifactId>
     <groupId>org.ow2.petals.integration.tests</groupId>
-    <version>5.0.0-SNAPSHOT</version>
+    <version>5.0.1-SNAPSHOT</version>
     <relativePath />
   </parent>
   
@@ -27,7 +27,6 @@
   <artifactId>sa-SOAP-vacationRequest</artifactId>
   <packaging>jbi-service-assembly</packaging>
   <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - SA (All SOAP JBI artifacts)</name>
-  <version>5.0.0-SNAPSHOT</version>
   <description>sa-SOAP-vacationRequest description</description>
 
   <properties>
@@ -39,37 +38,37 @@
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-SOAP-activitiIntegrationService-consume</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.0</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-SOAP-vacationService-consume</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.0</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-SOAP-archiveService-consume</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.0</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-SOAP-archiveService-provide</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.0</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-SOAP-notifyVacationService-consume</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.0</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-SOAP-notifyVacationService-provide</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.0</version>
       <type>jbi-service-unit</type>
     </dependency>
   </dependencies>

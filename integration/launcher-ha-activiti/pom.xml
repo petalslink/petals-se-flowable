@@ -20,27 +20,26 @@
    <parent>
       <artifactId>parent</artifactId>
       <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
-      <version>5.0.0-SNAPSHOT</version>
+      <version>5.0.1-SNAPSHOT</version>
       <relativePath>../parent/pom.xml</relativePath>
    </parent>
 
    <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
    <artifactId>launcher-ha-activiti</artifactId>
    <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - Service invocations with HA</name>
-   <version>5.0.0-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
          <artifactId>sa-activiti-vacationRequest</artifactId>
-         <version>5.0.0-SNAPSHOT</version>
+         <version>${project.version}</version>
          <type>jbi-service-assembly</type>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
          <artifactId>sa-SOAP-vacationRequest</artifactId>
-         <version>5.0.0-SNAPSHOT</version>
+         <version>${project.version}</version>
          <type>jbi-service-assembly</type>
       </dependency>
       <dependency>
