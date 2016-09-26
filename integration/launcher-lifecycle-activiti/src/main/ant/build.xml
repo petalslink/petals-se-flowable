@@ -44,7 +44,7 @@
    <property name="the-sa.id" value="sa-activiti-vacationRequest" />
    <property name="the-sa.url"
              value="${org.ow2.petals.integration.tests.se.activiti:sa-activiti-vacationRequest:jbi-service-assembly}" />
-   <property name="the-su.id" value="su-activiti-vacationService-provide-${project.version}" />
+   <property name="the-su.id" value="su-activiti-vacationService-provide" />
 
    <property name="activiti-db.file" value="/tmp/activiti.db" />
 
@@ -131,7 +131,7 @@
     -->
    <target name="run-tests" depends="start-infra">
 
-      <component-lifecycle-vs-sa-lifecycle component.name="Petals SE BPMN"
+      <component-lifecycle-vs-sa-lifecycle component.name="Petals SE Activiti"
                                            component.url="${the-component.url}"
                                            component.id="${the-component.id}"
                                            component.native-services="{http://petals.ow2.org/components/activiti/generic/1.0}TaskService, {http://petals.ow2.org/components/activiti/generic/1.0}ProcessInstancesService"

@@ -24,7 +24,7 @@
       <relativePath />
    </parent>
 
-   <name>Petals Integration Tests - SE Activiti - Parent</name>
+   <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - Parent</name>
    <artifactId>parent</artifactId>
    <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
    <packaging>pom</packaging>

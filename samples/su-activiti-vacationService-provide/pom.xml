@@ -21,7 +21,7 @@
    <parent>
       <artifactId>petals-activiti-parent</artifactId>
       <groupId>org.ow2.petals.samples</groupId>
-      <version>1.0.2-1.0.1-SNAPSHOT</version>
+      <version>1.0.3-1.0.0-SNAPSHOT</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
 
@@ -34,8 +34,24 @@
 
    <properties>
       <maven-enforcer-plugin.rules.upperBound>false</maven-enforcer-plugin.rules.upperBound>
-      <activiti.version>5.20.0</activiti.version>
+      <activiti.version>5.22.0-PETALS-0-SNAPSHOT</activiti.version>
    </properties>
+
+   <dependencyManagement>
+      <!-- Align dependencies with those of activiti -->
+      <dependencies>
+         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
 
    <dependencies>
       <dependency>
@@ -46,7 +62,7 @@
       
       <!-- To test the process definition we must use our own Activiti engine-->
       <dependency>
-         <groupId>org.activiti</groupId>
+         <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-engine</artifactId>
          <version>${activiti.version}</version>
          <scope>test</scope>
@@ -60,7 +76,7 @@
          </exclusions>
       </dependency>
       <dependency>
-         <groupId>org.activiti</groupId>
+         <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-cxf</artifactId>
          <version>${activiti.version}</version>
          <scope>test</scope>
@@ -79,6 +95,19 @@
       </dependency>
    </dependencies>
 
+   <pluginRepositories>
+      <pluginRepository>
+         <id>smartbear-sweden-plugin-repository</id>
+         <url>http://www.soapui.org/repository/maven2/</url>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </pluginRepository>
+   </pluginRepositories>
+
    <build>
       <plugins>
          <plugin>
@@ -96,13 +125,44 @@
                   <id>analyze</id>
                   <configuration>
                      <usedDependencies>
-                        <!-- The following dependency is needed because it's the JBI component on which this SU runs -->
+                        <!-- The :following dependency is needed because it's the JBI component on which this SU runs -->
                         <usedDependency>org.ow2.petals:petals-se-activiti</usedDependency>
                         <!-- These following dependencies are needed for unit test -->
-                        <usedDependency>org.activiti:activiti-cxf</usedDependency>
+                        <usedDependency>org.ow2.petals.activiti:activiti-cxf</usedDependency>
                         <usedDependency>com.h2database:h2</usedDependency>
                      </usedDependencies>
                   </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui-maven-plugin</artifactId>
+            <version>5.2.1</version>
+            <executions>
+               <execution>
+                  <id>startup-mock-archive</id>
+                  <configuration>
+                     <projectFile>${basedir}/src/test/soapui/su-activiti-vacationService-provide-soapui-project.xml</projectFile>
+                     <mockService>archiveSoapBinding MockService</mockService>
+                     <noBlock>true</noBlock>
+                  </configuration>
+                  <goals>
+                     <goal>mock</goal>
+                  </goals>
+                  <phase>process-test-classes</phase>
+               </execution>
+               <execution>
+                  <id>startup-mock-notify</id>
+                  <configuration>
+                     <projectFile>${basedir}/src/test/soapui/su-activiti-vacationService-provide-soapui-project.xml</projectFile>
+                     <mockService>notifyVacationBinding MockService</mockService>
+                     <noBlock>true</noBlock>
+                  </configuration>
+                  <goals>
+                     <goal>mock</goal>
+                  </goals>
+                  <phase>process-test-classes</phase>
                </execution>
             </executions>
          </plugin>

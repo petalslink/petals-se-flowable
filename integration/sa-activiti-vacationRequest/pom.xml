@@ -38,7 +38,7 @@
     <dependency>
       <groupId>org.ow2.petals.samples</groupId>
       <artifactId>su-activiti-vacationService-provide</artifactId>
-      <version>5.0.0</version>
+      <version>1.0.3-1.0.0-SNAPSHOT</version>
       <type>jbi-service-unit</type>
     </dependency>
   </dependencies>
@@ -50,6 +50,8 @@
         <artifactId>petals-maven-plugin</artifactId>
         <configuration>
             <serviceAssemblyNameMapping>${project.artifactId}</serviceAssemblyNameMapping>
+            <!-- TODO: Use a better expression for 'serviceUnitNameMappingInSA' when MNG-3558 will be fixed -->
+            <serviceUnitNameMappingInSA>su-activiti-vacationService-provide</serviceUnitNameMappingInSA>
         </configuration>
       </plugin>
     </plugins>

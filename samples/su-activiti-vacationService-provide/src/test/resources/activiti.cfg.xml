@@ -16,15 +16,46 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<beans xmlns="http://www.springframework.org/schema/beans" 
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
-    <property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000" />
-    <property name="jdbcDriver" value="org.h2.Driver" />
-    <property name="jdbcUsername" value="sa" />
-    <property name="jdbcPassword" value="" />
-  </bean>
+   <bean id="archiveEndpoint" class="javax.xml.namespace.QName">
+      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-bpmn/archiveService" />
+      <constructor-arg index="1" value="autogenerate" />
+   </bean>
+
+   <bean id="notifyEndpoint" class="javax.xml.namespace.QName">
+      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-bpmn/notifyVacationService" />
+      <constructor-arg index="1" value="autogenerate" />
+   </bean>
+
+   <bean id="wsOverridenEndpointAddresses" class="java.util.concurrent.ConcurrentHashMap">
+      <constructor-arg index="0">
+         <map>
+            <entry>
+               <key>
+                  <ref bean="archiveEndpoint" />
+               </key>
+               <value type="java.net.URL">http://localhost:8188/mockarchiveSoapBinding</value>
+            </entry>
+            <entry>
+               <key>
+                  <ref bean="notifyEndpoint" />
+               </key>
+               <value type="java.net.URL">http://localhost:8188/mocknotifyVacationBinding</value>
+            </entry>
+         </map>
+      </constructor-arg>
+   </bean>
+ 
+   <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
+      <property name="jdbcUrl" value="jdbc:h2:mem:activiti;DB_CLOSE_DELAY=1000" />
+      <property name="jdbcDriver" value="org.h2.Driver" />
+      <property name="jdbcUsername" value="sa" />
+      <property name="jdbcPassword" value="" />
+      <property name="wsOverridenEndpointAddresses">
+         <ref bean="wsOverridenEndpointAddresses" />
+      </property>
+   </bean>
 
 </beans>
