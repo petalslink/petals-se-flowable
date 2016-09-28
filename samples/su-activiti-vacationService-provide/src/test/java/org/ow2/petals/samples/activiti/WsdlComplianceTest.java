@@ -29,7 +29,7 @@ import org.junit.Test;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ValidateTest {
+public class WsdlComplianceTest {
 
     @Test
     public void validate()
