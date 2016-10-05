@@ -21,7 +21,7 @@
   <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - Root builder</name>
   <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
   <artifactId>petals-integration-activiti-rootbuilder</artifactId>
-  <version>0-SNAPSHOT</version>
+  <version>5.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <modules>
