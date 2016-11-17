@@ -17,11 +17,6 @@
  */
 package org.ow2.petals.activitibpmn.incoming.operation.annotated;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -271,18 +266,19 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
                 Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")), SU_ROOT_PATH);
         assertEquals(0, this.parser.getEncounteredErrors().size());
         assertEquals(3, annotatedOperations.size());
-        boolean op1_found = true;
-        boolean op2_found = true;
-        boolean op3_found = true;
+        boolean op1_found = false;
+        boolean op2_found = false;
+        boolean op3_found = false;
         for (final AnnotatedOperation annotatedoperation : annotatedOperations) {
             if (annotatedoperation instanceof StartEventAnnotatedOperation
                     && BPMN_OP_DEMANDER_CONGES.equals(annotatedoperation.getWsdlOperation())) {
-
+                op1_found = true;
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
                     && BPMN_OP_VALIDER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
-
+                op2_found = true;
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
                     && BPMN_OP_AJUSTER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
+                op3_found = true;
             } else {
                 fail("Unexpected annotated operation");
             }
@@ -312,18 +308,19 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
                 Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")), SU_ROOT_PATH);
         assertEquals(0, this.parser.getEncounteredErrors().size());
         assertEquals(3, annotatedOperations.size());
-        boolean op1_found = true;
-        boolean op2_found = true;
-        boolean op3_found = true;
+        boolean op1_found = false;
+        boolean op2_found = false;
+        boolean op3_found = false;
         for (final AnnotatedOperation annotatedoperation : annotatedOperations) {
             if (annotatedoperation instanceof StartEventAnnotatedOperation
                     && BPMN_OP_DEMANDER_CONGES.equals(annotatedoperation.getWsdlOperation())) {
-
+                op1_found = true;
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
                     && BPMN_OP_VALIDER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
-
+                op2_found = true;
             } else if (annotatedoperation instanceof CompleteUserTaskAnnotatedOperation
                     && BPMN_OP_AJUSTER_DEMANDE.equals(annotatedoperation.getWsdlOperation())) {
+                op3_found = true;
             } else {
                 fail("Unexpected annotated operation");
             }
