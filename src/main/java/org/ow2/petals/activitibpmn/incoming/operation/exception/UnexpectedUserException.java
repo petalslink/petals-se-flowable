@@ -91,11 +91,13 @@ public class UnexpectedUserException extends OperationProcessingFault {
 
     @Override
     public Map<QName, String> getXslParameters() {
-        final Map<QName, String> xslParameters = new HashMap<QName, String>();
-        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS, "processInstanceId"),
-                this.processInstanceId);
-        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS, "taskId"), this.taskId);
-        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS, "userId"), this.userId);
+        final Map<QName, String> xslParameters = new HashMap<>();
+        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS,
+                ActivitiOperation.SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID), this.processInstanceId);
+        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS,
+                ActivitiOperation.SCHEMA_OUTPUT_XSLT_PARAM_TASK_ID), this.taskId);
+        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS,
+                ActivitiOperation.SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), this.userId);
         return xslParameters;
     }
 }

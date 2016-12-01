@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014-2016 Linagora
+ Copyright (c) 2016 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -16,19 +16,8 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:bpmn-fault="http://petals.ow2.org/se/bpmn/faults/1.0">
-
-   <xsl:output method="xml" encoding="UTF-8" indent="yes" omit-xml-declaration="no"/>
-   
-   <xsl:param name="bpmn-fault:processInstanceId" />
-
-   <xsl:template match="/">
-      <xsl:element name="vacationRequestIdUnknown" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
-         <xsl:element name="vacationRequestId"  namespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
-            <xsl:value-of select="$bpmn-fault:processInstanceId"/>
-         </xsl:element>
-      </xsl:element>
-   </xsl:template>
-
-</xsl:stylesheet>
+<unexpectedUser xmlns="http://petals.ow2.org/samples/se-bpmn/vacationService">
+<vacationRequestId xmlns="http://petals.ow2.org/samples/se-bpmn/vacationRequest">AZE123</vacationRequestId>
+<userId xmlns="">kermit</userId>
+<taskId xmlns="">WXC987</taskId>
+</unexpectedUser>

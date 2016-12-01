@@ -20,7 +20,7 @@
     xmlns:se-out-special-params="http://petals.ow2.org/se/bpmn/output-params/1.0/special"
     xmlns:se-out-process-params="http://petals.ow2.org/se/bpmn/output-params/1.0/process-instance">
 
-   <xsl:output method="xml" encoding="UTF-8" omit-xml-declaration="no"/>
+   <xsl:output method="xml" encoding="UTF-8" indent="yes" omit-xml-declaration="no"/>
    
    <!-- The process instance id retrieve from the BPMN engine -->
    <xsl:param name="se-out-special-params:processInstanceId" />

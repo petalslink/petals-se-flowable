@@ -17,10 +17,10 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:se-out-special-params="http://petals.ow2.org/se/bpmn/output-params/1.0/special"
-    xmlns:se-out-process-params="http://petals.ow2.org/se/bpmn/output-params/1.0/process-instance">
+   xmlns:se-out-special-params="http://petals.ow2.org/se/bpmn/output-params/1.0/special"
+   xmlns:se-out-process-params="http://petals.ow2.org/se/bpmn/output-params/1.0/process-instance">
 
-   <xsl:output method="xml" encoding="UTF-8" omit-xml-declaration="no"/>
+   <xsl:output method="xml" encoding="UTF-8" indent="yes" omit-xml-declaration="no" />
    
    <!-- The process instance id retrieve from the BPMN engine -->
    <xsl:param name="se-out-special-params:processInstanceId" />
@@ -28,7 +28,7 @@
    <xsl:template match="/">
       <xsl:element name="vacationUpdateResponse" namespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
          <xsl:element name="vacationRequestId" namespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest">
-            <xsl:value-of select="$se-out-special-params:processInstanceId"/>
+            <xsl:value-of select="$se-out-special-params:processInstanceId" />
          </xsl:element>
       </xsl:element>
    </xsl:template>

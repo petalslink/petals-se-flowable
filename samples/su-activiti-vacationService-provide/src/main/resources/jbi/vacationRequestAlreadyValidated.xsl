@@ -19,7 +19,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
     xmlns:bpmn-fault="http://petals.ow2.org/se/bpmn/faults/1.0">
 
-   <xsl:output method="xml" encoding="UTF-8" omit-xml-declaration="no"/>
+   <xsl:output method="xml" encoding="UTF-8" indent="yes" omit-xml-declaration="no"/>
    
    <xsl:param name="bpmn-fault:processInstanceId" />
 

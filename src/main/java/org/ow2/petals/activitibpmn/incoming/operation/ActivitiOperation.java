@@ -50,17 +50,22 @@ public abstract class ActivitiOperation implements ActivitiService {
     /**
      * Namespace of special parameters for the output XSLT style-sheet
      */
-    protected static final String SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS = "http://petals.ow2.org/se/bpmn/output-params/1.0/special";
+    public static final String SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS = "http://petals.ow2.org/se/bpmn/output-params/1.0/special";
 
     /**
      * Local part of the special parameter name about the process instance identifier for the output XSLT style-sheet
      */
-    protected static final String SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID = "processInstanceId";
+    public static final String SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID = "processInstanceId";
 
     /**
      * Local part of the special parameter name about the user identifier for the output XSLT style-sheet
      */
-    protected static final String SCHEMA_OUTPUT_XSLT_PARAM_USER_ID = "userId";
+    public static final String SCHEMA_OUTPUT_XSLT_PARAM_USER_ID = "userId";
+
+    /**
+     * Local part of the special parameter name about the task identifier for the output XSLT style-sheet
+     */
+    public static final String SCHEMA_OUTPUT_XSLT_PARAM_TASK_ID = "taskId";
 
     /**
      * Namespace of process instance parameters for the output XSLT style-sheet

@@ -17,7 +17,7 @@
  */
 package org.ow2.petals.samples.activiti;
 
-import static org.ow2.petals.activitibpmn.junit.WsdlCompliance.assertWsdlCompliance;
+import static org.ow2.petals.activitibpmn.junit.Assert.assertWsdlCompliance;
 
 import javax.xml.namespace.QName;
 
@@ -32,8 +32,7 @@ import org.junit.Test;
 public class WsdlComplianceTest {
 
     @Test
-    public void validate()
-            throws Exception {
+    public void validate() throws Exception {
         assertWsdlCompliance(new QName[] { new QName("http://petals.ow2.org/samples/se-bpmn/vacationService", "new"),
                 new QName("http://petals.ow2.org/samples/se-bpmn/vacationService", "validate"),
                 new QName("http://petals.ow2.org/samples/se-bpmn/vacationService", "update") });

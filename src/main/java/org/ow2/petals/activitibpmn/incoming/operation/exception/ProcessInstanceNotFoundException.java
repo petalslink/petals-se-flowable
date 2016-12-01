@@ -59,9 +59,9 @@ public class ProcessInstanceNotFoundException extends OperationProcessingFault {
 
     @Override
     public Map<QName, String> getXslParameters() {
-        final Map<QName, String> xslParameters = new HashMap<QName, String>();
-        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS, "processInstanceId"),
-                this.processInstanceId);
+        final Map<QName, String> xslParameters = new HashMap<>();
+        xslParameters.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_FAULT_PARAMS,
+                ActivitiOperation.SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID), this.processInstanceId);
         return xslParameters;
     }
 }
