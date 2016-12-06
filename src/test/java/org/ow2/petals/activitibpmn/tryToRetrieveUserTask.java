@@ -29,6 +29,7 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperati
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.LogRecord;
 
 import javax.jbi.messaging.ExchangeStatus;
@@ -38,11 +39,13 @@ import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.Source;
 
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.activitibpmn.monitoring.ActivitiActivityFlowStepData;
+import org.ow2.petals.activitibpmn.monitoring.MonitoringMBean;
 import org.ow2.petals.activitibpmn.monitoring.ProcessInstanceFlowStepBeginLogData;
 import org.ow2.petals.activitibpmn.monitoring.UserTaskFlowStepBeginLogData;
 import org.ow2.petals.commons.log.FlowLogData;
@@ -88,6 +91,31 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * 
  */
 public class tryToRetrieveUserTask extends AbstractComponentTest {
+
+    @AfterClass
+    public static void assertMonitoring() {
+        assertTrue(COMPONENT_UNDER_TEST.getComponentObject().getMonitoringBean() instanceof MonitoringMBean);
+        final MonitoringMBean monitoringMbean = (MonitoringMBean) COMPONENT_UNDER_TEST.getComponentObject()
+                .getMonitoringBean();
+        final Map<String, Long[]> metrics = monitoringMbean.getProcessDefinitions();
+
+        // 2 process definitions: jira_PETALSSEACTIVITI-4 and vacationRequest
+        assertEquals(2, metrics.size());
+        assertNotNull(metrics.get("vacationRequest"));
+        assertNotNull(metrics.get("jira_PETALSSEACTIVITI-4"));
+
+        // process instances
+        final Long[] vacationInstances = metrics.get("vacationRequest");
+        assertEquals(0, vacationInstances[0].longValue());
+        assertEquals(0, vacationInstances[1].longValue());
+        assertEquals(0, vacationInstances[2].longValue());
+        assertEquals(10, vacationInstances[3].longValue());
+        final Long[] jiraInstances = metrics.get("jira_PETALSSEACTIVITI-4");
+        assertEquals(0, jiraInstances[0].longValue());
+        assertEquals(0, jiraInstances[1].longValue());
+        assertEquals(0, jiraInstances[2].longValue());
+        assertEquals(1, jiraInstances[3].longValue());
+    }
 
     /**
      * <p>

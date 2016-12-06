@@ -130,6 +130,17 @@
          <version>1.2.5</version>
       </dependency>
       <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-probes-api</artifactId>
+         <!-- TODO: Move version definition in CDK based parent POM -->
+         <version>1.2.0</version>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-activiti-clientserver-api</artifactId>
+         <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
          <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-engine</artifactId>
          <version>${activiti.version}</version>

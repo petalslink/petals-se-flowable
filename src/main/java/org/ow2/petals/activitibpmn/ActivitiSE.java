@@ -89,6 +89,7 @@ import org.ow2.petals.activitibpmn.incoming.integration.GetProcessInstancesOpera
 import org.ow2.petals.activitibpmn.incoming.integration.GetTasksOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.SuspendProcessInstancesOperation;
 import org.ow2.petals.activitibpmn.incoming.integration.exception.OperationInitializationException;
+import org.ow2.petals.activitibpmn.monitoring.Monitoring;
 import org.ow2.petals.activitibpmn.outgoing.PetalsSender;
 import org.ow2.petals.activitibpmn.outgoing.cxf.transport.PetalsCxfTransportFactory;
 import org.ow2.petals.component.framework.listener.AbstractListener;
@@ -96,6 +97,8 @@ import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
+import org.ow2.petals.probes.api.exceptions.MultipleProbesFactoriesFoundException;
+import org.ow2.petals.probes.api.exceptions.NoProbesFactoryFoundException;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
@@ -155,6 +158,11 @@ public class ActivitiSE extends AbstractServiceEngine {
      * Event listener fired when a user task is completed
      */
     private AbstractEventListener userTaskCompletedEventListener;
+
+    /**
+     * The monitoring MBean
+     */
+    private Monitoring monitoringMbean;
 
     /**
      * An UUID generator.
@@ -436,6 +444,7 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.addPostBpmnParseHandlers(pec);
 
             this.activitiEngine = pec.buildProcessEngine();
+            this.monitoringMbean.setActivitiEngine(this.activitiEngine);
             this.activitiAsyncExecutor = this.enableActivitiJobExecutor ? pec.getAsyncExecutor() : null;
 
             // Caution: Configuration beans are initialized when building the process engine
@@ -695,5 +704,13 @@ public class ActivitiSE extends AbstractServiceEngine {
         extension.registerConduitInitiator(PetalsCxfTransportFactory.TRANSPORT_ID, cxfPetalsTransport);
         // TODO: Set a timeout at CXF client level (it should be the same than the tiemout at NMR level)
         // TODO: Add unit tests about timeout
+    }
+
+    @Override
+    protected org.ow2.petals.component.framework.monitoring.Monitoring createMonitoringMBean()
+            throws MultipleProbesFactoriesFoundException, NoProbesFactoryFoundException {
+
+        this.monitoringMbean = new Monitoring(this.getProbesTimer(), this.getResponseTimeProbeSamplePeriod());
+        return this.monitoringMbean;
     }
 }
