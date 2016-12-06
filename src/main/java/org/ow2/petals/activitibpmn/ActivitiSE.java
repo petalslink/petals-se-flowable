@@ -425,7 +425,6 @@ public class ActivitiSE extends AbstractServiceEngine {
                 pec.setDatabaseType(databaseType);
             }
             pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
-            pec.setJobExecutorActivate(false);
 
             // We register the Petals transport into Apache CXF
             this.registerCxfPetalsTransport();
