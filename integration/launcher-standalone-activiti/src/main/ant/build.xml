@@ -33,6 +33,9 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-esb-sa.xml" classpath="${maven.plugin.classpath}" />
    </import>
 
+   <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
+   <property name="petals.cli.home"
+             value="${project.build.directory}/${project.artifactId}/petals-cli/${petalsCliDirName}" />
    <property name="petals.home" value="${project.build.directory}/${project.artifactId}/container" />
    <property name="bc-soap.properties" value="${petals.home}/conf/bc-soap.properties" />
    <property name="topology.container.name" value="sample-0" />
@@ -238,7 +241,7 @@
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
          </assertFlowStep>
       </petals-assert-flow-instance>
-      
+
       <echo message="b) Checking that flows are correctly correlated" />
       <echo message="b-1) Checking that flow trees are correctly built" />
       <petals-monit-build-flow-trees refid="flows" id="flow-trees" />
@@ -247,9 +250,12 @@
       <echo message="b-3) Checking that we retrieve a flow associated to the Activiti process instance" />
       <petals-extract-flow-step-info refid="flows" row="0">
          <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
-         <flowStepCriteria name="flowStepInterfaceName" value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacation" />
-         <flowStepCriteria name="flowStepServiceName" value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacationService" />
-         <flowStepCriteria name="flowStepOperationName" value="{http://petals.ow2.org/samples/se-bpmn/vacationService}new" />
+         <flowStepCriteria name="flowStepInterfaceName"
+                           value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacation" />
+         <flowStepCriteria name="flowStepServiceName"
+                           value="{http://petals.ow2.org/samples/se-bpmn/vacationService}vacationService" />
+         <flowStepCriteria name="flowStepOperationName"
+                           value="{http://petals.ow2.org/samples/se-bpmn/vacationService}new" />
          <flowStepInfo attribute="flowInstanceId" property="initial-flow-instance-id" />
          <flowStepInfo attribute="flowStepId" property="initial-flow-step-id" />
       </petals-extract-flow-step-info>
@@ -271,7 +277,63 @@
       <petals-soapui-test testCase="Nominal TestCase with adjustment" />
       <petals-soapui-test testCase="Faulty TestCase - Unexpected validator" />
       <petals-soapui-test testCase="Faulty TestCase - Unexpected vacation request id" />
+
+      <checkAsyncExecutorMetrics />
    </target>
+
+   <!-- Display metrics about the asynchronous job executor -->
+   <macrodef name="checkAsyncExecutorMetrics">
+      <sequential>
+         <local name="return-code" />
+         <tempfile property="tempfile" prefix="petals-cli" suffix=".out" />
+         <echo message="Petals CLI output dumped in: ${tempfile}" />
+         <exec executable="./petals-cli.sh"
+               dir="${petals.cli.home}/bin"
+               output="${tempfile}"
+               resultproperty="return-code">
+            <arg value="-d" />
+            <arg value="-h" />
+            <arg value="${host1.ip}" />
+            <arg value="-n" />
+            <arg value="${host1.port}" />
+            <arg value="-u" />
+            <arg value="${host1.username}" />
+            <arg value="-p" />
+            <arg value="${host1.password}" />
+            <arg value="-c" />
+            <arg value="--" />
+            <arg value="monitoring" />
+            <arg value="-o" />
+            <arg value="petals-se-activiti" />
+            <arg value="-f" />
+            <arg value="async-job-executor-thread-pool" />
+            <arg value="--" />
+            <arg value="-n" />
+            <arg value="petals-se-activiti" />
+            <env key="JAVA_OPTS" value="-ea" />
+         </exec>
+         <!-- Check that the Petals CLI command execution is succeded -->
+         <fail message="Petals CLI command fails">
+            <condition>
+               <not>
+                  <equals arg1="0" arg2="${return-code}" />
+               </not>
+            </condition>
+         </fail>
+
+         <local name="async-executor-threadpool-metrics" />
+         <loadfile property="async-executor-threadpool-metrics" srcFile="${tempfile}" />
+         <echo message="Asynchronous job executor thread pool metrics: ${async-executor-threadpool-metrics}" />
+         <fail message="Unexpected metrics about asynchronous job executor thread pool">
+            <condition>
+               <not>
+                  <matches pattern="ActiveThreadsMax:[0-9]+ ActiveThreadsCurrent:[0-9]+ IdleThreadsMax:[0-9]+ IdleThreadsCurrent:[0-9]+ MaxSize:[0-9]+ MinSize:[0-9]+ EnqueuedRequestsCurrent:[0-9]+ EnqueuedRequestsMax:[0-9]+"
+                           string="${async-executor-threadpool-metrics}" />
+               </not>
+            </condition>
+         </fail>
+      </sequential>
+   </macrodef>
 
 
    <!-- Target : Clean all -->
