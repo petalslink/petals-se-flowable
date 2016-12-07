@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.ProcessEngine;
@@ -29,8 +30,24 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.ow2.petals.activitibpmn.monitoring.defect.AsyncExecutorThreadPoolDefectCreator;
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotInitializedException;
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotStartedException;
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringServiceException;
+import org.ow2.petals.component.framework.monitoring.defect.JmxDefectCreator;
+import org.ow2.petals.probes.api.MacroProbesFactory;
+import org.ow2.petals.probes.api.MacroProbesFactoryBuilder;
 import org.ow2.petals.probes.api.exceptions.MultipleProbesFactoriesFoundException;
 import org.ow2.petals.probes.api.exceptions.NoProbesFactoryFoundException;
+import org.ow2.petals.probes.api.exceptions.ProbeInitializationException;
+import org.ow2.petals.probes.api.exceptions.ProbeInitializedException;
+import org.ow2.petals.probes.api.exceptions.ProbeNotInitializedException;
+import org.ow2.petals.probes.api.exceptions.ProbeNotStartedException;
+import org.ow2.petals.probes.api.exceptions.ProbeShutdownException;
+import org.ow2.petals.probes.api.exceptions.ProbeStartedException;
+import org.ow2.petals.probes.api.exceptions.ProbeStartupException;
+import org.ow2.petals.probes.api.exceptions.ProbeStopException;
+import org.ow2.petals.probes.api.probes.macro.ThreadPoolProbe;
 
 /**
  * The monitoring MBean of the SE Activiti
@@ -39,11 +56,34 @@ import org.ow2.petals.probes.api.exceptions.NoProbesFactoryFoundException;
  */
 public class Monitoring extends org.ow2.petals.component.framework.monitoring.Monitoring implements MonitoringMBean {
 
+    /**
+     * The repository service of the Activiti engine
+     */
     private RepositoryService repositoryService = null;
 
+    /**
+     * The runtime service of the Activiti engine
+     */
     private RuntimeService runtimeService = null;
 
+    /**
+     * The history service of the Activiti engine
+     */
     private HistoryService historyService = null;
+
+    // --- Probes --- //
+
+    /**
+     * The macro probe about the thread pool of the async executor.
+     */
+    private final ThreadPoolProbe probeAsyncExecutorThreadPool;
+
+    // --- Defect creators --- //
+
+    /**
+     * The defect creator associated to the defect 'exhaustion of the async executor thread pool'.
+     */
+    private JmxDefectCreator asyncExecutorThreadPoolDefectCreator;
 
     /**
      * Creates the monitoring MBean
@@ -63,6 +103,13 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
 
         super(responseTimeProbesTimer, samplePeriod);
 
+        final MacroProbesFactoryBuilder macroProbesFactoryBuilder = new MacroProbesFactoryBuilder();
+        final MacroProbesFactory macroProbesFactory = macroProbesFactoryBuilder.getMacroProbesFactory();
+
+        this.asyncExecutorThreadPoolDefectCreator = new AsyncExecutorThreadPoolDefectCreator(this);
+        this.probeAsyncExecutorThreadPool = macroProbesFactory
+                .createThreadPoolProbe(this.asyncExecutorThreadPoolDefectCreator);
+
     }
 
     /**
@@ -73,6 +120,34 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
         this.repositoryService = activitiEngine.getRepositoryService();
         this.runtimeService = activitiEngine.getRuntimeService();
         this.historyService = activitiEngine.getHistoryService();
+    }
+
+    /**
+     * @param asyncExecutorTreadPool
+     *            The asynchronous executor thread pool to monitor
+     */
+    public void setAsyncExecutorTreadPool(final ThreadPoolExecutor asyncExecutorTreadPool) {
+        this.probeAsyncExecutorThreadPool.setThreadPool(asyncExecutorTreadPool);
+    }
+
+    @Override
+    public void doInit() throws ProbeInitializedException, ProbeStartedException, ProbeInitializationException {
+        this.probeAsyncExecutorThreadPool.init();
+    }
+
+    @Override
+    protected void doStart() throws ProbeNotInitializedException, ProbeStartedException, ProbeStartupException {
+        this.probeAsyncExecutorThreadPool.start();
+    }
+
+    @Override
+    public void doStop() throws ProbeNotInitializedException, ProbeNotStartedException, ProbeStopException {
+        this.probeAsyncExecutorThreadPool.stop();
+    }
+
+    @Override
+    public void doShutdown() throws ProbeShutdownException, ProbeStartedException, ProbeNotInitializedException {
+        this.probeAsyncExecutorThreadPool.shutdown();
     }
 
     @Override
@@ -105,6 +180,79 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
             results.put(deployment.getKey(), values);
         }
         return results;
+    }
 
+    //
+    // --- Message exchange processor thread pool metrics
+    //
+
+    @Override
+    public long getAsyncExecutorThreadPoolMaxSize() throws MonitoringServiceException {
+        return this.probeAsyncExecutorThreadPool.getThreadPoolMaxSize();
+    }
+
+    @Override
+    public long getAsyncExecutorThreadPoolMinSize() throws MonitoringServiceException {
+        return this.probeAsyncExecutorThreadPool.getThreadPoolMinSize();
+    }
+
+    @Override
+    public long getAsyncExecutorThreadPoolActiveThreadsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException {
+        try {
+            return this.probeAsyncExecutorThreadPool.getThreadPoolActiveThreadsMax();
+        } catch (final ProbeNotInitializedException e) {
+            throw new MonitoringProbeNotInitializedException(e);
+        }
+    }
+
+    @Override
+    public long getAsyncExecutorThreadPoolActiveThreadsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException {
+        try {
+            return this.probeAsyncExecutorThreadPool.getThreadPoolActiveThreadsCurrent();
+        } catch (final ProbeNotStartedException e) {
+            throw new MonitoringProbeNotStartedException(e);
+        }
+    }
+
+    @Override
+    public long getAsyncExecutorThreadPoolIdleThreadsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException {
+        try {
+            return this.probeAsyncExecutorThreadPool.getThreadPoolIdleThreadsMax();
+        } catch (final ProbeNotInitializedException e) {
+            throw new MonitoringProbeNotInitializedException(e);
+        }
+    }
+
+    @Override
+    public long getAsyncExecutorThreadPoolIdleThreadsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException {
+        try {
+            return this.probeAsyncExecutorThreadPool.getThreadPoolIdleThreadsCurrent();
+        } catch (final ProbeNotStartedException e) {
+            throw new MonitoringProbeNotInitializedException(e);
+        }
+    }
+
+    @Override
+    public long getAsyncExecutorThreadPoolQueuedRequestsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException {
+        try {
+            return this.probeAsyncExecutorThreadPool.getThreadPoolQueuedRequestsMax();
+        } catch (final ProbeNotInitializedException e) {
+            throw new MonitoringProbeNotInitializedException(e);
+        }
+    }
+
+    @Override
+    public long getAsyncExecutorThreadPoolQueuedRequestsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException {
+        try {
+            return this.probeAsyncExecutorThreadPool.getThreadPoolQueuedRequestsCurrent();
+        } catch (final ProbeNotStartedException e) {
+            throw new MonitoringProbeNotStartedException(e);
+        }
     }
 }

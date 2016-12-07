@@ -55,6 +55,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,6 +68,7 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.ProcessEngineConfiguration;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.impl.asyncexecutor.AsyncExecutor;
+import org.activiti.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.parse.BpmnParseHandler;
 import org.apache.cxf.Bus;
@@ -443,7 +446,6 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.addPostBpmnParseHandlers(pec);
 
             this.activitiEngine = pec.buildProcessEngine();
-            this.monitoringMbean.setActivitiEngine(this.activitiEngine);
             this.activitiAsyncExecutor = this.enableActivitiJobExecutor ? pec.getAsyncExecutor() : null;
 
             // Caution: Configuration beans are initialized when building the process engine
@@ -456,6 +458,9 @@ public class ActivitiSE extends AbstractServiceEngine {
                         .warning(
                                 "The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
             }
+
+            // Configure a part of the monitoring MBean. Another part is configured on component startup.
+            this.monitoringMbean.setActivitiEngine(this.activitiEngine);
 
             this.registersIntegrationOperations();
 
@@ -620,6 +625,7 @@ public class ActivitiSE extends AbstractServiceEngine {
                         this.getLogger().warning("Activiti Job Executor already started !!");
                     } else {
                         this.activitiAsyncExecutor.start();
+                        this.configureMonitoringMBeanWithAsyncExecutorThreadPool();
                     }
                 } else {
                     this.getLogger().warning("No Activiti Job Executor exists !!");
@@ -635,6 +641,34 @@ public class ActivitiSE extends AbstractServiceEngine {
             throw new JBIException("An error occurred while starting the Activiti BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End ActivitiSE.doStart()");
+        }
+    }
+
+    /**
+     * Configure the asynchronous executor thread pool of the monitoring MBean
+     */
+    private void configureMonitoringMBeanWithAsyncExecutorThreadPool() {
+
+        if (this.activitiAsyncExecutor != null) {
+            if (this.activitiAsyncExecutor instanceof DefaultAsyncJobExecutor) {
+                final ExecutorService executorService = ((DefaultAsyncJobExecutor) this.activitiAsyncExecutor)
+                        .getExecutorService();
+                if (executorService == null) {
+                    this.getLogger().warning(
+                            "No executor service available for the asynchronous job executor, so no monitoring available on asynchronous executor !");
+                } else if (executorService instanceof ThreadPoolExecutor) {
+                    this.monitoringMbean.setAsyncExecutorTreadPool((ThreadPoolExecutor) executorService);
+                } else {
+                    this.getLogger().warning(
+                            "The implementation of the executor service of the asynchronous job executor is not the expected one ! Failures can occurs on moniotoring parts !");
+                }
+            } else {
+                this.getLogger().warning(
+                        "The implementation of the asynchronous job executor is not the expected one ! Failures can occurs on moniotoring parts !");
+            }
+        } else {
+            this.getLogger().warning(
+                    "No asynchronous job executor available, so no monitoring available on asynchronous executor !");
         }
     }
 

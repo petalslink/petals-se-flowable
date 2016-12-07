@@ -19,6 +19,10 @@ package org.ow2.petals.se.activiti.clientserver.api.monitoring;
 
 import java.util.Map;
 
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotInitializedException;
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotStartedException;
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringServiceException;
+
 /**
  * Client/Server interface of the service 'Monitoring' part dedicated to the SE Activiti
  * 
@@ -48,5 +52,71 @@ public interface MonitoringService
      * </p>
      */
     public Map<String, Long[]> getProcessDefinitions();
+
+    /**
+     * @return The current max size of the asynchronous executor thread pool.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolMaxSize() throws MonitoringServiceException;
+
+    /**
+     * @return The current min size of the asynchronous executor thread pool.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolMinSize() throws MonitoringServiceException;
+
+    /**
+     * @return The max number of active threads of the asynchronous executor thread pool.
+     * @throws MonitoringProbeNotInitializedException
+     *             The probe is not initialized or shutdown.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolActiveThreadsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException;
+
+    /**
+     * @return The current number of active threads of the asynchronous executor thread pool.
+     * @throws MonitoringProbeNotStartedException
+     *             The probe is not started or stopped.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolActiveThreadsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException;
+
+    /**
+     * @return The max number of idle threads of the asynchronous executor thread pool.
+     * @throws MonitoringProbeNotInitializedException
+     *             The probe is not initialized or shutdown.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolIdleThreadsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException;
+
+    /**
+     * @return The current number of idle threads of the asynchronous executor thread pool.
+     * @throws MonitoringProbeNotStartedException
+     *             The probe is not started or stopped.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolIdleThreadsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException;
+
+    /**
+     * @return The max number of enqueued tasks into the asynchronous executor thread pool.
+     * @throws MonitoringProbeNotInitializedException
+     *             The probe is not initialized or shutdown.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolQueuedRequestsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException;
+
+    /**
+     * @return The current number of enqueued tasks into the asynchronous executor thread pool.
+     * @throws MonitoringProbeNotStartedException
+     *             The probe is not started or stopped.
+     * @throws MonitoringServiceException
+     */
+    public long getAsyncExecutorThreadPoolQueuedRequestsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException;
 
 }

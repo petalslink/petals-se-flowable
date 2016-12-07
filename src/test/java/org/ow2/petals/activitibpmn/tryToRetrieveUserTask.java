@@ -50,6 +50,8 @@ import org.ow2.petals.activitibpmn.monitoring.ProcessInstanceFlowStepBeginLogDat
 import org.ow2.petals.activitibpmn.monitoring.UserTaskFlowStepBeginLogData;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotStartedException;
+import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringServiceException;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
@@ -93,10 +95,14 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 public class tryToRetrieveUserTask extends AbstractComponentTest {
 
     @AfterClass
-    public static void assertMonitoring() {
+    public static void assertMonitoring() throws MonitoringProbeNotStartedException, MonitoringServiceException {
         assertTrue(COMPONENT_UNDER_TEST.getComponentObject().getMonitoringBean() instanceof MonitoringMBean);
         final MonitoringMBean monitoringMbean = (MonitoringMBean) COMPONENT_UNDER_TEST.getComponentObject()
                 .getMonitoringBean();
+
+        //
+        // -- Assertions about monitoring of process definitions --
+        //
         final Map<String, Long[]> metrics = monitoringMbean.getProcessDefinitions();
 
         // 2 process definitions: jira_PETALSSEACTIVITI-4 and vacationRequest
@@ -115,6 +121,19 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertEquals(0, jiraInstances[1].longValue());
         assertEquals(0, jiraInstances[2].longValue());
         assertEquals(1, jiraInstances[3].longValue());
+
+        //
+        // -- Assertions about monitoring of asynchronous job executor thread pool --
+        //
+        assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolActiveThreadsCurrent());
+        assertNotEquals(0, monitoringMbean.getAsyncExecutorThreadPoolActiveThreadsMax());
+        assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsCurrent());
+        assertNotEquals(0, monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsMax());
+        assertNotEquals(10, monitoringMbean.getAsyncExecutorThreadPoolMaxSize());
+        assertNotEquals(2, monitoringMbean.getAsyncExecutorThreadPoolMinSize());
+        assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolQueuedRequestsCurrent());
+        assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolQueuedRequestsCurrent());
+
     }
 
     /**
