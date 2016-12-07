@@ -24,7 +24,7 @@ import org.ow2.petals.component.framework.monitoring.Monitoring;
 import org.ow2.petals.component.framework.monitoring.defect.JmxDefectCreator;
 
 /**
- * Creator of the defect: 'the async executor thread pool is exhausted'.
+ * Creator of the defect: 'the asynchronous job executor thread pool is exhausted'.
  * 
  * @author Christophe DENEUX - Linagora
  * 
@@ -33,7 +33,7 @@ public class AsyncExecutorThreadPoolDefectCreator implements JmxDefectCreator {
 
     private static final String DEFECT_NAME = "org.ow2.petals.se.activiti.engine.async.executor.thread.pool.exhausted";
 
-    private static final String DEFECT_MSG = "The thread pool of async executor is exhausted !";
+    private static final String DEFECT_MSG = "The thread pool of asynchronous job executor is exhausted !";
 
     private final Monitoring monitoringMbean;
 
