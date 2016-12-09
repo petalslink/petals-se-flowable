@@ -32,15 +32,35 @@ import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.
 public interface MonitoringService
         extends org.ow2.petals.component.framework.clientserver.api.monitoring.MonitoringService {
 
+    /**
+     * Index of the process definition suspension state returned by {@link #getProcessDefinitions()}.
+     */
+    public static final int PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE = 0;
+
+    /**
+     * Index of the active process instance counter returned by {@link #getProcessDefinitions()}.
+     */
+    public static final int PROCESS_DEFINITION_INFO_ID_ACTIVE_INSTANCES_COUNTER = 1;
+
+    /**
+     * Index of the suspended process instance counter returned by {@link #getProcessDefinitions()}.
+     */
+    public static final int PROCESS_DEFINITION_INFO_ID_SUSPENDED_INSTANCES_COUNTER = 2;
+
+    /**
+     * Index of the ended process instance counter returned by {@link #getProcessDefinitions()}.
+     */
+    public static final int PROCESS_DEFINITION_INFO_ID_ENDED_INSTANCES_COUNTER = 3;
+
     //
     // --- Process definitions / Process instances
     //
 
     /**
      * <p>
-     * Returns information on process definitions.</>
+     * Returns information on process definitions.
      * <p>
-     * The map key is the process definition identifier. Each value of the map entry is an array of numberes where:
+     * The map key is the process definition identifier. Each value of the map entry is an array of numbers where:
      * <ul>
      * <li>the 1st value is the suspension state: {@code 1} the process definition is suspended, {@code 0} it is not
      * suspended,

@@ -166,16 +166,17 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
             final Long[] values = new Long[4];
 
             // Suspension state
-            values[0] = deployment.isSuspended() ? 1l : 0l;
+            values[PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE] = deployment.isSuspended() ? 1l : 0l;
 
             // active process instances
-            values[1] = Long.valueOf(activeProcessInstances.size());
+            values[PROCESS_DEFINITION_INFO_ID_ACTIVE_INSTANCES_COUNTER] = Long.valueOf(activeProcessInstances.size());
 
             // suspended process instances
-            values[2] = Long.valueOf(suspendedProcessInstances.size());
+            values[PROCESS_DEFINITION_INFO_ID_SUSPENDED_INSTANCES_COUNTER] = Long
+                    .valueOf(suspendedProcessInstances.size());
 
             // ended process instances
-            values[3] = Long.valueOf(endedProcessInstances.size());
+            values[PROCESS_DEFINITION_INFO_ID_ENDED_INSTANCES_COUNTER] = Long.valueOf(endedProcessInstances.size());
 
             results.put(deployment.getKey(), values);
         }
