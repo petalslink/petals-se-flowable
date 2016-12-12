@@ -139,4 +139,52 @@ public interface MonitoringService
     public long getAsyncExecutorThreadPoolQueuedRequestsCurrent()
             throws MonitoringProbeNotStartedException, MonitoringServiceException;
 
+    /**
+     * @return The current max size of active connections of the database connection pool.
+     * @throws MonitoringServiceException
+     */
+    public long getDatabaseConnectionPoolMaxActiveSize() throws MonitoringServiceException;
+
+    /**
+     * @return The current max size of idle connections of the database connection pool.
+     * @throws MonitoringServiceException
+     */
+    public long getDatabaseConnectionPoolMaxIdleSize() throws MonitoringServiceException;
+
+    /**
+     * @return The max number of active connections of the database connection pool.
+     * @throws MonitoringProbeNotInitializedException
+     *             The probe is not initialized or shutdown.
+     * @throws MonitoringServiceException
+     */
+    public long getDatabaseConnectionPoolActiveConnectionsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException;
+
+    /**
+     * @return The current number of active connections of the database connection pool.
+     * @throws MonitoringProbeNotStartedException
+     *             The probe is not started or stopped.
+     * @throws MonitoringServiceException
+     */
+    public long getDatabaseConnectionPoolActiveConnectionsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException;
+
+    /**
+     * @return The max number of idle connections of the database connection pool.
+     * @throws MonitoringProbeNotInitializedException
+     *             The probe is not initialized or shutdown.
+     * @throws MonitoringServiceException
+     */
+    public long getDatabaseConnectionPoolIdleConnectionsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException;
+
+    /**
+     * @return The current number of idle connections of the database connection pool.
+     * @throws MonitoringProbeNotStartedException
+     *             The probe is not started or stopped.
+     * @throws MonitoringServiceException
+     */
+    public long getDatabaseConnectionPoolIdleConnectionsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException;
+
 }

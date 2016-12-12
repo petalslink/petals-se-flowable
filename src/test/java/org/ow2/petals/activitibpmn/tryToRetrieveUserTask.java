@@ -126,13 +126,27 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // -- Assertions about monitoring of asynchronous job executor thread pool --
         //
         assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolActiveThreadsCurrent());
-        assertNotEquals(0, monitoringMbean.getAsyncExecutorThreadPoolActiveThreadsMax());
+        assertTrue(monitoringMbean.getAsyncExecutorThreadPoolActiveThreadsMax() >= 1);
         assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsCurrent());
-        assertNotEquals(0, monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsMax());
-        assertNotEquals(10, monitoringMbean.getAsyncExecutorThreadPoolMaxSize());
-        assertNotEquals(2, monitoringMbean.getAsyncExecutorThreadPoolMinSize());
+        assertTrue(monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsMax() >= 1);
+        assertEquals(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
+                monitoringMbean.getAsyncExecutorThreadPoolMaxSize());
+        assertEquals(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
+                monitoringMbean.getAsyncExecutorThreadPoolMinSize());
         assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolQueuedRequestsCurrent());
         assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolQueuedRequestsCurrent());
+
+        //
+        // -- Assertions about monitoring of database connection pool --
+        //
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS,
+                monitoringMbean.getDatabaseConnectionPoolMaxActiveSize());
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS,
+                monitoringMbean.getDatabaseConnectionPoolMaxIdleSize());
+        assertTrue(monitoringMbean.getDatabaseConnectionPoolActiveConnectionsMax() >= 1);
+        assertEquals(0, monitoringMbean.getDatabaseConnectionPoolActiveConnectionsCurrent());
+        assertTrue(monitoringMbean.getDatabaseConnectionPoolIdleConnectionsMax() >= 1);
+        assertNotEquals(0, monitoringMbean.getDatabaseConnectionPoolIdleConnectionsCurrent());
 
     }
 

@@ -74,6 +74,7 @@ import org.activiti.engine.parse.BpmnParseHandler;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
+import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.petals.activitibpmn.event.AbstractEventListener;
@@ -161,11 +162,6 @@ public class ActivitiSE extends AbstractServiceEngine {
      * Event listener fired when a user task is completed
      */
     private AbstractEventListener userTaskCompletedEventListener;
-
-    /**
-     * The monitoring MBean
-     */
-    private Monitoring monitoringMbean;
 
     /**
      * An UUID generator.
@@ -460,7 +456,7 @@ public class ActivitiSE extends AbstractServiceEngine {
             }
 
             // Configure a part of the monitoring MBean. Another part is configured on component startup.
-            this.monitoringMbean.setActivitiEngine(this.activitiEngine);
+            ((Monitoring) this.getMonitoringBean()).setActivitiEngine(this.activitiEngine);
 
             this.registersIntegrationOperations();
 
@@ -626,6 +622,7 @@ public class ActivitiSE extends AbstractServiceEngine {
                     } else {
                         this.activitiAsyncExecutor.start();
                         this.configureMonitoringMBeanWithAsyncExecutorThreadPool();
+                        this.configureMonitoringMBeanWithDatabaseConnectionPool();
                     }
                 } else {
                     this.getLogger().warning("No Activiti Job Executor exists !!");
@@ -657,18 +654,48 @@ public class ActivitiSE extends AbstractServiceEngine {
                     this.getLogger().warning(
                             "No executor service available for the asynchronous job executor, so no monitoring available on asynchronous executor !");
                 } else if (executorService instanceof ThreadPoolExecutor) {
-                    this.monitoringMbean.setAsyncExecutorTreadPool((ThreadPoolExecutor) executorService);
+                    ((Monitoring) this.getMonitoringBean())
+                            .setAsyncExecutorTreadPool((ThreadPoolExecutor) executorService);
                 } else {
                     this.getLogger().warning(
-                            "The implementation of the executor service of the asynchronous job executor is not the expected one ! Failures can occurs on moniotoring parts !");
+                            "The implementation of the executor service of the asynchronous job executor is not the expected one ! Failures can occurs on monitoring parts !");
                 }
             } else {
                 this.getLogger().warning(
-                        "The implementation of the asynchronous job executor is not the expected one ! Failures can occurs on moniotoring parts !");
+                        "The implementation of the asynchronous job executor is not the expected one, so no monitoring available on asynchronous executor !");
             }
         } else {
             this.getLogger().warning(
                     "No asynchronous job executor available, so no monitoring available on asynchronous executor !");
+        }
+    }
+
+    /**
+     * Configure the database connection pool of the monitoring MBean
+     */
+    private void configureMonitoringMBeanWithDatabaseConnectionPool() {
+        
+        if (this.activitiEngine.getProcessEngineConfiguration() != null) {
+            if (this.activitiEngine.getProcessEngineConfiguration() instanceof ProcessEngineConfigurationImpl) {
+                final ProcessEngineConfigurationImpl engineConfiguration = ((ProcessEngineConfigurationImpl) this.activitiEngine
+                        .getProcessEngineConfiguration());
+                if (engineConfiguration.getDataSource() == null) {
+                    this.getLogger().warning(
+                            "No datasource available for the Activiti engine, so no monitoring available on database connection pool !");
+                } else if (engineConfiguration.getDataSource() instanceof PooledDataSource) {
+                    ((Monitoring) this.getMonitoringBean())
+                            .setDataSourcePool((PooledDataSource) engineConfiguration.getDataSource());
+                } else {
+                    this.getLogger().warning(
+                            "The implementation of the Activiti engine datasource is not the expected one, so no monitoring available on database connection pool !");
+                }
+            } else {
+                this.getLogger().warning(
+                        "The implementation of the engine configuration is not the expected one, so no monitoring available on database connection pool !");
+            }
+        } else {
+            this.getLogger().warning(
+                    "No process engine configuration, so no monitoring available on database connection pool !");
         }
     }
 
@@ -743,7 +770,6 @@ public class ActivitiSE extends AbstractServiceEngine {
     protected org.ow2.petals.component.framework.monitoring.Monitoring createMonitoringMBean()
             throws MultipleProbesFactoriesFoundException, NoProbesFactoryFoundException {
 
-        this.monitoringMbean = new Monitoring(this.getProbesTimer(), this.getResponseTimeProbeSamplePeriod());
-        return this.monitoringMbean;
+        return new Monitoring(this.getProbesTimer(), this.getResponseTimeProbeSamplePeriod());
     }
 }

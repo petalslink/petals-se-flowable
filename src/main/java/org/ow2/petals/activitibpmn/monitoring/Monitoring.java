@@ -30,7 +30,11 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.ow2.petals.activitibpmn.monitoring.defect.AsyncExecutorThreadPoolDefectCreator;
+import org.ow2.petals.activitibpmn.monitoring.defect.PooledDataSourceConnectionPoolDefectCreator;
+import org.ow2.petals.activitibpmn.monitoring.probes.macro.PooledDataSourceProbe;
+import org.ow2.petals.activitibpmn.monitoring.probes.macro.impl.PooledDataSourceProbeImpl;
 import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotInitializedException;
 import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotStartedException;
 import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringServiceException;
@@ -78,12 +82,10 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
      */
     private final ThreadPoolProbe probeAsyncExecutorThreadPool;
 
-    // --- Defect creators --- //
-
     /**
-     * The defect creator associated to the defect 'exhaustion of the async executor thread pool'.
+     * The macro probe about the database connection pool.
      */
-    private JmxDefectCreator asyncExecutorThreadPoolDefectCreator;
+    private final PooledDataSourceProbe probeDatabaseConnectionPool;
 
     /**
      * Creates the monitoring MBean
@@ -106,10 +108,13 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
         final MacroProbesFactoryBuilder macroProbesFactoryBuilder = new MacroProbesFactoryBuilder();
         final MacroProbesFactory macroProbesFactory = macroProbesFactoryBuilder.getMacroProbesFactory();
 
-        this.asyncExecutorThreadPoolDefectCreator = new AsyncExecutorThreadPoolDefectCreator(this);
+        final JmxDefectCreator asyncExecutorThreadPoolDefectCreator = new AsyncExecutorThreadPoolDefectCreator(this);
         this.probeAsyncExecutorThreadPool = macroProbesFactory
-                .createThreadPoolProbe(this.asyncExecutorThreadPoolDefectCreator);
+                .createThreadPoolProbe(asyncExecutorThreadPoolDefectCreator);
 
+        final JmxDefectCreator connectionPoolActiveConnectionsDefectCreator = new PooledDataSourceConnectionPoolDefectCreator(
+                this);
+        this.probeDatabaseConnectionPool = new PooledDataSourceProbeImpl(connectionPoolActiveConnectionsDefectCreator);
     }
 
     /**
@@ -130,24 +135,36 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
         this.probeAsyncExecutorThreadPool.setThreadPool(asyncExecutorTreadPool);
     }
 
+    /**
+     * @param dataSourcePool
+     *            The database connection pool to monitor
+     */
+    public void setDataSourcePool(final PooledDataSource dataSourcePool) {
+        this.probeDatabaseConnectionPool.setConnectionPool(dataSourcePool);
+    }
+
     @Override
     public void doInit() throws ProbeInitializedException, ProbeStartedException, ProbeInitializationException {
         this.probeAsyncExecutorThreadPool.init();
+        this.probeDatabaseConnectionPool.init();
     }
 
     @Override
     protected void doStart() throws ProbeNotInitializedException, ProbeStartedException, ProbeStartupException {
         this.probeAsyncExecutorThreadPool.start();
+        this.probeDatabaseConnectionPool.start();
     }
 
     @Override
     public void doStop() throws ProbeNotInitializedException, ProbeNotStartedException, ProbeStopException {
         this.probeAsyncExecutorThreadPool.stop();
+        this.probeDatabaseConnectionPool.stop();
     }
 
     @Override
     public void doShutdown() throws ProbeShutdownException, ProbeStartedException, ProbeNotInitializedException {
         this.probeAsyncExecutorThreadPool.shutdown();
+        this.probeDatabaseConnectionPool.shutdown();
     }
 
     @Override
@@ -252,6 +269,64 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
             throws MonitoringProbeNotStartedException, MonitoringServiceException {
         try {
             return this.probeAsyncExecutorThreadPool.getThreadPoolQueuedRequestsCurrent();
+        } catch (final ProbeNotStartedException e) {
+            throw new MonitoringProbeNotStartedException(e);
+        }
+    }
+
+    public ThreadPoolProbe getProbeAsyncExecutorThreadPool() {
+        return probeAsyncExecutorThreadPool;
+    }
+
+    public PooledDataSourceProbe getProbeDatabaseConnectionPool() {
+        return probeDatabaseConnectionPool;
+    }
+
+    @Override
+    public long getDatabaseConnectionPoolMaxActiveSize() throws MonitoringServiceException {
+        return this.probeDatabaseConnectionPool.getConnectionPoolMaxSize();
+    }
+
+    @Override
+    public long getDatabaseConnectionPoolMaxIdleSize() throws MonitoringServiceException {
+        return this.probeDatabaseConnectionPool.getConnectionPoolMaxIdleSize();
+    }
+
+    @Override
+    public long getDatabaseConnectionPoolActiveConnectionsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException {
+        try {
+            return this.probeDatabaseConnectionPool.getConnectionPoolActiveConnectionsMax();
+        } catch (final ProbeNotInitializedException e) {
+            throw new MonitoringProbeNotStartedException(e);
+        }
+    }
+
+    @Override
+    public long getDatabaseConnectionPoolActiveConnectionsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException {
+        try {
+            return this.probeDatabaseConnectionPool.getConnectionPoolActiveConnectionsCurrent();
+        } catch (final ProbeNotStartedException e) {
+            throw new MonitoringProbeNotStartedException(e);
+        }
+    }
+
+    @Override
+    public long getDatabaseConnectionPoolIdleConnectionsMax()
+            throws MonitoringProbeNotInitializedException, MonitoringServiceException {
+        try {
+            return this.probeDatabaseConnectionPool.getConnectionPoolIdleConnectionsMax();
+        } catch (final ProbeNotInitializedException e) {
+            throw new MonitoringProbeNotStartedException(e);
+        }
+    }
+
+    @Override
+    public long getDatabaseConnectionPoolIdleConnectionsCurrent()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException {
+        try {
+            return this.probeDatabaseConnectionPool.getConnectionPoolIdleConnectionsCurrent();
         } catch (final ProbeNotStartedException e) {
             throw new MonitoringProbeNotStartedException(e);
         }

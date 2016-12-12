@@ -16,7 +16,8 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
    <parent>
@@ -165,6 +166,11 @@
          </exclusions>
       </dependency>
       <dependency>
+         <groupId>org.mybatis</groupId>
+         <artifactId>mybatis</artifactId>
+         <version>3.3.0</version>
+      </dependency>
+      <dependency>
          <groupId>org.ow2.petals.activiti</groupId>
          <artifactId>activiti-bpmn-converter</artifactId>
          <version>${activiti.version}</version>
@@ -283,6 +289,6 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-activiti.git</developerConnection>
-     <tag>HEAD</tag>
-  </scm>
+      <tag>HEAD</tag>
+   </scm>
 </project>

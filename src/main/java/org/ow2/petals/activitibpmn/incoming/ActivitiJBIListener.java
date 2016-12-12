@@ -25,11 +25,15 @@ import javax.jbi.messaging.NormalizedMessage;
 import javax.xml.namespace.QName;
 
 import org.ow2.petals.activitibpmn.ActivitiSE;
+import org.ow2.petals.activitibpmn.monitoring.Monitoring;
+import org.ow2.petals.activitibpmn.monitoring.probes.macro.PooledDataSourceProbe;
 import org.ow2.petals.activitibpmn.outgoing.PetalsActivitiAsyncContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractJBIListener;
 import org.ow2.petals.component.framework.process.async.AsyncContext;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
+import org.ow2.petals.probes.api.exceptions.ProbeNotStartedException;
+import org.ow2.petals.probes.api.probes.macro.ThreadPoolProbe;
 
 
 /**
@@ -49,6 +53,16 @@ import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 public class ActivitiJBIListener extends AbstractJBIListener {
 
     /**
+     * The macro probe about the thread pool of the async executor.
+     */
+    private ThreadPoolProbe probeAsyncExecutorThreadPool = null;
+
+    /**
+     * The macro probe about the database connection pool.
+     */
+    private PooledDataSourceProbe probeDatabaseConnectionPool = null;
+
+    /**
      * A prefix to use for logged messages.
      * <p>
      * This prefix is updated for every processed message.<br />
@@ -56,6 +70,15 @@ public class ActivitiJBIListener extends AbstractJBIListener {
      * </p>
      */
     private String logHint;
+
+    @Override
+    public void init() {
+        super.init();
+
+        final Monitoring monitoringMBean = ((Monitoring) ((ActivitiSE) this.getComponent()).getMonitoringBean());
+        this.probeAsyncExecutorThreadPool = monitoringMBean.getProbeAsyncExecutorThreadPool();
+        this.probeDatabaseConnectionPool = monitoringMBean.getProbeDatabaseConnectionPool();
+    }
 
     /**
      * {@inheritDoc}
@@ -65,10 +88,19 @@ public class ActivitiJBIListener extends AbstractJBIListener {
  
         final Logger logger = this.getLogger();
         logger.fine("Start ActivitiJBIListener.onJBIMessage()");
+
+        this.logHint = "Exchange " + exchange.getExchangeId();
+
+        try {
+            // Probes are not null here because message processing starts after JBI listener initialization
+            this.probeAsyncExecutorThreadPool.pick();
+            this.probeDatabaseConnectionPool.pick();
+        } catch (final ProbeNotStartedException e) {
+            logger.warning("Activiti engine probes are not started. Values of probes could be incorrect.");
+        }
+
         try {
             if (exchange.isActiveStatus()) {
-                this.logHint = "Exchange " + exchange.getExchangeId();
-
                 // Provider role
                 if (exchange.isProviderRole()) {
                     try {
