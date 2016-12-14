@@ -283,10 +283,11 @@
       <petals-soapui-test testCase="Faulty TestCase - Unexpected vacation request id" />
 
       <checkAsyncExecutorMetrics />
+      <checkDatabaseConnectionPoolMetrics />
       <checkProcessInstanceCounters />
    </target>
 
-   <!-- Display metrics about the asynchronous job executor -->
+   <!-- Display and check metrics about the asynchronous job executor -->
    <macrodef name="checkAsyncExecutorMetrics">
       <sequential>
          <local name="return-code" />
@@ -334,6 +335,60 @@
                <not>
                   <matches pattern="ActiveThreadsMax:[0-9]+ ActiveThreadsCurrent:[0-9]+ IdleThreadsMax:[0-9]+ IdleThreadsCurrent:[0-9]+ MaxSize:[0-9]+ MinSize:[0-9]+ EnqueuedRequestsCurrent:[0-9]+ EnqueuedRequestsMax:[0-9]+"
                            string="${async-executor-threadpool-metrics}" />
+               </not>
+            </condition>
+         </fail>
+      </sequential>
+   </macrodef>
+
+   <!-- Display and check metrics about the database connection pool -->
+   <macrodef name="checkDatabaseConnectionPoolMetrics">
+      <sequential>
+         <local name="return-code" />
+         <tempfile property="tempfile" prefix="petals-cli" suffix=".out" />
+         <echo message="Petals CLI output dumped in: ${tempfile}" />
+         <exec executable="./petals-cli.sh"
+               dir="${petals.cli.home}/bin"
+               output="${tempfile}"
+               resultproperty="return-code">
+            <arg value="-d" />
+            <arg value="-h" />
+            <arg value="${host1.ip}" />
+            <arg value="-n" />
+            <arg value="${host1.port}" />
+            <arg value="-u" />
+            <arg value="${host1.username}" />
+            <arg value="-p" />
+            <arg value="${host1.password}" />
+            <arg value="-c" />
+            <arg value="--" />
+            <arg value="monitoring" />
+            <arg value="-o" />
+            <arg value="petals-se-activiti" />
+            <arg value="-f" />
+            <arg value="database-connection-pool" />
+            <arg value="--" />
+            <arg value="-n" />
+            <arg value="petals-se-activiti" />
+            <env key="JAVA_OPTS" value="-ea" />
+         </exec>
+         <!-- Check that the Petals CLI command execution is succeded -->
+         <fail message="Petals CLI command fails">
+            <condition>
+               <not>
+                  <equals arg1="0" arg2="${return-code}" />
+               </not>
+            </condition>
+         </fail>
+
+         <local name="database-connection-pool-metrics" />
+         <loadfile property="database-connection-pool-metrics" srcFile="${tempfile}" />
+         <echo message="Database connection pool metrics: ${database-connection-pool-metrics}" />
+         <fail message="Unexpected metrics about database connection pool">
+            <condition>
+               <not>
+                  <matches pattern="MaxActiveSize:[0-9]+ MaxIdleSize:[0-9]+ ActiveConnectionsMax:[0-9]+ ActiveConnectionsCurrent:[0-9]+ IdleConnectionsMax:[0-9]+ IdleConnectionsCurrent:[0-9]+"
+                           string="${database-connection-pool-metrics}" />
                </not>
             </condition>
          </fail>
