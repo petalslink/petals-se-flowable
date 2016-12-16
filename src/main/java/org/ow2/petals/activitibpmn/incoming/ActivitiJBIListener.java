@@ -96,7 +96,8 @@ public class ActivitiJBIListener extends AbstractJBIListener {
             this.probeAsyncExecutorThreadPool.pick();
             this.probeDatabaseConnectionPool.pick();
         } catch (final ProbeNotStartedException e) {
-            logger.warning("Activiti engine probes are not started. Values of probes could be incorrect.");
+            logger.log(Level.WARNING, "Activiti engine probes are not started. Values of probes could be incorrect.",
+                    e);
         }
 
         try {

@@ -17,13 +17,51 @@
  */
 package org.ow2.petals.activitibpmn.outgoing;
 
+import javax.jbi.messaging.MessagingException;
+
 import org.ow2.petals.activitibpmn.ActivitiSE;
+import org.ow2.petals.activitibpmn.monitoring.Monitoring;
+import org.ow2.petals.activitibpmn.monitoring.probes.macro.PooledDataSourceProbe;
+import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.component.framework.listener.AbstractListener;
+import org.ow2.petals.probes.api.exceptions.ProbeNotStartedException;
+import org.ow2.petals.probes.api.probes.macro.ThreadPoolProbe;
 
 public class PetalsSender extends AbstractListener {
 
+    /**
+     * The macro probe about the thread pool of the async executor.
+     */
+    private ThreadPoolProbe probeAsyncExecutorThreadPool = null;
+
+    /**
+     * The macro probe about the database connection pool.
+     */
+    private PooledDataSourceProbe probeDatabaseConnectionPool = null;
+
     public PetalsSender(final ActivitiSE activitiSE) {
-        init(activitiSE);
+        super.init(activitiSE);
+
+        final Monitoring monitoringMBean = ((Monitoring) activitiSE.getMonitoringBean());
+        this.probeAsyncExecutorThreadPool = monitoringMBean.getProbeAsyncExecutorThreadPool();
+        this.probeDatabaseConnectionPool = monitoringMBean.getProbeDatabaseConnectionPool();
+    }
+
+    @Override
+    public void send(Exchange exchange) throws MessagingException {
+
+        // Update monitoring probes before sending message
+        try {
+            // Probes are not null here because message processing starts after JBI listener initialization
+            this.probeAsyncExecutorThreadPool.pick();
+            this.probeDatabaseConnectionPool.pick();
+        } catch (final ProbeNotStartedException e) {
+            this.getLogger().log(Level.WARNING,
+                    "Activiti engine probes are not started. Values of probes could be incorrect.", e);
+        }
+
+        super.send(exchange);
     }
 
 }
