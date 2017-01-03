@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2016 Linagora
+ Copyright (c) 2016-2017 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -16,7 +16,7 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<con:soapui-project id="02a75964-5f8a-492f-a2ea-160355c48f52" activeEnvironment="Default" name="Petals Sample - Activiti - Vacation Process - Unit tests" resourceRoot="" soapui-version="5.2.1" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="f24d0e6c-d5c7-4479-997c-525c9573b3ac" wsaVersion="NONE" name="archiveSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveSoapBinding" soapVersion="1_1" anonymous="optional" definition="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-activiti/samples/su-activiti-vacationService-provide/src/main/resources/jbi/archiveService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-activiti/samples/su-activiti-vacationService-provide/src/main/resources/jbi/archiveService.wsdl"><con:part><con:url>file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-activiti/samples/su-activiti-vacationService-provide/src/main/resources/jbi/archiveService.wsdl</con:url><con:content><![CDATA[<!--Copyright (c) 2014-2016 Linagora
+<con:soapui-project id="02a75964-5f8a-492f-a2ea-160355c48f52" activeEnvironment="Default" name="Petals Sample - Activiti - Vacation Process - Unit tests" resourceRoot="" soapui-version="5.3.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" id="f24d0e6c-d5c7-4479-997c-525c9573b3ac" wsaVersion="NONE" name="archiveSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/samples/se-bpmn/archiveService}archiveSoapBinding" soapVersion="1_1" anonymous="optional" definition="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-activiti/samples/su-activiti-vacationService-provide/src/main/resources/jbi/archiveService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-activiti/samples/su-activiti-vacationService-provide/src/main/resources/jbi/archiveService.wsdl"><con:part><con:url>file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-activiti/samples/su-activiti-vacationService-provide/src/main/resources/jbi/archiveService.wsdl</con:url><con:content><![CDATA[<!--Copyright (c) 2014-2016 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -387,4 +387,4 @@
          <ok>ok</ok>
       </not:okResponse>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://petals.ow2.org/samples/se-bpmn/notifyService/vacationRequestUpdated"/></con:response><con:dispatchConfig/></con:mockOperation></con:mockService><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:sensitiveInformation/></con:soapui-project>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://petals.ow2.org/samples/se-bpmn/notifyService/vacationRequestUpdated"/></con:response><con:dispatchConfig/></con:mockOperation></con:mockService><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/><con:sensitiveInformation/></con:soapui-project>

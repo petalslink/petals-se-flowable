@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2016 Linagora
+ Copyright (c) 2015-2017 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the New BSD License (3-clause license).
@@ -14,7 +14,7 @@
  along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
  for the New BSD License (3-clause license).
 -->
-<con:soapui-project activeEnvironment="Default" name="Petals Trunk - HA - Petals SE Activiti - Integration tests - Vacation Process" resourceRoot="" soapui-version="5.2.1" abortOnError="false" runType="SEQUENTIAL" id="fe34074f-f024-4da5-a94c-bdc6e2f8f285" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+<con:soapui-project activeEnvironment="Default" name="Petals Trunk - HA - Petals SE Activiti - Integration tests - Vacation Process" resourceRoot="" soapui-version="5.3.0" abortOnError="false" runType="SEQUENTIAL" id="fe34074f-f024-4da5-a94c-bdc6e2f8f285" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
   <con:entry key="Environment" value="Default"/>
   <con:entry key="Global Properties" value=""/>
   <con:entry key="TestSuite" value="&lt;all>"/>
@@ -1267,4 +1267,4 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task) = 1</co
          <ok>ok</ok>
       </arc:okResponse>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://petals.ow2.org/samples/services/archive"/></con:response><con:dispatchConfig/></con:mockOperation></con:mockService><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:sensitiveInformation/></con:soapui-project>
+</soapenv:Envelope>]]></con:responseContent><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://petals.ow2.org/samples/services/archive"/></con:response><con:dispatchConfig/></con:mockOperation></con:mockService><con:properties/><con:wssContainer/><con:oAuth2ProfileContainer/><con:oAuth1ProfileContainer/><con:sensitiveInformation/></con:soapui-project>
