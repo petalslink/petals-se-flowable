@@ -190,7 +190,9 @@ public abstract class ActivitiOperation implements ActivitiService {
                 // Get the userId
                 final String userId;
                 try {
-                    userId = this.userIdXPathExpr.evaluate(incomingPayload);
+                    synchronized (this.userIdXPathExpr) {
+                        userId = this.userIdXPathExpr.evaluate(incomingPayload);
+                    }
                     if (userId == null || userId.trim().isEmpty()) {
                         throw new NoUserIdValueException(this.wsdlOperation);
                     }
@@ -207,7 +209,11 @@ public abstract class ActivitiOperation implements ActivitiService {
                 for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
                     final String variableName = variable.getKey();
                     try {
-                        final String variableValueAsStr = variable.getValue().evaluate(incomingPayload);
+                        final XPathExpression xpathExpr = variable.getValue();
+                        final String variableValueAsStr;
+                        synchronized (xpathExpr) {
+                            variableValueAsStr = xpathExpr.evaluate(incomingPayload);
+                        }
                         if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
                             if (this.variableTypes.get(variableName).isRequired()) {
                                 throw new MessagingException("The task: " + this.getClass().getSimpleName()

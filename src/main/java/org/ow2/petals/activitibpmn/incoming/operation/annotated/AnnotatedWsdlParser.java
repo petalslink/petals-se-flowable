@@ -194,11 +194,12 @@ public class AnnotatedWsdlParser {
 
         this.encounteredErrors.clear();
 
-        final List<AnnotatedOperation> annotatedOperations = new ArrayList<AnnotatedOperation>();
+        final List<AnnotatedOperation> annotatedOperations = new ArrayList<>();
 
         annotatedWsdl.getDocumentElement().normalize();
         final String targetNamespace = annotatedWsdl.getDocumentElement().getAttribute("targetNamespace");
         final XPathFactory xpathFactory = XPathFactory.newInstance();
+        final XPath xpathBuilder = xpathFactory.newXPath();
 
         // Get the node "wsdl:binding"
         final NodeList bindings = annotatedWsdl.getElementsByTagNameNS(SCHEMA_WSDL, "binding");
@@ -212,7 +213,7 @@ public class AnnotatedWsdlParser {
             final NodeList wsdlOperations = ((Element) binding).getElementsByTagNameNS(SCHEMA_WSDL, "operation");
             for (int j = 0; j < wsdlOperations.getLength(); j++) {
                 try {
-                    annotatedOperations.add(this.parseOperation(wsdlOperations.item(j), targetNamespace, xpathFactory,
+                    annotatedOperations.add(this.parseOperation(wsdlOperations.item(j), targetNamespace, xpathBuilder,
                             suRootPath, bpmnModels));
                 } catch (final InvalidAnnotationForOperationException e) {
                     this.encounteredErrors.add(e);
@@ -220,7 +221,7 @@ public class AnnotatedWsdlParser {
             }
         }
 
-        if (annotatedOperations.size() == 0) {
+        if (annotatedOperations.isEmpty()) {
             final InvalidAnnotationException noAnnotatedOperationEx = new NoBpmnOperationException();
             this.encounteredErrors.add(noAnnotatedOperationEx);
         }
@@ -235,8 +236,8 @@ public class AnnotatedWsdlParser {
      *            The binding operation to parse
      * @param targetNamespace
      *            The target namespace of WSDL definition
-     * @param xpathFactory
-     *            The XPath factory
+     * @param xpathBuilder
+     *            The XPath expression builder
      * @param suRootPath
      *            The root directory of the service unit
      * @param bpmnModels
@@ -245,8 +246,9 @@ public class AnnotatedWsdlParser {
      * @throws An
      *             error occurs during the parsing of the binding operation
      */
-    private AnnotatedOperation parseOperation(final Node wsdlOperation, final String targetNamespace, final XPathFactory xpathFactory,
-            final String suRootPath, final List<BpmnModel> bpmnModels) throws InvalidAnnotationForOperationException {
+    private AnnotatedOperation parseOperation(final Node wsdlOperation, final String targetNamespace,
+            final XPath xpathBuilder, final String suRootPath, final List<BpmnModel> bpmnModels)
+            throws InvalidAnnotationForOperationException {
         
         final QName wsdlOperationName = new QName(targetNamespace, ((Element) wsdlOperation).getAttribute("name"));
 
@@ -273,14 +275,14 @@ public class AnnotatedWsdlParser {
 
         // Get the node "bpmn:processId" and its message
         final XPathExpression bpmnProcessInstanceId = this.getProcessInstanceIdXpathExpr(wsdlOperation,
-                wsdlOperationName, xpathFactory);
+                wsdlOperationName, xpathBuilder);
 
         // Get the node "bpmn:userId"
-        final XPathExpression bpmnUserId = this.getUserIdXpathExpr(wsdlOperation, wsdlOperationName, xpathFactory);
+        final XPathExpression bpmnUserId = this.getUserIdXpathExpr(wsdlOperation, wsdlOperationName, xpathBuilder);
 
         // Get the list of nodes "bpmn:variable"
         final Map<String, XPathExpression> bpmnOperationVariables = getVariableXpathExpr(wsdlOperation,
-                wsdlOperationName, xpathFactory);
+                wsdlOperationName, xpathBuilder);
 
         // Get the output "bpmn:output"
         final Templates bpmnOutputTemplate = this.getOutputTemplate(wsdlOperation, wsdlOperationName, suRootPath);
@@ -316,13 +318,13 @@ public class AnnotatedWsdlParser {
      *            The node of the binding operation to parse
      * @param wsdlOperationName
      *            The name of the binding operation
-     * @param xpathFactory
-     *            The XPath factory
+     * @param xpathBuilder
+     *            The XPath expression builder
      * @return The XPath expression to select the process instance identifier
      * @throws InvalidAnnotationForOperationException
      */
     private XPathExpression getProcessInstanceIdXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
-            final XPathFactory xpathFactory) throws InvalidAnnotationForOperationException {
+            final XPath xpathBuilder) throws InvalidAnnotationForOperationException {
 
         final Node processInstanceId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
                 BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
@@ -332,9 +334,8 @@ public class AnnotatedWsdlParser {
             if (xpathExpr.trim().isEmpty()) {
                 throw new NoProcessInstanceIdMappingException(wsdlOperationName);
             } else {
-                final XPath xpath = xpathFactory.newXPath();
                 try {
-                    bpmnProcessInstanceId = xpath.compile(xpathExpr);
+                    bpmnProcessInstanceId = xpathBuilder.compile(xpathExpr);
                 } catch (final XPathExpressionException e) {
                     throw new ProcessInstanceIdMappingExpressionException(wsdlOperationName, e);
                 }
@@ -353,13 +354,13 @@ public class AnnotatedWsdlParser {
      *            The node of the binding operation to parse
      * @param wsdlOperationName
      *            The name of the binding operation
-     * @param xpathFactory
-     *            The XPath factory
+     * @param xpathBuilder
+     *            The XPath expression builder
      * @return The XPath expression to select the user identifier
      * @throws InvalidAnnotationForOperationException
      */
     private XPathExpression getUserIdXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
-            final XPathFactory xpathFactory) throws InvalidAnnotationForOperationException {
+            final XPath xpathBuilder) throws InvalidAnnotationForOperationException {
 
         final Node userId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
                 BPMN_ANNOTATION_USER_ID_HOLDER).item(0);
@@ -369,9 +370,8 @@ public class AnnotatedWsdlParser {
             if (xpathExpr.trim().isEmpty()) {
                 throw new NoUserIdMappingException(wsdlOperationName);
             } else {
-                final XPath xpath = xpathFactory.newXPath();
                 try {
-                    bpmnUserId = xpath.compile(xpathExpr);
+                    bpmnUserId = xpathBuilder.compile(xpathExpr);
                 } catch (final XPathExpressionException e) {
                     throw new UserIdMappingExpressionException(wsdlOperationName, e);
                 }
@@ -390,19 +390,17 @@ public class AnnotatedWsdlParser {
      *            The node of the binding operation to parse
      * @param wsdlOperationName
      *            The name of the binding operation
-     * @param xpathFactory
-     *            The XPath factory
+     * @param xpathBuilder
+     *            The XPath expression builder
      * @return The output XSLT style-sheet compiled
      * @throws InvalidAnnotationForOperationException
      */
-    private Map<String, XPathExpression> getVariableXpathExpr(final Node wsdlOperation,
- final QName wsdlOperationName,
-            final XPathFactory xpathFactory)
-            throws InvalidAnnotationForOperationException {
+    private Map<String, XPathExpression> getVariableXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
+            final XPath xpathBuilder) throws InvalidAnnotationForOperationException {
 
         final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
                 BPMN_ANNOTATION_VARIABLE);
-        final Map<String, XPathExpression> bpmnOperationVariables = new HashMap<String, XPathExpression>();
+        final Map<String, XPathExpression> bpmnOperationVariables = new HashMap<>();
         for (int k = 0; k < bpmnVariableList.getLength(); k++) {
             final Node bpmnVariable = bpmnVariableList.item(k);
             // test name declaration of variable
@@ -420,9 +418,8 @@ public class AnnotatedWsdlParser {
             if (xpathExpr.trim().isEmpty()) {
                 throw new NoVariableMappingException(wsdlOperationName, bpmnVariableName);
             } else {
-                final XPath xpath = xpathFactory.newXPath();
                 try {
-                    bpmnVariableXPath = xpath.compile(xpathExpr);
+                    bpmnVariableXPath = xpathBuilder.compile(xpathExpr);
                 } catch (final XPathExpressionException e) {
                     throw new VariableMappingExpressionException(wsdlOperationName, bpmnVariableName, e);
                 }
