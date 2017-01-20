@@ -115,7 +115,6 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-jbi-descriptor</artifactId>
-         <version>2.3.3</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -128,19 +127,15 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-message-exchange</artifactId>
-         <version>1.2.5</version>
+         <version>1.2.6-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-probes-api</artifactId>
-         <!-- TODO: Move version definition in CDK based parent POM -->
-         <version>1.2.0</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-clientserver-api</artifactId>
-         <!-- TODO: Move version definition in CDK based parent POM -->
-         <version>1.1.0</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
