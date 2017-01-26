@@ -24,25 +24,29 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_IDE
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.logging.Logger;
 
 import javax.management.InvalidAttributeValueException;
+import javax.management.MalformedObjectNameException;
 import javax.xml.parsers.DocumentBuilder;
 
 import org.h2.Driver;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
 import org.ow2.petals.activitibpmn.identity.IdentityService;
 import org.ow2.petals.activitibpmn.identity.IdentityServiceMock;
 import org.ow2.petals.component.framework.JBIBootstrap;
 import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Component;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
+import org.ow2.petals.component.framework.junit.mbean.EmbeddedJmxClient;
+import org.ow2.petals.component.framework.junit.mbean.EmbeddedJmxServerConnector;
 import org.ow2.petals.jbi.descriptor.JBIDescriptorException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -60,13 +64,23 @@ public class ActivitiSEBootstrapTest {
     @Rule
     public final TemporaryFolder tempFolder = new TemporaryFolder();
 
+    public final EmbeddedJmxServerConnector embeddedJmxSrvCon = new EmbeddedJmxServerConnector();
+
+    public final EmbeddedJmxClient jmxClient = new EmbeddedJmxClient(this.embeddedJmxSrvCon);
+
+    public ActivitiSEBootstrapTest() throws MalformedObjectNameException {
+        // Constructor requires to declare the exception thrown by 'jmxClient'
+    }
+
+    @Rule
+    public TestRule jmxTestRuleChain = RuleChain.outerRule(this.embeddedJmxSrvCon).around(this.jmxClient);
+
     /**
      * Check that the component embeds the right hard-coded default configuration (values of the component JBI
      * descriptor are set to null or empty)
      */
     @Test
-    public void defaultConfiguration_definedInComponentSourceCode()
-            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_definedInComponentSourceCode() throws Exception {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -91,6 +105,18 @@ public class ActivitiSEBootstrapTest {
         final Element eltDatabaseSchemaUpdate = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
         params.add(eltDatabaseSchemaUpdate);
+        final Element eltDatabaseType = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.DATABASE_TYPE);
+        params.add(eltDatabaseType);
+        final Element eltJdbcUrl = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_URL);
+        params.add(eltJdbcUrl);
+        final Element eltJdbcUsername = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_USERNAME);
+        params.add(eltJdbcUsername);
+        final Element eltJdbcPassword = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_PASSWORD);
+        params.add(eltJdbcPassword);
 
         final Element eltEnableEngineJobExecutor = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
@@ -137,7 +163,10 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE);
         params.add(eltEngineIdentityServiceCfgFile);
 
-        this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
+        this.embeddedJmxSrvCon
+                .registerConfigurationInstallerMBean(this.createActivitSEBootstrap(jbiComponentConfiguration));
+
+        this.assertDefaultConfigurationValues("", "", "", "");
     }
 
     /**
@@ -145,8 +174,7 @@ public class ActivitiSEBootstrapTest {
      * the component JBI descriptor are set to 'space'.
      */
     @Test
-    public void defaultConfiguration_ValuesSetToSpace()
-            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_ValuesSetToSpace() throws Exception {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -172,10 +200,26 @@ public class ActivitiSEBootstrapTest {
                 ActivitiSEConstants.DBServer.JDBC_MAX_WAIT_TIME);
         eltJdbcMaxWaitTime.setTextContent(" ");
         params.add(eltJdbcMaxWaitTime);
+        final Element eltDatabaseType = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.DATABASE_TYPE);
+        eltDatabaseType.setTextContent(" ");
+        params.add(eltDatabaseType);
         final Element eltDatabaseSchemaUpdate = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.DBServer.DATABASE_SCHEMA_UPDATE);
         eltDatabaseSchemaUpdate.setTextContent(" ");
         params.add(eltDatabaseSchemaUpdate);
+        final Element eltJdbcUrl = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_URL);
+        eltJdbcUrl.setTextContent(" ");
+        params.add(eltJdbcUrl);
+        final Element eltJdbcUsername = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_USERNAME);
+        eltJdbcUsername.setTextContent(" ");
+        params.add(eltJdbcUsername);
+        final Element eltJdbcPassword = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_PASSWORD);
+        eltJdbcPassword.setTextContent(" ");
+        params.add(eltJdbcPassword);
 
         final Element eltEnableEngineJobExecutor = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
@@ -236,7 +280,10 @@ public class ActivitiSEBootstrapTest {
         eltEngineIdentityServiceCfgFile.setTextContent(" ");
         params.add(eltEngineIdentityServiceCfgFile);
 
-        this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
+        this.embeddedJmxSrvCon
+                .registerConfigurationInstallerMBean(this.createActivitSEBootstrap(jbiComponentConfiguration));
+
+        this.assertDefaultConfigurationValues(" ", " ", " ", " ");
     }
 
     /**
@@ -244,8 +291,7 @@ public class ActivitiSEBootstrapTest {
      * the component JBI descriptor are set to invalid values.
      */
     @Test
-    public void defaultConfiguration_InvalidValues()
-            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_InvalidValues() throws Exception {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -335,7 +381,10 @@ public class ActivitiSEBootstrapTest {
         eltEngineIdentityServiceCfgFile.setTextContent("invalid-value");
         params.add(eltEngineIdentityServiceCfgFile);
 
-        this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
+        this.embeddedJmxSrvCon
+                .registerConfigurationInstallerMBean(this.createActivitSEBootstrap(jbiComponentConfiguration));
+
+        this.assertDefaultConfigurationValues(null, null, null, null);
     }
 
     /**
@@ -343,8 +392,7 @@ public class ActivitiSEBootstrapTest {
      * values into the component JBI descriptor.
      */
     @Test
-    public void defaultConfiguration_ValidValues()
-            throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_ValidValues() throws Exception {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -385,37 +433,68 @@ public class ActivitiSEBootstrapTest {
         eltDatabaseSchemaUpdate.setTextContent(databaseSchemaUpdate);
         params.add(eltDatabaseSchemaUpdate);
 
+        final Element eltDatabaseType = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.DATABASE_TYPE);
+        final String databaseType = "postgres";
+        eltDatabaseType.setTextContent(databaseType);
+        params.add(eltDatabaseType);
+
+        final Element eltJdbcUrl = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_URL);
+        final String jdbcUrl = this.tempFolder.newFile(ActivitiSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME)
+                .getAbsolutePath();
+        eltJdbcUrl.setTextContent(jdbcUrl);
+        params.add(eltJdbcUrl);
+
+        final Element eltJdbcUsername = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_USERNAME);
+        final String jdbcUsername = "sa";
+        eltJdbcUsername.setTextContent(jdbcUsername);
+        params.add(eltJdbcUsername);
+
+        final Element eltJdbcPassword = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
+                ActivitiSEConstants.DBServer.JDBC_PASSWORD);
+        final String jdbcPassword = "sa.password";
+        eltJdbcPassword.setTextContent(jdbcPassword);
+        params.add(eltJdbcPassword);
+
         final Element eltEnableEngineJobExecutor = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR);
         final String engineEnableJobExecutor = Boolean.FALSE.toString();
         eltEnableEngineJobExecutor.setTextContent(engineEnableJobExecutor);
         params.add(eltEnableEngineJobExecutor);
+
         final Element eltEngineJobExecutorCorePoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
         final int jobExecutorCorePoolSize = 10;
         eltEngineJobExecutorCorePoolSize.setTextContent(String.valueOf(jobExecutorCorePoolSize));
         params.add(eltEngineJobExecutorCorePoolSize);
+
         final Element eltEngineJobExecutorMaxPoolSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
         final int jobExecutorMaxPoolSize = 100;
         eltEngineJobExecutorMaxPoolSize.setTextContent(String.valueOf(jobExecutorMaxPoolSize));
         params.add(eltEngineJobExecutorMaxPoolSize);
+
         final Element eltEngineJobExecutorKeepAliveTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
         final int jobExecutorKeepAliveTime = 105000;
         eltEngineJobExecutorKeepAliveTime.setTextContent(String.valueOf(jobExecutorKeepAliveTime));
         params.add(eltEngineJobExecutorKeepAliveTime);
+
         final Element eltEngineJobExecutorQueueSize = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE);
         final int jobExecutorQueueSize = 1050;
         eltEngineJobExecutorQueueSize.setTextContent(String.valueOf(jobExecutorQueueSize));
         params.add(eltEngineJobExecutorQueueSize);
+
         final Element eltEngineJobExecutorMaxTimerJobsPerAcquisition = doc.createElementNS(
                 ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
         final int jobExecutorMaxTimerJobsPerAcquisition = 50;
         eltEngineJobExecutorMaxTimerJobsPerAcquisition
                 .setTextContent(String.valueOf(jobExecutorMaxTimerJobsPerAcquisition));
         params.add(eltEngineJobExecutorMaxTimerJobsPerAcquisition);
+
         final Element eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition = doc.createElementNS(
                 ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
@@ -423,22 +502,26 @@ public class ActivitiSEBootstrapTest {
         eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition
                 .setTextContent(String.valueOf(jobExecutorMaxAsyncJobsDuePerAcquisition));
         params.add(eltEngineJobExecutorMaxAsyncJobsDuePerAcquisition);
+
         final Element eltEngineJobExecutorAsyncJobDueAcquireWaitTime = doc.createElementNS(
                 ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME);
         final int jobExecutorAsyncJobDueAcquireWaitTime = 50000;
         eltEngineJobExecutorAsyncJobDueAcquireWaitTime
                 .setTextContent(String.valueOf(jobExecutorAsyncJobDueAcquireWaitTime));
         params.add(eltEngineJobExecutorAsyncJobDueAcquireWaitTime);
+
         final Element eltEngineJobExecutorTimerJobAcquireWaitTime = doc.createElementNS(
                 ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
         final int jobExecutorTimerJobAcquireWaitTime = 50000;
         eltEngineJobExecutorTimerJobAcquireWaitTime.setTextContent(String.valueOf(jobExecutorTimerJobAcquireWaitTime));
         params.add(eltEngineJobExecutorTimerJobAcquireWaitTime);
+
         final Element eltEngineJobExecutorTimerLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
         final int jobExecutorTimerLockTime = 50000;
         eltEngineJobExecutorTimerLockTime.setTextContent(String.valueOf(jobExecutorTimerLockTime));
         params.add(eltEngineJobExecutorTimerLockTime);
+
         final Element eltEngineJobExecutorAsyncJobLockTime = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
         final int jobExecutorAsyncJobLockTime = 50000;
@@ -450,39 +533,68 @@ public class ActivitiSEBootstrapTest {
         final String engineEnableBpmnValidation = Boolean.FALSE.toString();
         eltEnableEngineBpmnValidation.setTextContent(engineEnableBpmnValidation);
         params.add(eltEnableEngineBpmnValidation);
+
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME);
         final String engineIdentityServiceClassName = IdentityServiceMock.class.getName();
         eltEngineIdentityServiceClassName.setTextContent(engineIdentityServiceClassName);
         params.add(eltEngineIdentityServiceClassName);
+
         final Element eltEngineIdentityServiceCfgFile = doc.createElementNS(ActivitiSEConstants.NAMESPACE_COMP,
                 ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE);
         final String engineIdentityServiceCfgFile = "my.identity.service.cfg.file";
         eltEngineIdentityServiceCfgFile.setTextContent(engineIdentityServiceCfgFile);
         params.add(eltEngineIdentityServiceCfgFile);
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        this.embeddedJmxSrvCon
+                .registerConfigurationInstallerMBean(this.createActivitSEBootstrap(jbiComponentConfiguration));
 
-        assertEquals(jdbcMaxActiveConnections, bootstrap.getJdbcMaxActiveConnections());
-        assertEquals(jdbcMaxIdleConnections, bootstrap.getJdbcMaxIdleConnections());
-        assertEquals(jdbcMaxCheckoutTime, bootstrap.getJdbcMaxCheckoutTime());
-        assertEquals(jdbcMaxWaitTime, bootstrap.getJdbcMaxWaitTime());
-        assertEquals(databaseSchemaUpdate, bootstrap.getDatabaseSchemaUpdate());
-        assertEquals(engineEnableJobExecutor, bootstrap.getEngineEnableJobExecutor());
-        assertEquals(jobExecutorCorePoolSize, bootstrap.getEngineJobExecutorCorePoolSize());
-        assertEquals(jobExecutorMaxPoolSize, bootstrap.getEngineJobExecutorMaxPoolSize());
-        assertEquals(jobExecutorKeepAliveTime, bootstrap.getEngineJobExecutorKeepAliveTime());
-        assertEquals(jobExecutorQueueSize, bootstrap.getEngineJobExecutorQueueSize());
-        assertEquals(jobExecutorMaxTimerJobsPerAcquisition, bootstrap.getEngineJobExecutorMaxTimerJobsPerAcquisition());
-        assertEquals(jobExecutorMaxAsyncJobsDuePerAcquisition,
-                bootstrap.getEngineJobExecutorMaxAsyncJobsDuePerAcquisition());
-        assertEquals(jobExecutorAsyncJobDueAcquireWaitTime, bootstrap.getEngineJobExecutorAsyncJobDueAcquireWaitTime());
-        assertEquals(jobExecutorTimerJobAcquireWaitTime, bootstrap.getEngineJobExecutorTimerJobAcquireWaitTime());
-        assertEquals(jobExecutorTimerLockTime, bootstrap.getEngineJobExecutorTimerLockTime());
-        assertEquals(jobExecutorAsyncJobLockTime, bootstrap.getEngineJobExecutorAsyncJobLockTime());
-        assertEquals(engineEnableBpmnValidation, bootstrap.getEngineEnableBpmnValidation());
-        assertEquals(engineIdentityServiceClassName, bootstrap.getEngineIdentityServiceClassName());
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE, bootstrap.getEngineIdentityServiceCfgFile());
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER));
+        assertEquals(jdbcUrl, this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL));
+        assertEquals(jdbcUsername,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_USERNAME));
+        assertEquals(jdbcPassword,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_PASSWORD));
+        assertEquals(jdbcMaxActiveConnections,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_ACTIVE_CONNECTIONS));
+        assertEquals(jdbcMaxIdleConnections,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_IDLE_CONNECTIONS));
+        assertEquals(jdbcMaxCheckoutTime,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_CHECKOUT_TIME));
+        assertEquals(jdbcMaxWaitTime,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_WAIT_TIME));
+        assertEquals(databaseType,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_DATABASE_TYPE));
+        assertEquals(databaseSchemaUpdate,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_DATABASE_SCHEMA_UPDATE));
+        assertEquals(engineEnableBpmnValidation, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION));
+        assertEquals(engineIdentityServiceClassName, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
+        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
+        assertEquals(engineEnableJobExecutor,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR));
+        assertEquals(jobExecutorCorePoolSize, this.jmxClient
+                .getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_COREPOOLSIZE));
+        assertEquals(jobExecutorMaxPoolSize, this.jmxClient
+                .getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE));
+        assertEquals(jobExecutorKeepAliveTime, this.jmxClient
+                .getBootstrapAttributeAsLong(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME));
+        assertEquals(jobExecutorQueueSize,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE));
+
+        // TODO: What to do with this config parameter not available at Mbean level ?
+        // assertEquals(jobExecutorMaxTimerJobsPerAcquisition,
+        // bootstrap.getEngineJobExecutorMaxTimerJobsPerAcquisition());
+        // assertEquals(jobExecutorMaxAsyncJobsDuePerAcquisition,
+        // bootstrap.getEngineJobExecutorMaxAsyncJobsDuePerAcquisition());
+        // assertEquals(jobExecutorAsyncJobDueAcquireWaitTime,
+        // bootstrap.getEngineJobExecutorAsyncJobDueAcquireWaitTime());
+        // assertEquals(jobExecutorTimerJobAcquireWaitTime, bootstrap.getEngineJobExecutorTimerJobAcquireWaitTime());
+        // assertEquals(jobExecutorTimerLockTime, bootstrap.getEngineJobExecutorTimerLockTime());
+        // assertEquals(jobExecutorAsyncJobLockTime, bootstrap.getEngineJobExecutorAsyncJobLockTime());
     }
 
     /**
@@ -490,20 +602,15 @@ public class ActivitiSEBootstrapTest {
      * default value in jbi.xml)
      */
     @Test
-    public void defaultConfiguration_definedInJbiDescriptor() throws JBIDescriptorException, SecurityException,
-            NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void defaultConfiguration_definedInJbiDescriptor() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        this.assertDefaultValue(this.createActivitSEBootstrap(jbiComponentConfiguration));
+        this.assertDefaultConfigurationValues("", "sa", "", "");
     }
 
     /**
-     * Create a boostrap of the component
+     * Create a bootstrap of the component
      * 
      * @param jbiComponentConfiguration
      *            The JBI descriptor to use
@@ -523,58 +630,13 @@ public class ActivitiSEBootstrapTest {
         return bootstrap;
     }
 
-    private void assertDefaultValue(final ActivitiSEBootstrap bootstrap) {
-
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS,
-                bootstrap.getJdbcMaxActiveConnections());
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS,
-                bootstrap.getJdbcMaxIdleConnections());
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME, bootstrap.getJdbcMaxCheckoutTime());
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME, bootstrap.getJdbcMaxWaitTime());
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE, bootstrap.getDatabaseSchemaUpdate());
-        assertEquals(Boolean.toString(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR),
-                bootstrap.getEngineEnableJobExecutor());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
-                bootstrap.getEngineJobExecutorCorePoolSize());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
-                bootstrap.getEngineJobExecutorMaxPoolSize());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME,
-                bootstrap.getEngineJobExecutorKeepAliveTime());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE,
-                bootstrap.getEngineJobExecutorQueueSize());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION,
-                bootstrap.getEngineJobExecutorMaxTimerJobsPerAcquisition());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION,
-                bootstrap.getEngineJobExecutorMaxAsyncJobsDuePerAcquisition());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME,
-                bootstrap.getEngineJobExecutorAsyncJobDueAcquireWaitTime());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
-                bootstrap.getEngineJobExecutorTimerJobAcquireWaitTime());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME,
-                bootstrap.getEngineJobExecutorTimerLockTime());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME,
-                bootstrap.getEngineJobExecutorAsyncJobLockTime());
-        assertEquals(Boolean.toString(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION),
-                bootstrap.getEngineEnableBpmnValidation());
-        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
-                bootstrap.getEngineIdentityServiceClassName());
-    }
-
     /**
-     * Check to set an invalid URL as JDBC URL
+     * Create a bootstrap of the component from the JBI descriptor of the component
+     * 
+     * @return
      */
-    @Test(expected = InvalidAttributeValueException.class)
-    public void setJdbcUrl_InvalidURL() throws InvalidAttributeValueException {
-        final ActivitiSEBootstrap bootstrap = new ActivitiSEBootstrap();
-        bootstrap.setJdbcUrl("// invalid-url/foo:http+ftp");
-    }
-
-    /**
-     * Check to set a valid URL as JDBC URL
-     */
-    @Test
-    public void setJdbcUrl_ValidURL() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
+    private ActivitiSEBootstrap createActivitSEBootstrap() throws IllegalArgumentException, IllegalAccessException,
+            SecurityException, NoSuchFieldException, JBIDescriptorException {
 
         final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("jbi/jbi.xml");
@@ -582,17 +644,85 @@ public class ActivitiSEBootstrapTest {
         final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
                 .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        return this.createActivitSEBootstrap(jbiComponentConfiguration);
+    }
+
+    private void assertDefaultConfigurationValues() throws Exception {
+        this.assertDefaultConfigurationValues(null, "sa", "", "");
+
+    }
+
+    private void assertDefaultConfigurationValues(final String expectedJdbcUrl, final String expectedJdbcUsername,
+            final String expectedJdbcPassword, final String expectedDatabaseType) throws Exception {
+
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER));
+        assertEquals(expectedJdbcUrl,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL));
+        assertEquals(expectedJdbcUsername,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_USERNAME));
+        assertEquals(expectedJdbcPassword,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_PASSWORD));
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_ACTIVE_CONNECTIONS));
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_IDLE_CONNECTIONS));
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_CHECKOUT_TIME));
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_MAX_WAIT_TIME,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_JDBC_MAX_WAIT_TIME));
+        assertEquals(expectedDatabaseType,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_DATABASE_TYPE));
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_DATABASE_SCHEMA_UPDATE));
+        assertEquals(String.valueOf(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION), this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION));
+        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
+        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
+        assertEquals(String.valueOf(ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR),
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR));
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE, this.jmxClient
+                .getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_COREPOOLSIZE));
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE, this.jmxClient
+                .getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE));
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME, this.jmxClient
+                .getBootstrapAttributeAsLong(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME));
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE,
+                this.jmxClient.getBootstrapAttributeAsInt(ActivitiSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE));
+    }
+
+    /**
+     * Check to set an invalid URL as JDBC URL
+     */
+    @Test(expected = InvalidAttributeValueException.class)
+    public void setJdbcUrl_InvalidURL() throws Exception {
+
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
+
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL, "// invalid-url/foo:http+ftp");
+    }
+
+    /**
+     * Check to set a valid URL as JDBC URL
+     */
+    @Test
+    public void setJdbcUrl_ValidURL() throws Exception {
+
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
         // A simple URL
         final String expectedSimpleUrl = "http://path";
-        bootstrap.setJdbcUrl(expectedSimpleUrl);
-        assertEquals(expectedSimpleUrl, bootstrap.getJdbcUrl());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL, expectedSimpleUrl);
+        assertEquals(expectedSimpleUrl,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL));
 
         // A JDBC URL that is not an URL
         final String expectedUrlNotUrl = "jdbc:h2:tcp://localhost/mem:activiti";
-        bootstrap.setJdbcUrl(expectedUrlNotUrl);
-        assertEquals(expectedUrlNotUrl, bootstrap.getJdbcUrl());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL, expectedUrlNotUrl);
+        assertEquals(expectedUrlNotUrl,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL));
 
     }
 
@@ -600,53 +730,43 @@ public class ActivitiSEBootstrapTest {
      * Check to set the value 'space' as JDBC URL
      */
     @Test
-    public void setJdbcUrl_SpaceURL() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
+    public void setJdbcUrl_SpaceURL() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL, null);
+        assertEquals("", this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL));
 
-        bootstrap.setJdbcUrl(null);
-        assertEquals("", bootstrap.getJdbcUrl());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL, "");
+        assertEquals("", this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL));
 
-        bootstrap.setJdbcUrl("");
-        assertEquals("", bootstrap.getJdbcUrl());
-
-        bootstrap.setJdbcUrl(" ");
-        assertEquals("", bootstrap.getJdbcUrl());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL, " ");
+        assertEquals("", this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_URL));
     }
 
     /**
      * Check to set an unknown class as JDBC driver
      */
     @Test(expected = InvalidAttributeValueException.class)
-    public void setJdbcDriver_Unknown() throws InvalidAttributeValueException {
-        final ActivitiSEBootstrap bootstrap = new ActivitiSEBootstrap();
-        bootstrap.setJdbcDriver("unknown.class");
+    public void setJdbcDriver_Unknown() throws Exception {
+
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
+
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER, "unknown.class");
     }
 
     /**
      * Check to set a known class as JDBC Driver
      */
     @Test
-    public void setJdbcDriver_ValidDriver() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
+    public void setJdbcDriver_ValidDriver() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
         final String expectedDriver = Driver.class.getName();
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
-        bootstrap.setJdbcDriver(expectedDriver);
-        assertEquals(expectedDriver, bootstrap.getJdbcDriver());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER, expectedDriver);
+        assertEquals(expectedDriver,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER));
     }
 
     /**
@@ -662,25 +782,21 @@ public class ActivitiSEBootstrapTest {
      * </p>
      */
     @Test
-    public void setJdbcDriver_SpaceValue() throws InvalidAttributeValueException, IllegalArgumentException,
-            SecurityException, IllegalAccessException, NoSuchFieldException, JBIDescriptorException {
+    public void setJdbcDriver_SpaceValue() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER, null);
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER));
 
-        bootstrap.setJdbcDriver(null);
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER, bootstrap.getJdbcDriver());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER, "");
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER));
 
-        bootstrap.setJdbcDriver("");
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER, bootstrap.getJdbcDriver());
-
-        bootstrap.setJdbcDriver(" ");
-        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER, bootstrap.getJdbcDriver());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER, " ");
+        assertEquals(ActivitiSEConstants.DBServer.DEFAULT_JDBC_DRIVER,
+                this.jmxClient.getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_JDBC_DRIVER));
     }
 
     /**
@@ -696,111 +812,81 @@ public class ActivitiSEBootstrapTest {
      * </p>
      */
     @Test
-    public void setEngineIdentityServiceClassName_SpaceValue() throws JBIDescriptorException, IllegalArgumentException,
-            IllegalAccessException, SecurityException, NoSuchFieldException, InvalidAttributeValueException {
+    public void setEngineIdentityServiceClassName_SpaceValue() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME, null);
+        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
 
-        bootstrap.setEngineIdentityServiceClassName(null);
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, bootstrap.getEngineIdentityServiceClassName());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME, "");
+        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
 
-        bootstrap.setEngineIdentityServiceClassName("");
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, bootstrap.getEngineIdentityServiceClassName());
-
-        bootstrap.setEngineIdentityServiceClassName(" ");
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, bootstrap.getEngineIdentityServiceClassName());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME, " ");
+        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
     }
 
     /**
      * Check to set a not loadable class as identity service class name
      */
     @Test(expected = InvalidAttributeValueException.class)
-    public void setEngineIdentityServiceCfgFile_ClassNotLoadable()
-            throws JBIDescriptorException, IllegalArgumentException, IllegalAccessException, SecurityException,
-            NoSuchFieldException, InvalidAttributeValueException, IOException {
+    public void setEngineIdentityServiceCfgFile_ClassNotLoadable() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
-
-        bootstrap.setEngineIdentityServiceClassName("not-loadable-class");
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
+                "not-loadable-class");
     }
 
     /**
      * Check to set a class not implementing {@link IdentityService} as identity service class name
      */
     @Test(expected = InvalidAttributeValueException.class)
-    public void setEngineIdentityServiceCfgFile_ClassNotImplementingIdentityService()
-            throws JBIDescriptorException, IllegalArgumentException, IllegalAccessException, SecurityException,
-            NoSuchFieldException, InvalidAttributeValueException, IOException {
+    public void setEngineIdentityServiceCfgFile_ClassNotImplementingIdentityService() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
-
-        bootstrap.setEngineIdentityServiceClassName(String.class.getName());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
+                String.class.getName());
     }
 
     /**
      * Check to set the value 'space' or <code>null</code> as identity service configuration file
      */
     @Test
-    public void setEngineIdentityServiceCfgFile_SpaceValue() throws JBIDescriptorException, IllegalArgumentException,
-            IllegalAccessException, SecurityException, NoSuchFieldException, InvalidAttributeValueException {
+    public void setEngineIdentityServiceCfgFile_SpaceValue() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE, null);
+        assertEquals(null, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
 
-        bootstrap.setEngineIdentityServiceCfgFile(null);
-        assertEquals(null, bootstrap.getEngineIdentityServiceCfgFile());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE, "");
+        assertEquals(null, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
 
-        bootstrap.setEngineIdentityServiceCfgFile("");
-        assertEquals(null, bootstrap.getEngineIdentityServiceCfgFile());
-
-        bootstrap.setEngineIdentityServiceCfgFile(" ");
-        assertEquals(null, bootstrap.getEngineIdentityServiceCfgFile());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE, " ");
+        assertEquals(null, this.jmxClient
+                .getBootstrapAttributeAsString(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
     }
 
     /**
      * Check to set an inexisting absolute file as identity service configuration file
      */
     @Test(expected = InvalidAttributeValueException.class)
-    public void setEngineIdentityServiceCfgFile_InexistingFile()
-            throws JBIDescriptorException, IllegalArgumentException, IllegalAccessException, SecurityException,
-            NoSuchFieldException, InvalidAttributeValueException, IOException {
+    public void setEngineIdentityServiceCfgFile_InexistingFile() throws Exception {
 
-        final InputStream defaultJbiDescriptorStream = Thread.currentThread().getContextClassLoader()
-                .getResourceAsStream("jbi/jbi.xml");
-        assertNotNull("The component JBI descriptor is missing", defaultJbiDescriptorStream);
-        final Jbi jbiComponentConfiguration = CDKJBIDescriptorBuilder.getInstance()
-                .buildJavaJBIDescriptor(defaultJbiDescriptorStream);
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.createActivitSEBootstrap());
 
-        final ActivitiSEBootstrap bootstrap = this.createActivitSEBootstrap(jbiComponentConfiguration);
-
-        // Set an inexisting absolute file
-        final File absFile = tempFolder.newFile();
+        // Set an unexisting absolute file
+        final File absFile = this.tempFolder.newFile();
         assertTrue(absFile.delete()); // We must remove the file previously created
 
-        bootstrap.setEngineIdentityServiceCfgFile(absFile.getAbsolutePath());
+        this.jmxClient.setBootstrapAttribute(ActivitiSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE,
+                absFile.getAbsolutePath());
     }
-
 }

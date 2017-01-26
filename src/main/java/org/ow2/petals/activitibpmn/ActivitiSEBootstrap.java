@@ -78,42 +78,42 @@ import org.ow2.petals.component.framework.DefaultBootstrap;
  */
 public class ActivitiSEBootstrap extends DefaultBootstrap {
 
-    private static final String ATTR_NAME_JDBC_DRIVER = "jdbcDriver";
+    public static final String ATTR_NAME_JDBC_DRIVER = "jdbcDriver";
 
-    private static final String ATTR_NAME_JDBC_URL = "jdbcUrl";
+    public static final String ATTR_NAME_JDBC_URL = "jdbcUrl";
 
-    private static final String ATTR_NAME_JDBC_USERNAME = "jdbcUsername";
+    public static final String ATTR_NAME_JDBC_USERNAME = "jdbcUsername";
 
-    private static final String ATTR_NAME_JDBC_PASSWORD = "jdbcPassword";
+    public static final String ATTR_NAME_JDBC_PASSWORD = "jdbcPassword";
 
-    private static final String ATTR_NAME_JDBC_MAX_ACTIVE_CONNECTIONS = "jdbcMaxActiveConnections";
+    public static final String ATTR_NAME_JDBC_MAX_ACTIVE_CONNECTIONS = "jdbcMaxActiveConnections";
 
-    private static final String ATTR_NAME_JDBC_MAX_IDLE_CONNECTIONS = "jdbcMaxIdleConnections";
+    public static final String ATTR_NAME_JDBC_MAX_IDLE_CONNECTIONS = "jdbcMaxIdleConnections";
 
-    private static final String ATTR_NAME_JDBC_MAX_CHECKOUT_TIME = "jdbcMaxCheckoutTime";
+    public static final String ATTR_NAME_JDBC_MAX_CHECKOUT_TIME = "jdbcMaxCheckoutTime";
 
-    private static final String ATTR_NAME_JDBC_MAX_WAIT_TIME = "jdbcMaxWaitTime";
+    public static final String ATTR_NAME_JDBC_MAX_WAIT_TIME = "jdbcMaxWaitTime";
 
-    private static final String ATTR_NAME_DATABASE_TYPE = "databaseType";
+    public static final String ATTR_NAME_DATABASE_TYPE = "databaseType";
 
-    private static final String ATTR_NAME_DATABASE_SCHEMA_UPDATE = "databaseSchemaUpdate";
+    public static final String ATTR_NAME_DATABASE_SCHEMA_UPDATE = "databaseSchemaUpdate";
 
-    private static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
+    public static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
 
-    private static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME = "engineIdentityServiceClassName";
+    public static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME = "engineIdentityServiceClassName";
 
-    private static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE = "engineIdentityServiceCfgFile";
+    public static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE = "engineIdentityServiceCfgFile";
 
     // Parameters of the Activiti job executor
-    private static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
+    public static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
 
-    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_COREPOOLSIZE = "engineJobExecutorCorePoolSize";
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_COREPOOLSIZE = "engineJobExecutorCorePoolSize";
 
-    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE = "engineJobExecutorMaxPoolSize";
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE = "engineJobExecutorMaxPoolSize";
 
-    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME = "engineJobExecutorKeepAliveTime";
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME = "engineJobExecutorKeepAliveTime";
 
-    private static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE = "engineJobExecutorQueueSize";
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE = "engineJobExecutorQueueSize";
 
     @Override
     public Collection<String> getMBeanAttributesNames() {
@@ -141,6 +141,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE);
 
             return attributes;
         } finally {
