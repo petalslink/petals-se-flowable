@@ -60,8 +60,6 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_URL;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.JDBC_USERNAME;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.Collection;
@@ -217,13 +215,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 
         if (value != null && !value.trim().isEmpty()) {
             // Check that the given value is an URI: A JDBC is an URI, not an URL
-            try {
-                new URI(value);
-            } catch (final URISyntaxException e) {
-                throw new InvalidAttributeValueException("Invalid value (" + value + ") for attribute '"
-                        + ATTR_NAME_JDBC_URL + "': The value must be a JDBC URL.");
-            }
-            this.setParam(JDBC_URL, value);
+            this.setParamAsURI(JDBC_URL, value);
         } else {
             this.setParam(JDBC_URL, null);
         }
@@ -709,17 +701,7 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             // No identity service configured
             this.setParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME, null);
         } else {
-            try {
-                final Class<?> identityServiceClass = ActivitiSE.class.getClassLoader().loadClass(value.trim());
-                if (!IdentityService.class.isAssignableFrom(identityServiceClass)) {
-                    throw new InvalidAttributeValueException(
-                            "Identity service does not implement " + IdentityService.class.getName() + ".");
-                } else {
-                    this.setParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME, value);
-                }
-            } catch (final ClassNotFoundException e) {
-                throw new InvalidAttributeValueException("Identity service class not found: " + value + ".");
-            }
+            this.setParamAsImplementationClassURI(ENGINE_IDENTITY_SERVICE_CLASS_NAME, value, IdentityService.class);
         }
     }
 
