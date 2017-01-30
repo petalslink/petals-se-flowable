@@ -255,12 +255,12 @@ public final class ActivitiSEConstants {
      * Tag name of the component JBI descriptor about the time, in milliseconds, between asynchronous jobs due queries
      * being executed by the Activiti async job executor.
      */
-    public static final String ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME = "engine-job-executor-async-job-due-acquire-wait-time";
+    public static final String ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME = "engine-job-executor-async-job-acquire-wait-time";
 
     /**
-     * Default value of {@link #ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME}.
+     * Default value of {@link #ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME}.
      */
-    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME = 10000;
+    public static final int DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME = 10000;
 
     /**
      * Tag name of the component JBI descriptor about the time, in milliseconds, between timer jobs queries being

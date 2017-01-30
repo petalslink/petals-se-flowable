@@ -208,7 +208,8 @@ public class ActivitiSE extends AbstractServiceEngine {
      */
     public void logEptOperationToActivitiOperation(final Logger logger, final Level logLevel) {
         if (logger.isLoggable(logLevel)) {
-            for (final Map.Entry<ServiceEndpointOperationKey, ActivitiService> entry : this.activitiServices.entrySet()) {
+            for (final Map.Entry<ServiceEndpointOperationKey, ActivitiService> entry : this.activitiServices
+                    .entrySet()) {
                 final ServiceEndpointOperationKey key = entry.getKey();
                 logger.log(logLevel, "*** Endpoint Operation ");
                 logger.log(logLevel, key.toString());
@@ -234,8 +235,8 @@ public class ActivitiSE extends AbstractServiceEngine {
 
         try {
             // JDBC Driver
-            final String jdbcDriver = ActivitiParameterReader.getJdbcDriver(
-                    this.getComponentExtensions().get(JDBC_DRIVER), this.getLogger());
+            final String jdbcDriver = ActivitiParameterReader
+                    .getJdbcDriver(this.getComponentExtensions().get(JDBC_DRIVER), this.getLogger());
 
             // JDBC URL
             final String jdbcUrlConfigured = this.getComponentExtensions().get(JDBC_URL);
@@ -259,8 +260,8 @@ public class ActivitiSE extends AbstractServiceEngine {
             final String jdbcUsername = this.getComponentExtensions().get(JDBC_USERNAME);
             final String jdbcPassword = this.getComponentExtensions().get(JDBC_PASSWORD);
 
-            final String jdbcMaxActiveConnectionsConfigured = this.getComponentExtensions().get(
-                    JDBC_MAX_ACTIVE_CONNECTIONS);
+            final String jdbcMaxActiveConnectionsConfigured = this.getComponentExtensions()
+                    .get(JDBC_MAX_ACTIVE_CONNECTIONS);
             int jdbcMaxActiveConnections;
             if (jdbcMaxActiveConnectionsConfigured == null || jdbcMaxActiveConnectionsConfigured.trim().isEmpty()) {
                 this.getLogger().info("No JDBC Max Active Connections configured for database. Default value used.");
@@ -285,8 +286,8 @@ public class ActivitiSE extends AbstractServiceEngine {
                 try {
                     jdbcMaxIdleConnections = Integer.parseInt(jdbcMaxIdleConnectionsConfigured);
                 } catch (final NumberFormatException e) {
-                    this.getLogger().warning(
-                            "Invalid value for the number of JDBC Max Idle Connections. Default value used.");
+                    this.getLogger()
+                            .warning("Invalid value for the number of JDBC Max Idle Connections. Default value used.");
                     jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
                 }
             }
@@ -300,8 +301,8 @@ public class ActivitiSE extends AbstractServiceEngine {
                 try {
                     jdbcMaxCheckoutTime = Integer.parseInt(jdbcMaxCheckoutTimeConfigured);
                 } catch (final NumberFormatException e) {
-                    this.getLogger().warning(
-                            "Invalid value for the number of JDBC Max Checkout Time. Default value used.");
+                    this.getLogger()
+                            .warning("Invalid value for the number of JDBC Max Checkout Time. Default value used.");
                     jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
                 }
             }
@@ -337,9 +338,8 @@ public class ActivitiSE extends AbstractServiceEngine {
                     || databaseSchemaUpdateConfigured.trim().equals("create-drop")) {
                 databaseSchemaUpdate = databaseSchemaUpdateConfigured.trim();
             } else {
-                this.getLogger().info(
-                        "Invalid value '" + databaseSchemaUpdateConfigured
-                                + "' configured for the schema update processing. Default value used.");
+                this.getLogger().info("Invalid value '" + databaseSchemaUpdateConfigured
+                        + "' configured for the schema update processing. Default value used.");
                 databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
             }
 
@@ -362,14 +362,15 @@ public class ActivitiSE extends AbstractServiceEngine {
             // - only the value "false", ignoring case and spaces will disable the job executor,
             // - only the value "true", ignoring case and spaces will enable the job executor,
             // - otherwise, the default value is used.
-            final String enableActivitiJobExecutorConfigured = this.getComponentExtensions().get(
-                    ENGINE_ENABLE_JOB_EXECUTOR);
+            final String enableActivitiJobExecutorConfigured = this.getComponentExtensions()
+                    .get(ENGINE_ENABLE_JOB_EXECUTOR);
             if (enableActivitiJobExecutorConfigured == null || enableActivitiJobExecutorConfigured.trim().isEmpty()) {
-                this.getLogger().info(
-                        "The activation of the Activiti job executor is not configured. Default value used.");
+                this.getLogger()
+                        .info("The activation of the Activiti job executor is not configured. Default value used.");
                 this.enableActivitiJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
             } else {
-                this.enableActivitiJobExecutor = enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("false") ? false
+                this.enableActivitiJobExecutor = enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("false")
+                        ? false
                         : (enableActivitiJobExecutorConfigured.trim().equalsIgnoreCase("true") ? true
                                 : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
             }
@@ -378,37 +379,36 @@ public class ActivitiSE extends AbstractServiceEngine {
             // - only the value "false", ignoring case and spaces will disable the BPMN validation,
             // - only the value "true", ignoring case and spaces will enable the BPMN validation,
             // - otherwise, the default value is used.
-            final String enableActivitiBpmnValidationConfigured = this.getComponentExtensions().get(
-                    ENGINE_ENABLE_BPMN_VALIDATION);
+            final String enableActivitiBpmnValidationConfigured = this.getComponentExtensions()
+                    .get(ENGINE_ENABLE_BPMN_VALIDATION);
             final boolean enableActivitiBpmnValidation;
             if (enableActivitiBpmnValidationConfigured == null
                     || enableActivitiBpmnValidationConfigured.trim().isEmpty()) {
-                this.getLogger()
-                        .info("The activation of the BPMN validation during process deployments is not configured. Default value used.");
+                this.getLogger().info(
+                        "The activation of the BPMN validation during process deployments is not configured. Default value used.");
                 enableActivitiBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
             } else {
-                enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase(
-                        "false") ? false
+                enableActivitiBpmnValidation = enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("false")
+                        ? false
                         : (enableActivitiBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
                                 : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
             }
 
             ((ActivitiSuManager) getServiceUnitManager()).setEnableActivitiBpmnValidation(enableActivitiBpmnValidation);
 
-            final Class<?> identityServiceClass = ActivitiParameterReader.getEngineIdentityServiceClassName(this
-                    .getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CLASS_NAME), this.getLogger());
+            final Class<?> identityServiceClass = ActivitiParameterReader.getEngineIdentityServiceClassName(
+                    this.getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CLASS_NAME), this.getLogger());
 
-            final File identityServiceCfgFile = ActivitiParameterReader.getEngineIdentityServiceConfigurationFile(this
-                    .getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CFG_FILE), this.getLogger());
+            final File identityServiceCfgFile = ActivitiParameterReader.getEngineIdentityServiceConfigurationFile(
+                    this.getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CFG_FILE), this.getLogger());
 
             this.getLogger().config("Activiti engine configuration:");
             this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableActivitiJobExecutor);
             this.getLogger().config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + enableActivitiBpmnValidation);
-            this.getLogger().config(
-                    "   - " + ENGINE_IDENTITY_SERVICE_CLASS_NAME + " = " + identityServiceClass.getName());
-            this.getLogger().config(
-                    "   - " + ENGINE_IDENTITY_SERVICE_CFG_FILE + " = "
-                            + (identityServiceCfgFile == null ? "<null>" : identityServiceCfgFile.getAbsolutePath()));
+            this.getLogger()
+                    .config("   - " + ENGINE_IDENTITY_SERVICE_CLASS_NAME + " = " + identityServiceClass.getName());
+            this.getLogger().config("   - " + ENGINE_IDENTITY_SERVICE_CFG_FILE + " = "
+                    + (identityServiceCfgFile == null ? "<null>" : identityServiceCfgFile.getAbsolutePath()));
 
             /* Create an Activiti ProcessEngine with database configuration */
             final ProcessEngineConfiguration pec = ProcessEngineConfiguration
@@ -442,7 +442,12 @@ public class ActivitiSE extends AbstractServiceEngine {
             this.addPostBpmnParseHandlers(pec);
 
             this.activitiEngine = pec.buildProcessEngine();
-            this.activitiAsyncExecutor = this.enableActivitiJobExecutor ? pec.getAsyncExecutor() : null;
+            if (this.enableActivitiJobExecutor) {
+                this.activitiAsyncExecutor = pec.getAsyncExecutor();
+                this.configureAsyncExecutor();
+            } else {
+                this.activitiAsyncExecutor = null;
+            }
 
             // Caution: Configuration beans are initialized when building the process engine
             if (pec instanceof ProcessEngineConfigurationImpl) {
@@ -450,9 +455,8 @@ public class ActivitiSE extends AbstractServiceEngine {
                 final AbstractListener petalsSender = new PetalsSender(this);
                 ((ProcessEngineConfigurationImpl) pec).getBeans().put(PETALS_SENDER_COMP_NAME, petalsSender);
             } else {
-                this.getLogger()
-                        .warning(
-                                "The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
+                this.getLogger().warning(
+                        "The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
             }
 
             // Configure a part of the monitoring MBean. Another part is configured on component startup.
@@ -486,21 +490,24 @@ public class ActivitiSE extends AbstractServiceEngine {
                                     new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
                                             ITG_OP_GETPROCESSINSTANCES),
                                     new GetProcessInstancesOperation(this.activitiEngine.getRuntimeService(),
-                                            this.activitiEngine.getHistoryService(), this.activitiEngine
-                                                    .getRepositoryService(), this.getLogger()));
-                            this.activitiServices.put(new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
-                                    ITG_OP_SUSPENDPROCESSINSTANCES),
-                                    new SuspendProcessInstancesOperation(this.activitiEngine.getRuntimeService(), this.getLogger()));
+                                            this.activitiEngine.getHistoryService(),
+                                            this.activitiEngine.getRepositoryService(), this.getLogger()));
+                            this.activitiServices.put(
+                                    new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
+                                            ITG_OP_SUSPENDPROCESSINSTANCES),
+                                    new SuspendProcessInstancesOperation(this.activitiEngine.getRuntimeService(),
+                                            this.getLogger()));
                             this.activitiServices.put(
                                     new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
                                             ITG_OP_ACTIVATEPROCESSINSTANCES),
-                                    new ActivateProcessInstancesOperation(this.activitiEngine.getRuntimeService(), this
-                                            .getLogger()));
+                                    new ActivateProcessInstancesOperation(this.activitiEngine.getRuntimeService(),
+                                            this.getLogger()));
                         } else if (ITG_TASK_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
-                            this.activitiServices.put(new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
-                                    ITG_OP_GETTASKS), new GetTasksOperation(
-                                    this.activitiEngine.getTaskService(), this.activitiEngine.getRepositoryService(),
-                                    this.getLogger()));
+                            this.activitiServices.put(
+                                    new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
+                                            ITG_OP_GETTASKS),
+                                    new GetTasksOperation(this.activitiEngine.getTaskService(),
+                                            this.activitiEngine.getRepositoryService(), this.getLogger()));
                         } else {
                             this.getLogger().log(Level.WARNING,
                                     "Unexpected/Uknown integration operations: " + integrationInterfaceName);
@@ -534,7 +541,8 @@ public class ActivitiSE extends AbstractServiceEngine {
 
         assert pec != null : "pec can not be null";
         assert identityServiceClass != null : "identityServiceClass can not be null";
-        assert IdentityService.class.isAssignableFrom(identityServiceClass) : "The identity service class does not implement IdentityService";
+        assert IdentityService.class.isAssignableFrom(
+                identityServiceClass) : "The identity service class does not implement IdentityService";
 
         Object identityServiceObj;
         try {
@@ -547,9 +555,8 @@ public class ActivitiSE extends AbstractServiceEngine {
             if (pec instanceof ProcessEngineConfigurationImpl) {
                 ((ProcessEngineConfigurationImpl) pec).addConfigurator(new FileConfigurator(identityService));
             } else {
-                this.getLogger()
-                        .warning(
-                                "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
+                this.getLogger().warning(
+                        "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
             }
         } catch (final InstantiationException | IllegalAccessException | IdentityServiceInitException e) {
             throw new JBIException("An error occurred while instantiating the identity service.", e);
@@ -571,9 +578,8 @@ public class ActivitiSE extends AbstractServiceEngine {
             postBpmnParseHandlers.add(new ServiceTaskForceAsyncParseHandler());
             ((ProcessEngineConfigurationImpl) pec).setPostBpmnParseHandlers(postBpmnParseHandlers);
         } else {
-            this.getLogger()
-                    .warning(
-                            "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
+            this.getLogger().warning(
+                    "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
         }
     }
 
@@ -599,7 +605,8 @@ public class ActivitiSE extends AbstractServiceEngine {
         runtimeService.addEventListener(this.serviceTaskStartedEventListener,
                 this.serviceTaskStartedEventListener.getListenEventType());
 
-        this.userTaskStartedEventListener = new UserTaskStartedEventListener(this.simpleUUIDGenerator, this.getLogger());
+        this.userTaskStartedEventListener = new UserTaskStartedEventListener(this.simpleUUIDGenerator,
+                this.getLogger());
         runtimeService.addEventListener(this.userTaskStartedEventListener,
                 this.userTaskStartedEventListener.getListenEventType());
 
@@ -642,7 +649,63 @@ public class ActivitiSE extends AbstractServiceEngine {
     }
 
     /**
-     * Configure the asynchronous executor thread pool of the monitoring MBean
+     * COnfigure the asynchronous executor
+     */
+    private void configureAsyncExecutor() {
+        if (this.activitiAsyncExecutor != null) {
+            if (this.activitiAsyncExecutor instanceof DefaultAsyncJobExecutor) {
+
+                final int corePoolSize = this.getAsyncJobExecutorCorePoolSize();
+                final int maxPoolSize = this.getAsyncJobExecutorMaxPoolSize();
+                final long keepAliveTime = this.getAsyncJobExecutorKeepAliveTime();
+                final int queueSize = this.getAsyncJobExecutorQueueSize();
+                final int maxTimerJobsPerAcquisition = this.getAsyncJobExecutorMaxTimerJobsPerAcquisition();
+                final int maxAsyncJobsDuePerAcquisition = this.getAsyncJobExecutorMaxAsyncJobsDuePerAcquisition();
+                final int asyncJobAcquireWaitTime = this.getAsyncJobExecutorAsyncJobAcquireWaitTime();
+                final int timerJobAcquireWaitTime = this.getAsyncJobExecutorTimerJobAcquireWaitTime();
+                final int timerLockTime = this.getAsyncJobExecutorTimerLockTime();
+                final int asyncJobLockTime = this.getAsyncJobExecutorAsyncJobLockTime();
+
+                final Logger logger = this.getLogger();
+                logger.config("Asynchronous job executor configuration:");
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE + " = " + corePoolSize);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE + " = " + maxPoolSize);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME + " = " + keepAliveTime);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE + " = " + queueSize);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION + " = "
+                        + maxTimerJobsPerAcquisition);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION + " = "
+                        + maxAsyncJobsDuePerAcquisition);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME + " = "
+                        + asyncJobAcquireWaitTime);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME + " = "
+                        + timerJobAcquireWaitTime);
+                logger.config("   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME + " = " + timerLockTime);
+                logger.config(
+                        "   - " + ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME + " = " + asyncJobLockTime);
+
+                final DefaultAsyncJobExecutor defaultAsyncJobExecutor = (DefaultAsyncJobExecutor) this.activitiAsyncExecutor;
+                defaultAsyncJobExecutor.setCorePoolSize(corePoolSize);
+                defaultAsyncJobExecutor.setMaxPoolSize(maxPoolSize);
+                defaultAsyncJobExecutor.setKeepAliveTime(keepAliveTime);
+                defaultAsyncJobExecutor.setQueueSize(queueSize);
+                defaultAsyncJobExecutor.setMaxTimerJobsPerAcquisition(maxTimerJobsPerAcquisition);
+                defaultAsyncJobExecutor.setMaxAsyncJobsDuePerAcquisition(maxAsyncJobsDuePerAcquisition);
+                defaultAsyncJobExecutor.setDefaultAsyncJobAcquireWaitTimeInMillis(asyncJobAcquireWaitTime);
+                defaultAsyncJobExecutor.setDefaultTimerJobAcquireWaitTimeInMillis(timerJobAcquireWaitTime);
+                defaultAsyncJobExecutor.setTimerLockTimeInMillis(timerLockTime);
+                defaultAsyncJobExecutor.setAsyncJobLockTimeInMillis(asyncJobLockTime);
+            } else {
+                this.getLogger().warning(
+                        "The implementation of the asynchronous job executor is not the expected one, so no configuration is needed !");
+            }
+        } else {
+            this.getLogger().warning("No asynchronous job executor available, so no configuration is needed !");
+        }
+    }
+
+    /**
+     * Configure the monitoring MBean with the asynchronous executor thread pool
      */
     private void configureMonitoringMBeanWithAsyncExecutorThreadPool() {
 
@@ -671,10 +734,10 @@ public class ActivitiSE extends AbstractServiceEngine {
     }
 
     /**
-     * Configure the database connection pool of the monitoring MBean
+     * Configure the monitoring MBean with the database connection pool
      */
     private void configureMonitoringMBeanWithDatabaseConnectionPool() {
-        
+
         if (this.activitiEngine.getProcessEngineConfiguration() != null) {
             if (this.activitiEngine.getProcessEngineConfiguration() instanceof ProcessEngineConfigurationImpl) {
                 final ProcessEngineConfigurationImpl engineConfiguration = ((ProcessEngineConfigurationImpl) this.activitiEngine
@@ -771,5 +834,163 @@ public class ActivitiSE extends AbstractServiceEngine {
             throws MultipleProbesFactoriesFoundException, NoProbesFactoryFoundException {
 
         return new Monitoring(this.getProbesTimer(), this.getResponseTimeProbeSamplePeriod());
+    }
+
+    /**
+     * @return The core pool size of the asynchronous job executor of the Activiti engine.
+     */
+    private int getAsyncJobExecutorCorePoolSize() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
+    }
+
+    /**
+     * @return The max pool size of the asynchronous job executor of the Activiti engine.
+     */
+    private int getAsyncJobExecutorMaxPoolSize() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
+    }
+
+    /**
+     * Get the keep-alive time of the asynchronous job executor of the Activiti engine.
+     * 
+     * @param logger
+     * @param configurationExtensions
+     *            the component extensions
+     * @return the keep alive time of the asynchronous job executor
+     */
+    private long getAsyncJobExecutorKeepAliveTime() {
+        return this.getLong(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
+    }
+
+    /**
+     * Get the queue size of the asynchronous job executor of the Activiti engine.
+     * 
+     * @param logger
+     * @param configurationExtensions
+     *            the component extensions
+     * @return the queue size of the asynchronous job executor
+     */
+    private int getAsyncJobExecutorQueueSize() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE);
+    }
+
+    /**
+     * Get the max number of jobs fetched by query of the asynchronous job executor of the Activiti engine.
+     * 
+     * @param logger
+     * @param configurationExtensions
+     *            the component extensions
+     * @return the max number of jobs fetched by query of the asynchronous job executor
+     */
+    private int getAsyncJobExecutorMaxTimerJobsPerAcquisition() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
+    }
+
+    /**
+     * Get the number of asynchronous jobs due that are fetched by the asynchronous job executor of the Activiti engine.
+     * 
+     * @param logger
+     * @param configurationExtensions
+     *            the component extensions
+     * @return the number of asynchronous jobs due that are fetched by the asynchronous job executor
+     */
+    private int getAsyncJobExecutorMaxAsyncJobsDuePerAcquisition() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
+    }
+
+    private int getAsyncJobExecutorAsyncJobAcquireWaitTime() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME);
+    }
+
+    private int getAsyncJobExecutorTimerJobAcquireWaitTime() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
+    }
+
+    /**
+     * Get the timer job lock time of the asynchronous job executor of the Activiti engine.
+     * 
+     * @param logger
+     * @param configurationExtensions
+     *            the component extensions
+     * @return the timer job lock time of the asynchronous job executor
+     */
+    private int getAsyncJobExecutorTimerLockTime() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+    }
+
+    private int getAsyncJobExecutorAsyncJobLockTime() {
+        return this.getInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME,
+                ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+    }
+
+    /**
+     * Get the parameter value as {@link Integer}, use the default value if it is not possible to parse the parameter
+     * value
+     * 
+     * @param parameter
+     *            a parameter name
+     * @param defaultValue
+     *            the default value if the string does not represent a integer value
+     * 
+     * @return the long value of the given component parameter
+     */
+    private final int getInteger(final String parameterName, final int defaultValue) {
+        int intValue;
+
+        assert this.getComponentExtensions() != null;
+        final String intStr = this.getComponentExtensions().get(parameterName);
+        try {
+            intValue = Integer.parseInt(intStr);
+        } catch (final NumberFormatException e) {
+            intValue = defaultValue;
+            if (this.getLogger().isLoggable(Level.WARNING)) {
+                this.getLogger().log(Level.WARNING,
+                        String.format(
+                                "The value ('%s') of the parameter '%s' is not a integer value, use the default value",
+                                intStr, parameterName));
+            }
+        }
+
+        return intValue;
+    }
+
+    /**
+     * Get the component parameter value as {@link Long}, use the default value if it is not possible to parse the
+     * parameter value
+     * 
+     * @param parameter
+     *            a parameter name
+     * @param defaultValue
+     *            the default value if the string does not represent a long value
+     * 
+     * @return the long value of the given component parameter
+     */
+    private final long getLong(final String parameterName, final long defaultValue) {
+        long longValue;
+
+        assert this.getComponentExtensions() != null;
+        final String longStr = this.getComponentExtensions().get(parameterName);
+        try {
+            longValue = Long.parseLong(longStr);
+        } catch (final NumberFormatException e) {
+            longValue = defaultValue;
+            if (this.getLogger().isLoggable(Level.WARNING)) {
+                this.getLogger().log(Level.WARNING,
+                        String.format(
+                                "The value ('%s') of the parameter '%s' is not a long value, use the default value",
+                                longStr, parameterName));
+            }
+        }
+
+        return longValue;
     }
 }

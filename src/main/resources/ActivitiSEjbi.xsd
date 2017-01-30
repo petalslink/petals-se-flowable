@@ -76,13 +76,13 @@
                      minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-job-executor-max-timer-jobs-per-acquisition"
                      maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-max-async-jobs-due-per-acquisition"
+                     maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-async-job-acquire-wait-time"
+                     maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-job-executor-timer-job-acquire-wait-time"
                      maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-job-executor-timer-lock-time"
-                     maxOccurs="1" minOccurs="0" />
-                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-max-async-jobs-due-per-acquisition"
-                     maxOccurs="1" minOccurs="0" />
-                  <xs:element ref="petals-se-activitibpmn:engine-job-executor-async-job-due-acquire-wait-time"
                      maxOccurs="1" minOccurs="0" />
                   <xs:element ref="petals-se-activitibpmn:engine-job-executor-async-job-lock-time"
                      maxOccurs="1" minOccurs="0" />

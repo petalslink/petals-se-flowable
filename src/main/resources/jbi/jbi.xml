@@ -65,10 +65,10 @@
       <petals-se-activitibpmn:engine-job-executor-keep-alive-time />
       <petals-se-activitibpmn:engine-job-executor-queue-size />
       <petals-se-activitibpmn:engine-job-executor-max-timer-jobs-per-acquisition />
+      <petals-se-activitibpmn:engine-job-executor-max-async-jobs-due-per-acquisition />
+      <petals-se-activitibpmn:engine-job-executor-async-job-acquire-wait-time />
       <petals-se-activitibpmn:engine-job-executor-timer-job-acquire-wait-time />
       <petals-se-activitibpmn:engine-job-executor-timer-lock-time />
-      <petals-se-activitibpmn:engine-job-executor-max-async-jobs-due-per-acquisition />
-      <petals-se-activitibpmn:engine-job-executor-async-job-due-acquire-wait-time />
       <petals-se-activitibpmn:engine-job-executor-async-job-lock-time />
       <petals-se-activitibpmn:engine-enable-bpmn-validation />
       <petals-se-activitibpmn:engine-identity-service-class-name />

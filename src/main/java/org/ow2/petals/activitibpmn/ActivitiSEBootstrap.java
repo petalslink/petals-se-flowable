@@ -19,7 +19,7 @@ package org.ow2.petals.activitibpmn;
 
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME;
@@ -33,7 +33,7 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_BPMN
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME;
-import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME;
+import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME;
@@ -115,6 +115,18 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
 
     public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE = "engineJobExecutorQueueSize";
 
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION = "engineJobExecutorMaxTimerJobsPerAcquisition";
+
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION = "engineJobExecutorMaxAsyncJobsDuePerAcquisition";
+
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME = "engineJobExecutorAsyncJobAcquireWaitTime";
+
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME = "engineJobExecutorTimerJobAcquireWaitTime";
+
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME = "engineJobExecutorTimerLockTime";
+
+    public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME = "engineJobExecutorAsyncJobLockTime";
+
     @Override
     public Collection<String> getMBeanAttributesNames() {
         this.getLogger().fine("Start ActivitiSEBootstrap.getAttributeList()");
@@ -142,6 +154,12 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+            attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
 
             return attributes;
         } finally {
@@ -552,9 +570,9 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * 
      * @return the time, in milliseconds, between asynchronous jobs due queries being executed by the Activiti async
      */
-    public long getEngineJobExecutorAsyncJobDueAcquireWaitTime() {
-        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME,
-                DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME);
+    public int getEngineJobExecutorAsyncJobAcquireWaitTime() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME,
+                DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME);
     }
 
     /**
@@ -564,8 +582,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @param value
      *            the time, in milliseconds, between asynchronous jobs due queries being executed by the Activiti async.
      */
-    public void setEngineJobExecutorAsyncJobDueAcquireWaitTime(final long value) {
-        this.setParam(ENGINE_JOB_EXECUTOR_ASYNCJOBDUEACQUIREWAITTIME, Long.toString(value));
+    public void setEngineJobExecutorAsyncJobAcquireWaitTime(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME, Integer.toString(value));
     }
 
     /**
@@ -573,8 +591,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * 
      * @return the time, in milliseconds, between timer jobs queries being executed by the Activiti async job executor.
      */
-    public long getEngineJobExecutorTimerJobAcquireWaitTime() {
-        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
+    public int getEngineJobExecutorTimerJobAcquireWaitTime() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
                 DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
     }
 
@@ -585,8 +603,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      *            the time, in milliseconds, between timer jobs queries being executed by the Activiti async job
      *            executor.
      */
-    public void setEngineJobExecutorTimerJobAcquireWaitTime(final long value) {
-        this.setParam(ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME, Long.toString(value));
+    public void setEngineJobExecutorTimerJobAcquireWaitTime(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME, Integer.toString(value));
     }
 
     /**
@@ -596,8 +614,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the time, in milliseconds, that a timer job is locked before being retried again by the Activiti async
      *         job executor.
      */
-    public long getEngineJobExecutorTimerLockTime() {
-        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_TIMERLOCKTIME, DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
+    public int getEngineJobExecutorTimerLockTime() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_TIMERLOCKTIME, DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
     }
 
     /**
@@ -608,8 +626,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      *            the time, in milliseconds, that a timer job is locked before being retried again by the Activiti async
      *            job executor.
      */
-    public void setEngineJobExecutorTimerLockTime(final long value) {
-        this.setParam(ENGINE_JOB_EXECUTOR_TIMERLOCKTIME, Long.toString(value));
+    public void setEngineJobExecutorTimerLockTime(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_TIMERLOCKTIME, Integer.toString(value));
     }
 
     /**
@@ -620,8 +638,9 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      * @return the time, in milliseconds, that an asynchronous job is locked before being retried again by the Activiti
      *         async job executor.
      */
-    public long getEngineJobExecutorAsyncJobLockTime() {
-        return this.getParamAsLong(ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME, DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+    public int getEngineJobExecutorAsyncJobLockTime() {
+        return this.getParamAsInteger(ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME,
+                DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
     }
 
     /**
@@ -633,8 +652,8 @@ public class ActivitiSEBootstrap extends DefaultBootstrap {
      *            the time, in milliseconds, that an asynchronous job is locked before being retried again by the
      *            Activiti async job executor.
      */
-    public void setEngineJobExecutorAsyncJobLockTime(final long value) {
-        this.setParam(ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME, Long.toString(value));
+    public void setEngineJobExecutorAsyncJobLockTime(final int value) {
+        this.setParam(ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME, Integer.toString(value));
     }
 
     /**

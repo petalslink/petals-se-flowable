@@ -27,23 +27,23 @@
     <!-- Activiti provide configuration -->
    <xs:element name="tenand_id" type="petalsCDK:settablestring" default="myTenant">
       <xs:annotation>
-         <xs:documentation> tenantId in which the process will be deployed in Activiti dataBase</xs:documentation>
+         <xs:documentation>The tenant in which the processes will be deployed</xs:documentation>
       </xs:annotation>
    </xs:element>
    <xs:element name="category_id" type="petalsCDK:settablestring" default="myCategory">
       <xs:annotation>
-         <xs:documentation> categoryId that will carecterize the process in Activiti dataBase (e.g. Dev, Test, prod ...)
+         <xs:documentation>The category that will characterize the processes (e.g. Dev, Test, prod ...)
          </xs:documentation>
       </xs:annotation>
    </xs:element>
    <xs:element name="process_file" type="petalsCDK:File">
       <xs:annotation>
-         <xs:documentation>BPMN 2.0 File providing the xml process description</xs:documentation>
+         <xs:documentation>BPMN 2.0 File providing the xml process definitions</xs:documentation>
       </xs:annotation>
    </xs:element>
    <xs:element name="version" type="petalsCDK:settablestring" default="1">
       <xs:annotation>
-         <xs:documentation> version that will carecterize the process in Activiti dataBase</xs:documentation>
+         <xs:documentation>The version of the process definitions</xs:documentation>
       </xs:annotation>
    </xs:element>
 		
@@ -259,7 +259,7 @@
       </xs:annotation>
    </xs:element>
 
-   <xs:element name="engine-job-executor-async-job-due-acquire-wait-time" type="petalsCDK:settablelong"
+   <xs:element name="engine-job-executor-async-job-acquire-wait-time" type="petalsCDK:settablelong"
       default="10000">
       <xs:annotation>
          <xs:documentation>The time, in milliseconds, between asynchronous jobs due queries being executed by the
