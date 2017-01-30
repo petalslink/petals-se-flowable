@@ -840,7 +840,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      * @return The core pool size of the asynchronous job executor of the Activiti engine.
      */
     private int getAsyncJobExecutorCorePoolSize() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE);
     }
 
@@ -848,7 +848,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      * @return The max pool size of the asynchronous job executor of the Activiti engine.
      */
     private int getAsyncJobExecutorMaxPoolSize() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE);
     }
 
@@ -861,7 +861,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      * @return the keep alive time of the asynchronous job executor
      */
     private long getAsyncJobExecutorKeepAliveTime() {
-        return this.getParameterAsLong(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME,
+        return this.getParameterAsPositiveLong(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_KEEPALIVETIME);
     }
 
@@ -874,7 +874,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      * @return the queue size of the asynchronous job executor
      */
     private int getAsyncJobExecutorQueueSize() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE);
     }
 
@@ -887,7 +887,7 @@ public class ActivitiSE extends AbstractServiceEngine {
      * @return the max number of jobs fetched by query of the asynchronous job executor
      */
     private int getAsyncJobExecutorMaxTimerJobsPerAcquisition() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION);
     }
 
@@ -900,17 +900,17 @@ public class ActivitiSE extends AbstractServiceEngine {
      * @return the number of asynchronous jobs due that are fetched by the asynchronous job executor
      */
     private int getAsyncJobExecutorMaxAsyncJobsDuePerAcquisition() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION);
     }
 
     private int getAsyncJobExecutorAsyncJobAcquireWaitTime() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME);
     }
 
     private int getAsyncJobExecutorTimerJobAcquireWaitTime() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
     }
 
@@ -923,12 +923,12 @@ public class ActivitiSE extends AbstractServiceEngine {
      * @return the timer job lock time of the asynchronous job executor
      */
     private int getAsyncJobExecutorTimerLockTime() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
     }
 
     private int getAsyncJobExecutorAsyncJobLockTime() {
-        return this.getParameterAsInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME,
+        return this.getParameterAsPositiveInteger(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME,
                 ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
     }
 }
