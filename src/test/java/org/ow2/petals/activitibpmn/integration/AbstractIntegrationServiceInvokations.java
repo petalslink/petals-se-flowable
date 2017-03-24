@@ -24,7 +24,7 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
-import org.ow2.petals.activitibpmn.AbstractComponentTest;
+import org.ow2.petals.activitibpmn.SimpleProcessTestEnvironment;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
@@ -32,7 +32,7 @@ import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMe
 import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
 
-public abstract class AbstractIntegrationServiceInvokations extends AbstractComponentTest {
+public abstract class AbstractIntegrationServiceInvokations extends SimpleProcessTestEnvironment {
 
     /**
      * <p>

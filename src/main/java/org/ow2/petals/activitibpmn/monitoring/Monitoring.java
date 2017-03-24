@@ -171,12 +171,6 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
     public Map<String, Long[]> getProcessDefinitions() {
 
         final List<ProcessDefinition> deployments = this.repositoryService.createProcessDefinitionQuery().list();
-        final List<ProcessInstance> activeProcessInstances = this.runtimeService.createProcessInstanceQuery().active()
-                .list();
-        final List<ProcessInstance> suspendedProcessInstances = this.runtimeService.createProcessInstanceQuery()
-                .suspended().list();
-        final List<HistoricProcessInstance> endedProcessInstances = historyService.createHistoricProcessInstanceQuery()
-                .finished().list();
 
         final Map<String, Long[]> results = new HashMap<>(deployments.size());
         for (final ProcessDefinition deployment : deployments) {
@@ -186,13 +180,19 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
             values[PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE] = deployment.isSuspended() ? 1l : 0l;
 
             // active process instances
+            final List<ProcessInstance> activeProcessInstances = this.runtimeService.createProcessInstanceQuery()
+                    .processDefinitionKey(deployment.getKey()).active().list();
             values[PROCESS_DEFINITION_INFO_ID_ACTIVE_INSTANCES_COUNTER] = Long.valueOf(activeProcessInstances.size());
 
             // suspended process instances
+            final List<ProcessInstance> suspendedProcessInstances = this.runtimeService.createProcessInstanceQuery()
+                    .processDefinitionKey(deployment.getKey()).suspended().list();
             values[PROCESS_DEFINITION_INFO_ID_SUSPENDED_INSTANCES_COUNTER] = Long
                     .valueOf(suspendedProcessInstances.size());
 
             // ended process instances
+            final List<HistoricProcessInstance> endedProcessInstances = historyService
+                    .createHistoricProcessInstanceQuery().processDefinitionKey(deployment.getKey()).finished().list();
             values[PROCESS_DEFINITION_INFO_ID_ENDED_INSTANCES_COUNTER] = Long.valueOf(endedProcessInstances.size());
 
             results.put(deployment.getKey(), values);

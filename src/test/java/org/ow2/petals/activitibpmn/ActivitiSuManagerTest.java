@@ -17,10 +17,6 @@
  */
 package org.ow2.petals.activitibpmn;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -778,8 +774,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                         .getResource("su/valid/vacationRequest.wsdl");
                 assertNotNull("WSDl not found", wsdlUrl);
                 final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                        AbstractComponentTest.VACATION_INTERFACE, AbstractComponentTest.VACATION_SERVICE,
-                        AbstractComponentTest.VACATION_ENDPOINT, wsdlUrl);
+                        SimpleProcessTestEnvironment.VACATION_INTERFACE, SimpleProcessTestEnvironment.VACATION_SERVICE,
+                        SimpleProcessTestEnvironment.VACATION_ENDPOINT, wsdlUrl);
 
                 final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource("su/valid/demanderCongesResponse.xsl");

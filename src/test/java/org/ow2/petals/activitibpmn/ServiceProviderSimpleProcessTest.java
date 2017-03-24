@@ -92,10 +92,11 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class tryToRetrieveUserTask extends AbstractComponentTest {
+public class ServiceProviderSimpleProcessTest extends SimpleProcessTestEnvironment {
 
     @AfterClass
-    public static void assertMonitoring() throws MonitoringProbeNotStartedException, MonitoringServiceException {
+    public static void assertTechnicalMonitoringMetrics()
+            throws MonitoringProbeNotStartedException, MonitoringServiceException {
         assertTrue(COMPONENT_UNDER_TEST.getComponentObject().getMonitoringBean() instanceof MonitoringMBean);
         final MonitoringMBean monitoringMbean = (MonitoringMBean) COMPONENT_UNDER_TEST.getComponentObject()
                 .getMonitoringBean();
@@ -113,13 +114,28 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // process instances
         final Long[] vacationInstances = metrics.get("vacationRequest");
         assertEquals(0, vacationInstances[0].longValue());
-        assertEquals(0, vacationInstances[1].longValue());
+        
+        /*
+         * 5 process instances in state 'Pending', the ones created by unit tests:
+         * - userTaskRequest_EmptyProcessInstanceIdValue,
+         * - userTaskRequest_EmptyUserIdValue,
+         * - userTaskRequest_NoUserIdValue,
+         * - userTaskRequest_NoProcessInstanceIdValue,
+         * - userTaskRequest_TaskCompletedFault
+         */
+        assertEquals(5, vacationInstances[1].longValue());
         assertEquals(0, vacationInstances[2].longValue());
-        assertEquals(10, vacationInstances[3].longValue());
+        /*
+         * 1 process instance in state ended, the one created by unit test 'validStartEventRequest'
+         */
+        assertEquals(1, vacationInstances[3].longValue());
         final Long[] jiraInstances = metrics.get("jira_PETALSSEACTIVITI-4");
         assertEquals(0, jiraInstances[0].longValue());
         assertEquals(0, jiraInstances[1].longValue());
         assertEquals(0, jiraInstances[2].longValue());
+        /*
+         * 1 process instance in state ended, the one created by unit test 'jira_PETALSSEACTIVITI-4'
+         */
         assertEquals(1, jiraInstances[3].longValue());
 
         //
@@ -127,11 +143,13 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         //
         assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolActiveThreadsCurrent());
         assertTrue(monitoringMbean.getAsyncExecutorThreadPoolActiveThreadsMax() >= 1);
-        assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsCurrent());
         assertTrue(monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsMax() >= 1);
-        assertEquals(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
+        assertTrue(monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsCurrent() >= 0
+                && monitoringMbean.getAsyncExecutorThreadPoolIdleThreadsCurrent() <= monitoringMbean
+                        .getAsyncExecutorThreadPoolIdleThreadsMax());
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_MAXPOOLSIZE,
                 monitoringMbean.getAsyncExecutorThreadPoolMaxSize());
-        assertEquals(ActivitiSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
+        assertEquals(ActivitiSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE,
                 monitoringMbean.getAsyncExecutorThreadPoolMinSize());
         assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolQueuedRequestsCurrent());
         assertEquals(0, monitoringMbean.getAsyncExecutorThreadPoolQueuedRequestsCurrent());
@@ -147,7 +165,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertEquals(0, monitoringMbean.getDatabaseConnectionPoolActiveConnectionsCurrent());
         assertTrue(monitoringMbean.getDatabaseConnectionPoolIdleConnectionsMax() >= 1);
         assertNotEquals(0, monitoringMbean.getDatabaseConnectionPoolIdleConnectionsCurrent());
-
     }
 
     /**
@@ -186,40 +203,36 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
     public void validStartEventRequest() throws Exception {
 
         assertTrue(this.activitiClient.getIdentityService().checkPassword(BPMN_USER_DEMANDEUR, "demandeur"));
-        assertEquals(BPMN_USER_DEMANDEUR,
-                this.activitiClient.getIdentityService().createUserQuery().memberOfGroup("employees").singleResult()
-                        .getId());
-        assertEquals(BPMN_USER_VALIDEUR,
-                this.activitiClient.getIdentityService().createUserQuery().memberOfGroup("management").singleResult()
-                        .getId());
-        assertEquals("employees",
-                this.activitiClient.getIdentityService().createGroupQuery().groupMember(BPMN_USER_DEMANDEUR)
-                        .singleResult().getId());
-        assertEquals("management",
-                this.activitiClient.getIdentityService().createGroupQuery().groupMember(BPMN_USER_VALIDEUR)
-                        .singleResult().getId());
+        assertEquals(BPMN_USER_DEMANDEUR, this.activitiClient.getIdentityService().createUserQuery()
+                .memberOfGroup("employees").singleResult().getId());
+        assertEquals(BPMN_USER_VALIDEUR, this.activitiClient.getIdentityService().createUserQuery()
+                .memberOfGroup("management").singleResult().getId());
+        assertEquals("employees", this.activitiClient.getIdentityService().createGroupQuery()
+                .groupMember(BPMN_USER_DEMANDEUR).singleResult().getId());
+        assertEquals("management", this.activitiClient.getIdentityService().createGroupQuery()
+                .groupMember(BPMN_USER_VALIDEUR).singleResult().getId());
 
         // --------------------------------------------------------
         // ---- Create a new instance of the process definition
         // --------------------------------------------------------
-        final Demande request_1 = new Demande();
-        request_1.setDemandeur(BPMN_USER_DEMANDEUR);
+        final Demande requestBean_1 = new Demande();
+        requestBean_1.setDemandeur(BPMN_USER_DEMANDEUR);
         final int numberOfDays = 10;
-        request_1.setNbJourDde(numberOfDays);
+        requestBean_1.setNbJourDde(numberOfDays);
         final GregorianCalendar now = new GregorianCalendar();
         final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
                 now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
-        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
+        requestBean_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
         final String motivation = "hollidays";
-        request_1.setMotifDde(motivation);
+        requestBean_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
-        final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), this.toByteArray(request_1));
+        final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                this.toByteArray(requestBean_1));
 
         // Assert the response of the 1st valid request
-        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(request);
+        final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(request_1);
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
@@ -263,6 +276,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             assertTrue(startDateFound);
             assertTrue(motivationFound);
         }
+
+        // Assertions about states of user task and process instance at Activiti Level
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
@@ -288,47 +303,48 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertMonitProviderEndLog(initialInteractionRequestFlowLogData, monitLogs_1.get(3));
 
         // Check that internal process variables are correctly set
-        assertEquals(
-                processStartedBeginFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
+        assertEquals(processStartedBeginFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 this.activitiClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
                         ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_INSTANCE_ID));
-        assertEquals(
-                processStartedBeginFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
+        assertEquals(processStartedBeginFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
                 this.activitiClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
                         ActivitiSEConstants.Activiti.VAR_PETALS_FLOW_STEP_ID));
 
+        // Assertions about the process instance state through the SE Activiti
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
-                ProcessInstanceState.ACTIVE,
-                processStartedBeginFlowLogData, true);
+                ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, true);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
-                ProcessInstanceState.FINISHED,
-                processStartedBeginFlowLogData, false);
+                ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, false);
 
-        this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), true, processStartedBeginFlowLogData, true);
+        this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), true, processStartedBeginFlowLogData,
+                true);
         this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), false, processStartedBeginFlowLogData,
                 false);
 
+        // Suspend the current process instance
         this.tryToSuspendProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
                 AdjournmentResult.SUSPENDED);
         this.tryToSuspendProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
                 AdjournmentResult.ALREADY_SUSPENDED);
         this.tryToSuspendProcessInstance("not-found", processStartedBeginFlowLogData, AdjournmentResult.NOT_FOUND);
 
+        // Assertions about the process instance state through the SE Activiti
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
-                ProcessInstanceState.SUSPENDED,
-                processStartedBeginFlowLogData, true);
+                ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, true);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, false);
 
+        // Assertions about current user task retrieveing through the SE Activiti
         this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), false, processStartedBeginFlowLogData,
                 true);
         this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), true, processStartedBeginFlowLogData,
                 false);
 
+        // Re-activate the current process instance
         this.tryToActivateProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
                 ActivationResult.ACTIVATED);
         this.tryToActivateProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
@@ -341,58 +357,57 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // ------------------------------------------------------------------
         // ---- Complete the first user task (validate the vacation request)
         // ------------------------------------------------------------------
-        final Validation request_2 = new Validation();
-        request_2.setValideur(BPMN_USER_VALIDEUR);
-        request_2.setNumeroDde(response_1.getNumeroDde());
-        request_2.setApprobation(Boolean.TRUE.toString());
+        final Validation requestBean_2 = new Validation();
+        requestBean_2.setValideur(BPMN_USER_VALIDEUR);
+        requestBean_2.setNumeroDde(response_1.getNumeroDde());
+        requestBean_2.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        
+
         final ServiceProviderImplementation service = new ServiceProviderImplementation() {
-            private MessageExchange archiveMessageExchange_1;
+            private MessageExchange archiveMessageExchange;
 
             @Override
-            public Message provides(final RequestMessage archiveRequestMsg_1) throws Exception {
-             // Assert the 1st request sent by Activiti on orchestrated service
-                archiveMessageExchange_1 = archiveRequestMsg_1.getMessageExchange();
-                assertNotNull(archiveMessageExchange_1);
-                assertEquals(ARCHIVE_INTERFACE, archiveMessageExchange_1.getInterfaceName());
-                assertEquals(ARCHIVE_SERVICE, archiveMessageExchange_1.getService());
-                assertNotNull(archiveMessageExchange_1.getEndpoint());
-                assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
-                assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
-                assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
-                final Object archiveRequestObj_1 = UNMARSHALLER.unmarshal(archiveRequestMsg_1
-                        .getPayload());
-                assertTrue(archiveRequestObj_1 instanceof Archiver);
-                final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
-                assertEquals(response_1.getNumeroDde(), archiveRequest_1.getItem());
+            public Message provides(final RequestMessage archiveRequestMsg) throws Exception {
+                // Assert the 1st request sent by Activiti on orchestrated service
+                this.archiveMessageExchange = archiveRequestMsg.getMessageExchange();
+                assertNotNull(this.archiveMessageExchange);
+                assertEquals(ARCHIVE_INTERFACE, this.archiveMessageExchange.getInterfaceName());
+                assertEquals(ARCHIVE_SERVICE, this.archiveMessageExchange.getService());
+                assertNotNull(this.archiveMessageExchange.getEndpoint());
+                assertEquals(ARCHIVE_ENDPOINT, this.archiveMessageExchange.getEndpoint().getEndpointName());
+                assertEquals(ARCHIVER_OPERATION, this.archiveMessageExchange.getOperation());
+                assertEquals(this.archiveMessageExchange.getStatus(), ExchangeStatus.ACTIVE);
+                final Object archiveRequestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
+                assertTrue(archiveRequestObj instanceof Archiver);
+                final Archiver archiveRequest = (Archiver) archiveRequestObj;
+                assertEquals(response_1.getNumeroDde(), archiveRequest.getItem());
 
                 // Returns the reply of the service provider to the Activiti service task
-                final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
-                archiverResponse_1.setItem("value of item");
-                archiverResponse_1.setItem2("value of item2");
-                return new ResponseToConsumerMessage(archiveRequestMsg_1, toByteArray(archiverResponse_1));
+                final ArchiverResponse archiverResponse = new ArchiverResponse();
+                archiverResponse.setItem("value of item");
+                archiverResponse.setItem2("value of item2");
+                return new ResponseToConsumerMessage(archiveRequestMsg, toByteArray(archiverResponse));
             }
-            
+
             @Override
-            public void handleStatus(StatusMessage statusDoneMsg_1) throws Exception {
+            public void handleStatus(final StatusMessage statusDoneMsg) throws Exception {
                 // Assert the status DONE on the message exchange
-                assertNotNull(statusDoneMsg_1);
+                assertNotNull(statusDoneMsg);
                 // It's the same message exchange instance
-                assertSame(statusDoneMsg_1.getMessageExchange(), archiveMessageExchange_1);
-                assertEquals(statusDoneMsg_1.getMessageExchange().getStatus(), ExchangeStatus.DONE);
+                assertSame(statusDoneMsg.getMessageExchange(), this.archiveMessageExchange);
+                assertEquals(statusDoneMsg.getMessageExchange().getStatus(), ExchangeStatus.DONE);
             }
         };
 
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), this.toByteArray(request_2));
+        final RequestToProviderMessage request_2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                this.toByteArray(requestBean_2));
 
         // Assert the response of the 2nd valid request
-        final ResponseMessage responseMsg_2 = COMPONENT.sendAndGetResponse(requestM, service);
-        
+        final ResponseMessage responseMsg_2 = COMPONENT.sendAndGetResponse(request_2, service);
+
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
         assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
@@ -450,7 +465,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Wait the end of a service task (a service task is executed asynchronously by SE Activiti, see
         // PETALSSEACTIVITI-4)
         this.waitEndOfServiceTask(response_1.getNumeroDde(), "archiverLaDemandeService");
-        
+
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(6, monitLogs_2.size());
@@ -472,25 +487,26 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(4));
         assertMonitConsumerExtEndLog(processStartedBeginFlowLogData, monitLogs_2.get(5));
 
-        assertProcessInstanceFinished(response_1.getNumeroDde());
-        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
-
+        // Assertions about the process instance state
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
-                ProcessInstanceState.FINISHED,
-                processStartedBeginFlowLogData, true);
+                ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, true);
+
+        // Assertions about states of user task and process instance at Activiti Level
+        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        assertProcessInstanceFinished(response_1.getNumeroDde());
 
         // --------------------------------------------------------
         // ---- Try to complete AGAIN the first user task
         // --------------------------------------------------------
         IN_MEMORY_LOG_HANDLER.clear();
 
-        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                toByteArray(requestBean_2));
 
         // Assert the response of the 3rd valid request
         final ResponseMessage responseMsg_3 = COMPONENT.sendAndGetResponse(requestM2);
@@ -498,9 +514,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs_3 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_3.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
 
         // Check the reply
         assertNull("Out in response", responseMsg_3.getOut());
@@ -541,9 +556,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request.setMotifDde("hollidays");
 
         // Send the request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the request
         final StatusMessage responseMsg = COMPONENT.sendAndGetStatus(requestM);
@@ -551,9 +565,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
 
         // Check the reply
         final Exception error = responseMsg.getError();
@@ -591,9 +604,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request.setMotifDde("hollidays");
 
         // Send the request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the request
         final StatusMessage responseMsg = COMPONENT.sendAndGetStatus(requestM);
@@ -601,9 +613,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
 
         // Check the reply
         final Exception error = responseMsg.getError();
@@ -654,9 +665,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
@@ -677,9 +687,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
+        assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -693,9 +702,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
 
-        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
@@ -703,9 +711,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
@@ -758,9 +765,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
@@ -781,9 +787,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
+        assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -797,9 +802,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
@@ -807,9 +811,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
@@ -827,7 +830,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
      * Check the message processing where:
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
-     * <li>a 2nd request is sent to complete the waiting user task where the process instance identifier is missing.</li>
+     * <li>a 2nd request is sent to complete the waiting user task where the process instance identifier is missing.
+     * </li>
      * </ol>
      * </p>
      * <p>
@@ -862,9 +866,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
@@ -885,9 +888,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
+        assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -900,9 +902,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
@@ -910,9 +911,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
@@ -965,9 +965,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
@@ -988,9 +987,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
+        assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -1004,9 +1002,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
@@ -1014,9 +1011,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Check MONIT traces
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
-        assertMonitProviderFailureLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
+        assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
+                VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
@@ -1055,10 +1051,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST
-                , VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         // Assert the response of the valid request
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
@@ -1134,9 +1128,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         request_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_DEMANDERCONGES,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         // Assert the response of the 1st valid request
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(requestM);
@@ -1158,9 +1151,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         final FlowLogData userTaskHandleRequestBeginFlowLogData = assertMonitProviderBeginLog(
                 processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
+        assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Check Activiti engine against the process instance creation
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -1179,9 +1171,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 2nd valid request for the user task 'handleRequest
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
+        final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
         // Assert the response of the 2nd valid request
         final ResponseMessage responseMsg_2 = COMPONENT.sendAndGetResponse(requestM2);
@@ -1203,9 +1194,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         assertMonitProviderEndLog(userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
         final FlowLogData secondUserTaskHandleRequestBeginFlowLogData = assertMonitProviderBeginLog(
                 processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
-        assertMonitProviderEndLog(
-                assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
-                        OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
+        assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
+                OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
 
         // Check Activiti engine against the current user task
         assertProcessInstanceFinished(response_1.getNumeroDde());
@@ -1223,9 +1213,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         // Send the 3rd valid request for the user task 'handleRequest'
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM3 = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_VALIDERDEMANDE,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_3));
+        final RequestToProviderMessage requestM3 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_3));
 
         // Assert the response of the 3rd valid request
         final ResponseMessage responseMsg_3 = COMPONENT.sendAndGetResponse(requestM3);
@@ -1274,47 +1263,45 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
 
         final ServiceProviderImplementation service = new ServiceProviderImplementation() {
 
-            private MessageExchange archiveMessageExchange_1;
+            private MessageExchange archiveMessageExchange;
 
             @Override
-            public Message provides(RequestMessage archiveRequestMsg_1) throws Exception {
+            public Message provides(final RequestMessage archiveRequestMsg) throws Exception {
                 // Assert the 1st request sent by Activiti on orchestrated service
-                assertNotNull("No service request received under the given delay", archiveRequestMsg_1);
-                archiveMessageExchange_1 = archiveRequestMsg_1.getMessageExchange();
-                assertNotNull(archiveMessageExchange_1);
-                assertEquals(ARCHIVE_INTERFACE, archiveMessageExchange_1.getInterfaceName());
-                assertEquals(ARCHIVE_SERVICE, archiveMessageExchange_1.getService());
-                assertNotNull(archiveMessageExchange_1.getEndpoint());
-                assertEquals(ARCHIVE_ENDPOINT, archiveMessageExchange_1.getEndpoint().getEndpointName());
-                assertEquals(ARCHIVER_OPERATION, archiveMessageExchange_1.getOperation());
-                assertEquals(archiveMessageExchange_1.getStatus(), ExchangeStatus.ACTIVE);
-                final Object archiveRequestObj_1 = UNMARSHALLER
-                        .unmarshal(archiveRequestMsg_1.getPayload());
-                assertTrue(archiveRequestObj_1 instanceof Archiver);
-                final Archiver archiveRequest_1 = (Archiver) archiveRequestObj_1;
-                assertEquals(numberOfDays, archiveRequest_1.getItem());
+                assertNotNull("No service request received under the given delay", archiveRequestMsg);
+                this.archiveMessageExchange = archiveRequestMsg.getMessageExchange();
+                assertNotNull(this.archiveMessageExchange);
+                assertEquals(ARCHIVE_INTERFACE, this.archiveMessageExchange.getInterfaceName());
+                assertEquals(ARCHIVE_SERVICE, this.archiveMessageExchange.getService());
+                assertNotNull(this.archiveMessageExchange.getEndpoint());
+                assertEquals(ARCHIVE_ENDPOINT, this.archiveMessageExchange.getEndpoint().getEndpointName());
+                assertEquals(ARCHIVER_OPERATION, this.archiveMessageExchange.getOperation());
+                assertEquals(this.archiveMessageExchange.getStatus(), ExchangeStatus.ACTIVE);
+                final Object archiveRequestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
+                assertTrue(archiveRequestObj instanceof Archiver);
+                final Archiver archiveRequest = (Archiver) archiveRequestObj;
+                assertEquals(numberOfDays, archiveRequest.getItem());
 
                 // Returns the reply of the service provider to the Activiti service task
-                final ArchiverResponse archiverResponse_1 = new ArchiverResponse();
-                archiverResponse_1.setItem("value of item");
-                archiverResponse_1.setItem2("value of item2");
-                return new ResponseToConsumerMessage(archiveRequestMsg_1, toByteArray(archiverResponse_1));
+                final ArchiverResponse archiverResponse = new ArchiverResponse();
+                archiverResponse.setItem("value of item");
+                archiverResponse.setItem2("value of item2");
+                return new ResponseToConsumerMessage(archiveRequestMsg, toByteArray(archiverResponse));
             }
 
             @Override
-            public void handleStatus(StatusMessage statusDoneMsg_1) throws Exception {
+            public void handleStatus(final StatusMessage statusDoneMsg) throws Exception {
                 // Assert the status DONE on the message exchange
-                assertNotNull(statusDoneMsg_1);
+                assertNotNull(statusDoneMsg);
                 // It's the same message exchange instance
-                assertSame(statusDoneMsg_1.getMessageExchange(), archiveMessageExchange_1);
-                assertEquals(statusDoneMsg_1.getMessageExchange().getStatus(), ExchangeStatus.DONE);
+                assertSame(statusDoneMsg.getMessageExchange(), archiveMessageExchange);
+                assertEquals(statusDoneMsg.getMessageExchange().getStatus(), ExchangeStatus.DONE);
             }
         };
 
         // Send the 1st valid request for start event 'request'
-        final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, VALID_SU, OPERATION_JIRA,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
+        final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
+                OPERATION_JIRA, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_1));
 
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(request, service);
 
@@ -1353,7 +1340,6 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         // Wait end of process instance
         this.waitEndOfProcessInstance(response_1.getNumeroDde());
 
-        
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(6, monitLogs_1.size());
@@ -1412,16 +1398,14 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         getProcessInstancesReq.setProcessInstanceIdentifier(processInstanceId);
 
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, NATIVE_PROCESSINSTANCES_SVC_CFG,
-                ITG_OP_GETPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                toByteArray(getProcessInstancesReq));
+        final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstancesReq));
 
         {
             final ResponseMessage getProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(request);
             assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
-            final Object getProcessInstancesRespObj = UNMARSHALLER
-                    .unmarshal(getProcessInstancesRespMsg.getPayload());
+            final Object getProcessInstancesRespObj = UNMARSHALLER.unmarshal(getProcessInstancesRespMsg.getPayload());
             assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
             final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
             assertNotNull(getProcessInstancesResp.getProcessInstances());
@@ -1438,10 +1422,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                 assertTrue(variables.size() > 5);
                 for (final Variable variable : variables) {
                     if ("startDate".equals(variable.getName())) {
-                        assertEquals(
-                                0,
-                                expectedStartDate.compareTo(DatatypeFactory.newInstance()
-                                        .newXMLGregorianCalendar(variable.getValue()).toGregorianCalendar()));
+                        assertEquals(0, expectedStartDate.compareTo(DatatypeFactory.newInstance()
+                                .newXMLGregorianCalendar(variable.getValue()).toGregorianCalendar()));
                     } else if ("vacationMotivation".equals(variable.getName())) {
                         assertEquals(expectedMotivation, variable.getValue());
                     } else if ("numberOfDays".equals(variable.getName())) {
@@ -1449,9 +1431,7 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
                     } else if ("employeeName".equals(variable.getName())) {
                         assertEquals(BPMN_USER_DEMANDEUR, variable.getValue());
                     } else if ("petals.flow.instance.id".equals(variable.getName())) {
-                        assertEquals(
-                                processStartedBeginFlowLogData
-                                        .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                        assertEquals(processStartedBeginFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
                                 variable.getValue());
                     }
                 }
@@ -1500,9 +1480,9 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         getTasksReq.setProcessInstanceIdentifier(processInstanceId);
 
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, NATIVE_TASKS_SVC_CFG, ITG_OP_GETTASKS,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getTasksReq));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                NATIVE_TASKS_SVC_CFG, ITG_OP_GETTASKS, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                toByteArray(getTasksReq));
 
         {
             final ResponseMessage getTaskRespMsg = COMPONENT.sendAndGetResponse(requestM);
@@ -1550,10 +1530,9 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         suspendProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
 
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, NATIVE_PROCESSINSTANCES_SVC_CFG,
-                ITG_OP_SUSPENDPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                toByteArray(suspendProcessInstancesReq));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_SUSPENDPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(suspendProcessInstancesReq));
 
         {
             final ResponseMessage suspendProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(requestM);
@@ -1565,8 +1544,8 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             assertNotNull(suspendProcessInstancesResp.getProcessInstanceIdentifier());
             assertEquals(1, suspendProcessInstancesResp.getProcessInstanceIdentifier().size());
             assertNotNull(suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0));
-            assertEquals(processInstanceId, suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0)
-                    .getValue());
+            assertEquals(processInstanceId,
+                    suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0).getValue());
             assertEquals(expectedResult, suspendProcessInstancesResp.getProcessInstanceIdentifier().get(0).getResult());
 
             COMPONENT.sendDoneStatus(suspendProcessInstancesRespMsg);
@@ -1608,10 +1587,9 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
         activateProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
 
         IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, NATIVE_PROCESSINSTANCES_SVC_CFG,
-                ITG_OP_ACTIVATEPROCESSINSTANCES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                toByteArray(activateProcessInstancesReq));
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_ACTIVATEPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(activateProcessInstancesReq));
 
         {
             final ResponseMessage activateProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(requestM);
@@ -1623,9 +1601,10 @@ public class tryToRetrieveUserTask extends AbstractComponentTest {
             assertNotNull(activateProcessInstancesResp.getProcessInstanceIdentifier());
             assertEquals(1, activateProcessInstancesResp.getProcessInstanceIdentifier().size());
             assertNotNull(activateProcessInstancesResp.getProcessInstanceIdentifier().get(0));
-            assertEquals(processInstanceId, activateProcessInstancesResp.getProcessInstanceIdentifier().get(0)
-                    .getValue());
-            assertEquals(expectedResult, activateProcessInstancesResp.getProcessInstanceIdentifier().get(0).getResult());
+            assertEquals(processInstanceId,
+                    activateProcessInstancesResp.getProcessInstanceIdentifier().get(0).getValue());
+            assertEquals(expectedResult,
+                    activateProcessInstancesResp.getProcessInstanceIdentifier().get(0).getResult());
 
             COMPONENT.sendDoneStatus(activateProcessInstancesRespMsg);
         }
