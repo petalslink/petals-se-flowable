@@ -17,8 +17,6 @@
  */
 package org.ow2.petals.activitibpmn.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -37,9 +35,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
 import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
 
 public class XslUtils {
+
+    private static final DOMSource EMPTY_DOMSOURCE = new DOMSource(DocumentBuilders.newDocument());
 
     private XslUtils() {
         // Utility class
@@ -78,12 +79,13 @@ public class XslUtils {
             }
         }
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        final Result result = new StreamResult(baos);
-        // TODO: Improve the empty document to avoid to create it each time
-        outputTransformer.transform(new DOMSource(DocumentBuilders.newDocument()), result);
-
-        return new StreamSource(new ByteArrayInputStream(baos.toByteArray()));
+        final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
+        final Result result = new StreamResult(ebaos);
+        outputTransformer.transform(EMPTY_DOMSOURCE, result);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("XML output payload: " + ebaos.toString());
+        }
+        return new StreamSource(ebaos.toByteArrayInputStream());
     }
 
     /**
