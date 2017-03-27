@@ -51,6 +51,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
+import com.ebmwebsourcing.easycommons.xml.DOMHelper;
 import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
 import com.ebmwebsourcing.easycommons.xml.Transformers;
 
@@ -117,15 +119,17 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 final Node importedPayload = xmlPayload.importNode(outMsgDoc.getDocumentElement(), true);
                 xmlPayload.appendChild(envelope).appendChild(body).appendChild(importedPayload);
 
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                com.ebmwebsourcing.easycommons.xml.DOMHelper.prettyPrint(xmlPayload, baos);
+                final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
+                DOMHelper.prettyPrint(xmlPayload, ebaos);
 
                 // TODO: Change log level to FINE
-                LOG.info("Outgoing XML payload: " + new String(baos.toByteArray()));
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Output XML payload received: " + ebaos.toString());
+                }
 
                 // TODO: Add support for attachments
 
-                msg.setContent(InputStream.class, new ByteArrayInputStream(baos.toByteArray()));
+                msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());
                 cxfExchange.setInMessage(msg);
 
             } catch (final MessagingException e) {
