@@ -98,16 +98,6 @@ public abstract class ActivitiOperation implements ActivitiService {
     protected String deployedProcessDefinitionId = null;
 
     /**
-     * The task identifier on which the action must be realize on the BPMN process side
-     */
-    protected final String actionId;
-
-    /**
-     * The compiled XPath expression of the process instance identifier placeholder
-     */
-    protected final XPathExpression proccesInstanceIdXPathExpr;
-
-    /**
      * The compiled XPath expression of the user identifier placeholder
      */
     protected final XPathExpression userIdXPathExpr;
@@ -145,8 +135,6 @@ public abstract class ActivitiOperation implements ActivitiService {
     protected ActivitiOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
         this.wsdlOperation = annotatedOperation.getWsdlOperation();
         this.processDefinitionId = annotatedOperation.getProcessDefinitionId();
-        this.actionId = annotatedOperation.getActionId();
-        this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();
         this.userIdXPathExpr = annotatedOperation.getUserIdHolder();
         this.variables = annotatedOperation.getVariables();
         this.variableTypes = annotatedOperation.getVariableTypes();
@@ -168,6 +156,12 @@ public abstract class ActivitiOperation implements ActivitiService {
      */
     public abstract String getAction();
 
+    protected void logActivitiOperation() {
+        this.logger.fine("Activiti processDefId = " + processDefinitionId);
+        this.logger.fine("Activiti Action = " + this.getClass().getSimpleName());
+        this.logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
+    }
+
     @Override
     public final void execute(final Exchange exchange) {
 
@@ -175,13 +169,11 @@ public abstract class ActivitiOperation implements ActivitiService {
             final Document incomingPayload = exchange.getInMessageContentAsDocument();
 
             if (this.logger.isLoggable(Level.FINE)) {
-                this.logger.fine("*** incomingPayload = " + XMLPrettyPrinter.prettyPrint(incomingPayload));
+                this.logger.fine("Incoming payload = " + XMLPrettyPrinter.prettyPrint(incomingPayload));
             }
 
             if (this.logger.isLoggable(Level.FINE)) {
-                this.logger.fine("Activiti processDefId = " + processDefinitionId);
-                this.logger.fine("Activiti Action = " + this.getClass().getSimpleName());
-                this.logger.fine("Activiti ActionType (TaskId) = " + this.getAction());
+                this.logActivitiOperation();
             }
 
             incomingPayload.getDocumentElement().normalize();
@@ -205,7 +197,7 @@ public abstract class ActivitiOperation implements ActivitiService {
                 }
 
                 // Get the bpmn variables
-                final Map<String, Object> variableValues = new HashMap<String, Object>();
+                final Map<String, Object> variableValues = new HashMap<>();
                 for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
                     final String variableName = variable.getKey();
                     try {
@@ -216,9 +208,9 @@ public abstract class ActivitiOperation implements ActivitiService {
                         }
                         if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
                             if (this.variableTypes.get(variableName).isRequired()) {
-                                throw new MessagingException("The task: " + this.getClass().getSimpleName()
-                                        + " of process: " + this.processDefinitionId + " required the variable: "
-                                        + variableName);
+                                throw new MessagingException(String.format(
+                                        "The action '%s' of process '%s' required the variable '%s'", this.getAction(),
+                                        this.processDefinitionId, variableName));
                             } else {
                                 if (logger.isLoggable(Level.FINE)) {
                                     logger.fine("variable: " + variableName + "=> no value");
@@ -281,7 +273,7 @@ public abstract class ActivitiOperation implements ActivitiService {
                 }
 
                 // Extract process flow data
-                final Map<QName, String> xslParameters = new HashMap<QName, String>();
+                final Map<QName, String> xslParameters = new HashMap<>();
                 this.doExecute(incomingPayload, userId, variableValues, xslParameters, exchange);
 
                 try {
@@ -303,16 +295,16 @@ public abstract class ActivitiOperation implements ActivitiService {
                     fault.setContent(XslUtils.createXmlPayload(faultTemplate, e.getXslParameters(), this.logger));
                     exchange.setFault(fault);
                 } catch (final TransformerException e1) {
-                    throw new OperationProcessingException(this.wsdlOperation, e);
+                    throw new OperationProcessingException(this.wsdlOperation, e1);
                 }
             }
         } catch (final OperationProcessingException e) {
+            // Technical error
             this.logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
-            // Technical error, it would be set as a Fault by the CDK
             exchange.setError(e);
         } catch (final MessagingException e) {
+            // Technical error
             this.logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
-            // Technical error, it would be set as a Fault by the CDK
             exchange.setError(e);
         }
     }

@@ -116,7 +116,7 @@ public class Assert {
                 bpmnModels.add(embeddedBpmnModel.getModel());
             }
 
-            final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(LOGGER);
+            final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser("tenant-activiti-junit", LOGGER);
             final Description wsdlDescription = ServiceUnitUtil.getWsdlDescription(jbiDescriptorFile.getParent(),
                     provides);
             final Document wsdlDocument = WSDLUtilImpl.convertDescriptionToDocument(wsdlDescription);

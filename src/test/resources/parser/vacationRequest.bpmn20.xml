@@ -17,10 +17,14 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <definitions id="definitions"
-             targetNamespace="http://activiti.org/bpmn20" 
+             targetNamespace="http://org.ow2.petals/activiti"
              xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xmlns:activiti="http://activiti.org/bpmn">
+             xmlns:activiti="http://activiti.org/bpmn"
+             xmlns:tns="http://org.ow2.petals/activiti">
+             
+             
+   <message id="msg-start-by-mail" name="startBy-Mail"></message>
   
   <process id="vacationRequest" name="Vacation request">
   
@@ -31,7 +35,17 @@
         <activiti:formProperty id="vacationMotivation" name="Motivation" type="string" />
       </extensionElements>
     </startEvent>
-    <sequenceFlow id="flow1" sourceRef="request" targetRef="handleRequest" />
+    <sequenceFlow id="flow1a" sourceRef="request" targetRef="handleRequest" />
+    
+    <startEvent id="startevent-by-mail" name="Message start">
+      <extensionElements>
+        <activiti:formProperty id="numberOfDays" name="Number of days" type="long" value="1" required="true"/>
+        <activiti:formProperty id="startDate" name="First day of holiday (dd-MM-yyy)" datePattern="dd-MM-yyyy hh:mm" type="date" required="true" />
+        <activiti:formProperty id="vacationMotivation" name="Motivation" type="string" />
+      </extensionElements>
+      <messageEventDefinition messageRef="tns:msg-start-by-mail"></messageEventDefinition>
+    </startEvent>
+    <sequenceFlow id="flow1b" sourceRef="startevent-by-mail" targetRef="handleRequest" />
     
     <userTask id="handleRequest" name="Handle vacation request" >
       <documentation>

@@ -28,9 +28,10 @@ import javax.xml.xpath.XPathExpression;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FormProperty;
 import org.activiti.bpmn.model.UserTask;
-import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.ActionIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.NoUserTaskIdMappingException;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.UserTaskIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.OperationProcessingFault;
@@ -61,12 +62,23 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     }
 
     /**
+     * The identifier of the user task on which the completion action must be realized on the BPMN process side
+     */
+    private final String userTaskId;
+
+    /**
+     * The place holder of the incoming request containing the process instance identifier on which the BPMN operation
+     * must be executed
+     */
+    private final XPathExpression processInstanceIdHolder;
+
+    /**
      * 
      * @param wsdlOperationName
      *            The WSDL operation containing the current annotations
      * @param processDefinitionId
      *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
-     * @param bpmnAction
+     * @param userTaskId
      * @param processInstanceIdHolder
      *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
      *            <code>null</code>.
@@ -82,11 +94,12 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
      *             The annotated operation is incoherent.
      */
     public CompleteUserTaskAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
-            final String bpmnAction, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
+            final String userTaskId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Map<String, XPathExpression> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, bpmnAction, processInstanceIdHolder, userIdHolder, variables,
-                outputTemplate, faultTemplates);
+        super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
+        this.userTaskId = userTaskId;
+        this.processInstanceIdHolder = processInstanceIdHolder;
     }
 
     @Override
@@ -97,10 +110,14 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     @Override
     public void doAnnotationCoherenceCheck(final BpmnModel model) throws InvalidAnnotationForOperationException {
 
+        // The start event identifier is required
+        if (this.userTaskId == null || this.userTaskId.trim().isEmpty()) {
+            throw new NoUserTaskIdMappingException(this.wsdlOperation);
+        }
+
         // The mapping defining the process instance id is required to complete a user task
-        final XPathExpression processInstanceIdHolder = this.getProcessInstanceIdHolder();
-        if (processInstanceIdHolder == null) {
-            throw new NoProcessInstanceIdMappingException(this.getWsdlOperation());
+        if (this.processInstanceIdHolder == null) {
+            throw new NoProcessInstanceIdMappingException(this.wsdlOperation);
         }
 
         // The mapping defining the action identifier must be declared in the process definition
@@ -108,8 +125,8 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
         List<FormProperty> formPropertyList = null;
         outerloop: for (final org.activiti.bpmn.model.Process process : model.getProcesses()) {
             for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
-                // search the Start Event: bpmnAction
-                if ((flowElt instanceof UserTask) && (flowElt.getId().equals(this.getActionId()))) {
+                // search the user task
+                if ((flowElt instanceof UserTask) && (flowElt.getId().equals(this.userTaskId))) {
                     final UserTask userTask = (UserTask) flowElt;
                     formPropertyList = userTask.getFormProperties();
                     isActionIdFound = true;
@@ -118,10 +135,10 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
             }
         }
         if (!isActionIdFound) {
-            throw new ActionIdNotFoundInModelException(this.getWsdlOperation(), this.getActionId(),
+            throw new UserTaskIdNotFoundInModelException(this.wsdlOperation, this.userTaskId,
                     this.getProcessDefinitionId());
         } else {
-            if (formPropertyList != null && formPropertyList.size() > 0) {
+            if (formPropertyList != null && !formPropertyList.isEmpty()) {
                 for (final FormProperty formPropertie : formPropertyList) {
                     this.getVariableTypes().put(formPropertie.getId(), formPropertie);
                 }
@@ -132,6 +149,20 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     @Override
     protected void addMappedExceptionNames(final List<String> mappedExceptionNames) {
         mappedExceptionNames.addAll(EXCEPTIONS_MAPPED);
+    }
+
+    /**
+     * @return The placeholder of BPMN process instance identifier associated to the BPMN operation.
+     */
+    public XPathExpression getProcessInstanceIdHolder() {
+        return this.processInstanceIdHolder;
+    }
+
+    /**
+     * @return The identifier of the user task on which the completion action must be realized on the BPMN process side
+     */
+    public String getUserTaskId() {
+        return this.userTaskId;
     }
 
 }

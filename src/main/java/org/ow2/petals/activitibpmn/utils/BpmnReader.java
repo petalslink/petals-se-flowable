@@ -95,18 +95,6 @@ public class BpmnReader {
      */
     public Map<String, EmbeddedProcessDefinition> readBpmnModels() throws ProcessDefinitionDeclarationException {
 
-        String tenantId = this.extensions.get(ActivitiSEConstants.TENANT_ID);
-        if (tenantId == null) {
-            // TODO: Improve the default value declaration
-            tenantId = "myTenant"; // default value
-        }
-
-        String categoryId = this.extensions.get(ActivitiSEConstants.CATEGORY_ID);
-        if (categoryId == null) {
-            // TODO: Improve the default value declaration
-            categoryId = "myCategory"; // default value
-        }
-
         final Map<String, EmbeddedProcessDefinition> bpmnModels = new HashMap<String, EmbeddedProcessDefinition>();
 
         String processFileName = this.extensions.get(ActivitiSEConstants.PROCESS_FILE);
@@ -128,8 +116,7 @@ public class BpmnReader {
                 if (nbProcesses == 1 && processFileName == null && versionStr == null) {
                     throw new NoProcessDefinitionDeclarationException();
                 } else if (processFileName != null && versionStr != null) {
-                    bpmnModels.put(processFileName,
-                            this.readBpmnModel(processFileName, versionStr, tenantId, categoryId));
+                    bpmnModels.put(processFileName, this.readBpmnModel(processFileName, versionStr));
                     nbProcesses++;
                 } else if ((processFileName != null && versionStr == null)
                         || (processFileName == null && versionStr != null)) {
@@ -141,8 +128,7 @@ public class BpmnReader {
             } while (processFileName != null && versionStr != null);
         } else if (processFileName != null && versionStr != null) {
             // One process description
-            bpmnModels.put(processFileName,
-                    this.readBpmnModel(processFileName, versionStr, tenantId, categoryId));
+            bpmnModels.put(processFileName, this.readBpmnModel(processFileName, versionStr));
         } else {
             throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
         }
@@ -159,17 +145,10 @@ public class BpmnReader {
      *            The file name of the process, as raw data read from the SU JBI descriptor. Not <code>null</code>.
      * @param versionStr
      *            The version of the process, as raw data read from the SU JBI descriptor. Not <code>null</code>.
-     * @param tenantId
-     *            The tenant identifier of the process, as raw data read from the SU JBI descriptor. Not
-     *            <code>null</code>.
-     * @param categoryId
-     *            The category identifier of the process, as raw data read from the SU JBI descriptor. Not
-     *            <code>null</code>.
      * @throws ProcessDefinitionDeclarationException
      *             A raw data of the SU JBI descriptor is invalid
      */
-    private EmbeddedProcessDefinition readBpmnModel(final String processFileName, final String versionStr,
-            final String tenantId, final String categoryId)
+    private EmbeddedProcessDefinition readBpmnModel(final String processFileName, final String versionStr)
             throws ProcessDefinitionDeclarationException {
 
         if (processFileName != null && processFileName.trim().isEmpty()) {
@@ -207,7 +186,7 @@ public class BpmnReader {
                             + "] is succesfully read");
                 }
 
-                return new EmbeddedProcessDefinition(processFileName, version, tenantId, categoryId, bpmnModel);
+                return new EmbeddedProcessDefinition(processFileName, version, bpmnModel);
 
             } finally {
                 try {

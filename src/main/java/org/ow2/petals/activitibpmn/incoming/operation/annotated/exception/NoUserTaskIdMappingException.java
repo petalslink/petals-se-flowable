@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2017 Linagora
+ * Copyright (c) 2017 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,18 +20,18 @@ package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 import javax.xml.namespace.QName;
 
 /**
- * The annotation defining the action identifier is required for the given WSDL binding operation.
+ * The annotation defining the user task identifier is required for the given WSDL binding operation.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class NoActionIdMappingException extends InvalidAnnotationForOperationException {
+public class NoUserTaskIdMappingException extends InvalidAnnotationForOperationException {
 
-    private static final long serialVersionUID = 1229263822984773374L;
+    private static final long serialVersionUID = -3747616230894876875L;
 
-    private static final String MESSAGE = "The annotation defining the action identifier is required";
+    private static final String MESSAGE = "The annotation defining the user task identifier is required";
 
-    public NoActionIdMappingException(final QName wsdlOperation) {
+    public NoUserTaskIdMappingException(final QName wsdlOperation) {
         super(wsdlOperation, MESSAGE);
     }
 

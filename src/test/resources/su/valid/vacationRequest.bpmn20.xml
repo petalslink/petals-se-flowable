@@ -25,14 +25,14 @@
              xmlns:activiti="http://activiti.org/bpmn"
              xmlns:process="http://petals.ow2.org/samples/se-bpmn/vacationProcess"
              xmlns:vacation="http://petals.ow2.org/samples/se-bpmn/vacationService"
-             xmlns:archivage="http://petals.ow2.org/samples/se-bpmn/archivageService" >
+             xmlns:archivage="http://petals.ow2.org/samples/se-bpmn/vacation/archivageService" >
              
   <!-- ==========================================
            Declaration of the Petals services
        ========================================== -->
   <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
   <import location="classpath:su/valid/archivageService.wsdl"
-          namespace="http://petals.ow2.org/samples/se-bpmn/archivageService"
+          namespace="http://petals.ow2.org/samples/se-bpmn/vacation/archivageService"
           importType="http://schemas.xmlsoap.org/wsdl/" />
           
   <!-- ===================================

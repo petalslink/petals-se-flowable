@@ -16,7 +16,6 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<!-- ======================== DEFINITION ==================================== -->
 <wsdl:definitions name="vacation"
    targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationService"
 
@@ -28,7 +27,6 @@
    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
-   <!-- ======================== TYPES ========================================== -->
    <wsdl:types>
       <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationService">
 
@@ -124,7 +122,6 @@
       </xsd:schema>
    </wsdl:types>
    
-   <!-- ======================== MESSAGES ======================================= -->
    <wsdl:message name="newVacationRequest">
       <wsdl:part name="parameters" element="vacationRequest:vacationRequest" />
    </wsdl:message>
@@ -152,7 +149,7 @@
    <wsdl:message name="unexpectedUser">
       <wsdl:part name="fault" element="vacationService:unexpectedUser" />
    </wsdl:message>
-   <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== -->
+   
    <wsdl:portType name="vacation">
       <wsdl:operation name="new">
          <wsdl:input message="vacationService:newVacationRequest" />

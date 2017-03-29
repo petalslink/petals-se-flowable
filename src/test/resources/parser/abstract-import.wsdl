@@ -17,19 +17,16 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <!-- ======================== DEFINITION ==================================== -->
-<wsdl:definitions name="demandeDeCongesService"
-   targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
-   xmlns:tns="http://petals.ow2.org/se/activiti/unit-test/parser"
-   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+<wsdl:definitions name="demandeDeCongesService" targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
+   xmlns:tns="http://petals.ow2.org/se/activiti/unit-test/parser" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
 
-   <!-- ======================== TYPES ========================================== -->
    <wsdl:types>
       <xsd:schema>
-         <xsd:import namespace="http://petals.ow2.org/se/activiti/unit-test/parser"
-            schemaLocation="import-types.xsd" />
+         <xsd:import namespace="http://petals.ow2.org/se/activiti/unit-test/parser" schemaLocation="import-types.xsd" />
       </xsd:schema>
    </wsdl:types>
-   <!-- ======================== MESSAGES ======================================= -->
+
    <wsdl:message name="demandeConges">
       <wsdl:part name="parameters" element="tns:demande" />
    </wsdl:message>
@@ -45,7 +42,7 @@
    <wsdl:message name="ajustementConges">
       <wsdl:part name="parameters" element="tns:ajustement" />
    </wsdl:message>
-   <!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== -->
+
    <wsdl:portType name="demandeDeConges">
       <wsdl:operation name="demanderConges">
          <wsdl:input message="tns:demandeConges" />

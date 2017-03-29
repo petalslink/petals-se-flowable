@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2017 Linagora
+ * Copyright (c) 2017 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,39 +20,39 @@ package org.ow2.petals.activitibpmn.incoming.operation.annotated.exception;
 import javax.xml.namespace.QName;
 
 /**
- * The annotation defining the action identifier identifier is required for the given WSDL binding operation.
+ * The annotation defining the user task identifier is required for the given WSDL binding operation.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class ActionIdNotFoundInModelException extends InvalidAnnotationForOperationException {
+public class UserTaskIdNotFoundInModelException extends InvalidAnnotationForOperationException {
 
-    private static final long serialVersionUID = -3175460203224153888L;
+    private static final long serialVersionUID = 6574233323910052086L;
 
-    private static final String MESSAGE_PATTERN = "The annotation defining the action identifier is set to a value '%s' that does not exist into the process definition '%s'";
+    private static final String MESSAGE_PATTERN = "The annotation defining the user task identifier is set to a value '%s' that does not exist into the process definition '%s'";
 
     /**
-     * The action identifier that does not exist in the BPMN model
+     * The user task identifier that does not exist in the BPMN model
      */
-    private final String actionId;
+    private final String userTaskId;
 
     /**
-     * The process definition identifier for which the action identifier is not found
+     * The process definition identifier for which the user task identifier is not found
      */
     private final String processDefinitionId;
 
-    public ActionIdNotFoundInModelException(final QName wsdlOperation, final String actionId,
+    public UserTaskIdNotFoundInModelException(final QName wsdlOperation, final String userTaskId,
             final String processDefinitionId) {
-        super(wsdlOperation, String.format(MESSAGE_PATTERN, actionId, processDefinitionId));
-        this.actionId = actionId;
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, userTaskId, processDefinitionId));
+        this.userTaskId = userTaskId;
         this.processDefinitionId = processDefinitionId;
     }
 
     /**
-     * @return The action identifier that does not exist in the BPMN model
+     * @return The user task identifier that does not exist in the BPMN model
      */
-    public String getActionId() {
-        return this.actionId;
+    public String getUserTaskId() {
+        return this.userTaskId;
     }
 
     /**

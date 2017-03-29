@@ -50,6 +50,7 @@ import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.Duplic
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.FaultXslNotFoundException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidBpmnActionAttributesException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidFaultXslException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidOutputXslException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.MultipleBpmnOperationDefinedException;
@@ -103,10 +104,22 @@ public class AnnotatedWsdlParser {
     private static final String BPMN_ANNOTATION_ACTION = "action";
 
     /**
-     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the identifier of the step on which
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the identifier of the step 'none
+     * start event' on which the action will be realized
+     */
+    private static final String BPMN_ANNOTATION_NONE_START_EVENT = "none-start-event-id";
+
+    /**
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the message name of the step
+     * 'message start event' on which the action will be realized
+     */
+    private static final String BPMN_ANNOTATION_START_EVENT_MESSAGE_NAME = "start-event-message-name";
+
+    /**
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the user task identifier on which
      * the action will be realized
      */
-    private static final String BPMN_ANNOTATION_ACTION_ID = "actionId";
+    private static final String BPMN_ANNOTATION_USER_TASK_ID = "user-task-id";
 
     /**
      * Local part of the annotation tag associated to the place holder containing the process instance identifier
@@ -144,6 +157,11 @@ public class AnnotatedWsdlParser {
      */
     private static final String BPMN_ANNOTATION_FAULT_NAME = "name";
 
+    /**
+     * The tenant identifier in which the process definition is deployed
+     */
+    protected final String tenantId;
+
     private final Logger logger;
 
     /**
@@ -153,7 +171,8 @@ public class AnnotatedWsdlParser {
 
     private final ErrorListener transformerFactoryErrorListener;
 
-    public AnnotatedWsdlParser(final Logger logger) {
+    public AnnotatedWsdlParser(final String tenantId, final Logger logger) {
+        this.tenantId = tenantId;
         this.logger = logger;
         this.transformerFactoryErrorListener = new ErrorListener() {
             @Override
@@ -184,13 +203,16 @@ public class AnnotatedWsdlParser {
      * </p>
      * 
      * @param annotatedWsdl
-     *            The WSDL to parse containing BPMN annotation
+     *            The WSDL to parse containing BPMN annotation. Not {@code null}.
      * @param bpmnModels
-     *            BPMN models embedded into the service unit
+     *            BPMN models embedded into the service unit. Not {@code null}.
      * @return For each operation of the WSDL, the associated annotated operation is returned.
      */
     public List<AnnotatedOperation> parse(final Document annotatedWsdl, final List<BpmnModel> bpmnModels,
             final String suRootPath) {
+
+        assert annotatedWsdl != null;
+        assert bpmnModels != null;
 
         this.encounteredErrors.clear();
 
@@ -270,13 +292,6 @@ public class AnnotatedWsdlParser {
         // get the action to do
         final String action = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION);
 
-        // get the task identifier on which the action must be done
-        final String actionId = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_ACTION_ID);
-
-        // Get the node "bpmn:processId" and its message
-        final XPathExpression bpmnProcessInstanceId = this.getProcessInstanceIdXpathExpr(wsdlOperation,
-                wsdlOperationName, xpathBuilder);
-
         // Get the node "bpmn:userId"
         final XPathExpression bpmnUserId = this.getUserIdXpathExpr(wsdlOperation, wsdlOperationName, xpathBuilder);
 
@@ -294,11 +309,36 @@ public class AnnotatedWsdlParser {
         // Create the annotated operation from annotations read into the WSDL
         final AnnotatedOperation annotatedOperation;
         if (StartEventAnnotatedOperation.BPMN_ACTION.equals(action)) {
-            annotatedOperation = new StartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey, actionId,
-                    bpmnProcessInstanceId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate, bpmnFaultTemplates);
+
+            // if none start event, get the start event id on which the action must be done
+            final String noneStartEventId = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_NONE_START_EVENT);
+
+            // if message start event, get the message name on which the action must be done
+            final String startEventMessageName = ((Element) bpmnOperation)
+                    .getAttribute(BPMN_ANNOTATION_START_EVENT_MESSAGE_NAME);
+
+            if (!noneStartEventId.isEmpty() && startEventMessageName.isEmpty()) {
+                annotatedOperation = new NoneStartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
+                        noneStartEventId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate, bpmnFaultTemplates);
+            } else if (noneStartEventId.isEmpty() && !startEventMessageName.isEmpty()) {
+                annotatedOperation = new MessageStartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
+                        startEventMessageName, this.tenantId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate,
+                        bpmnFaultTemplates);
+            } else {
+                throw new InvalidBpmnActionAttributesException(wsdlOperationName,
+                        StartEventAnnotatedOperation.BPMN_ACTION);
+            }
         } else if (CompleteUserTaskAnnotatedOperation.BPMN_ACTION.equals(action)) {
+
+            // get the user task id on which the action must be done
+            final String userTaskId = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_USER_TASK_ID);
+
+            // Get the node "bpmn:processId" and its message
+            final XPathExpression bpmnProcessInstanceId = this.getProcessInstanceIdXpathExpr(wsdlOperation,
+                    wsdlOperationName, xpathBuilder);
+
             annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName, processDefinitionKey,
-                    actionId, bpmnProcessInstanceId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate,
+                    userTaskId, bpmnProcessInstanceId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate,
                     bpmnFaultTemplates);
         } else {
             throw new UnsupportedActionException(wsdlOperationName, action);
@@ -455,7 +495,7 @@ public class AnnotatedWsdlParser {
             if (bpmnOutputStr == null || bpmnOutputStr.isEmpty()) {
                 throw new NoOutputMappingException(wsdlOperationName);
             } else {
-                bpmnOutputTemplate = this.readOutputXsl(bpmnOutputStr, suRootPath, wsdlOperationName);
+                bpmnOutputTemplate = this.readOutputXsl(bpmnOutputStr.trim(), suRootPath, wsdlOperationName);
             }
         } else if (bpmnOutputs.getLength() == 0) {
             bpmnOutputTemplate = null;
@@ -517,7 +557,7 @@ public class AnnotatedWsdlParser {
      * Read an output XSLT style-sheet from the classloader
      * 
      * @param xslFileName
-     *            The XSLT style-sheet URL
+     *            The XSLT style-sheet filename. Not {@code null}, not empty, and trimmed.
      * @param suRootPath
      *            The root directory of the service unit
      * @param wsdlOperationName
@@ -530,6 +570,9 @@ public class AnnotatedWsdlParser {
      */
     private Templates readOutputXsl(final String xslFileName, final String suRootPath, final QName wsdlOperationName)
             throws InvalidOutputXslException, OutputXslNotFoundException {
+
+        assert xslFileName != null;
+        assert !xslFileName.isEmpty();
 
         final URL xslUrl;
         // Try to get the XSL from classloader

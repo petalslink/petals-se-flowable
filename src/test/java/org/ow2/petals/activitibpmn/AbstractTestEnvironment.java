@@ -19,17 +19,10 @@ package org.ow2.petals.activitibpmn;
 
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 
 import org.activiti.engine.history.HistoricActivityInstanceQuery;
 import org.activiti.engine.history.HistoricProcessInstance;
@@ -45,27 +38,7 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.ow2.petals.activitibpmn.junit.ActivitiClient;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
-import org.ow2.petals.components.activiti.generic._1.ActivateProcessInstances;
-import org.ow2.petals.components.activiti.generic._1.ActivateProcessInstancesResponse;
-import org.ow2.petals.components.activiti.generic._1.GetProcessInstances;
-import org.ow2.petals.components.activiti.generic._1.GetProcessInstancesResponse;
-import org.ow2.petals.components.activiti.generic._1.GetTasks;
-import org.ow2.petals.components.activiti.generic._1.GetTasksResponse;
-import org.ow2.petals.components.activiti.generic._1.InvalidRequest;
-import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstances;
-import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstancesResponse;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
-import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
-import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
-import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
-import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
-import org.ow2.petals.samples.se_bpmn.vacationservice.DemandeDejaValidee;
-import org.ow2.petals.samples.se_bpmn.vacationservice.JiraPETALSSEACTIVITI4;
-import org.ow2.petals.samples.se_bpmn.vacationservice.Numero;
-import org.ow2.petals.samples.se_bpmn.vacationservice.NumeroDemandeInconnu;
-import org.ow2.petals.samples.se_bpmn.vacationservice.Validation;
-
-import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
 /**
  * Abstract class for unit tests about request processing
@@ -75,37 +48,19 @@ import com.ebmwebsourcing.easycommons.lang.UncheckedException;
  */
 public abstract class AbstractTestEnvironment extends AbstractTest {
 
-    protected static final String VALID_SU = "valid-su";
+    protected static final String NATIVE_TASKS_SVC_CFG = "native-tasks";
+
+    protected static final String NATIVE_PROCESSINSTANCES_SVC_CFG = "native-process-instances";
 
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
     protected static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
-
-    private static Marshaller MARSHALLER;
-
-    protected static Unmarshaller UNMARSHALLER;
 
     @Rule
     public ActivitiClient activitiClient = new ActivitiClient(
             new File(new File(this.getComponentUnderTest().getBaseDirectory(), "work"),
                     DEFAULT_JDBC_URL_DATABASE_FILENAME),
             "su/valid/identityService.properties");
-
-    static {
-        try {
-            final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
-                    AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
-                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class, GetProcessInstances.class,
-                    GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class, InvalidRequest.class,
-                    SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
-                    ActivateProcessInstances.class, ActivateProcessInstancesResponse.class);
-            UNMARSHALLER = context.createUnmarshaller();
-            MARSHALLER = context.createMarshaller();
-            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        } catch (final JAXBException e) {
-            throw new UncheckedException(e);
-        }
-    }
 
     protected abstract ComponentUnderTest getComponentUnderTest();
 
@@ -115,23 +70,6 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     @Before
     public void clearLogTraces() {
         IN_MEMORY_LOG_HANDLER.clear();
-    }
-
-    /**
-     * Convert a JAXB element to bytes
-     * 
-     * @param jaxbElement
-     *            The JAXB element to write as bytes
-     */
-    protected byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
-
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            MARSHALLER.marshal(jaxbElement, baos);
-            return baos.toByteArray();
-        } finally {
-            baos.close();
-        }
     }
 
     /**

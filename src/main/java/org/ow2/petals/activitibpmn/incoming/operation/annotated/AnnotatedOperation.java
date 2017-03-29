@@ -30,7 +30,6 @@ import javax.xml.xpath.XPathExpression;
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.FormProperty;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
-import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.NoActionIdMappingException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.NoOutputMappingException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.NoUserIdMappingException;
@@ -51,23 +50,12 @@ public abstract class AnnotatedOperation {
     /**
      * The WSDL operation containing the current annotations
      */
-    private final QName wsdlOperation;
+    protected final QName wsdlOperation;
 
     /**
      * The BPMN process identifier associated to the BPMN operation.
      */
     private final String processDefinitionId;
-
-    /**
-     * The task identifier on which the action must be realize on the BPMN process side
-     */
-    private final String actionId;
-
-    /**
-     * The place holder of the incoming request containing the process instance identifier on which the BPMN operation
-     * must be executed
-     */
-    private final XPathExpression processInstanceIdHolder;
 
     /**
      * The place holder of the incoming request containing the user identifier with which the BPMN operation must be
@@ -83,7 +71,7 @@ public abstract class AnnotatedOperation {
     /**
      * Types of variables read from the process definition.
      */
-    private final Map<String, FormProperty> variableTypes = new HashMap<String, FormProperty>();
+    private final Map<String, FormProperty> variableTypes = new HashMap<>();
 
     /**
      * The output XSLT style-sheet compiled
@@ -104,17 +92,13 @@ public abstract class AnnotatedOperation {
      * <b>Note 1</b>: If the user identifier placeholder is null or empty, the error {@link NoUserIdMappingException}
      * will be thrown.
      * </p>
-     * <b>Note 2</b>: For performance reasons, variable types are populated during the coherence check. </p>
+     * <b>Note 2</b>: For performance reasons, variable types are populated during the coherence check.
+     * </p>
      * 
      * @param wsdlOperation
      *            The WSDL operation containing the current annotations
      * @param processDefinitionId
      *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
-     * @param actionId
-     *            The task identifier on which the action must be realize on the BPMN process side
-     * @param processInstanceIdHolder
-     *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
-     *            <code>null</code>.
      * @param userIdHolder
      *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
      * @param variables
@@ -127,14 +111,12 @@ public abstract class AnnotatedOperation {
      *             The annotated operation is incoherent.
      */
     protected AnnotatedOperation(final QName wsdlOperation, final String processDefinitionId,
-            final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate,
-            final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
+            final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
+            final Templates outputTemplate, final Map<String, Templates> faultTemplates)
+            throws InvalidAnnotationForOperationException {
         super();
         this.wsdlOperation = wsdlOperation;
         this.processDefinitionId = processDefinitionId;
-        this.actionId = actionId;
-        this.processInstanceIdHolder = processInstanceIdHolder;
         this.userIdHolder = userIdHolder;
         this.variables = variables;
         this.outputTemplate = outputTemplate;
@@ -157,8 +139,9 @@ public abstract class AnnotatedOperation {
         if (this.processDefinitionId == null || this.processDefinitionId.trim().isEmpty()) {
             throw new NoProcessDefinitionIdMappingException(this.wsdlOperation);
         }
-        
-        // Check that the process definition identifier exists only once in the process definitions embedded into the service unit
+
+        // Check that the process definition identifier exists only once in the process definitions embedded into the
+        // service unit
         int processDefinitionIdCount = 0;
         BpmnModel modelContainingProcessDefinitionId = null;
         for (final BpmnModel bpmnModel : bpmnModels) {
@@ -175,16 +158,11 @@ public abstract class AnnotatedOperation {
             throw new ProcessDefinitionIdDuplicatedInModelException(this.wsdlOperation, this.processDefinitionId);
         }
 
-        // The action identifier is required
-        if (this.actionId == null || this.actionId.trim().isEmpty()) {
-            throw new NoActionIdMappingException(this.wsdlOperation);
-        }
-
         // The mapping defining the user id is required
         if (this.userIdHolder == null) {
             throw new NoUserIdMappingException(this.wsdlOperation);
         }
-        
+
         // The mapping defining the output XSLT style-sheet is required
         if (this.outputTemplate == null) {
             throw new NoOutputMappingException(wsdlOperation);
@@ -195,8 +173,7 @@ public abstract class AnnotatedOperation {
         // Check the existence of declared variables into the process definition
         for (final String variableName : this.variables.keySet()) {
             if (!this.variableTypes.containsKey(variableName)) {
-                throw new VariableNotFoundInModelException(this.wsdlOperation, variableName,
-                        this.processDefinitionId);
+                throw new VariableNotFoundInModelException(this.wsdlOperation, variableName, this.processDefinitionId);
             }
         }
 
@@ -257,23 +234,9 @@ public abstract class AnnotatedOperation {
     }
 
     /**
-     * @return The task identifier on which the action must be realize on the BPMN process side
-     */
-    public String getActionId() {
-        return this.actionId;
-    }
-
-    /**
      * @return The action to realize on the BPMN process side
      */
     public abstract String getAction();
-
-    /**
-     * @return The placeholder of BPMN process instance identifier associated to the BPMN operation.
-     */
-    public XPathExpression getProcessInstanceIdHolder() {
-        return this.processInstanceIdHolder;
-    }
 
     /**
      * @return The placeholder of BPMN user identifier associated to the BPMN operation.

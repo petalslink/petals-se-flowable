@@ -19,15 +19,15 @@
 <!-- ======================== DEFINITION ==================================== --> 
 <wsdl:definitions
 	name="archivageService"
-	targetNamespace="http://petals.ow2.org/samples/se-bpmn/archivageService"
-		xmlns:tns="http://petals.ow2.org/samples/se-bpmn/archivageService"
+	targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacation/archivageService"
+		xmlns:tns="http://petals.ow2.org/samples/se-bpmn/vacation/archivageService"
 		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 		xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
  	   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" >
 
 <!-- ======================== TYPES ========================================== --> 
 <wsdl:types>
-	<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/archivageService" 
+	<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacation/archivageService" 
 	     		elementFormDefault="qualified" >
     	<xsd:element name="archiver">
          <xsd:complexType>
@@ -87,11 +87,11 @@
 </wsdl:binding>
 <!-- ======================== SERVICE (SU jbi.xml service-name) ============== --> 
 <wsdl:service name="archiverService">
-   <!-- TODO: We should use an XML binding insteadof SOAP binding to avoid to rework SOAP enveloppe on requests/replies
+   <!-- TODO: We should use an XML binding instead of SOAP binding to avoid to rework SOAP envelop on requests/replies
               exchanged between Activiti and Petals -->
    <wsdl:port name="archiveEndpointName" binding="tns:archiverSoapBinding">
       <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
-		<soap:address location="petals:///{http://petals.ow2.org/samples/se-bpmn/archivageService}archiver" />
+		<soap:address location="petals:///{http://petals.ow2.org/samples/se-bpmn/vacation/archivageService}archiver" />
 	</wsdl:port>
 </wsdl:service>
 

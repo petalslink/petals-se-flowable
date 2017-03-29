@@ -38,11 +38,13 @@ import org.ow2.petals.activitibpmn.exception.ProcessDefinitionDeclarationExcepti
 import org.ow2.petals.activitibpmn.incoming.operation.ActivitiOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.CompleteUserTaskOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.EmbeddedProcessDefinition;
-import org.ow2.petals.activitibpmn.incoming.operation.StartEventOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.MessageStartEventOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.NoneStartEventOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedWsdlParser;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.CompleteUserTaskAnnotatedOperation;
-import org.ow2.petals.activitibpmn.incoming.operation.annotated.StartEventAnnotatedOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.MessageStartEventAnnotatedOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.activitibpmn.utils.BpmnReader;
@@ -58,7 +60,6 @@ import org.w3c.dom.Document;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
-
 /**
  * @author Bertrand ESCUDIE - Linagora
  */
@@ -73,7 +74,7 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
      * An UUID generator.
      */
     private final SimpleUUIDGenerator simpleUUIDGenerator;
-	
+
     /**
      * Default constructor.
      * 
@@ -99,27 +100,27 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
     @Override
     protected void doDeploy(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         if (this.logger.isLoggable(Level.FINE)) {
-            this.logger.fine("Start ActivitiSuManager.doDeploy(SU =" + suDH.getName() + ")");
+            this.logger.fine("Start ActivitiSuManager.doDeploy(SU = " + suDH.getName() + ")");
         }
 
         final Jbi jbiDescriptor = suDH.getDescriptor();
 
-		// Check the JBI descriptor
-		if( jbiDescriptor == null || jbiDescriptor.getServices() == null
+        // Check the JBI descriptor
+        if (jbiDescriptor == null || jbiDescriptor.getServices() == null
                 || jbiDescriptor.getServices().getProvides() == null
-                || jbiDescriptor.getServices().getProvides().size() == 0) {
-			throw new PEtALSCDKException( "Invalid JBI descriptor: it does not contain a 'provides' section." );
+                || jbiDescriptor.getServices().getProvides().isEmpty()) {
+            throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain a 'provides' section.");
         }
 
-		// Check that there is only one Provides section in the SU
+        // Check that there is only one Provides section in the SU
         if (jbiDescriptor.getServices().getProvides().size() != 1) {
-			throw new PEtALSCDKException( "Invalid JBI descriptor: it must not have more than one 'provides' section." );
+            throw new PEtALSCDKException("Invalid JBI descriptor: it must not have more than one 'provides' section.");
         }
 
         // Get the provides
         final Provides provides = jbiDescriptor.getServices().getProvides().get(0);
         if (provides == null) {
-			throw new PEtALSCDKException( "Invalid JBI descriptor: the 'provides' section is invalid." );
+            throw new PEtALSCDKException("Invalid JBI descriptor: the 'provides' section is invalid.");
         }
 
         // Get the extension configuration for the Activiti process(es) to be deployed from the SU jbi.xml
@@ -128,22 +129,34 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
             throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain any component extension.");
         }
 
+        String tenantId = extensions.get(ActivitiSEConstants.TENANT_ID);
+        if (tenantId == null) {
+            // TODO: Improve the default value declaration
+            tenantId = "myTenant"; // default value
+        }
+
+        String categoryId = extensions.get(ActivitiSEConstants.CATEGORY_ID);
+        if (categoryId == null) {
+            // TODO: Improve the default value declaration
+            categoryId = "myCategory"; // default value
+        }
+
         // Read BPMN models from files of the service-unit
         final BpmnReader bpmnReader = new BpmnReader(extensions, suDH.getInstallRoot(), this.logger);
         final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels = bpmnReader.readBpmnModels();
 
         // Create processing operations
-        final List<BpmnModel> bpmnModels = new ArrayList<BpmnModel>(embeddedBpmnModels.size());
+        final List<BpmnModel> bpmnModels = new ArrayList<>(embeddedBpmnModels.size());
         for (final EmbeddedProcessDefinition embeddedBpmnModel : embeddedBpmnModels.values()) {
             bpmnModels.add(embeddedBpmnModel.getModel());
         }
-        
+
         final List<ActivitiOperation> operations = this.createProcessingOperations(suDH.getInstallRoot(),
-                suDH.getEndpointDescription(provides), bpmnModels);
+                suDH.getEndpointDescription(provides), bpmnModels, tenantId);
 
         // Deploy processes from the BPMN models into the BPMN engine
-        this.deployBpmnModels(embeddedBpmnModels, operations, suDH.getInstallRoot());
-        
+        this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, operations, suDH.getInstallRoot());
+
         // Enable processing operations
         final String edptName = provides.getEndpointName();
         final QName serviceName = provides.getServiceName();
@@ -154,18 +167,18 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
             getComponent().registerActivitiService(eptAndOperation, operation);
         }
         getComponent().logEptOperationToActivitiOperation(this.logger, Level.FINEST);
-        
+
         if (this.logger.isLoggable(Level.FINE)) {
             this.logger.fine("End ActivitiSuManager.doDeploy()");
-		}
+        }
     }
 
     @Override
     protected void doStart(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         this.logger.fine("Start ActivitiSuManager.doStart(SU =" + suDH.getName() + ")");
 
-		// TODO Manage the process suspension State be careful of multi-SU deployment for the same process
-    	
+        // TODO Manage the process suspension State be careful of multi-SU deployment for the same process
+
         this.logger.fine("End ActivitiSuManager.doStart()");
     }
 
@@ -173,7 +186,7 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
     protected void doStop(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         this.logger.fine("Start ActivitiSuManager.doStop(SU =" + suDH.getName() + ")");
 
-		// TODO Manage the process suspension State: be careful of multi SU deployement for the same process
+        // TODO Manage the process suspension State: be careful of multi SU deployement for the same process
 
         this.logger.fine("End ActivitiSuManager.doStop()");
     }
@@ -182,8 +195,8 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
     protected void doUndeploy(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         this.logger.fine("Start ActivitiSuManager.doUndeploy(SU =" + suDH.getName() + ")");
         try {
-            final String edptName = suDH.getDescriptor().getServices().getProvides()
-                    .iterator().next().getEndpointName();
+            final String edptName = suDH.getDescriptor().getServices().getProvides().iterator().next()
+                    .getEndpointName();
             // Remove the ActivitiOperation in the map with the corresponding end-point
             getComponent().removeActivitiService(edptName);
 
@@ -196,8 +209,8 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
              * EptAndOperation(edptName,operation.getLocalPart()); // Remove the ActivitiOperation in the map with the
              * corresponding end-point and Operation ((ActivitiSE)
              * this.component).removeActivitiOperation(eptAndOperation); logger.info("*** ept: "+
-             * eptAndOperation.getEptName() + " operation : "+ eptAndOperation.getOperationName());
-             * logger.info("          is removed from MAP eptOperationToActivitiOperation" ); }
+             * eptAndOperation.getEptName() + " operation : "+ eptAndOperation.getOperationName()); logger.info(
+             * "          is removed from MAP eptOperationToActivitiOperation" ); }
              */
             // TODO Manage the undeployement of the process: be careful of multi SU deployement for the same process
         } finally {
@@ -214,9 +227,9 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
      * <ul>
      * <li>the operations defined into the WSDL are updated about the deployed process instance identifier,</li>
      * <li>a process definition is deployed if it is not already deployed,</li>
-     * <li>process deployment is characterized in Activiti Database by processName / tenantId / categoryId / version,</li>
-     * <li>
-     * tenantId allows to have several instance of the same process model in different contexts: different owner,
+     * <li>process deployment is characterized in Activiti Database by processName / tenantId / categoryId / version,
+     * </li>
+     * <li>tenantId allows to have several instance of the same process model in different contexts: different owner,
      * assignee, group ....</li>
      * <li>categoryId allows to manage process lifeCycle: Dev, PreProd, Prod ...</li>
      * <li>version allows to manage several versions,</li>
@@ -228,30 +241,34 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
      * 
      * @param embeddedBpmnModels
      *            The embedded process definitions
+     * @param tenantId
+     *            The tenant identifier of the embedded process. Not {@code null}.
+     * @param categoryId
+     *            The category identifier of the embedded process. Not {@code null}.
      * @param operations
      *            The list of operations described into the WSDL
      * @throws PEtALSCDKException
      */
     private void deployBpmnModels(final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels,
-            final List<ActivitiOperation> operations, final String suRootPath)
-            throws PEtALSCDKException {
+            final String tenantId, final String categoryId, final List<ActivitiOperation> operations,
+            final String suRootPath) throws PEtALSCDKException {
+
+        assert tenantId != null;
+        assert categoryId != null;
 
         final Iterator<EmbeddedProcessDefinition> iterator = embeddedBpmnModels.values().iterator();
-		while (iterator.hasNext() ){
+        while (iterator.hasNext()) {
             final EmbeddedProcessDefinition process = iterator.next();
-			
+
             // Check that the process is not already deployed. If it exists do not deploy it again then returns its
             // ProcessDefinition.
             // This allow to deploy the same SU (process.bpmn20.xml) on several petals-se-activitibpmn for high
             // availability, ie. to create several service endpoints for the same process/tenantId/categoryId/version on
             // different Petals ESB container.
-            final RepositoryService repositoryService = getComponent().getProcessEngine()
-                    .getRepositoryService();
-            final List<ProcessDefinition> processDefinitionSearchList = repositoryService
-                    .createProcessDefinitionQuery().processDefinitionResourceName(process.getProcessFileName())
-                    .processDefinitionCategory(process.getCategoryId())
-                    .processDefinitionTenantId(process.getTenantId()).processDefinitionVersion(process.getVersion())
-                    .list();
+            final RepositoryService repositoryService = getComponent().getProcessEngine().getRepositoryService();
+            final List<ProcessDefinition> processDefinitionSearchList = repositoryService.createProcessDefinitionQuery()
+                    .processDefinitionResourceName(process.getProcessFileName()).processDefinitionCategory(categoryId)
+                    .processDefinitionTenantId(tenantId).processDefinitionVersion(process.getVersion()).list();
 
             final List<ProcessDefinition> processDefinitions;
             if (processDefinitionSearchList == null || processDefinitionSearchList.isEmpty()) {
@@ -259,8 +276,8 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
 
                 // Characterize the deployment with processFileName / tenantId / categoryId
                 db.name("Process read from: " + process.getProcessFileName());
-                db.tenantId(process.getTenantId());
-                db.category(process.getCategoryId());
+                db.tenantId(tenantId);
+                db.category(categoryId);
                 // db.addBpmnModel(process.getProcessFileName(), process.getModel());
                 // TODO: To remove: deployment using file and parameter 'suRootPath'
                 final File processFile = new File(suRootPath, process.getProcessFileName());
@@ -289,15 +306,14 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
                             + process.getVersion() + " is succesfully deployed.");
                 }
 
-			}
-			else {
+            } else {
                 if (this.logger.isLoggable(Level.INFO)) {
                     this.logger.info("The BPMN process: " + process.getProcessFileName() + " version: "
                             + process.getVersion() + " is already deployed");
                 }
-				// Set processDefinition
+                // Set processDefinition
                 processDefinitions = processDefinitionSearchList;
-			}
+            }
 
             if (this.logger.isLoggable(Level.FINE)) {
                 this.logger.fine("Process definitions deployed:");
@@ -312,7 +328,7 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
                     this.logger.fine("\t\t- TenantId      = " + processDefinition.getTenantId());
                 }
             }
-            
+
             // For each operation we must set its deployed process instance identifier
             for (final ProcessDefinition processDefinition : processDefinitions) {
                 for (final ActivitiOperation operation : operations) {
@@ -321,26 +337,33 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
                     }
                 }
             }
-		}
+        }
     }
 
     /**
      * Create the processing operations ({@link ActivitiOperation} reading annotations of the WSDL
      * 
      * @param suRootPath
-     *            The root directory of the service unit. Not <code>null</code>.
+     *            The root directory of the service unit. Not {@code null}.
      * @param wsdlDocument
-     *            The WSDL of the service provider
+     *            The WSDL of the service provider. Not {@code null}.
      * @param bpmnModels
-     *            The BPMN models embedded into the service unit
+     *            The BPMN models embedded into the service unit. Not {@code null}.
+     * @param tenantId
+     *            Tenant identifier in which the process definition is deployed. Not {@code null}.
      * @return The list of {@link ActivitiOperation} created from WSDL
      * @throws ProcessDefinitionDeclarationException
      *             An error was detected about annotations
      */
     private List<ActivitiOperation> createProcessingOperations(final String suRootPath, final Document wsdlDocument,
-            final List<BpmnModel> bpmnModels) throws ProcessDefinitionDeclarationException {
+            final List<BpmnModel> bpmnModels, final String tenantId) throws ProcessDefinitionDeclarationException {
 
-        final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(this.logger);
+        assert suRootPath != null;
+        assert wsdlDocument != null;
+        assert bpmnModels != null;
+        assert tenantId != null;
+
+        final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(tenantId, this.logger);
         final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
                 suRootPath);
         // Log all WSDL errors before to process each annotated operations
@@ -350,41 +373,45 @@ public class ActivitiSuManager extends ServiceEngineServiceUnitManager {
             }
         }
         if (annotatedOperations.isEmpty()) {
-            // No annotated operation was correctly read from the WSDL, or no annotated operation is declared in the WSDL
+            // No annotated operation was correctly read from the WSDL, or no annotated operation is declared in the
+            // WSDL
             throw new NoAnnotatedOperationDeclarationException();
         }
 
         final List<ActivitiOperation> operations = new ArrayList<>(annotatedOperations.size());
         for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
-            
+
             final QName wsdlOperation = annotatedOperation.getWsdlOperation();
             this.logger.fine("Processing WSDL annotated operation: " + wsdlOperation);
 
             // create the right ActivitiOperation according to the bpmnActionType
-            if (annotatedOperation instanceof StartEventAnnotatedOperation) {
-                operations.add(new StartEventOperation(annotatedOperation,
+            if (annotatedOperation instanceof NoneStartEventAnnotatedOperation) {
+                operations.add(new NoneStartEventOperation((NoneStartEventAnnotatedOperation) annotatedOperation,
                         getComponent().getProcessEngine().getIdentityService(),
                         getComponent().getProcessEngine().getRuntimeService(),
-                        getComponent().getProcessEngine().getHistoryService(),
-                        this.simpleUUIDGenerator, this.logger));
+                        getComponent().getProcessEngine().getHistoryService(), this.simpleUUIDGenerator, this.logger));
+            } else if (annotatedOperation instanceof MessageStartEventAnnotatedOperation) {
+                operations.add(new MessageStartEventOperation((MessageStartEventAnnotatedOperation) annotatedOperation,
+                        getComponent().getProcessEngine().getIdentityService(),
+                        getComponent().getProcessEngine().getRuntimeService(),
+                        getComponent().getProcessEngine().getHistoryService(), this.simpleUUIDGenerator, this.logger));
             } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
-                operations.add(new CompleteUserTaskOperation(annotatedOperation,
+                operations.add(new CompleteUserTaskOperation((CompleteUserTaskAnnotatedOperation) annotatedOperation,
                         getComponent().getProcessEngine().getTaskService(),
                         getComponent().getProcessEngine().getIdentityService(),
                         getComponent().getProcessEngine().getHistoryService(),
-                        getComponent().getProcessEngine().getRuntimeService(),
-                        this.logger));
+                        getComponent().getProcessEngine().getRuntimeService(), this.logger));
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported
                 // here.
-                throw new ProcessDefinitionDeclarationException(new UnsupportedActionException(wsdlOperation,
-                        annotatedOperation.getClass().getSimpleName()));
+                throw new ProcessDefinitionDeclarationException(
+                        new UnsupportedActionException(wsdlOperation, annotatedOperation.getClass().getSimpleName()));
             }
         }
 
         return operations;
     }
-    
+
     @Override
     protected ActivitiSE getComponent() {
         return (ActivitiSE) super.getComponent();

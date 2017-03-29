@@ -22,9 +22,14 @@ import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperati
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
 import static org.ow2.petals.activitibpmn.ActivitiSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
 import org.junit.ClassRule;
@@ -36,8 +41,20 @@ import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguratio
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
-import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
+import org.ow2.petals.components.activiti.generic._1.ActivateProcessInstances;
+import org.ow2.petals.components.activiti.generic._1.ActivateProcessInstancesResponse;
+import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstances;
+import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstancesResponse;
+import org.ow2.petals.samples.se_bpmn.multi_start.StartByOnlineAgent;
+import org.ow2.petals.samples.se_bpmn.multi_start.StartByWeb;
+import org.ow2.petals.samples.se_bpmn.multi_start.StartResponse;
+import org.ow2.petals.samples.se_bpmn.multi_start.archivageservice.Archiver;
+import org.ow2.petals.samples.se_bpmn.multi_start.archivageservice.ArchiverResponse;
+import org.ow2.petals.samples.se_bpmn.multi_start.coreservice.Execute;
+import org.ow2.petals.samples.se_bpmn.multi_start.coreservice.ExecuteResponse;
+
+import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
 /**
  * Abstract class for unit tests about request processing
@@ -45,23 +62,28 @@ import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory
  * @author Christophe DENEUX - Linagora
  * 
  */
-public abstract class SimpleProcessTestEnvironment extends AbstractTestEnvironment {
+public abstract class MultistartProcessTestEnvironment extends AbstractTestEnvironment {
 
-    private static final String VACATION_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/vacationService";
+    protected static final String MULTISTART_SU = "multi-start-su";
 
-    protected static final QName VACATION_INTERFACE = new QName(VACATION_NAMESPACE, "demandeDeConges");
+    private static final String MULTISTART_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/multi-start";
 
-    protected static final QName VACATION_SERVICE = new QName(VACATION_NAMESPACE, "demandeDeCongesService");
+    protected static final QName MULTISTART_INTERFACE = new QName(MULTISTART_NAMESPACE, "multistart");
 
-    protected static final String VACATION_ENDPOINT = "testEndpointName";
+    protected static final QName MULTISTART_SERVICE = new QName(MULTISTART_NAMESPACE, "multiStartService");
 
-    protected static final QName OPERATION_JIRA = new QName(VACATION_NAMESPACE, "jira_PETALSSEACTIVITI-4");
+    protected static final String MULTISTART_ENDPOINT = "edpMultiStart";
 
-    protected static final QName OPERATION_DEMANDERCONGES = new QName(VACATION_NAMESPACE, "demanderConges");
+    protected static final QName OPERATION_START_BY_WEB = new QName(MULTISTART_NAMESPACE, "start-by-web");
 
-    protected static final QName OPERATION_VALIDERDEMANDE = new QName(VACATION_NAMESPACE, "validerDemande");
+    protected static final QName OPERATION_START_BY_ONLINE_AGENT = new QName(MULTISTART_NAMESPACE,
+            "start-by-online-agent");
 
-    private static final String ARCHIVE_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/archivageService";
+    protected static final String BPMN_PROCESS_DEFINITION_KEY = "multi-start";
+
+    protected static final String BPMN_USER = "kermit";
+
+    private static final String ARCHIVE_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/multi-start/archivageService";
 
     protected static final QName ARCHIVE_INTERFACE = new QName(ARCHIVE_NAMESPACE, "archiver");
 
@@ -71,87 +93,46 @@ public abstract class SimpleProcessTestEnvironment extends AbstractTestEnvironme
 
     protected static final QName ARCHIVER_OPERATION = new QName(ARCHIVE_NAMESPACE, "archiver");
 
-    protected static final String NATIVE_TASKS_SVC_CFG = "native-tasks";
+    private static final String CORE_SVC_NAMESPACE = "http://petals.ow2.org/samples/se-bpmn/multi-start/coreService";
 
-    protected static final String NATIVE_PROCESSINSTANCES_SVC_CFG = "native-process-instances";
+    protected static final QName CORE_SVC_INTERFACE = new QName(CORE_SVC_NAMESPACE, "core");
 
-    protected static final String BPMN_PROCESS_DEFINITION_KEY = "vacationRequest";
+    protected static final QName CORE_SVC_SERVICE = new QName(CORE_SVC_NAMESPACE, "coreService");
 
-    protected static final String BPMN_PROCESS_1ST_USER_TASK_KEY = "handleRequest";
+    protected static final String CORE_SVC_ENDPOINT = "coreServiceEndpointName";
 
-    protected static final String BPMN_PROCESS_2ND_USER_TASK_KEY = "adjustVacationRequestTask";
-
-    protected static final String BPMN_USER_DEMANDEUR = "demandeur";
-
-    protected static final String BPMN_USER_VALIDEUR = "valideur";
+    protected static final QName CORE_SVC_OPERATION = new QName(CORE_SVC_NAMESPACE, "execute");
 
     protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
             // A async job executor is required to process service task
-            .setParameter(
-                    new QName(ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
+            .setParameter(new QName(ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
-            .setParameter(
-                    new QName(ActivitiSEConstants.NAMESPACE_COMP, ActivitiSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE),
-                    // Generate identity service configuration files
-                    new ParameterGenerator() {
-
-                        @Override
-                        public String generate() throws Exception {
-                            final URL identityServiceCfg = Thread.currentThread().getContextClassLoader()
-                                    .getResource("su/valid/identityService.properties");
-                            assertNotNull("Identity service config file is missing !", identityServiceCfg);
-                            return new File(identityServiceCfg.toURI()).getAbsolutePath();
-                        }
-
-                    })
-            .registerServiceToDeploy(VALID_SU, new ServiceConfigurationFactory() {
+            .registerServiceToDeploy(MULTISTART_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/vacationRequest.wsdl");
+                            .getResource("su/multi-start/multi-start.wsdl");
                     assertNotNull("WSDl not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                            VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, wsdlUrl);
+                            MULTISTART_INTERFACE, MULTISTART_SERVICE, MULTISTART_ENDPOINT, wsdlUrl);
 
-                    final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/demanderCongesResponse.xsl");
-                    assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
-                    serviceConfiguration.addResource(demanderCongesResponseXslUrl);
-
-                    final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/validerDemandeResponse.xsl");
-                    assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
-                    serviceConfiguration.addResource(validerDemandeResponseXslUrl);
-
-                    final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/ajusterDemandeResponse.xsl");
-                    assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
-                    serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
-
-                    final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/numeroDemandeInconnu.xsl");
-                    assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
-                    serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
-
-                    final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/demandeDejaValidee.xsl");
-                    assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
-                    serviceConfiguration.addResource(demandeDejaValideeXslUrl);
+                    final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/multi-start/startResponse.xsl");
+                    assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
+                    serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/valid/vacationRequest.bpmn20.xml");
+                            .getResource("su/multi-start/multi-start.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "process_file"),
-                            "vacationRequest.bpmn20.xml");
+                            "multi-start.bpmn");
                     serviceConfiguration.setParameter(new QName(ActivitiSEConstants.NAMESPACE_SU, "version"), "1");
 
                     // Consume service 'archiver'
-                    // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
-                    // between Activiti and other services
                     final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(
                             ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
                     serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
@@ -190,7 +171,9 @@ public abstract class SimpleProcessTestEnvironment extends AbstractTestEnvironme
                 public QName getNativeService() {
                     return ITG_PROCESSINSTANCES_SERVICE;
                 }
-            }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE);
+            }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE)
+            .registerExternalServiceProvider(CORE_SVC_ENDPOINT, CORE_SVC_SERVICE,
+                    CORE_SVC_INTERFACE);
 
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
@@ -198,8 +181,43 @@ public abstract class SimpleProcessTestEnvironment extends AbstractTestEnvironme
 
     protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
 
+    protected static Marshaller MARSHALLER;
+
+    protected static Unmarshaller UNMARSHALLER;
+
+    static {
+        try {
+            final JAXBContext context = JAXBContext.newInstance(Archiver.class, ArchiverResponse.class,
+                    StartByWeb.class, StartByOnlineAgent.class, StartResponse.class, Execute.class,
+                    ExecuteResponse.class, SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
+                    ActivateProcessInstances.class, ActivateProcessInstancesResponse.class);
+            UNMARSHALLER = context.createUnmarshaller();
+            MARSHALLER = context.createMarshaller();
+            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+        } catch (final JAXBException e) {
+            throw new UncheckedException(e);
+        }
+    }
+
     @Override
     protected ComponentUnderTest getComponentUnderTest() {
         return COMPONENT_UNDER_TEST;
+    }
+
+    /**
+     * Convert a JAXB element to bytes
+     * 
+     * @param jaxbElement
+     *            The JAXB element to write as bytes
+     */
+    protected static byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            MARSHALLER.marshal(jaxbElement, baos);
+            return baos.toByteArray();
+        } finally {
+            baos.close();
+        }
     }
 }

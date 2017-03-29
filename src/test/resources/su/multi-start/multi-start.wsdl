@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions name="multiStartProcessServices" targetNamespace="http://petals.ow2.org/samples/se-bpmn/multi-start"
+   xmlns:tns="http://petals.ow2.org/samples/se-bpmn/multi-start" xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/multi-start" elementFormDefault="qualified">
+
+         <xsd:complexType name="TStart">
+            <xsd:sequence>
+               <xsd:element name="customer" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               <xsd:element name="address" type="xsd:string" minOccurs="1" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:element name="start-by-web">
+            <xsd:complexType>
+               <xsd:complexContent>
+                  <xsd:extension base="tns:TStart" />
+               </xsd:complexContent>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="start-by-online-agent">
+            <xsd:complexType>
+               <xsd:complexContent>
+                  <xsd:extension base="tns:TStart">
+                     <xsd:sequence>
+                        <xsd:element name="agent" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                     </xsd:sequence>
+                  </xsd:extension>
+               </xsd:complexContent>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="start-response">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="case-file-number" minOccurs="1" maxOccurs="1" type="xsd:string" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:message name="start-by-web">
+      <wsdl:part name="parameters" element="tns:start-by-web" />
+   </wsdl:message>
+   <wsdl:message name="start-by-online-agent">
+      <wsdl:part name="parameters" element="tns:start-by-online-agent" />
+   </wsdl:message>
+   <wsdl:message name="start-response">
+      <wsdl:part name="parameters" element="tns:start-response" />
+   </wsdl:message>
+
+   <wsdl:portType name="multistart">
+      <wsdl:operation name="start-by-web">
+         <wsdl:input message="tns:start-by-web" />
+         <wsdl:output message="tns:start-response" />
+      </wsdl:operation>
+      <wsdl:operation name="start-by-online-agent">
+         <wsdl:input message="tns:start-by-online-agent" />
+         <wsdl:output message="tns:start-response" />
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="multistartBinding" type="tns:multistart">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="start-by-web">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-bpmn/start-by-web" />
+         <bpmn:operation processDefinitionId="multi-start" action="startEvent" start-event-message-name="startByWeb" />
+         <bpmn:userId>/*[local-name()='start-by-web']/*[local-name()='customer']</bpmn:userId>
+         <bpmn:variable name="address">/*[local-name()='start-by-web']/*[local-name()='address']</bpmn:variable>
+         <bpmn:output>
+            startResponse.xsl
+         </bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="start-by-online-agent">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-bpmn/start-by-online-agent" />
+         <bpmn:operation processDefinitionId="multi-start" action="startEvent" start-event-message-name="startByOnlineAgent" />
+         <bpmn:userId>/*[local-name()='start-by-online-agent']/*[local-name()='customer']</bpmn:userId>
+         <bpmn:variable name="address">/*[local-name()='start-by-online-agent']/*[local-name()='address']</bpmn:variable>
+         <bpmn:variable name="agent">/*[local-name()='start-by-online-agent']/*[local-name()='agent']</bpmn:variable>
+         <bpmn:output>
+            startResponse.xsl
+         </bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="multiStartService">
+      <wsdl:port name="edpMultiStart" binding="tns:multistartBinding">
+         <soap:address location="http://localhost:9003/multistart" />
+      </wsdl:port>
+   </wsdl:service>
+
+</wsdl:definitions>

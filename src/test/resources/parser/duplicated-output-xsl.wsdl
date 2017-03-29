@@ -16,104 +16,93 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<!-- ======================== DEFINITION ==================================== --> 
-<wsdl:definitions
-	name="demandeDeCongesService"
-	targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
-		xmlns:tns="http://petals.ow2.org/se/activiti/unit-test/parser"
-		xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
-		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-		xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
- 	   	xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" >
+<wsdl:definitions name="demandeDeCongesService" targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
+   xmlns:tns="http://petals.ow2.org/se/activiti/unit-test/parser" xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
-<!-- ======================== TYPES ========================================== --> 
-<wsdl:types>
-	<xsd:schema targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser" 
-	     		elementFormDefault="qualified" >
-    	<xsd:element name="demande">
-       		<xsd:complexType>
-       			<xsd:all>
-          			<xsd:element name="demandeur" minOccurs="1" maxOccurs="1" type="xsd:string" />
-         			<xsd:element name="nbJourDde" minOccurs="1" maxOccurs="1" type="xsd:long" />
-          			<xsd:element name="DateDebutDde" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
-         			<xsd:element name="motifDde" minOccurs="0" maxOccurs="1" type="xsd:string" />
-				</xsd:all>
- 			</xsd:complexType>
-     	</xsd:element>
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser" elementFormDefault="qualified">
+         <xsd:element name="demande">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="demandeur" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="nbJourDde" minOccurs="1" maxOccurs="1" type="xsd:long" />
+                  <xsd:element name="DateDebutDde" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
+                  <xsd:element name="motifDde" minOccurs="0" maxOccurs="1" type="xsd:string" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
 
-     	<xsd:element name="numero">
-      		<xsd:complexType>
-       			<xsd:all>
-          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
-				</xsd:all>
-			</xsd:complexType>
-     	</xsd:element>
+         <xsd:element name="numero">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
 
-     	<xsd:element name="erreur">
-      		<xsd:complexType>
-       			<xsd:all>
-          			<xsd:element name="utilisateur" minOccurs="1" maxOccurs="1" type="xsd:string" />
-          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
-          			<xsd:element name="message" minOccurs="1" maxOccurs="1" type="xsd:string" />
-				</xsd:all>
-			</xsd:complexType>
-     	</xsd:element>
+         <xsd:element name="erreur">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="utilisateur" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="message" minOccurs="1" maxOccurs="1" type="xsd:string" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
 
-     	<xsd:element name="validation">
-       		<xsd:complexType>
- 				<xsd:all>
-          			<xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
-          			<xsd:element name="valideur" minOccurs="1" maxOccurs="1"  type="xsd:string" />
-        			<xsd:element name="motifRefus" minOccurs="0" maxOccurs="1" type="xsd:string" />
-      	    		<xsd:element name="approbation" minOccurs="1" maxOccurs="1" >
-        	  			<xsd:simpleType>
-    						<xsd:restriction base="xsd:string">
-      							<xsd:enumeration id="Approuvee" value="true" />
-      							<xsd:enumeration id="Rejetee" value="false" />
-    						</xsd:restriction>
-	  					</xsd:simpleType>
-    	      		</xsd:element>  					
-				</xsd:all>
-			</xsd:complexType>
-     	</xsd:element>
- 	</xsd:schema>
-</wsdl:types>
-<!-- ======================== MESSAGES ======================================= --> 
-<wsdl:message name="demandeConges">
-	<wsdl:part name="parameters" element="tns:demande" />
-</wsdl:message>
-<wsdl:message name="numeroDemande">
-    <wsdl:part name="parameters" element="tns:numero" />
-</wsdl:message>
-<wsdl:message name="faute">
-    <wsdl:part name="parameters" element="tns:erreur" />
-</wsdl:message>
-<wsdl:message name="validationDdeConges">
-	<wsdl:part name="parameters" element="tns:validation" />
-</wsdl:message>
-<!-- ======================== PORT TYPE (SU jbi.xml interface-name)=============== --> 
-<wsdl:portType name="demandeDeConges">
-	<wsdl:operation name="demanderConges">
-    	<wsdl:input message="tns:demandeConges" />
-     	<wsdl:output message="tns:numeroDemande" />
-     	<wsdl:fault message="tns:faute" />
-   </wsdl:operation>
-    <wsdl:operation name="validerDemande">
-      	<wsdl:input message="tns:validationDdeConges" />
-     	<wsdl:output message="tns:numeroDemande" />
-     	<wsdl:fault message="tns:faute" />
-	</wsdl:operation>
-</wsdl:portType>
-<!-- ======================== BINDINGS ======================================= --> 
-<wsdl:binding name="demandeDeCongesBinding" type="tns:demandeDeConges" > 
-<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
-    <wsdl:operation name="demanderConges">
-      	<soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
-   	   <bpmn:operation
-   	   		processDefinitionId="vacationRequest"
-			      action="startEvent"
-		         actionId="request" />
-   	   <bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
+         <xsd:element name="validation">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="numeroDde" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="valideur" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="motifRefus" minOccurs="0" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="approbation" minOccurs="1" maxOccurs="1">
+                     <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                           <xsd:enumeration id="Approuvee" value="true" />
+                           <xsd:enumeration id="Rejetee" value="false" />
+                        </xsd:restriction>
+                     </xsd:simpleType>
+                  </xsd:element>
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:message name="demandeConges">
+      <wsdl:part name="parameters" element="tns:demande" />
+   </wsdl:message>
+   <wsdl:message name="numeroDemande">
+      <wsdl:part name="parameters" element="tns:numero" />
+   </wsdl:message>
+   <wsdl:message name="faute">
+      <wsdl:part name="parameters" element="tns:erreur" />
+   </wsdl:message>
+   <wsdl:message name="validationDdeConges">
+      <wsdl:part name="parameters" element="tns:validation" />
+   </wsdl:message>
+
+   <wsdl:portType name="demandeDeConges">
+      <wsdl:operation name="demanderConges">
+         <wsdl:input message="tns:demandeConges" />
+         <wsdl:output message="tns:numeroDemande" />
+         <wsdl:fault message="tns:faute" />
+      </wsdl:operation>
+      <wsdl:operation name="validerDemande">
+         <wsdl:input message="tns:validationDdeConges" />
+         <wsdl:output message="tns:numeroDemande" />
+         <wsdl:fault message="tns:faute" />
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="demandeDeCongesBinding" type="tns:demandeDeConges">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="demanderConges">
+         <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
+         <bpmn:operation processDefinitionId="vacationRequest" action="startEvent" none-start-event-id="request" />
+         <bpmn:processId outMsg="numeroDde" faultMsg="numeroDde" />
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable name="numberOfDays">
             /*[local-name()='demande']/*[local-name()='nbJourDde']
@@ -124,22 +113,23 @@
          <bpmn:variable name="vacationMotivation">
             /*[local-name()='demande']/*[local-name()='motifDde']
          </bpmn:variable>
-         <bpmn:output>valid.xsl</bpmn:output>
-         <bpmn:output>2nd-valid.xsl</bpmn:output>
-      	<wsdl:input>
-        	<soap:body use="literal" />
-      	</wsdl:input>
-      	<wsdl:output>
-        	<soap:body use="literal" />
-      	</wsdl:output>
-	</wsdl:operation>
-    <wsdl:operation name="validerDemande">
-      	<soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
-  	   	<bpmn:operation
-               processDefinitionId="vacationRequest"
-   	   		action="userTask" 
-   	   		actionId="handleRequest" />
-   	   <bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde"/>
+         <bpmn:output>
+            valid.xsl
+         </bpmn:output>
+         <bpmn:output>
+            2nd-valid.xsl
+         </bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="validerDemande">
+         <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
+         <bpmn:operation processDefinitionId="vacationRequest" action="userTask" user-task-id="handleRequest" />
+         <bpmn:processId inMsg="numeroDde" outMsg="numeroDde" faultMsg="numeroDde" />
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
          <bpmn:variable name="vacationApproved">
             /*[local-name()='validation']/*[local-name()='approbation']
@@ -147,21 +137,25 @@
          <bpmn:variable name="managerMotivation">
             /*[local-name()='validation']/*[local-name()='motifRefus']
          </bpmn:variable>
-         <bpmn:output>valid.xsl</bpmn:output>
-         <bpmn:output>2nd-valid.xsl</bpmn:output>
-      	<wsdl:input>
-        	<soap:body use="literal" />
-      	</wsdl:input>
-      	<wsdl:output>
-        	<soap:body use="literal" />
-      	</wsdl:output>
-	</wsdl:operation>
-</wsdl:binding>
-<!-- ======================== SERVICE (SU jbi.xml service-name) ============== --> 
-<wsdl:service name="demandeDeCongesService">
-	<wsdl:port name="autogenerate" binding="tns:demandeDeCongesBinding">
-		<soap:address location="http://localhost:9003/demandeDeConges" />
-	</wsdl:port>
-</wsdl:service>
+         <bpmn:output>
+            valid.xsl
+         </bpmn:output>
+         <bpmn:output>
+            2nd-valid.xsl
+         </bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="demandeDeCongesService">
+      <wsdl:port name="autogenerate" binding="tns:demandeDeCongesBinding">
+         <soap:address location="http://localhost:9003/demandeDeConges" />
+      </wsdl:port>
+   </wsdl:service>
 
 </wsdl:definitions>

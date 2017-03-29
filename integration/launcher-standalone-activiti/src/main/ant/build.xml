@@ -277,6 +277,10 @@
             <flowInstanceIdEquals expected="${process-flow-instance-id}" />
          </assertFlowTreeNode>
       </petals-assert-flow-tree>
+      
+      <!-- Sleep few seconds waiting the end of process instances -->
+      <!-- TODO: Use a check against MONIT traces to known when the last process instance is ended -->
+      <sleep seconds="15"/>
 
       <petals-soapui-test testCase="Nominal TestCase with adjustment" />
       <petals-soapui-test testCase="Faulty TestCase - Unexpected validator" />

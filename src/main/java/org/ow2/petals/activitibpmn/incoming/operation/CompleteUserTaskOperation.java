@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
+import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.activiti.engine.HistoryService;
@@ -35,7 +36,6 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
-import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.CompleteUserTaskAnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.OperationProcessingException;
@@ -80,24 +80,36 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
     private final HistoryService historyService;
 
     /**
+     * The compiled XPath expression of the process instance identifier placeholder
+     */
+    protected final XPathExpression proccesInstanceIdXPathExpr;
+
+    /**
+     * The task identifier on which the action must be realize on the BPMN process side
+     */
+    protected final String userTaskId;
+
+    /**
      * @param annotatedOperation
      *            Annotations of the operation to create
      * @param logger
      */
-    public CompleteUserTaskOperation(final AnnotatedOperation annotatedOperation, final TaskService taskService,
-            final IdentityService identityService, final HistoryService historyService,
+    public CompleteUserTaskOperation(final CompleteUserTaskAnnotatedOperation annotatedOperation,
+            final TaskService taskService, final IdentityService identityService, final HistoryService historyService,
             final RuntimeService runtimeService, final Logger logger) {
         super(annotatedOperation, logger);
         this.identityService = identityService;
         this.taskService = taskService;
         this.historyService = historyService;
         this.runtimeService = runtimeService;
+        this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();
+        this.userTaskId = annotatedOperation.getUserTaskId();
     }
 
     @Override
     protected void doExecute(final Document incomingPayload, final String bpmnUserId,
             final Map<String, Object> taskVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
-                    throws OperationProcessingException {
+            throws OperationProcessingException {
 
         // Get the process instance identifier
         final String processInstanceId;
@@ -118,7 +130,7 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
 
         // Get the task
         final List<Task> taskList = this.taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(this.actionId).taskCandidateUser(bpmnUserId).list();
+                .taskDefinitionKey(this.userTaskId).taskCandidateUser(bpmnUserId).list();
         if ((taskList == null) || (taskList.isEmpty())) {
             throw this.investigateMissingTask(processInstanceId, bpmnUserId);
         }
@@ -156,26 +168,28 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
                 .taskId(taskToComplete.getId()).includeProcessVariables().includeTaskLocalVariables().singleResult();
         if (executedTask == null) {
             // This exception should not occur
-            throw new OperationProcessingException(this.wsdlOperation, String.format(
-                    "The just completed task '%s' is not found in the history for the process instance '%s'.",
-                    this.actionId, processInstanceId));
+            throw new OperationProcessingException(this.wsdlOperation,
+                    String.format(
+                            "The just completed task '%s' is not found in the history for the process instance '%s'.",
+                            this.userTaskId, processInstanceId));
         }
         for (final Entry<String, Object> processVariable : executedTask.getTaskLocalVariables().entrySet()) {
             // TODO: Create unit test for these task local variables
-            outputNamedValues.put(
-                    new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_TASK_PARAMS, processVariable.getKey()),
+            outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_TASK_PARAMS, processVariable.getKey()),
                     XslUtils.convertBpmnVariableValueToXslParam(processVariable.getValue()));
 
         }
         for (final Entry<String, Object> processVariable : executedTask.getProcessVariables().entrySet()) {
-            outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS,
-                    processVariable.getKey()), XslUtils.convertBpmnVariableValueToXslParam(processVariable.getValue()));
+            outputNamedValues.put(
+                    new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS, processVariable.getKey()),
+                    XslUtils.convertBpmnVariableValueToXslParam(processVariable.getValue()));
 
         }
         outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
                 SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID), processInstanceId);
-        outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
-                SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), bpmnUserId);
+        outputNamedValues.put(
+                new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS, SCHEMA_OUTPUT_XSLT_PARAM_USER_ID),
+                bpmnUserId);
     }
 
     /**
@@ -183,7 +197,8 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
      * Investigate why no active task was found for the process instance identifier.
      * </p>
      * <p>
-     * Several possible causes:</ul>
+     * Several possible causes:
+     * </ul>
      * <li>the process instance id does not exist,</li>
      * <li>the process instance is finished,</li>
      * <li>the task was completed with a previous service call,</li>
@@ -200,36 +215,44 @@ public class CompleteUserTaskOperation extends ActivitiOperation {
      * @throws OperationProcessingException
      *             No cause found.
      */
-    private OperationProcessingException investigateMissingTask(final String processInstanceId, final String bpmnUserId) {
+    private OperationProcessingException investigateMissingTask(final String processInstanceId,
+            final String bpmnUserId) {
 
         if (this.historyService.createHistoricProcessInstanceQuery().finished().processInstanceId(processInstanceId)
                 .singleResult() != null) {
             // The process instance is finished, so the task is finished !
-            return new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
-        } else if (this.runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult() == null) {
+            return new TaskCompletedException(this.wsdlOperation, processInstanceId, this.userTaskId);
+        } else if (this.runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId)
+                .singleResult() == null) {
             // No active process instance found for the process instance identifier
             return new ProcessInstanceNotFoundException(this.wsdlOperation, processInstanceId);
-        } else if (this.historyService.createHistoricTaskInstanceQuery().finished()
-                .processInstanceId(processInstanceId).taskDefinitionKey(this.actionId).singleResult() != null) {
+        } else if (this.historyService.createHistoricTaskInstanceQuery().finished().processInstanceId(processInstanceId)
+                .taskDefinitionKey(this.userTaskId).singleResult() != null) {
             // The task of the active process instance is finished
-            return new TaskCompletedException(this.wsdlOperation, processInstanceId, this.actionId);
+            return new TaskCompletedException(this.wsdlOperation, processInstanceId, this.userTaskId);
         } else if (this.taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(this.actionId).singleResult() != null) {
+                .taskDefinitionKey(this.userTaskId).singleResult() != null) {
             // The task assignee is not the expected one
             // TODO: Add a unit test
-            return new UnexpectedUserException(this.wsdlOperation, processInstanceId, this.actionId, bpmnUserId);
+            return new UnexpectedUserException(this.wsdlOperation, processInstanceId, this.userTaskId, bpmnUserId);
         } else {
             // This error case should not occur. If this error occurs, it is likely that an business error case is
             // missing from the above conditions
-            return new OperationProcessingException(wsdlOperation, String.format(
-                    "The task '%s' is not a current user task to complete for the process instance '%s'.",
-                    this.actionId, processInstanceId));
+            return new OperationProcessingException(wsdlOperation,
+                    String.format("The task '%s' is not a current user task to complete for the process instance '%s'.",
+                            this.userTaskId, processInstanceId));
         }
     }
 
     @Override
     public String getAction() {
         return CompleteUserTaskAnnotatedOperation.BPMN_ACTION;
+    }
+
+    @Override
+    protected void logActivitiOperation() {
+        super.logActivitiOperation();
+        this.logger.fine("Activiti User Task Id = " + this.userTaskId);
     }
 
 }

@@ -73,8 +73,8 @@ import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstances;
 import org.ow2.petals.components.activiti.generic._1.SuspendProcessInstancesResponse;
 import org.ow2.petals.components.activiti.generic._1.Task;
 import org.ow2.petals.components.activiti.generic._1.Variable;
-import org.ow2.petals.samples.se_bpmn.archivageservice.Archiver;
-import org.ow2.petals.samples.se_bpmn.archivageservice.ArchiverResponse;
+import org.ow2.petals.samples.se_bpmn.vacation.archivageservice.Archiver;
+import org.ow2.petals.samples.se_bpmn.vacation.archivageservice.ArchiverResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.AckResponse;
 import org.ow2.petals.samples.se_bpmn.vacationservice.Demande;
 import org.ow2.petals.samples.se_bpmn.vacationservice.DemandeDejaValidee;
@@ -92,7 +92,7 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class ServiceProviderSimpleProcessTest extends SimpleProcessTestEnvironment {
+public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvironment {
 
     @AfterClass
     public static void assertTechnicalMonitoringMetrics()
@@ -229,7 +229,7 @@ public class ServiceProviderSimpleProcessTest extends SimpleProcessTestEnvironme
         // Send the 1st valid request for start event 'request
         final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
                 OPERATION_DEMANDERCONGES, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                this.toByteArray(requestBean_1));
+                toByteArray(requestBean_1));
 
         // Assert the response of the 1st valid request
         final ResponseMessage responseMsg_1 = COMPONENT.sendAndGetResponse(request_1);
@@ -403,7 +403,7 @@ public class ServiceProviderSimpleProcessTest extends SimpleProcessTestEnvironme
 
         final RequestToProviderMessage request_2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VALID_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                this.toByteArray(requestBean_2));
+                toByteArray(requestBean_2));
 
         // Assert the response of the 2nd valid request
         final ResponseMessage responseMsg_2 = COMPONENT.sendAndGetResponse(request_2, service);

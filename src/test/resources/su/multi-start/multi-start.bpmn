@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath"
+   targetNamespace="http://petals.ow2.org/samples/se-bpmn/multistartProcess" xmlns:process="http://petals.ow2.org/samples/se-bpmn/multistartProcess"
+   xmlns:archivage="http://petals.ow2.org/samples/se-bpmn/multi-start/archivageService" xmlns:notify="http://petals.ow2.org/samples/se-bpmn/multi-start/notifyService"
+   xmlns:core-svc="http://petals.ow2.org/samples/se-bpmn/multi-start/coreService" xmlns:multi-start-svc="http://petals.ow2.org/samples/se-bpmn/multi-start">
+             
+   <!-- ==========================================
+           Declaration of the Petals services
+        ========================================== -->
+   <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
+   <import location="classpath:su/multi-start/archivageService.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start/archivageService"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+   <import location="classpath:su/multi-start/notifyService.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start/notifyService"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+   <import location="classpath:su/multi-start/coreService.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start/coreService"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+   <import location="classpath:su/multi-start/multi-start.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <interface name="Archive Service" implementationRef="archivage:archiver">
+      <operation id="archiveOperation" name="Archive Operation" implementationRef="archivage:archiver">
+         <inMessageRef>process:archiverRequestMessage</inMessageRef>
+         <outMessageRef>process:archiverResponseMessage</outMessageRef>
+      </operation>
+   </interface>
+   <interface name="Notify Service" implementationRef="notify:notify">
+      <operation id="notifyOperation" name="Notify Operation" implementationRef="notify:notify">
+         <inMessageRef>process:notifyRequestMessage</inMessageRef>
+         <outMessageRef>process:notifyResponseMessage</outMessageRef>
+      </operation>
+   </interface>
+   <interface name="Core Service" implementationRef="core-svc:core">
+      <operation id="executeOperation" name="Core service execution operation" implementationRef="core-svc:execute">
+         <inMessageRef>process:coreSvcExecuteRequestMessage</inMessageRef>
+         <outMessageRef>process:coreSvcExecuteResponseMessage</outMessageRef>
+      </operation>
+   </interface>
+
+   <message id="archiverRequestMessage" itemRef="process:archiverRequestItem" />
+   <message id="archiverResponseMessage" itemRef="process:archiverResponseItem" />
+   <message id="notifyRequestMessage" itemRef="process:notifyRequestItem" />
+   <message id="notifyResponseMessage" itemRef="process:notifyResponseItem" />
+   <message id="coreSvcExecuteRequestMessage" itemRef="process:coreSvcExecuteRequestItem" />
+   <message id="coreSvcExecuteResponseMessage" itemRef="process:coreSvcExecuteResponseItem" />
+
+   <itemDefinition id="archiverRequestItem" structureRef="archivage:archiver" />
+   <itemDefinition id="archiverResponseItem" structureRef="archivage:archiverResponse" />
+   <itemDefinition id="notifyRequestItem" structureRef="archivage:notify" />
+   <itemDefinition id="notifyResponseItem" structureRef="archivage:notifyResponse" />
+   <itemDefinition id="coreSvcExecuteRequestItem" structureRef="core-svc:execute" />
+   <itemDefinition id="coreSvcExecuteResponseItem" structureRef="core-svc:executeResponse" />
+
+   <collaboration id="Collaboration">
+      <participant id="pool2" name="Department" processRef="multi-start" />
+   </collaboration>
+
+   <message id="msg-start-by-web" name="startByWeb" />
+   <message id="msg-start-by-online-agent" name="startByOnlineAgent" />
+   <message id="msg-start-by-phone" name="startByPhone" />
+   <message id="msg-start-by-mail" name="startBy-Mail" />
+
+   <process id="multi-start" name="Multi-start process" isExecutable="true">
+      <laneSet id="laneSet_multi-start">
+         <lane id="lane2" name="Customer reception">
+            <flowNodeRef>exclusivegateway2</flowNodeRef>
+            <flowNodeRef>usertask3</flowNodeRef>
+            <flowNodeRef>boundarytimer1</flowNodeRef>
+            <flowNodeRef>startevent-by-web</flowNodeRef>
+            <flowNodeRef>startevent-by-online-agent</flowNodeRef>
+            <flowNodeRef>startevent-by-phone</flowNodeRef>
+            <flowNodeRef>startevent-by-mail</flowNodeRef>
+            <flowNodeRef>exclusivegateway1</flowNodeRef>
+            <flowNodeRef>archive-attachments</flowNodeRef>
+            <flowNodeRef>notify-user</flowNodeRef>
+         </lane>
+         <lane id="lane3" name="Mail reception">
+            <flowNodeRef>usertask1</flowNodeRef>
+            <flowNodeRef>usertask2</flowNodeRef>
+            <flowNodeRef>archive-form-and-attachments</flowNodeRef>
+         </lane>
+         <lane id="lane4" name="CRM">
+            <flowNodeRef>endevent1</flowNodeRef>
+            <flowNodeRef>core-svc</flowNodeRef>
+         </lane>
+      </laneSet>
+
+      <startEvent id="startevent-by-web" name="By web" activiti:initiator="customer">
+         <extensionElements>
+            <activiti:formProperty id="address" name="Customer adress" type="string" required="true" />
+         </extensionElements>
+         <messageEventDefinition messageRef="msg-start-by-web" />
+      </startEvent>
+      <sequenceFlow id="flow23" sourceRef="startevent-by-web" targetRef="exclusivegateway2" />
+
+      <startEvent id="startevent-by-online-agent" name="By online agent" activiti:initiator="customer">
+         <extensionElements>
+            <activiti:formProperty id="address" name="Customer adress" type="string" required="true" />
+            <activiti:formProperty id="agent" name="Online agent" type="string" required="true" />
+         </extensionElements>
+         <messageEventDefinition messageRef="msg-start-by-online-agent" />
+      </startEvent>
+      <sequenceFlow id="flow24" sourceRef="startevent-by-online-agent" targetRef="archive-attachments" />
+      <serviceTask id="archive-attachments" name="Archive attachments" implementation="##WebService"
+         operationRef="process:archiveOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveAttachment" />
+            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTaskArchiveAttachment" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachment</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachment</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachment.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow15" sourceRef="archive-attachments" targetRef="exclusivegateway2" />
+
+      <startEvent id="startevent-by-phone" name="By phone" activiti:initiator="customer">
+         <messageEventDefinition messageRef="msg-start-by-phone" />
+      </startEvent>
+      <sequenceFlow id="flow25" sourceRef="startevent-by-phone" targetRef="usertask3" />
+      <userTask id="usertask3" name="Wait attachments that should be received by mail" />
+      <boundaryEvent id="boundarytimer1" name="Timer" attachedToRef="usertask3" cancelActivity="false">
+         <timerEventDefinition>
+            <timeCycle>R10P1D</timeCycle>
+         </timerEventDefinition>
+      </boundaryEvent>
+      <sequenceFlow id="flow11a" sourceRef="boundarytimer1" targetRef="notify-user" />
+      <serviceTask id="notify-user" name="Notify user to send attachements or to cancel its request"
+         implementation="##WebService" operationRef="process:notifyOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:notifyRequestItem" id="dataInputOfServiceTaskNotify" />
+            <dataOutput itemSubjectRef="process:notifyRequestItem" id="dataOutputOfServiceTaskNotify" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskNotify</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskNotify</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskNotify.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow11b" sourceRef="notify-user" targetRef="usertask3" />
+      <sequenceFlow id="flow26" sourceRef="usertask3" targetRef="exclusivegateway1" />
+      <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway" default="flow16" />
+      <sequenceFlow id="flow20" name="Request canceled" sourceRef="exclusivegateway1" targetRef="endevent1">
+         <conditionExpression xsi:type="tFormalExpression"><![CDATA[${requestCanceled == 'true'}]]></conditionExpression>
+      </sequenceFlow>
+      <sequenceFlow id="flow16" name="Attachments received" sourceRef="exclusivegateway1" targetRef="usertask1" />
+
+      <startEvent id="startevent-by-mail" name="By mail" activiti:initiator="customer">
+         <messageEventDefinition messageRef="msg-start-by-mail" />
+      </startEvent>
+      <sequenceFlow id="flow9" sourceRef="startevent-by-mail" targetRef="usertask1" />
+      <userTask id="usertask1" name="OCR (Optical Character Recognition)" />
+      <sequenceFlow id="flow7" sourceRef="usertask1" targetRef="usertask2" />
+      <userTask id="usertask2" name="ADR (Automatic Document Reading)" />
+      <sequenceFlow id="flow8" sourceRef="usertask2" targetRef="archive-form-and-attachments" />
+      <serviceTask id="archive-form-and-attachments" name="Archive form and attachments" implementation="##WebService"
+         operationRef="process:archiveOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveFormAttachment" />
+            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTaskArchiveFormAttachment" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveFormAttachment</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveFormAttachment</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveFormAttachment.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow17" sourceRef="archive-form-and-attachments" targetRef="exclusivegateway2" />
+
+      <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway" />
+      <sequenceFlow id="flow21" sourceRef="exclusivegateway2" targetRef="core-svc" />
+      <serviceTask id="core-svc" name="The core service independent of the user channel" implementation="##WebService"
+         operationRef="process:executeOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:coreSvcExecuteRequestItem" id="dataInputOfServiceTaskCoreSvc" />
+            <dataOutput itemSubjectRef="process:coreSvcExecuteResponseItem" id="dataOutputOfServiceTaskCoreSvc" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskCoreSvc</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskCoreSvc</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskCoreSvc.orderId}</to>
+            </assignment>
+            <assignment>
+               <from>${customer}</from>
+               <to>${dataInputOfServiceTaskCoreSvc.customer}</to>
+            </assignment>
+            <assignment>
+               <from>${empty execution.variableInstances.agent ? "" : agent}</from>
+               <to>${dataInputOfServiceTaskCoreSvc.approvedBy}</to>
+            </assignment>
+            <assignment>
+               <from>${address}</from>
+               <to>${dataInputOfServiceTaskCoreSvc.address}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow22" sourceRef="core-svc" targetRef="endevent1" />
+      <endEvent id="endevent1" name="End" />
+
+      <textAnnotation id="textannotation1">
+         <text>Form filled by user through the public portal of department</text>
+      </textAnnotation>
+      <association id="association8" sourceRef="textannotation1" targetRef="startevent-by-web" />
+      <textAnnotation id="textannotation4">
+         <text>Form filled by a public service agent into a department agency through the private portal of department
+         </text>
+      </textAnnotation>
+      <association id="association9" sourceRef="textannotation4" targetRef="startevent-by-online-agent" />
+      <textAnnotation id="textannotation3">
+         <text>Form filled by a public service agent from a user phone call through the private portal of department
+         </text>
+      </textAnnotation>
+      <association id="association7" sourceRef="textannotation3" targetRef="startevent-by-phone" />
+      <textAnnotation id="textannotation5">
+         <text>Form filled by the user and sent by mail</text>
+      </textAnnotation>
+      <association id="association5" sourceRef="textannotation5" targetRef="startevent-by-mail" />
+
+   </process>
+   <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
+      <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
+         <bpmndi:BPMNShape bpmnElement="pool2" id="BPMNShape_pool2">
+            <omgdc:Bounds height="849.0" width="1431.0" x="10.0" y="28.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="lane2" id="BPMNShape_lane2">
+            <omgdc:Bounds height="573.0" width="1411.0" x="30.0" y="28.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="lane3" id="BPMNShape_lane3">
+            <omgdc:Bounds height="141.0" width="1411.0" x="30.0" y="601.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="lane4" id="BPMNShape_lane4">
+            <omgdc:Bounds height="135.0" width="1411.0" x="30.0" y="742.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
+            <omgdc:Bounds height="40.0" width="40.0" x="1060.0" y="367.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+            <omgdc:Bounds height="61.0" width="125.0" x="670.0" y="651.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="usertask2" id="BPMNShape_usertask2">
+            <omgdc:Bounds height="61.0" width="105.0" x="820.0" y="651.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="archive-form-and-attachments" id="BPMNShape_archive-form-and-attachments">
+            <omgdc:Bounds height="61.0" width="105.0" x="950.0" y="651.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="usertask3" id="BPMNShape_usertask3">
+            <omgdc:Bounds height="79.0" width="121.0" x="540.0" y="410.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="boundarytimer1" id="BPMNShape_boundarytimer1">
+            <omgdc:Bounds height="30.0" width="30.0" x="530.0" y="476.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="notify-user" id="BPMNShape_notify-user">
+            <omgdc:Bounds height="77.0" width="115.0" x="370.0" y="509.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="archive-attachments" id="BPMNShape_archive-attachments">
+            <omgdc:Bounds height="63.0" width="121.0" x="540.0" y="306.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="1390.0" y="798.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="core-svc" id="BPMNShape_core-svc">
+            <omgdc:Bounds height="71.0" width="131.0" x="1210.0" y="780.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="startevent-by-web" id="BPMNShape_startevent-by-web">
+            <omgdc:Bounds height="35.0" width="35.0" x="90.0" y="220.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="startevent-by-online-agent" id="BPMNShape_startevent-by-online-agent">
+            <omgdc:Bounds height="35.0" width="35.0" x="90.0" y="320.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="startevent-by-phone" id="BPMNShape_startevent-by-phone">
+            <omgdc:Bounds height="35.0" width="35.0" x="90.0" y="432.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="startevent-by-mail" id="BPMNShape_startevent-by-mail">
+            <omgdc:Bounds height="35.0" width="35.0" x="90.0" y="520.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+            <omgdc:Bounds height="40.0" width="40.0" x="710.0" y="429.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="textannotation1" id="BPMNShape_textannotation1">
+            <omgdc:Bounds height="61.0" width="131.0" x="140.0" y="160.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="textannotation3" id="BPMNShape_textannotation3">
+            <omgdc:Bounds height="76.0" width="131.0" x="140.0" y="357.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="textannotation4" id="BPMNShape_textannotation4">
+            <omgdc:Bounds height="72.0" width="131.0" x="140.0" y="249.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="textannotation5" id="BPMNShape_textannotation5">
+            <omgdc:Bounds height="50.0" width="131.0" x="140.0" y="471.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNEdge bpmnElement="flow7" id="BPMNEdge_flow7">
+            <omgdi:waypoint x="795.0" y="681.0"></omgdi:waypoint>
+            <omgdi:waypoint x="820.0" y="681.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
+            <omgdi:waypoint x="925.0" y="681.0"></omgdi:waypoint>
+            <omgdi:waypoint x="950.0" y="681.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
+            <omgdi:waypoint x="125.0" y="537.0"></omgdi:waypoint>
+            <omgdi:waypoint x="319.0" y="537.0"></omgdi:waypoint>
+            <omgdi:waypoint x="319.0" y="681.0"></omgdi:waypoint>
+            <omgdi:waypoint x="670.0" y="681.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow11a" id="BPMNEdge_flow11a">
+            <omgdi:waypoint x="545.0" y="506.0"></omgdi:waypoint>
+            <omgdi:waypoint x="544.0" y="547.0"></omgdi:waypoint>
+            <omgdi:waypoint x="485.0" y="547.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow11b" id="BPMNEdge_flow11b">
+            <omgdi:waypoint x="427.0" y="509.0"></omgdi:waypoint>
+            <omgdi:waypoint x="427.0" y="449.0"></omgdi:waypoint>
+            <omgdi:waypoint x="540.0" y="449.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow15" id="BPMNEdge_flow15">
+            <omgdi:waypoint x="661.0" y="337.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1079.0" y="337.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1080.0" y="367.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow16" id="BPMNEdge_flow16">
+            <omgdi:waypoint x="730.0" y="469.0"></omgdi:waypoint>
+            <omgdi:waypoint x="732.0" y="651.0"></omgdi:waypoint>
+            <bpmndi:BPMNLabel>
+               <omgdc:Bounds height="36.0" width="100.0" x="738.0" y="478.0"></omgdc:Bounds>
+            </bpmndi:BPMNLabel>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow17" id="BPMNEdge_flow17">
+            <omgdi:waypoint x="1055.0" y="681.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1080.0" y="680.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1080.0" y="407.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
+            <omgdi:waypoint x="1100.0" y="387.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1159.0" y="386.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1159.0" y="814.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1210.0" y="815.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow22" id="BPMNEdge_flow22">
+            <omgdi:waypoint x="1341.0" y="815.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1390.0" y="815.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow23" id="BPMNEdge_flow23">
+            <omgdi:waypoint x="125.0" y="237.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1080.0" y="237.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1080.0" y="367.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow24" id="BPMNEdge_flow24">
+            <omgdi:waypoint x="125.0" y="337.0"></omgdi:waypoint>
+            <omgdi:waypoint x="540.0" y="337.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow25" id="BPMNEdge_flow25">
+            <omgdi:waypoint x="125.0" y="449.0"></omgdi:waypoint>
+            <omgdi:waypoint x="540.0" y="449.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow26" id="BPMNEdge_flow26">
+            <omgdi:waypoint x="661.0" y="449.0"></omgdi:waypoint>
+            <omgdi:waypoint x="710.0" y="449.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow20" id="BPMNEdge_flow20">
+            <omgdi:waypoint x="750.0" y="449.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1407.0" y="449.0"></omgdi:waypoint>
+            <omgdi:waypoint x="1407.0" y="798.0"></omgdi:waypoint>
+            <bpmndi:BPMNLabel>
+               <omgdc:Bounds height="12.0" width="88.0" x="760.0" y="432.0"></omgdc:Bounds>
+            </bpmndi:BPMNLabel>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="association8" id="BPMNEdge_association8">
+            <omgdi:waypoint x="140.0" y="190.0"></omgdi:waypoint>
+            <omgdi:waypoint x="107.0" y="220.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="association9" id="BPMNEdge_association9">
+            <omgdi:waypoint x="140.0" y="285.0"></omgdi:waypoint>
+            <omgdi:waypoint x="107.0" y="320.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+      </bpmndi:BPMNPlane>
+   </bpmndi:BPMNDiagram>
+</definitions>

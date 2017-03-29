@@ -24,20 +24,15 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FormProperty;
-import org.activiti.bpmn.model.StartEvent;
-import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.ActionIdNotFoundInModelException;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 
 /**
- * The BPMN operation 'start event' extracted from WDSL according to BPMN annotations. This operation is used to create
- * a new instance of the process.
+ * Abstract operation for all BPMN operation 'start event' extracted from WDSL according to BPMN annotations.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class StartEventAnnotatedOperation extends AnnotatedOperation {
+public abstract class StartEventAnnotatedOperation extends AnnotatedOperation {
 
     public static final String BPMN_ACTION = "startEvent";
 
@@ -47,10 +42,6 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
      *            The WSDL operation containing the current annotations
      * @param processDefinitionId
      *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
-     * @param actionId
-     * @param processInstanceIdHolder
-     *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
-     *            <code>null</code>.
      * @param userIdHolder
      *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
      * @param variables
@@ -63,41 +54,10 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
      *             The annotated operation is incoherent.
      */
     public StartEventAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
-            final String actionId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate,
-            final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, actionId, processInstanceIdHolder, userIdHolder, variables,
-                outputTemplate, faultTemplates);
-    }
-
-    @Override
-    public void doAnnotationCoherenceCheck(final BpmnModel model) throws InvalidAnnotationForOperationException {
-
-        // The mapping defining the action identifier must be declared in the process definition
-        boolean isActionIdFound = false;
-        List<FormProperty> formPropertyList = null;
-        outerloop: for (final org.activiti.bpmn.model.Process process : model.getProcesses()) {
-            for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
-                // search the Start Event: bpmnAction
-                if ((flowElt instanceof StartEvent) && (flowElt.getId().equals(this.getActionId()))) {
-                    final StartEvent startEvent = (StartEvent) flowElt;
-                    formPropertyList = startEvent.getFormProperties();
-                    isActionIdFound = true;
-                    break outerloop;
-                }
-            }
-        }
-        if (!isActionIdFound) {
-            throw new ActionIdNotFoundInModelException(this.getWsdlOperation(), this.getActionId(),
-                    this.getProcessDefinitionId());
-        } else {
-            if (formPropertyList != null && formPropertyList.size() > 0) {
-                for (final FormProperty formPropertie : formPropertyList) {
-                    // add the FormProperty to the Map <bpmnvar, FormProperty>
-                    this.getVariableTypes().put(formPropertie.getId(), formPropertie);
-                }
-            }
-        }
+            final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
+            final Templates outputTemplate, final Map<String, Templates> faultTemplates)
+            throws InvalidAnnotationForOperationException {
+        super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
     }
 
     @Override
@@ -107,7 +67,7 @@ public class StartEventAnnotatedOperation extends AnnotatedOperation {
 
     @Override
     protected void addMappedExceptionNames(final List<String> mappedExceptionNames) {
-        // TODO Auto-generated method stub
+        // No exception mapped
     }
 
 }

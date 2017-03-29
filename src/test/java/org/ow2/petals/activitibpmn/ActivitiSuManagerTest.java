@@ -774,8 +774,8 @@ public class ActivitiSuManagerTest extends AbstractTest {
                         .getResource("su/valid/vacationRequest.wsdl");
                 assertNotNull("WSDl not found", wsdlUrl);
                 final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                        SimpleProcessTestEnvironment.VACATION_INTERFACE, SimpleProcessTestEnvironment.VACATION_SERVICE,
-                        SimpleProcessTestEnvironment.VACATION_ENDPOINT, wsdlUrl);
+                        VacationProcessTestEnvironment.VACATION_INTERFACE, VacationProcessTestEnvironment.VACATION_SERVICE,
+                        VacationProcessTestEnvironment.VACATION_ENDPOINT, wsdlUrl);
 
                 final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource("su/valid/demanderCongesResponse.xsl");

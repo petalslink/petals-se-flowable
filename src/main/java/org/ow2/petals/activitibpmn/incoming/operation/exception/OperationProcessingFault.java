@@ -24,7 +24,7 @@ import javax.xml.namespace.QName;
 import org.ow2.petals.activitibpmn.incoming.operation.ActivitiOperation;
 
 /**
- * An error occurs during the processing of an {@link ActivitiOperation}.
+ * An error occurs during the processing of an {@link ActivitiOperation} that must be returned as business error.
  * 
  * @author Christophe DENEUX - Linagora
  * 

@@ -34,7 +34,7 @@ import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.ow2.petals.activitibpmn.incoming.operation.annotated.AnnotatedOperation;
-import org.ow2.petals.activitibpmn.incoming.operation.annotated.StartEventAnnotatedOperation;
+import org.ow2.petals.activitibpmn.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.activitibpmn.incoming.operation.exception.OperationProcessingException;
 import org.ow2.petals.activitibpmn.utils.XslUtils;
 import org.ow2.petals.commons.log.FlowAttributes;
@@ -52,7 +52,7 @@ import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class StartEventOperation extends ActivitiOperation {
+public abstract class StartEventOperation extends ActivitiOperation {
 
     /**
      * The identity service of the BPMN engine
@@ -62,7 +62,7 @@ public class StartEventOperation extends ActivitiOperation {
     /**
      * The runtime service of the BPMN engine
      */
-    private final RuntimeService runtimeService;
+    protected final RuntimeService runtimeService;
 
     /**
      * The history service of the BPMN engine
@@ -99,7 +99,7 @@ public class StartEventOperation extends ActivitiOperation {
 
     @Override
     public String getAction() {
-        return StartEventAnnotatedOperation.BPMN_ACTION;
+        return NoneStartEventAnnotatedOperation.BPMN_ACTION;
     }
 
     @Override
@@ -122,11 +122,7 @@ public class StartEventOperation extends ActivitiOperation {
         try {
             this.identityService.setAuthenticatedUserId(bpmnUserId);
 
-            // We use RuntimeService.startProcessInstanceById() to be able to create a process instance from the given
-            // process version.
-            // TODO: Create a unit test where the process was undeployed without undeploying the service unit
-            final ProcessInstance createdProcessInstance = this.runtimeService.startProcessInstanceById(
-                    this.deployedProcessDefinitionId, processVars);
+            final ProcessInstance createdProcessInstance = this.createProcessInstance(processVars);
             bpmnProcessIdValue = createdProcessInstance.getId();
 
         } finally {
@@ -171,5 +167,8 @@ public class StartEventOperation extends ActivitiOperation {
         outputNamedValues.put(new QName(ActivitiOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
                 SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), bpmnUserId);
     }
+
+    protected abstract ProcessInstance createProcessInstance(final Map<String, Object> processVars)
+            throws OperationProcessingException;
 
 }
