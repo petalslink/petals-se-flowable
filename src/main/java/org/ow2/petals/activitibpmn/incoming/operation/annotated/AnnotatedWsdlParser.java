@@ -435,7 +435,8 @@ public class AnnotatedWsdlParser {
      * @return The output XSLT style-sheet compiled
      * @throws InvalidAnnotationForOperationException
      */
-    private Map<String, XPathExpression> getVariableXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
+    private static Map<String, XPathExpression> getVariableXpathExpr(final Node wsdlOperation,
+            final QName wsdlOperationName,
             final XPath xpathBuilder) throws InvalidAnnotationForOperationException {
 
         final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,

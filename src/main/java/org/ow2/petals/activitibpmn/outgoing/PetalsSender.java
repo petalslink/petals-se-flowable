@@ -43,13 +43,13 @@ public class PetalsSender extends AbstractListener {
     public PetalsSender(final ActivitiSE activitiSE) {
         super.init(activitiSE);
 
-        final Monitoring monitoringMBean = ((Monitoring) activitiSE.getMonitoringBean());
+        final Monitoring monitoringMBean = (Monitoring) activitiSE.getMonitoringBean();
         this.probeAsyncExecutorThreadPool = monitoringMBean.getProbeAsyncExecutorThreadPool();
         this.probeDatabaseConnectionPool = monitoringMBean.getProbeDatabaseConnectionPool();
     }
 
     @Override
-    public void send(Exchange exchange) throws MessagingException {
+    public void send(final Exchange exchange) throws MessagingException {
 
         // Update monitoring probes before sending message
         try {

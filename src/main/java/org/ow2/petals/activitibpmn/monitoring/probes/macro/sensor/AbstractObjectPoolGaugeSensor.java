@@ -35,7 +35,7 @@ public abstract class AbstractObjectPoolGaugeSensor implements GaugeSensor<Long,
     @Override
     public final Long getInitialValue() {
         if (this.connectionPool == null) {
-            return 0l;
+            return 0L;
         } else {
             return this.getInstantValue();
         }

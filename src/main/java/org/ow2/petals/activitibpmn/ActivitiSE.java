@@ -740,8 +740,8 @@ public class ActivitiSE extends AbstractServiceEngine {
 
         if (this.activitiEngine.getProcessEngineConfiguration() != null) {
             if (this.activitiEngine.getProcessEngineConfiguration() instanceof ProcessEngineConfigurationImpl) {
-                final ProcessEngineConfigurationImpl engineConfiguration = ((ProcessEngineConfigurationImpl) this.activitiEngine
-                        .getProcessEngineConfiguration());
+                final ProcessEngineConfigurationImpl engineConfiguration = (ProcessEngineConfigurationImpl) this.activitiEngine
+                        .getProcessEngineConfiguration();
                 if (engineConfiguration.getDataSource() == null) {
                     this.getLogger().warning(
                             "No datasource available for the Activiti engine, so no monitoring available on database connection pool !");

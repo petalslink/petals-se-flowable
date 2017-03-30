@@ -97,9 +97,9 @@ public class BpmnReader {
 
         final Map<String, EmbeddedProcessDefinition> bpmnModels = new HashMap<String, EmbeddedProcessDefinition>();
 
-        String processFileName = this.extensions.get(ActivitiSEConstants.PROCESS_FILE);
-        String versionStr = this.extensions.get(ActivitiSEConstants.VERSION);
-        if (processFileName == null && versionStr == null) {
+        final String uniqueProcessFileName = this.extensions.get(ActivitiSEConstants.PROCESS_FILE);
+        final String uniqueVersionStr = this.extensions.get(ActivitiSEConstants.VERSION);
+        if (uniqueProcessFileName == null && uniqueVersionStr == null) {
             // The SU does not contain an unique process definition, perhaps several process definitions
 
             // TODO: Multi-process definitions should be reviewed because a wrapper tag is missing: The right writing
@@ -109,28 +109,30 @@ public class BpmnReader {
             // <version>...</version>
             // </process-definition>
             // But the CDK provides a mechanism using increment.
+            String multiProcessFileName;
+            String multiVersionStr;
             int nbProcesses = 1;
             do {
-                processFileName = this.extensions.get(ActivitiSEConstants.PROCESS_FILE + nbProcesses);
-                versionStr = this.extensions.get(ActivitiSEConstants.VERSION + nbProcesses);
-                if (nbProcesses == 1 && processFileName == null && versionStr == null) {
+                multiProcessFileName = this.extensions.get(ActivitiSEConstants.PROCESS_FILE + nbProcesses);
+                multiVersionStr = this.extensions.get(ActivitiSEConstants.VERSION + nbProcesses);
+                if (nbProcesses == 1 && multiProcessFileName == null && multiVersionStr == null) {
                     throw new NoProcessDefinitionDeclarationException();
-                } else if (processFileName != null && versionStr != null) {
-                    bpmnModels.put(processFileName, this.readBpmnModel(processFileName, versionStr));
+                } else if (multiProcessFileName != null && multiVersionStr != null) {
+                    bpmnModels.put(multiProcessFileName, this.readBpmnModel(multiProcessFileName, multiVersionStr));
                     nbProcesses++;
-                } else if ((processFileName != null && versionStr == null)
-                        || (processFileName == null && versionStr != null)) {
-                    throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
+                } else if ((multiProcessFileName != null && multiVersionStr == null)
+                        || (multiProcessFileName == null && multiVersionStr != null)) {
+                    throw new IncoherentProcessDefinitionDeclarationException(multiProcessFileName, multiVersionStr);
                 } else {
                     // Here, processFileName == null and versionStr == null, and at least one process definition was
                     // previously read, so we have nothing to do, we will exit the loop
                 }
-            } while (processFileName != null && versionStr != null);
-        } else if (processFileName != null && versionStr != null) {
+            } while (multiProcessFileName != null && multiVersionStr != null);
+        } else if (uniqueProcessFileName != null && uniqueVersionStr != null) {
             // One process description
-            bpmnModels.put(processFileName, this.readBpmnModel(processFileName, versionStr));
+            bpmnModels.put(uniqueProcessFileName, this.readBpmnModel(uniqueProcessFileName, uniqueVersionStr));
         } else {
-            throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
+            throw new IncoherentProcessDefinitionDeclarationException(uniqueProcessFileName, uniqueVersionStr);
         }
 
         return bpmnModels;

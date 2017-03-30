@@ -180,97 +180,10 @@ public abstract class ActivitiOperation implements ActivitiService {
 
             try {
                 // Get the userId
-                final String userId;
-                try {
-                    synchronized (this.userIdXPathExpr) {
-                        userId = this.userIdXPathExpr.evaluate(incomingPayload);
-                    }
-                    if (userId == null || userId.trim().isEmpty()) {
-                        throw new NoUserIdValueException(this.wsdlOperation);
-                    }
-
-                    if (this.logger.isLoggable(Level.FINE)) {
-                        this.logger.fine("User identifier value: " + userId);
-                    }
-                } catch (final XPathExpressionException e) {
-                    throw new OperationProcessingException(this.wsdlOperation, e);
-                }
+                final String userId = this.getUserIdFromIncomingPayload(incomingPayload);
 
                 // Get the bpmn variables
-                final Map<String, Object> variableValues = new HashMap<>();
-                for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
-                    final String variableName = variable.getKey();
-                    try {
-                        final XPathExpression xpathExpr = variable.getValue();
-                        final String variableValueAsStr;
-                        synchronized (xpathExpr) {
-                            variableValueAsStr = xpathExpr.evaluate(incomingPayload);
-                        }
-                        if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
-                            if (this.variableTypes.get(variableName).isRequired()) {
-                                throw new MessagingException(String.format(
-                                        "The action '%s' of process '%s' required the variable '%s'", this.getAction(),
-                                        this.processDefinitionId, variableName));
-                            } else {
-                                if (logger.isLoggable(Level.FINE)) {
-                                    logger.fine("variable: " + variableName + "=> no value");
-                                }
-                            }
-                        } else {
-                            if (logger.isLoggable(Level.FINE)) {
-                                logger.fine("variable: " + variableName + "=> value: " + variableValueAsStr);
-                            }
-
-                            // Get the type of the bpmn variable
-                            final FormProperty variableProperties = this.variableTypes.get(variableName);
-                            final String varType = variableProperties.getType();
-                            // Put the value in Map of activiti variable in the right format
-                            if (varType.equals("string")) {
-                                variableValues.put(variableName, variableValueAsStr);
-                            } else if (varType.equals("long")) {
-                                try {
-                                    variableValues.put(variableName, Long.valueOf(variableValueAsStr));
-                                } catch (final NumberFormatException e) {
-                                    throw new MessagingException("The value of the variable '" + variableName
-                                            + "' must be a long ! Current value is: " + variableValueAsStr);
-                                }
-                            } else if (varType.equals("enum")) {
-                                boolean validValue = false;
-                                for (final FormValue enumValue : variableProperties.getFormValues()) {
-                                    if (variableValueAsStr.equals(enumValue.getId())) {
-                                        validValue = true;
-                                    }
-                                }
-                                if (!validValue) {
-                                    throw new MessagingException("The value of the variable '" + variableName
-                                            + " does not belong to the enum of Activiti variable ! Current value is: "
-                                            + variableValueAsStr);
-                                } else {
-                                    variableValues.put(variableName, variableValueAsStr);
-                                }
-                            } else if (varType.equals("date")) {
-                                try {
-                                    variableValues.put(variableName, DatatypeConverter
-                                            .parseDateTime(variableValueAsStr).getTime());
-                                } catch (final IllegalArgumentException e) {
-                                    throw new MessagingException("The value of the variable '" + variableName
-                                            + "' must be a valid date ! Current value is: " + variableValueAsStr);
-                                }
-                            } else if (varType.equals("boolean")) {
-                                if (variableValueAsStr.equalsIgnoreCase("true")
-                                        || variableValueAsStr.equalsIgnoreCase("false")) {
-                                    variableValues.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
-                                } else {
-                                    throw new MessagingException("The value of the variable '" + variableName
-                                            + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
-                                            + variableValueAsStr);
-                                }
-                            }
-                        }
-                    } catch (final XPathExpressionException e) {
-                        throw new OperationProcessingException(this.wsdlOperation, e);
-                    }
-                }
+                final Map<String, Object> variableValues = this.getVariableValuesFromIncomingPayload(incomingPayload);
 
                 // Extract process flow data
                 final Map<QName, String> xslParameters = new HashMap<>();
@@ -309,7 +222,113 @@ public abstract class ActivitiOperation implements ActivitiService {
         }
     }
 
+    /**
+     * Retrieve the user identifier from the incoming XML payload
+     * 
+     * @param incomingPayload
+     *            The incoming XML payload
+     * @return The user identifier
+     * @throws OperationProcessingException
+     *             An error occurs retrieving the user identifier
+     */
+    private String getUserIdFromIncomingPayload(final Document incomingPayload) throws OperationProcessingException {
+        final String userId;
+        try {
+            synchronized (this.userIdXPathExpr) {
+                userId = this.userIdXPathExpr.evaluate(incomingPayload);
+            }
+            if (userId == null || userId.trim().isEmpty()) {
+                throw new NoUserIdValueException(this.wsdlOperation);
+            }
 
+            if (this.logger.isLoggable(Level.FINE)) {
+                this.logger.fine("User identifier value: " + userId);
+            }
+
+            return userId;
+        } catch (final XPathExpressionException e) {
+            throw new OperationProcessingException(this.wsdlOperation, e);
+        }
+    }
+
+    private Map<String, Object> getVariableValuesFromIncomingPayload(final Document incomingPayload)
+            throws MessagingException {
+        final Map<String, Object> variableValues = new HashMap<>();
+        for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
+            final String variableName = variable.getKey();
+            try {
+                final XPathExpression xpathExpr = variable.getValue();
+                final String variableValueAsStr;
+                synchronized (xpathExpr) {
+                    variableValueAsStr = xpathExpr.evaluate(incomingPayload);
+                }
+                if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
+                    if (this.variableTypes.get(variableName).isRequired()) {
+                        throw new MessagingException(
+                                String.format("The action '%s' of process '%s' required the variable '%s'",
+                                        this.getAction(), this.processDefinitionId, variableName));
+                    } else {
+                        if (logger.isLoggable(Level.FINE)) {
+                            logger.fine("variable: " + variableName + "=> no value");
+                        }
+                    }
+                } else {
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("variable: " + variableName + "=> value: " + variableValueAsStr);
+                    }
+
+                    // Get the type of the bpmn variable
+                    final FormProperty variableProperties = this.variableTypes.get(variableName);
+                    final String varType = variableProperties.getType();
+                    // Put the value in Map of activiti variable in the right format
+                    if (varType.equals("string")) {
+                        variableValues.put(variableName, variableValueAsStr);
+                    } else if (varType.equals("long")) {
+                        try {
+                            variableValues.put(variableName, Long.valueOf(variableValueAsStr));
+                        } catch (final NumberFormatException e) {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + "' must be a long ! Current value is: " + variableValueAsStr);
+                        }
+                    } else if (varType.equals("enum")) {
+                        boolean validValue = false;
+                        for (final FormValue enumValue : variableProperties.getFormValues()) {
+                            if (variableValueAsStr.equals(enumValue.getId())) {
+                                validValue = true;
+                            }
+                        }
+                        if (!validValue) {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + " does not belong to the enum of Activiti variable ! Current value is: "
+                                    + variableValueAsStr);
+                        } else {
+                            variableValues.put(variableName, variableValueAsStr);
+                        }
+                    } else if (varType.equals("date")) {
+                        try {
+                            variableValues.put(variableName,
+                                    DatatypeConverter.parseDateTime(variableValueAsStr).getTime());
+                        } catch (final IllegalArgumentException e) {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + "' must be a valid date ! Current value is: " + variableValueAsStr, e);
+                        }
+                    } else if (varType.equals("boolean")) {
+                        if (variableValueAsStr.equalsIgnoreCase("true")
+                                || variableValueAsStr.equalsIgnoreCase("false")) {
+                            variableValues.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
+                        } else {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
+                                    + variableValueAsStr);
+                        }
+                    }
+                }
+            } catch (final XPathExpressionException e) {
+                throw new OperationProcessingException(this.wsdlOperation, e);
+            }
+        }
+        return variableValues;
+    }
 
     /**
      * 

@@ -75,7 +75,7 @@ public class ActivitiJBIListener extends AbstractJBIListener {
     public void init() {
         super.init();
 
-        final Monitoring monitoringMBean = ((Monitoring) ((ActivitiSE) this.getComponent()).getMonitoringBean());
+        final Monitoring monitoringMBean = (Monitoring) ((ActivitiSE) this.getComponent()).getMonitoringBean();
         this.probeAsyncExecutorThreadPool = monitoringMBean.getProbeAsyncExecutorThreadPool();
         this.probeDatabaseConnectionPool = monitoringMBean.getProbeDatabaseConnectionPool();
     }
