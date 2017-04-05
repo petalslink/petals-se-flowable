@@ -18,7 +18,7 @@
 package org.ow2.petals.cloud.vacation.web.mvc;
 
 import org.ow2.petals.cloud.vacation.web.VacationRequest.PendingVacationRequest;
-import org.ow2.petals.cloud.vacation.web.services.ActivitiTaskClient;
+import org.ow2.petals.cloud.vacation.web.services.FlowableTaskClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,11 +37,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ManagerController extends AbstractController {
 
     @Autowired
-    private ActivitiTaskClient activitiTaskClient;
+    private FlowableTaskClient flowableTaskClient;
 
     @RequestMapping(method = RequestMethod.GET)
     public ModelAndView list() {
-        final Iterable<PendingVacationRequest> requests = activitiTaskClient
+        final Iterable<PendingVacationRequest> requests = flowableTaskClient
                 .getNewRequests(userSession.getUsernameWithChecks());
         return new ModelAndView("pages/manager", "requests", requests);
     }

@@ -14,7 +14,7 @@
  along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
  for the New BSD License (3-clause license).
 -->
-<project name="PEtALS integration Activiti component tests"
+<project name="PEtALS integration Flowable component tests"
          default="all"
          basedir="."
          xmlns:jmx="antlib:org.apache.catalina.ant.jmx">
@@ -53,15 +53,15 @@
                 echo="true" />
 
       <jmx:invoke name="Petals:name=Installation,type=service" echo="true" operation="loadNewInstaller">
-         <arg value="file://${basedir}/deployables/petals-se-activiti.zip" />
+         <arg value="file://${basedir}/deployables/petals-se-flowable.zip" />
       </jmx:invoke>
 
       <echo message="Set attribute 'jdbcDriver' to 'org.postgresql.Driver'" />
-      <jmx:set name="org.ow2.petals:type=custom,name=bootstrap_petals-se-activiti"
+      <jmx:set name="org.ow2.petals:type=custom,name=bootstrap_petals-se-flowable"
                echo="true"
                attribute="jdbcDriver"
                value="org.postgresql.Driver" />
-      <jmx:get name="org.ow2.petals:type=custom,name=bootstrap_petals-se-activiti"
+      <jmx:get name="org.ow2.petals:type=custom,name=bootstrap_petals-se-flowable"
                attribute="jdbcDriver"
                resultproperty="jdbc-driver" />
       <fail message="Unexpected value for the JDBC Driver">
@@ -72,12 +72,12 @@
          </condition>
       </fail>
       
-      <jmx:invoke name="org.ow2.petals:type=installer,name=petals-se-activiti" echo="true" operation="install" />
+      <jmx:invoke name="org.ow2.petals:type=installer,name=petals-se-flowable" echo="true" operation="install" />
 
    </target>
 
    <target name="cleanAll">
-      <echo message="Cleaning Activiti component tests..." />
+      <echo message="Cleaning Flowable component tests..." />
 
       <petals-stop-all-service-assemblies port="${host1.port}"
                                           host="${host1.ip}"

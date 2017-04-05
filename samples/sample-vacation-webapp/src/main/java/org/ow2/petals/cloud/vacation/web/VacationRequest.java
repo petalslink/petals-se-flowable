@@ -39,7 +39,7 @@ public abstract class VacationRequest {
     private Date startDate = new Date();
 
     /**
-     * Can't be null or empty if not activiti complains the variable does not exists...
+     * Can't be null or empty if not flowable complains the variable does not exists...
      */
     @NotNull
     @NotEmpty

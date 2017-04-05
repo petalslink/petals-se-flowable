@@ -17,18 +17,18 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <jbi:jbi xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
-   xmlns:jbi="http://java.sun.com/xml/ns/jbi" version="1.0" xmlns:petals-se-activitibpmn="http://petals.ow2.org/components/petals-se-activitibpmn/1.0">
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi" version="1.0" xmlns:petals-se-flowable="http://petals.ow2.org/components/petals-se-flowable/1.0">
 
    <jbi:component type="service-engine">
       <jbi:identification>
-         <jbi:name>petals-se-activitibpmn</jbi:name>
-         <jbi:description>ACTIVITI BPMN service engine</jbi:description>
+         <jbi:name>petals-se-flowable</jbi:name>
+         <jbi:description>BPMN service engine based on Flowable</jbi:description>
       </jbi:identification>
-      <jbi:component-class-name>org.ow2.petals.activitibpmn.ActivitiSE</jbi:component-class-name>
+      <jbi:component-class-name>org.ow2.petals.flowable.FlowableSE</jbi:component-class-name>
       <jbi:component-class-path>
          <jbi:path-element />
       </jbi:component-class-path>
-      <jbi:bootstrap-class-name>org.ow2.petals.activitibpmn.ActivitiSEBootstrap</jbi:bootstrap-class-name>
+      <jbi:bootstrap-class-name>org.ow2.petals.flowable.FlowableSEBootstrap</jbi:bootstrap-class-name>
       <jbi:bootstrap-class-path>
          <jbi:path-element />
       </jbi:bootstrap-class-path>
@@ -46,33 +46,33 @@
       <petalsCDK:properties-file />
       <petalsCDK:monitoring-sampling-period />
 
-      <petalsCDK:jbi-listener-class-name>org.ow2.petals.activitibpmn.incoming.ActivitiJBIListener</petalsCDK:jbi-listener-class-name>	
+      <petalsCDK:jbi-listener-class-name>org.ow2.petals.flowable.incoming.FlowableJBIListener</petalsCDK:jbi-listener-class-name>	
 
       <!-- Component specific configuration -->
-      <petals-se-activitibpmn:jdbc_driver>org.h2.Driver</petals-se-activitibpmn:jdbc_driver>
-      <petals-se-activitibpmn:jdbc_url />
-      <petals-se-activitibpmn:jdbc_username>sa</petals-se-activitibpmn:jdbc_username>
-      <petals-se-activitibpmn:jdbc_password></petals-se-activitibpmn:jdbc_password>
-      <petals-se-activitibpmn:jdbc_max_active_connections />
-      <petals-se-activitibpmn:jdbc_max_idle_connections />
-      <petals-se-activitibpmn:jdbc_max_checkout_time />
-      <petals-se-activitibpmn:jdbc_max_wait_time />
-      <petals-se-activitibpmn:database_type />
-      <petals-se-activitibpmn:database_schema_update />
-      <petals-se-activitibpmn:engine-enable-job-executor />
-      <petals-se-activitibpmn:engine-job-executor-core-pool-size />
-      <petals-se-activitibpmn:engine-job-executor-max-pool-size />
-      <petals-se-activitibpmn:engine-job-executor-keep-alive-time />
-      <petals-se-activitibpmn:engine-job-executor-queue-size />
-      <petals-se-activitibpmn:engine-job-executor-max-timer-jobs-per-acquisition />
-      <petals-se-activitibpmn:engine-job-executor-max-async-jobs-due-per-acquisition />
-      <petals-se-activitibpmn:engine-job-executor-async-job-acquire-wait-time />
-      <petals-se-activitibpmn:engine-job-executor-timer-job-acquire-wait-time />
-      <petals-se-activitibpmn:engine-job-executor-timer-lock-time />
-      <petals-se-activitibpmn:engine-job-executor-async-job-lock-time />
-      <petals-se-activitibpmn:engine-enable-bpmn-validation />
-      <petals-se-activitibpmn:engine-identity-service-class-name />
-      <petals-se-activitibpmn:engine-identity-service-config-file />
+      <petals-se-flowable:jdbc_driver>org.h2.Driver</petals-se-flowable:jdbc_driver>
+      <petals-se-flowable:jdbc_url />
+      <petals-se-flowable:jdbc_username>sa</petals-se-flowable:jdbc_username>
+      <petals-se-flowable:jdbc_password></petals-se-flowable:jdbc_password>
+      <petals-se-flowable:jdbc_max_active_connections />
+      <petals-se-flowable:jdbc_max_idle_connections />
+      <petals-se-flowable:jdbc_max_checkout_time />
+      <petals-se-flowable:jdbc_max_wait_time />
+      <petals-se-flowable:database_type />
+      <petals-se-flowable:database_schema_update />
+      <petals-se-flowable:engine-enable-job-executor />
+      <petals-se-flowable:engine-job-executor-core-pool-size />
+      <petals-se-flowable:engine-job-executor-max-pool-size />
+      <petals-se-flowable:engine-job-executor-keep-alive-time />
+      <petals-se-flowable:engine-job-executor-queue-size />
+      <petals-se-flowable:engine-job-executor-max-timer-jobs-per-acquisition />
+      <petals-se-flowable:engine-job-executor-max-async-jobs-due-per-acquisition />
+      <petals-se-flowable:engine-job-executor-async-job-acquire-wait-time />
+      <petals-se-flowable:engine-job-executor-timer-job-acquire-wait-time />
+      <petals-se-flowable:engine-job-executor-timer-lock-time />
+      <petals-se-flowable:engine-job-executor-async-job-lock-time />
+      <petals-se-flowable:engine-enable-bpmn-validation />
+      <petals-se-flowable:engine-identity-service-class-name />
+      <petals-se-flowable:engine-identity-service-config-file />
 
    </jbi:component>
 </jbi:jbi>

@@ -21,8 +21,8 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.ow2.petals.cloud.vacation.web.VacationRequest.PendingVacationRequest;
-import org.ow2.petals.cloud.vacation.web.services.ActivitiProcessClient;
-import org.ow2.petals.cloud.vacation.web.services.ActivitiTaskClient;
+import org.ow2.petals.cloud.vacation.web.services.FlowableProcessClient;
+import org.ow2.petals.cloud.vacation.web.services.FlowableTaskClient;
 import org.ow2.petals.cloud.vacation.web.services.VacationClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -42,7 +42,7 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 public class VacationWebUiApplication extends SpringBootServletInitializer {
 
     @Bean
-    public Converter<String, PendingVacationRequest> requestConverter(final ActivitiProcessClient processClient) {
+    public Converter<String, PendingVacationRequest> requestConverter(final FlowableProcessClient processClient) {
         return new Converter<String, PendingVacationRequest>() {
             @Override
             public PendingVacationRequest convert(final String id) {
@@ -59,27 +59,28 @@ public class VacationWebUiApplication extends SpringBootServletInitializer {
     @Bean
     public Jaxb2Marshaller marshaller() {
         final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        marshaller.setContextPaths("org.ow2.petals.components.activiti.generic._1",
-                "org.ow2.petals.samples.se_bpmn.vacationrequest", "org.ow2.petals.samples.se_bpmn.vacationservice");
+        marshaller.setContextPaths("org.ow2.petals.components.flowable.generic._1",
+                "org.ow2.petals.samples.se_flowable.vacation.vacationrequest",
+                "org.ow2.petals.samples.se_flowable.vacation.vacationservice");
         return marshaller;
     }
 
     @Bean
-    public ActivitiProcessClient activitiProcessClient(
-            final @Value("${activiti.service.process.url}") String activitiProcessURL,
+    public FlowableProcessClient flowableProcessClient(
+            final @Value("${flowable.service.process.url}") String flowableProcessURL,
             final Jaxb2Marshaller marshaller) {
-        final ActivitiProcessClient client = new ActivitiProcessClient();
-        client.setDefaultUri(activitiProcessURL);
+        final FlowableProcessClient client = new FlowableProcessClient();
+        client.setDefaultUri(flowableProcessURL);
         client.setMarshaller(marshaller);
         client.setUnmarshaller(marshaller);
         return client;
     }
 
     @Bean
-    public ActivitiTaskClient activitiTaskClient(final @Value("${activiti.service.task.url}") String activitiTaskURL,
+    public FlowableTaskClient flowableTaskClient(final @Value("${flowable.service.task.url}") String flowableTaskURL,
             final Jaxb2Marshaller marshaller) {
-        final ActivitiTaskClient client = new ActivitiTaskClient();
-        client.setDefaultUri(activitiTaskURL);
+        final FlowableTaskClient client = new FlowableTaskClient();
+        client.setDefaultUri(flowableTaskURL);
         client.setMarshaller(marshaller);
         client.setUnmarshaller(marshaller);
         return client;

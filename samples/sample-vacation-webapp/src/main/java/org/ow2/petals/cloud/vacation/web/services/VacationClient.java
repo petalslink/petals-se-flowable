@@ -22,10 +22,10 @@ import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 
 import org.ow2.petals.cloud.vacation.web.VacationRequest.PendingVacationRequest;
-import org.ow2.petals.samples.se_bpmn.vacationrequest.VacationRequestType;
-import org.ow2.petals.samples.se_bpmn.vacationservice.NewVacationResponse;
-import org.ow2.petals.samples.se_bpmn.vacationservice.VacationUpdateRequest;
-import org.ow2.petals.samples.se_bpmn.vacationservice.ValidationRequest;
+import org.ow2.petals.samples.se_flowable.vacation.vacationrequest.VacationRequestType;
+import org.ow2.petals.samples.se_flowable.vacation.vacationservice.NewVacationResponse;
+import org.ow2.petals.samples.se_flowable.vacation.vacationservice.VacationUpdateRequest;
+import org.ow2.petals.samples.se_flowable.vacation.vacationservice.ValidationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ws.client.core.support.WebServiceGatewaySupport;
 import org.springframework.ws.soap.client.core.SoapActionCallback;
@@ -40,9 +40,9 @@ public class VacationClient extends WebServiceGatewaySupport {
     @Autowired
     private DatatypeFactory dtf;
 
-    private final static org.ow2.petals.samples.se_bpmn.vacationservice.ObjectFactory serviceOF = new org.ow2.petals.samples.se_bpmn.vacationservice.ObjectFactory();
+    private static final org.ow2.petals.samples.se_flowable.vacation.vacationservice.ObjectFactory serviceOF = new org.ow2.petals.samples.se_flowable.vacation.vacationservice.ObjectFactory();
 
-    private final static org.ow2.petals.samples.se_bpmn.vacationrequest.ObjectFactory requestOF = new org.ow2.petals.samples.se_bpmn.vacationrequest.ObjectFactory();
+    private static final org.ow2.petals.samples.se_flowable.vacation.vacationrequest.ObjectFactory requestOF = new org.ow2.petals.samples.se_flowable.vacation.vacationrequest.ObjectFactory();
 
     public String create(final String enquirer, final PendingVacationRequest newRequest) {
         assert enquirer != null;
@@ -60,7 +60,7 @@ public class VacationClient extends WebServiceGatewaySupport {
         return ((NewVacationResponse) getWebServiceTemplate()
                 .marshalSendAndReceive(requestOF.createVacationRequest(request),
                         new SoapActionCallback(
-                                "http://petals.ow2.org/samples/se-bpmn/vacationService/newVacationRequest")))
+                                "http://petals.ow2.org/samples/se-flowable/vacation/vacationService/newVacationRequest")))
                                         .getVacationRequestId();
     }
 
@@ -77,7 +77,8 @@ public class VacationClient extends WebServiceGatewaySupport {
 
         // TODO handle faults...
         getWebServiceTemplate().marshalSendAndReceive(request,
-                new SoapActionCallback("http://petals.ow2.org/samples/se-bpmn/vacationService/handleRequest"));
+                new SoapActionCallback(
+                        "http://petals.ow2.org/samples/se-flowable.vacation/vacationService/handleRequest"));
 
     }
 
@@ -93,7 +94,8 @@ public class VacationClient extends WebServiceGatewaySupport {
 
         // TODO handle faults...
         getWebServiceTemplate().marshalSendAndReceive(request,
-                new SoapActionCallback("http://petals.ow2.org/samples/se-bpmn/vacationService/updateVacationRequest"));
+                new SoapActionCallback(
+                        "http://petals.ow2.org/samples/se-flowable.vacation/vacationService/updateVacationRequest"));
     }
 
     public void cancel(final PendingVacationRequest pendingRequest) {
@@ -104,7 +106,8 @@ public class VacationClient extends WebServiceGatewaySupport {
 
         // TODO handle faults...
         getWebServiceTemplate().marshalSendAndReceive(request,
-                new SoapActionCallback("http://petals.ow2.org/samples/se-bpmn/vacationService/updateVacationRequest"));
+                new SoapActionCallback(
+                        "http://petals.ow2.org/samples/se-flowable.vacation/vacationService/updateVacationRequest"));
     }
 
     private VacationUpdateRequest createUpdateRequest(final PendingVacationRequest pendingRequest) {

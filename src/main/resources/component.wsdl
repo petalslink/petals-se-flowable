@@ -16,13 +16,13 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<wsdl:definitions xmlns:activiti="http://petals.ow2.org/components/activiti/generic/1.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
-   xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="ActivitiGenericWsdl" targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0"
+<wsdl:definitions xmlns:flowable="http://petals.ow2.org/components/flowable/generic/1.0" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="FlowableGenericWsdl" targetNamespace="http://petals.ow2.org/components/flowable/generic/1.0"
    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
    <wsdl:types>
       <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
-         targetNamespace="http://petals.ow2.org/components/activiti/generic/1.0">
+         targetNamespace="http://petals.ow2.org/components/flowable/generic/1.0">
 
          <xsd:element name="getTasks">
             <xsd:complexType>
@@ -61,13 +61,13 @@
          <xsd:element name="getTasksResponse">
             <xsd:complexType>
                <xsd:sequence>
-                  <xsd:element name="tasks" type="activiti:Tasks" maxOccurs="1" minOccurs="1" />
+                  <xsd:element name="tasks" type="flowable:Tasks" maxOccurs="1" minOccurs="1" />
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
          <xsd:complexType name="Tasks">
             <xsd:sequence>
-               <xsd:element name="task" type="activiti:Task" maxOccurs="unbounded" minOccurs="0" />
+               <xsd:element name="task" type="flowable:Task" maxOccurs="unbounded" minOccurs="0" />
             </xsd:sequence>
          </xsd:complexType>
          <xsd:complexType name="Task">
@@ -79,7 +79,7 @@
          <xsd:element name="getProcessInstances">
             <xsd:complexType>
                <xsd:sequence>
-                  <xsd:element name="state" type="activiti:ProcessInstanceState" maxOccurs="1" minOccurs="0" default="active">
+                  <xsd:element name="state" type="flowable:ProcessInstanceState" maxOccurs="1" minOccurs="0" default="active">
                      <xsd:annotation>
                         <xsd:documentation>
                            The state of process instances to select. Default value: 'active'.
@@ -113,7 +113,7 @@
          <xsd:element name="getProcessInstancesResponse">
             <xsd:complexType>
                <xsd:sequence>
-                  <xsd:element name="process-instances" type="activiti:ProcessInstances" maxOccurs="1"
+                  <xsd:element name="process-instances" type="flowable:ProcessInstances" maxOccurs="1"
                      minOccurs="1" />
                </xsd:sequence>
             </xsd:complexType>
@@ -141,7 +141,7 @@
                      <xsd:complexType>
                         <xsd:simpleContent>
                            <xsd:extension base="xsd:string">
-                              <xsd:attribute name="result" type="activiti:AdjournmentResult"/>
+                              <xsd:attribute name="result" type="flowable:AdjournmentResult"/>
                            </xsd:extension>
                         </xsd:simpleContent>
                      </xsd:complexType>
@@ -180,7 +180,7 @@
                      <xsd:complexType>
                         <xsd:simpleContent>
                            <xsd:extension base="xsd:string">
-                              <xsd:attribute name="result" type="activiti:ActivationResult"/>
+                              <xsd:attribute name="result" type="flowable:ActivationResult"/>
                            </xsd:extension>
                         </xsd:simpleContent>
                      </xsd:complexType>
@@ -199,20 +199,20 @@
 
          <xsd:complexType name="ProcessInstances">
             <xsd:sequence>
-               <xsd:element name="process-instance" type="activiti:ProcessInstance" maxOccurs="unbounded"
+               <xsd:element name="process-instance" type="flowable:ProcessInstance" maxOccurs="unbounded"
                   minOccurs="0" />
             </xsd:sequence>
          </xsd:complexType>
          <xsd:complexType name="ProcessInstance">
             <xsd:sequence>
-               <xsd:element name="variables" type="activiti:Variables" maxOccurs="1" minOccurs="0" />
+               <xsd:element name="variables" type="flowable:Variables" maxOccurs="1" minOccurs="0" />
             </xsd:sequence>
             <xsd:attribute name="process-definition-identifier" type="xsd:string" use="required" />
             <xsd:attribute name="process-instance-identifier" type="xsd:string" use="required" />
          </xsd:complexType>
          <xsd:complexType name="Variables">
             <xsd:sequence>
-               <xsd:element name="variable" type="activiti:Variable" maxOccurs="unbounded" minOccurs="0" />
+               <xsd:element name="variable" type="flowable:Variable" maxOccurs="unbounded" minOccurs="0" />
             </xsd:sequence>
          </xsd:complexType>
          <xsd:complexType name="Variable">
@@ -244,63 +244,63 @@
 
    <!-- Message Part -->
    <wsdl:message name="invalidRequest">
-      <wsdl:part name="fault" element="activiti:invalidRequest" />
+      <wsdl:part name="fault" element="flowable:invalidRequest" />
    </wsdl:message>
    <wsdl:message name="getTasksRequest">
-      <wsdl:part name="getTasksRequest" element="activiti:getTasks" />
+      <wsdl:part name="getTasksRequest" element="flowable:getTasks" />
    </wsdl:message>
    <wsdl:message name="getTasksResponse">
-      <wsdl:part name="getTasksResponse" element="activiti:getTasksResponse" />
+      <wsdl:part name="getTasksResponse" element="flowable:getTasksResponse" />
    </wsdl:message>
    <wsdl:message name="getProcessInstancesRequest">
-      <wsdl:part name="getProcessInstancesRequest" element="activiti:getProcessInstances" />
+      <wsdl:part name="getProcessInstancesRequest" element="flowable:getProcessInstances" />
    </wsdl:message>
    <wsdl:message name="getProcessInstancesResponse">
-      <wsdl:part name="getProcessInstancesResponse" element="activiti:getProcessInstancesResponse" />
+      <wsdl:part name="getProcessInstancesResponse" element="flowable:getProcessInstancesResponse" />
    </wsdl:message>
    <wsdl:message name="suspendProcessInstancesRequest">
-      <wsdl:part name="suspendProcessInstancesRequest" element="activiti:suspendProcessInstances" />
+      <wsdl:part name="suspendProcessInstancesRequest" element="flowable:suspendProcessInstances" />
    </wsdl:message>
    <wsdl:message name="suspendProcessInstancesResponse">
-      <wsdl:part name="suspendProcessInstancesResponse" element="activiti:suspendProcessInstancesResponse" />
+      <wsdl:part name="suspendProcessInstancesResponse" element="flowable:suspendProcessInstancesResponse" />
    </wsdl:message>
    <wsdl:message name="activateProcessInstancesRequest">
-      <wsdl:part name="activateProcessInstancesRequest" element="activiti:activateProcessInstances" />
+      <wsdl:part name="activateProcessInstancesRequest" element="flowable:activateProcessInstances" />
    </wsdl:message>
    <wsdl:message name="activateProcessInstancesResponse">
-      <wsdl:part name="activateProcessInstancesResponse" element="activiti:activateProcessInstancesResponse" />
+      <wsdl:part name="activateProcessInstancesResponse" element="flowable:activateProcessInstancesResponse" />
    </wsdl:message>
 
    <wsdl:portType name="Task">
       <wsdl:operation name="getTasks">
-         <wsdl:input message="activiti:getTasksRequest" />
-         <wsdl:output message="activiti:getTasksResponse" />
-         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
+         <wsdl:input message="flowable:getTasksRequest" />
+         <wsdl:output message="flowable:getTasksResponse" />
+         <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
    </wsdl:portType>
 
    <wsdl:portType name="ProcessInstances">
       <wsdl:operation name="getProcessInstances">
-         <wsdl:input message="activiti:getProcessInstancesRequest" />
-         <wsdl:output message="activiti:getProcessInstancesResponse" />
-         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
+         <wsdl:input message="flowable:getProcessInstancesRequest" />
+         <wsdl:output message="flowable:getProcessInstancesResponse" />
+         <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
       <wsdl:operation name="suspendProcessInstances">
-         <wsdl:input message="activiti:suspendProcessInstancesRequest" />
-         <wsdl:output message="activiti:suspendProcessInstancesResponse" />
-         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
+         <wsdl:input message="flowable:suspendProcessInstancesRequest" />
+         <wsdl:output message="flowable:suspendProcessInstancesResponse" />
+         <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
       <wsdl:operation name="activateProcessInstances">
-         <wsdl:input message="activiti:activateProcessInstancesRequest" />
-         <wsdl:output message="activiti:activateProcessInstancesResponse" />
-         <wsdl:fault message="activiti:invalidRequest" name="invalidRequest" />
+         <wsdl:input message="flowable:activateProcessInstancesRequest" />
+         <wsdl:output message="flowable:activateProcessInstancesResponse" />
+         <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
    </wsdl:portType>
 
-   <wsdl:binding name="TaskServiceSoapBinding" type="activiti:Task">
+   <wsdl:binding name="TaskServiceSoapBinding" type="flowable:Task">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="getTasks">
-         <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/getTasks" />
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/getTasks" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -313,10 +313,10 @@
       </wsdl:operation>
    </wsdl:binding>
 
-   <wsdl:binding name="ProcessInstancesServiceSoapBinding" type="activiti:ProcessInstances">
+   <wsdl:binding name="ProcessInstancesServiceSoapBinding" type="flowable:ProcessInstances">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="getProcessInstances">
-         <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/getProcessInstances" />
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/getProcessInstances" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -328,7 +328,7 @@
          </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="suspendProcessInstances">
-         <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/suspendProcessInstances" />
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/suspendProcessInstances" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -340,7 +340,7 @@
          </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="activateProcessInstances">
-         <soap:operation soapAction="http://petals.ow2.org/components/activiti/generic/1.0/activateProcessInstances" />
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/activateProcessInstances" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -358,12 +358,12 @@
 		Service and
 	-->
    <wsdl:service name="TaskService">
-      <wsdl:port name="autogenerate" binding="activiti:TaskServiceSoapBinding">
+      <wsdl:port name="autogenerate" binding="flowable:TaskServiceSoapBinding">
          <soap:address location="autogenerate" />
       </wsdl:port>
    </wsdl:service>
    <wsdl:service name="ProcessInstancesService">
-      <wsdl:port name="autogenerate" binding="activiti:ProcessInstancesServiceSoapBinding">
+      <wsdl:port name="autogenerate" binding="flowable:ProcessInstancesServiceSoapBinding">
          <soap:address location="autogenerate" />
       </wsdl:port>
    </wsdl:service>

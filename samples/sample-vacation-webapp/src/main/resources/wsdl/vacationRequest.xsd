@@ -16,9 +16,9 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
 
-   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
+   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
    elementFormDefault="qualified" jaxb:version="2.1">
 
    <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType" />

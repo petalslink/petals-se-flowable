@@ -24,13 +24,13 @@
       <relativePath />
    </parent>
 
-   <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - Parent</name>
+   <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - Parent</name>
    <artifactId>parent</artifactId>
-   <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
+   <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-activiti.version>1.1.0-SNAPSHOT</petals-se-activiti.version>
+      <petals-se-flowable.version>1.0.0-SNAPSHOT</petals-se-flowable.version>
    </properties>
 
    <dependencyManagement>
@@ -38,16 +38,16 @@
          <dependency>
             <!-- We override here the component version defined in the integration test parent POM
                  file to defined the version of the component to test. -->
-            <artifactId>petals-se-activiti</artifactId>
+            <artifactId>petals-se-flowable</artifactId>
             <groupId>org.ow2.petals</groupId>
-            <version>${petals-se-activiti.version}</version>
+            <version>${petals-se-flowable.version}</version>
             <type>jbi-component</type>
          </dependency>
       </dependencies>
    </dependencyManagement>
 
    <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
       <developerConnection>${project.scm.connection}</developerConnection>
    </scm>
 </project>

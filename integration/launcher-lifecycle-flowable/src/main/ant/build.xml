@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2014-2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<project name="PEtALS integration - Integration tests about lifecycle of the Petals SE Flowable"
+         default="all"
+         basedir=".">
+
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+
+   <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
+
+   <property name="petals.cli.home"
+             value="${project.build.directory}/${project.artifactId}/petals-cli/${petalsCliDirName}" />
+
+   <property name="topology.container.name" value="sample-0" />
+   <property name="topology.container.home" value="${project.build.directory}/${project.artifactId}/container/" />
+   <property name="topology.container.jmx.port" value="7700" />
+   <property name="bc-soap.properties" value="${topology.container.home}/conf/bc-soap.properties" />
+
+   <property name="the-component.id" value="petals-se-flowable" />
+   <property name="the-component.url" value="${org.ow2.petals:petals-se-flowable:jbi-component}" />
+
+   <property name="the-sa.id" value="sa-flowable-vacationRequest" />
+   <property name="the-sa.url"
+             value="${org.ow2.petals.integration.tests.se.flowable:sa-flowable-vacationRequest:jbi-service-assembly}" />
+   <property name="the-su.id" value="su-flowable-vacationService-provide" />
+
+   <property name="flowable-db.file" value="/tmp/flowable.db" />
+
+   <target name="startDatabaseFlowable">
+      <delete file="${flowable-db.file}.mv.db" />
+      <!-- Start Database Flowable -->
+      <java jar="${com.h2database:h2:jar}" fork="true">
+         <arg value="-tcp" />
+      </java>
+   </target>
+
+   <target name="clean" depends="killAllRegistryMembers, killAllContainers" />
+
+   <target name="prepare">
+      <!-- Create the properties file for BC SOAP -->
+      <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
+            file="${bc-soap.properties}" />
+      <echo message="notifyService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+            file="${bc-soap.properties}"
+            append="true" />
+   </target>
+
+   <target name="launchContainer">
+      <!-- No configuration required, we use the default configuration -->
+
+      <startContainer name="${topology.container.name}"
+                      home="${topology.container.home}"
+                      jmx.port="${topology.container.jmx.port}" />
+   </target>
+
+   <target name="start-infra" depends="prepare, launchContainer">
+      <echo message="0) The Petals ESB environment:" />
+      <echo message="   - A default container with its own registry embedded," />
+      <echo message="   - A standalone topology" />
+      <echo message="   - A database" />
+   </target>
+
+   <target name="all2">
+      <antcall target="clean" />
+
+      <trycatch>
+         <try>
+            <parallel failonany="yes">
+               <daemons>
+                  <antcall target="startDatabaseFlowable" />
+               </daemons>
+               <sequential>
+                  <antcall target="run" />
+               </sequential>
+            </parallel>
+         </try>
+         <finally>
+            <!-- We stop all to avoid stack trace logged by SE Flowable when tests fail. The async job
+                 executor of SE Flowable try run SQL query on a database that is not running -->
+            <antcall target="clean" />
+         </finally>
+      </trycatch>
+
+      <echo message="All task finished!" />
+   </target>
+
+   <target name="all">
+      <trycatch>
+         <try>
+            <antcall target="all2" />
+         </try>
+         <finally>
+            <antcall target="killAllContainers" />
+            <antcall target="killAllRegistryMembers" />
+         </finally>
+      </trycatch>
+   </target>
+
+   <target name="run">
+      <echo message="Launching integration tests about life cycle of Petals SE Flowable" />
+
+      <antcall target="run-tests" />
+
+      <echo message="Integration test completed" />
+   </target>
+
+   <!-- 
+     See details on 'component-lifecycle-vs-sa-lifecycle' to get more information on the test suite
+    -->
+   <target name="run-tests" depends="start-infra">
+
+      <component-lifecycle-vs-sa-lifecycle component.name="Petals SE Flowable"
+                                           component.url="${the-component.url}"
+                                           component.id="${the-component.id}"
+                                           component.native-services="{http://petals.ow2.org/components/flowable/generic/1.0}TaskService, {http://petals.ow2.org/components/flowable/generic/1.0}ProcessInstancesService"
+                                           is-service-engine="true"
+                                           sa.url="${the-sa.url}"
+                                           sa.id="${the-sa.id}"
+                                           su.id="${the-su.id}"
+                                           su.services="{http://petals.ow2.org/samples/se-flowable/vacationService}vacationService"
+                                           container.jmx.port="${topology.container.jmx.port}"
+                                           container.name="${topology.container.name}"
+                                           container.home="${topology.container.home}">
+         <param-elements>
+            <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${flowable-db.file}" />
+            <param name="propertiesFile" value="file://${bc-soap.properties}" />
+         </param-elements>
+         <pre-deployments>
+            <echo message="Hacking database Flowable" />
+            <sql driver="org.h2.Driver" url="jdbc:h2:tcp://localhost/${flowable-db.file}" userid="sa" password="">
+               <classpath>
+                  <pathelement location="${com.h2database:h2:jar}" />
+               </classpath>
+               <transaction>
+	                   ALTER TABLE ACT_GE_BYTEARRAY ALTER COLUMN NAME_ VARCHAR(512);
+	           </transaction>
+            </sql>
+         </pre-deployments>
+      </component-lifecycle-vs-sa-lifecycle>
+   </target>
+
+</project>

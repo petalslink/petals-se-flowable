@@ -16,7 +16,7 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<xsd:schema targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser" elementFormDefault="qualified">
+<xsd:schema targetNamespace="http://petals.ow2.org/se-flowable/unit-test/parser" elementFormDefault="qualified">
    <xsd:element name="demande">
       <xsd:complexType>
          <xsd:all>

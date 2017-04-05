@@ -17,7 +17,8 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:se-out-special-params="http://petals.ow2.org/se/bpmn/output-params/1.0/special" xmlns:se-out-process-params="http://petals.ow2.org/se/bpmn/output-params/1.0/process-instance">
+   xmlns:se-out-special-params="http://petals.ow2.org/se/flowable/output-params/1.0/special"
+   xmlns:se-out-process-params="http://petals.ow2.org/se/flowable/output-params/1.0/process-instance">
 
    <xsl:output method="xml" encoding="UTF-8" omit-xml-declaration="no" />
    
@@ -26,8 +27,8 @@
    <xsl:param name="se-out-special-params:userId" />
 
    <xsl:template match="/">
-      <xsl:element name="start-response" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start">
-         <xsl:element name="case-file-number" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start">
+      <xsl:element name="start-response" namespace="http://petals.ow2.org/se-flowable/unit-test/multi-start">
+         <xsl:element name="case-file-number" namespace="http://petals.ow2.org/se-flowable/unit-test/multi-start">
             <xsl:value-of select="$se-out-special-params:processInstanceId" />
          </xsl:element>
       </xsl:element>

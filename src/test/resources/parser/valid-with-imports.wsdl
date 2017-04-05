@@ -16,16 +16,16 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<wsdl:definitions name="demandeDeCongesService" targetNamespace="http://petals.ow2.org/se/activiti/unit-test/parser"
-   xmlns:tns="http://petals.ow2.org/se/activiti/unit-test/parser" xmlns:bpmn="http://petals.ow2.org/se/bpmn/annotations/1.0"
+<wsdl:definitions name="demandeDeCongesService" targetNamespace="http://petals.ow2.org/se-flowable/unit-test/parser"
+   xmlns:tns="http://petals.ow2.org/se-flowable/unit-test/parser" xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0"
    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
-   <wsdl:import location="abstract-import.wsdl" namespace="http://petals.ow2.org/se/activiti/unit-test/parser" />
+   <wsdl:import location="abstract-import.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/parser" />
 
    <wsdl:binding name="demandeDeCongesBinding" type="tns:demandeDeConges">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="demanderConges">
-         <soap:operation soapAction="http://petals.ow2.org/se/Acitivibpmn/1.0/su/demanderConges" />
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/1.0/demanderConges" />
          <bpmn:operation processDefinitionId="vacationRequest" action="startEvent" none-start-event-id="request" />
          <bpmn:userId>/*[local-name()='demande']/*[local-name()='demandeur']</bpmn:userId>
          <bpmn:variable name="numberOfDays">
@@ -48,7 +48,7 @@
          </wsdl:output>
       </wsdl:operation>
       <wsdl:operation name="validerDemande">
-         <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/handleRequest" />
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/1.0/handleRequest" />
          <bpmn:operation processDefinitionId="vacationRequest" action="userTask" user-task-id="handleRequest" />
          <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='validation']/*[local-name()='valideur']</bpmn:userId>
@@ -73,7 +73,7 @@
          </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="ajusterDemande">
-         <soap:operation soapAction="http://petals.ow2.org/se/Activitibpmn/1.0/adjustVacationRequestTask" />
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/1.0/adjustVacationRequestTask" />
          <bpmn:operation processDefinitionId="vacationRequest" action="userTask" user-task-id="adjustVacationRequestTask" />
          <bpmn:processInstanceId>/*[local-name()='ajustement']/*[local-name()='numeroDdeInitiale']
          </bpmn:processInstanceId>

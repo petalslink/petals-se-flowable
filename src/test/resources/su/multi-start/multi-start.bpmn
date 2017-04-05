@@ -20,21 +20,21 @@
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
    xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
    typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath"
-   targetNamespace="http://petals.ow2.org/samples/se-bpmn/multistartProcess" xmlns:process="http://petals.ow2.org/samples/se-bpmn/multistartProcess"
-   xmlns:archivage="http://petals.ow2.org/samples/se-bpmn/multi-start/archivageService" xmlns:notify="http://petals.ow2.org/samples/se-bpmn/multi-start/notifyService"
-   xmlns:core-svc="http://petals.ow2.org/samples/se-bpmn/multi-start/coreService" xmlns:multi-start-svc="http://petals.ow2.org/samples/se-bpmn/multi-start">
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/multistartProcess" xmlns:process="http://petals.ow2.org/se-flowable/unit-test/multistartProcess"
+   xmlns:archivage="http://petals.ow2.org/se-flowable/unit-test/multi-start/archivageService" xmlns:notify="http://petals.ow2.org/se-flowable/unit-test/multi-start/notifyService"
+   xmlns:core-svc="http://petals.ow2.org/se-flowable/unit-test/multi-start/coreService" xmlns:multi-start-svc="http://petals.ow2.org/se-flowable/unit-test/multi-start">
              
    <!-- ==========================================
            Declaration of the Petals services
         ========================================== -->
    <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
-   <import location="classpath:su/multi-start/archivageService.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start/archivageService"
+   <import location="classpath:su/multi-start/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/multi-start/archivageService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
-   <import location="classpath:su/multi-start/notifyService.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start/notifyService"
+   <import location="classpath:su/multi-start/notifyService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/multi-start/notifyService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
-   <import location="classpath:su/multi-start/coreService.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start/coreService"
+   <import location="classpath:su/multi-start/coreService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/multi-start/coreService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
-   <import location="classpath:su/multi-start/multi-start.wsdl" namespace="http://petals.ow2.org/samples/se-bpmn/multi-start"
+   <import location="classpath:su/multi-start/multi-start.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/multi-start"
       importType="http://schemas.xmlsoap.org/wsdl/" />
 
    <interface name="Archive Service" implementationRef="archivage:archiver">

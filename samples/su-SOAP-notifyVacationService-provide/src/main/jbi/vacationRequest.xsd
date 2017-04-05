@@ -17,9 +17,9 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <xsd:schema
-   targetNamespace="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacationRequest"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-   xmlns:vacationRequest="http://petals.ow2.org/samples/se-bpmn/vacationRequest"
+   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacationRequest"
    elementFormDefault="qualified">
 
    <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>

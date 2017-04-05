@@ -16,12 +16,12 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<wsdl:definitions name="coreService" targetNamespace="http://petals.ow2.org/samples/se-bpmn/multi-start/coreService"
-   xmlns:tns="http://petals.ow2.org/samples/se-bpmn/multi-start/coreService" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+<wsdl:definitions name="coreService" targetNamespace="http://petals.ow2.org/se-flowable/unit-test/multi-start/coreService"
+   xmlns:tns="http://petals.ow2.org/se-flowable/unit-test/multi-start/coreService" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
    <wsdl:types>
-      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-bpmn/multi-start/coreService"
+      <xsd:schema targetNamespace="http://petals.ow2.org/se-flowable/unit-test/multi-start/coreService"
          elementFormDefault="qualified">
          <xsd:element name="execute">
             <xsd:complexType>
@@ -83,7 +83,7 @@
 
    <wsdl:service name="coreService">
       <!-- TODO: We should use an XML binding instead of SOAP binding to avoid to rework SOAP envelop on requests/replies
-                 exchanged between Activiti and Petals -->
+                 exchanged between Flowable and Petals -->
       <wsdl:port name="coreServiceEndpointName" binding="tns:coreServiceSoapBinding">
          <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
          <soap:address location="petals:///{http://petals.ow2.org/samples/se-bpmn/multi-start/coreService}core" />

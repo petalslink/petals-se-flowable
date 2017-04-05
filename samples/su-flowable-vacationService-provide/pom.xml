@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2015-2017 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-flowable-parent</artifactId>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
+      <version>1.0.0-1.0.0-SNAPSHOT</version>
+      <relativePath>../pom.xml</relativePath>
+   </parent>
+
+    <artifactId>su-flowable-vacationService-provide</artifactId>
+   <packaging>jbi-service-unit</packaging>
+   <name>su-flowable-vacationService-provide</name>
+   <!-- No version set -->
+   <description>su-flowable-vacationService-provide description.</description>
+
+   <properties>
+      <maven-enforcer-plugin.rules.upperBound>false</maven-enforcer-plugin.rules.upperBound>
+      <flowable.version>5.23.0</flowable.version>
+   </properties>
+
+   <dependencyManagement>
+      <!-- Align dependencies with those of Flowable -->
+      <dependencies>
+         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+         <dependency>
+            <groupId>org.ow2.easycommons</groupId>
+            <artifactId>easycommons-util</artifactId>
+            <version>2.4.0-SNAPSHOT</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable</artifactId>
+         <type>jbi-component</type>
+      </dependency>
+      
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable-junit</artifactId>
+         <version>1.0.0-SNAPSHOT</version>
+         <scope>test</scope>
+      </dependency>
+      
+      <!-- To test the process definition we must use our own Flowable engine-->
+      <dependency>
+         <groupId>org.flowable</groupId>
+         <artifactId>flowable-engine</artifactId>
+         <version>${flowable.version}</version>
+         <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>commons-logging</groupId>
+               <artifactId>commons-logging</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.flowable</groupId>
+         <artifactId>flowable-cxf</artifactId>
+         <version>${flowable.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-jdk14</artifactId>
+         <version>1.7.6</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <version>1.4.178</version>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+
+   <pluginRepositories>
+      <pluginRepository>
+         <id>smartbear-sweden-plugin-repository</id>
+         <url>http://www.soapui.org/repository/maven2/</url>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </pluginRepository>
+   </pluginRepositories>
+   
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-maven-plugin</artifactId>
+            <configuration>
+               <jbiDirectory>src/main/resources/jbi</jbiDirectory>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- The :following dependency is needed because it's the JBI component on which this SU runs -->
+                        <usedDependency>org.ow2.petals:petals-se-flowable</usedDependency>
+                        <!-- These following dependencies are needed for unit test -->
+                        <usedDependency>org.flowable:flowable-cxf</usedDependency>
+                        <usedDependency>com.h2database:h2</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>enforce-no-duplicate-classes</id>
+                  <configuration>
+                     <exceptions>
+                        <exception>
+                           <conflictingDependencies>
+                              <dependency>
+                                 <groupId>org.ow2.petals</groupId>
+                                 <artifactId>petals-se-flowable</artifactId>
+                                 <type>jar</type>
+                                 <scope>test</scope>
+                              </dependency>
+                           </conflictingDependencies>
+                           <!-- Current project is the actual project being checked, not this parent pom -->
+                           <currentProject>true</currentProject>
+                           <resources>
+                              <resource>jbi/jbi.xml</resource>
+                           </resources>
+                        </exception>
+                     </exceptions>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui-maven-plugin</artifactId>
+            <version>5.2.1</version>
+            <executions>
+               <execution>
+                  <id>startup-mock-archive</id>
+                  <configuration>
+                     <projectFile>${basedir}/src/test/soapui/su-flowable-vacationService-provide-soapui-project.xml</projectFile>
+                     <mockService>archiveSoapBinding MockService</mockService>
+                     <noBlock>true</noBlock>
+                  </configuration>
+                  <goals>
+                     <goal>mock</goal>
+                  </goals>
+                  <phase>process-test-classes</phase>
+               </execution>
+               <execution>
+                  <id>startup-mock-notify</id>
+                  <configuration>
+                     <projectFile>${basedir}/src/test/soapui/su-flowable-vacationService-provide-soapui-project.xml</projectFile>
+                     <mockService>notifyVacationBinding MockService</mockService>
+                     <noBlock>true</noBlock>
+                  </configuration>
+                  <goals>
+                     <goal>mock</goal>
+                  </goals>
+                  <phase>process-test-classes</phase>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
+     <tag>HEAD</tag>
+  </scm>
+</project>

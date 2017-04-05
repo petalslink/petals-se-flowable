@@ -23,52 +23,53 @@
     <relativePath />
   </parent>
   
-  <groupId>org.ow2.petals.integration.tests.se.activiti</groupId>
+  <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
   <artifactId>sa-SOAP-vacationRequest</artifactId>
   <packaging>jbi-service-assembly</packaging>
-  <name>Petals Integration Tests - Tests - Components - Petals SE Activiti - SA (All SOAP JBI artifacts)</name>
+  <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - SA (All SOAP JBI artifacts)</name>
   <description>sa-SOAP-vacationRequest description</description>
 
   <properties>
     <!-- Skip dependency check for service assembly because it has Java no source code. -->
     <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
+    <se-flowable.samples.version>1.0.0-1.0.0-SNAPSHOT</se-flowable.samples.version>
   </properties>
   
   <dependencies>
     <dependency>
-      <groupId>org.ow2.petals.samples</groupId>
-      <artifactId>su-SOAP-activitiIntegrationService-consume</artifactId>
-      <version>1.1.0-1.0.0-SNAPSHOT</version>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
+      <artifactId>su-SOAP-flowableIntegrationService-consume</artifactId>
+      <version>${se-flowable.samples.version}</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
-      <groupId>org.ow2.petals.samples</groupId>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
       <artifactId>su-SOAP-vacationService-consume</artifactId>
-      <version>1.1.0-1.0.0-SNAPSHOT</version>
+      <version>${se-flowable.samples.version}</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
-      <groupId>org.ow2.petals.samples</groupId>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
       <artifactId>su-SOAP-archiveService-consume</artifactId>
-      <version>1.1.0-1.0.0-SNAPSHOT</version>
+      <version>${se-flowable.samples.version}</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
-      <groupId>org.ow2.petals.samples</groupId>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
       <artifactId>su-SOAP-archiveService-provide</artifactId>
-      <version>1.1.0-1.0.0-SNAPSHOT</version>
+      <version>${se-flowable.samples.version}</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
-      <groupId>org.ow2.petals.samples</groupId>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
       <artifactId>su-SOAP-notifyVacationService-consume</artifactId>
-      <version>1.1.0-1.0.0-SNAPSHOT</version>
+      <version>${se-flowable.samples.version}</version>
       <type>jbi-service-unit</type>
     </dependency>
     <dependency>
-      <groupId>org.ow2.petals.samples</groupId>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
       <artifactId>su-SOAP-notifyVacationService-provide</artifactId>
-      <version>1.1.0-1.0.0-SNAPSHOT</version>
+      <version>${se-flowable.samples.version}</version>
       <type>jbi-service-unit</type>
     </dependency>
   </dependencies>
@@ -86,7 +87,7 @@
   </build>
 
   <scm>
-    <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
+    <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
     <developerConnection>${project.scm.connection}</developerConnection>
   </scm>
 </project>

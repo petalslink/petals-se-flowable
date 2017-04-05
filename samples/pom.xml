@@ -25,20 +25,20 @@
       <relativePath />
    </parent>
 
-   <groupId>org.ow2.petals.samples</groupId>
-   <artifactId>petals-activiti-parent</artifactId>
-   <name>petals-activiti</name>
-   <version>1.1.0-1.0.0-SNAPSHOT</version>
+   <groupId>org.ow2.petals.samples.flowable</groupId>
+   <artifactId>petals-flowable-parent</artifactId>
+   <name>petals-flowable</name>
+   <version>1.0.0-1.0.0-SNAPSHOT</version>
    <packaging>pom</packaging>
 
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <artifactId>petals-se-activiti</artifactId>
+            <artifactId>petals-se-flowable</artifactId>
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>
             <type>jbi-component</type>
-            <version>1.1.0-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
          </dependency>
          <dependency>
             <artifactId>petals-bc-soap</artifactId>
@@ -64,12 +64,12 @@
    </build>
 
    <modules>
-      <module>su-activiti-vacationService-provide</module>
+      <module>su-flowable-vacationService-provide</module>
       <module>sa-vacation-sample</module>
       <module>su-SOAP-vacationService-consume</module>
       <module>su-SOAP-notifyVacationService-provide</module>
       <module>su-SOAP-archiveService-provide</module>
-      <module>su-SOAP-activitiIntegrationService-consume</module>
+      <module>su-SOAP-flowableIntegrationService-consume</module>
       <module>samples-SOAP-services</module>
       <module>sample-vacation-webapp</module>
       <module>su-SOAP-notifyVacationService-consume</module>
@@ -77,8 +77,8 @@
    </modules>
 
    <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-activiti.git</connection>
-      <developerConnection>scm:git:https://github.com/petalslink/petals-se-activiti.git</developerConnection>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
      <tag>HEAD</tag>
   </scm>
 </project>

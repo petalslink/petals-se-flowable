@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2016-2017 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-cdkbased-components-parent</artifactId>
+      <groupId>org.ow2.petals</groupId>
+      <relativePath>../cdk-based-parent/pom.xml</relativePath>
+      <version>1.0.3-SNAPSHOT</version>
+   </parent>
+
+   <name>Petals ESB - Components - SE Flowabl - JUnit framework</name>
+   <artifactId>petals-se-flowable-junit</artifactId>
+   <groupId>org.ow2.petals</groupId>
+   <version>1.0.0-SNAPSHOT</version>
+   <packaging>jar</packaging>
+   <description>JUnit framework for service unit of the BPMN Service Engine based on Flowable</description>
+
+   <dependencyManagement>
+      <!-- Align dependencies with those of Flowable -->
+      <dependencies>
+         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+         <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+   
+   <dependencies>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable</artifactId>
+         <version>1.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-api</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cdk-jbidescriptor</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-jbi-descriptor</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.easywsdl</groupId>
+         <artifactId>easywsdl-wsdl</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.flowable</groupId>
+         <artifactId>flowable-bpmn-model</artifactId>
+         <version>5.23.0</version>
+      </dependency>
+
+      <dependency>
+         <groupId>org.xmlunit</groupId>
+         <artifactId>xmlunit-core</artifactId>
+         <version>2.3.0</version>
+      </dependency>
+   </dependencies>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
+     <tag>HEAD</tag>
+  </scm>
+</project>

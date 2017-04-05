@@ -20,8 +20,8 @@ package org.ow2.petals.cloud.vacation.web.mvc;
 import javax.validation.Valid;
 
 import org.ow2.petals.cloud.vacation.web.VacationRequest.PendingVacationRequest;
-import org.ow2.petals.cloud.vacation.web.services.ActivitiProcessClient;
-import org.ow2.petals.cloud.vacation.web.services.ActivitiTaskClient;
+import org.ow2.petals.cloud.vacation.web.services.FlowableProcessClient;
+import org.ow2.petals.cloud.vacation.web.services.FlowableTaskClient;
 import org.ow2.petals.cloud.vacation.web.services.VacationClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -43,10 +43,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class RequestsController extends AbstractController {
 
     @Autowired
-    private ActivitiProcessClient activitiProcessClient;
+    private FlowableProcessClient flowableProcessClient;
 
     @Autowired
-    private ActivitiTaskClient activitiTaskClient;
+    private FlowableTaskClient flowableTaskClient;
 
     /**
      * Used in the templates
@@ -56,19 +56,19 @@ public class RequestsController extends AbstractController {
     /**
      * TODO
      * 
-     * pending and archived requests are disabled for now because they implies to infer from the state of a processus
-     * the state of the request itself...
+     * pending and archived requests are disabled for now because they implies to infer from the state of a process the
+     * state of the request itself...
      */
     @RequestMapping
     public ModelAndView list() {
         final ModelAndView modelAndView = new ModelAndView("pages/requests");
         modelAndView.addObject("refusedRequests",
-                activitiTaskClient.getRefusedRequests(userSession.getUsernameWithChecks()));
+                flowableTaskClient.getRefusedRequests(userSession.getUsernameWithChecks()));
 
         modelAndView.addObject("pendingRequests",
-                activitiProcessClient.getMyPendingRequests(userSession.getUsernameWithChecks()));
+                flowableProcessClient.getMyPendingRequests(userSession.getUsernameWithChecks()));
         modelAndView.addObject("archivedRequests",
-                activitiProcessClient.getMyFinishedRequests(userSession.getUsernameWithChecks()));
+                flowableProcessClient.getMyFinishedRequests(userSession.getUsernameWithChecks()));
 
         return modelAndView;
     }
