@@ -25,11 +25,11 @@
       <relativePath>../pom.xml</relativePath>
    </parent>
 
-   <artifactId>sa-vacation-sample</artifactId>
+   <artifactId>sa-flowable-vacation-sample</artifactId>
    <packaging>jbi-service-assembly</packaging>
    <name>sa-vacation-sample</name>
    <!-- No version set -->
-   <description>sa-vacation-sample description</description>
+   <description>sa-flowable-vacation-sample description</description>
 
    <properties>
       <!-- Skip dependency check for service assembly because it has Java no source code. -->
