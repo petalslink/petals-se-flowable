@@ -19,9 +19,9 @@ package org.ow2.petals.flowable.event;
 
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
@@ -30,18 +30,18 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public abstract class AbstractMonitLoggerEventListener extends AbstractEventListener implements ActivitiEventListener {
+public abstract class AbstractMonitLoggerEventListener extends AbstractEventListener implements FlowableEventListener {
 
-    public AbstractMonitLoggerEventListener(final ActivitiEventType listenEventType, final Logger log) {
+    public AbstractMonitLoggerEventListener(final FlowableEngineEventType listenEventType, final Logger log) {
         super(listenEventType, log);
     }
 
-    protected abstract AbstractFlowLogData createLogData(final ActivitiEvent event);
+    protected abstract AbstractFlowLogData createLogData(final FlowableEvent event);
 
     protected abstract void flushLogData(final AbstractFlowLogData logData);
 
     @Override
-    public void processEvent(final ActivitiEvent event) {
+    public void processEvent(final FlowableEvent event) {
 
         final AbstractFlowLogData flowLogData;
         if ((flowLogData = this.createLogData(event)) != null) {

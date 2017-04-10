@@ -25,14 +25,14 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.EventDefinition;
-import org.activiti.bpmn.model.FlowElement;
-import org.activiti.bpmn.model.FormProperty;
-import org.activiti.bpmn.model.Message;
-import org.activiti.bpmn.model.MessageEventDefinition;
-import org.activiti.bpmn.model.Process;
-import org.activiti.bpmn.model.StartEvent;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.EventDefinition;
+import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.FormProperty;
+import org.flowable.bpmn.model.Message;
+import org.flowable.bpmn.model.MessageEventDefinition;
+import org.flowable.bpmn.model.Process;
+import org.flowable.bpmn.model.StartEvent;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoStartEventMessageNameMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.StartEventMessageDefinitionnNotFoundInModelException;
@@ -81,9 +81,8 @@ public class MessageStartEventAnnotatedOperation extends StartEventAnnotatedOper
      */
     public MessageStartEventAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
             final String startEventMessageName, final String tenantId, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables,
-            final Templates outputTemplate, final Map<String, Templates> faultTemplates)
-            throws InvalidAnnotationForOperationException {
+            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+            final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
         this.startEventMessageName = startEventMessageName;
         this.tenantId = tenantId;
@@ -105,7 +104,7 @@ public class MessageStartEventAnnotatedOperation extends StartEventAnnotatedOper
             throw new NoStartEventMessageNameMappingException(this.wsdlOperation);
         }
 
-        // The mapping defining the action identifier must be declared in the process definition
+        // The mapping defining the start event message name must be declared in the process definition
         boolean isMessageNameFound = false;
         List<FormProperty> formPropertyList = null;
         final Process process = model.getProcessById(this.getProcessDefinitionId());
@@ -132,7 +131,7 @@ public class MessageStartEventAnnotatedOperation extends StartEventAnnotatedOper
                 }
             }
         }
-        
+
         if (!isMessageNameFound) {
             throw new StartEventMessageNameNotFoundInModelException(this.getWsdlOperation(), this.startEventMessageName,
                     this.getProcessDefinitionId());

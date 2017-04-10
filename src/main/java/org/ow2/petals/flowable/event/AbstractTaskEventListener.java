@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2017 Linagora
+ * Copyright (c) 2017 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,14 +15,26 @@
  * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.flowable.identity.file;
+package org.ow2.petals.flowable.event;
 
-import java.util.List;
+import java.util.logging.Logger;
 
-import org.activiti.engine.identity.User;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
 
-public interface UserCriteria {
+/**
+ * Base class for listeners about task events
+ * 
+ * @author Christophe DENEUX - Linagora
+ *
+ */
+public abstract class AbstractTaskEventListener extends AbstractMonitDirectLoggerEventListener {
 
-    public List<User> meetCriteria(final List<User> users);
+    protected final TaskService taskService;
 
+    public AbstractTaskEventListener(final FlowableEngineEventType listenEventType, final TaskService taskService,
+            final Logger log) {
+        super(listenEventType, log);
+        this.taskService = taskService;
+    }
 }

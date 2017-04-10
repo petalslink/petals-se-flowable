@@ -17,7 +17,7 @@
  */
 package org.ow2.petals.flowable.incoming.operation;
 
-import org.activiti.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.BpmnModel;
 
 /**
  * A process definition embedded into the service unit

@@ -63,18 +63,21 @@ import java.util.logging.Logger;
 import javax.jbi.JBIException;
 import javax.xml.namespace.QName;
 
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.impl.asyncexecutor.AsyncExecutor;
-import org.activiti.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.activiti.engine.parse.BpmnParseHandler;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.common.api.FlowableException;
+import org.flowable.engine.impl.asyncexecutor.AsyncExecutor;
+import org.flowable.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.parse.BpmnParseHandler;
+import org.flowable.idm.api.IdmIdentityService;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.petals.component.framework.listener.AbstractListener;
@@ -91,7 +94,6 @@ import org.ow2.petals.flowable.event.UserTaskCompletedEventListener;
 import org.ow2.petals.flowable.event.UserTaskStartedEventListener;
 import org.ow2.petals.flowable.identity.IdentityService;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
-import org.ow2.petals.flowable.identity.file.FileConfigurator;
 import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.integration.ActivateProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.GetProcessInstancesOperation;
@@ -428,11 +430,11 @@ public class FlowableSE extends AbstractServiceEngine {
             // We register the Petals transport into Apache CXF
             this.registerCxfPetalsTransport();
 
-            // As recommended by Flowable team, we prefer the Async Job Executor
-            pec.setJobExecutorActivate(false);
-            // The Async job is enabled ...
-            pec.setAsyncExecutorEnabled(this.enableFlowableJobExecutor);
-            // ... but must be started when starting the SE
+            // The Async job is must be started when starting the SE according to the configuration
+            // 'enableFlowableJobExecutor'.
+            // We force its activation to false to avoid an automatic startup when starting the Flowable engine. The
+            // right activation status will be set in Flowable engine configuration once the Flowable engine will be
+            // started.
             pec.setAsyncExecutorActivate(false);
 
             // Override the default configuration of the identity service.
@@ -442,6 +444,7 @@ public class FlowableSE extends AbstractServiceEngine {
             this.addPostBpmnParseHandlers(pec);
 
             this.flowableEngine = pec.buildProcessEngine();
+            pec.setAsyncExecutorActivate(this.enableFlowableJobExecutor);
             if (this.enableFlowableJobExecutor) {
                 this.flowableAsyncExecutor = pec.getAsyncExecutor();
                 this.configureAsyncExecutor();
@@ -464,7 +467,7 @@ public class FlowableSE extends AbstractServiceEngine {
 
             this.registersIntegrationOperations();
 
-        } catch (final ActivitiException e) {
+        } catch (final FlowableException e) {
             throw new JBIException("An error occurred while creating the Flowable BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End FlowableSE.doInit()");
@@ -478,7 +481,7 @@ public class FlowableSE extends AbstractServiceEngine {
 
         // Register integration operation
         final List<Endpoint> integrationEndpoints = WSDLUtilImpl.getEndpointList(this.getNativeWsdl().getDescription());
-        if (integrationEndpoints.size() > 0) {
+        if (!integrationEndpoints.isEmpty()) {
             try {
                 for (final Endpoint endpoint : integrationEndpoints) {
                     final String integrationEndpointName = endpoint.getName();
@@ -543,6 +546,8 @@ public class FlowableSE extends AbstractServiceEngine {
         assert identityServiceClass != null : "identityServiceClass can not be null";
         assert IdentityService.class.isAssignableFrom(
                 identityServiceClass) : "The identity service class does not implement IdentityService";
+        assert IdmIdentityService.class.isAssignableFrom(
+                identityServiceClass) : "The identity service class does not implement IdmIdentityService";
 
         Object identityServiceObj;
         try {
@@ -553,7 +558,7 @@ public class FlowableSE extends AbstractServiceEngine {
             identityService.init(identityServiceCfgFile);
 
             if (pec instanceof ProcessEngineConfigurationImpl) {
-                ((ProcessEngineConfigurationImpl) pec).addConfigurator(new FileConfigurator(identityService));
+                ((ProcessEngineConfigurationImpl) pec).setIdentityService(identityService.getIdentityService());
             } else {
                 this.getLogger().warning(
                         "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
@@ -575,7 +580,7 @@ public class FlowableSE extends AbstractServiceEngine {
 
         if (pec instanceof ProcessEngineConfigurationImpl) {
             final List<BpmnParseHandler> postBpmnParseHandlers = new ArrayList<>();
-            postBpmnParseHandlers.add(new ServiceTaskForceAsyncParseHandler());
+            postBpmnParseHandlers.add(new ServiceTaskForceAsyncParseHandler(this.getLogger()));
             ((ProcessEngineConfigurationImpl) pec).setPostBpmnParseHandlers(postBpmnParseHandlers);
         } else {
             this.getLogger().warning(
@@ -593,24 +598,28 @@ public class FlowableSE extends AbstractServiceEngine {
         runtimeService.addEventListener(this.processInstanceStartedEventListener,
                 this.processInstanceStartedEventListener.getListenEventType());
 
-        this.processInstanceCompletedEventListener = new ProcessInstanceCompletedEventListener(this.getLogger());
+        final HistoryService historyService = this.flowableEngine.getHistoryService();
+        this.processInstanceCompletedEventListener = new ProcessInstanceCompletedEventListener(historyService,
+                this.getLogger());
         runtimeService.addEventListener(this.processInstanceCompletedEventListener,
                 this.processInstanceCompletedEventListener.getListenEventType());
 
-        this.processInstanceCanceledEventListener = new ProcessInstanceCanceledEventListener(this.getLogger());
+        this.processInstanceCanceledEventListener = new ProcessInstanceCanceledEventListener(historyService,
+                this.getLogger());
         runtimeService.addEventListener(this.processInstanceCanceledEventListener,
                 this.processInstanceCanceledEventListener.getListenEventType());
 
-        this.serviceTaskStartedEventListener = new ServiceTaskStartedEventListener(this.getLogger());
+        this.serviceTaskStartedEventListener = new ServiceTaskStartedEventListener(runtimeService, this.getLogger());
         runtimeService.addEventListener(this.serviceTaskStartedEventListener,
                 this.serviceTaskStartedEventListener.getListenEventType());
 
-        this.userTaskStartedEventListener = new UserTaskStartedEventListener(this.simpleUUIDGenerator,
+        final TaskService taskService = this.flowableEngine.getTaskService();
+        this.userTaskStartedEventListener = new UserTaskStartedEventListener(this.simpleUUIDGenerator, taskService,
                 this.getLogger());
         runtimeService.addEventListener(this.userTaskStartedEventListener,
                 this.userTaskStartedEventListener.getListenEventType());
 
-        this.userTaskCompletedEventListener = new UserTaskCompletedEventListener(this.getLogger());
+        this.userTaskCompletedEventListener = new UserTaskCompletedEventListener(taskService, this.getLogger());
         runtimeService.addEventListener(this.userTaskCompletedEventListener,
                 this.userTaskCompletedEventListener.getListenEventType());
 
@@ -641,7 +650,7 @@ public class FlowableSE extends AbstractServiceEngine {
             // TODO: Add JMX operation to start/stop the Flowable job executor when the component is started
             // TODO: Add JMX operation to disable/enable the Flowable job executor when the component is running
 
-        } catch (final ActivitiException e) {
+        } catch (final FlowableException e) {
             throw new JBIException("An error occurred while starting the Flowable BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End FlowableSE.doStart()");
@@ -782,7 +791,7 @@ public class FlowableSE extends AbstractServiceEngine {
                 this.getLogger().info("Flowable Job Executor not stopped because it is not activated.");
             }
 
-        } catch (final ActivitiException e) {
+        } catch (final FlowableException e) {
             throw new JBIException("An error occurred while stopping the Flowable BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End FlowableSE.doStop()");
@@ -808,7 +817,7 @@ public class FlowableSE extends AbstractServiceEngine {
                 this.flowableEngine.close();
             }
 
-        } catch (final ActivitiException e) {
+        } catch (final FlowableException e) {
             throw new JBIException("An error occurred while shutdowning the Flowable BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End FlowableSE.doShutdown()");

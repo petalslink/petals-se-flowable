@@ -52,18 +52,20 @@
    </developers>
 
    <properties>
-      <flowable.version>5.23.0</flowable.version>
+      <flowable.version>6.0.1-PETALS-0-SNAPSHOT</flowable.version>
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
 
    <dependencyManagement>
-      <!-- Align dependencies with those of activiti -->
       <dependencies>
          <dependency>
+            <!-- Align dependency with the one of Flowable -->
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <version>2.2.11</version>
          </dependency>
          <dependency>
+            <!-- Align dependency with the one of Flowable -->
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-xjc</artifactId>
             <version>2.2.11</version>
@@ -147,7 +149,31 @@
          <version>1.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
-         <groupId>org.flowable</groupId>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-engine-common-api</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-engine-common</artifactId>
+         <version>${flowable.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>commons-logging</groupId>
+               <artifactId>commons-logging</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
          <version>${flowable.version}</version>
          <exclusions>
@@ -156,6 +182,12 @@
                     so commons-logging must be excluded -->
                <groupId>commons-logging</groupId>
                <artifactId>commons-logging</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
             </exclusion>
             <exclusion>
                <!-- We use javax.mail -->
@@ -170,18 +202,42 @@
          <version>3.4.1</version>
       </dependency>
       <dependency>
-         <groupId>org.flowable</groupId>
+         <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-bpmn-converter</artifactId>
          <version>${flowable.version}</version>
       </dependency>
       <dependency>
-         <groupId>org.flowable</groupId>
+         <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-bpmn-model</artifactId>
          <version>${flowable.version}</version>
       </dependency>
       <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-idm-api</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-idm-engine</artifactId>
+         <version>${flowable.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>commons-logging</groupId>
+               <artifactId>commons-logging</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
          <!-- flowable-cxf add support of WSDL-based services to the Flowable engine to call Petals services -->
-         <groupId>org.flowable</groupId>
+         <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
          <version>${flowable.version}</version>
          <scope>runtime</scope>
@@ -196,15 +252,8 @@
       <dependency>
          <!-- Dependency required by the Petals transporter -->
          <groupId>org.apache.cxf</groupId>
-         <artifactId>cxf-api</artifactId>
-         <version>2.6.14</version>
-         <exclusions>
-            <exclusion>
-               <!-- We use javax.mail -->
-               <artifactId>geronimo-javamail_1.4_spec</artifactId>
-               <groupId>org.apache.geronimo.specs</groupId>
-            </exclusion>
-         </exclusions>
+         <artifactId>cxf-core</artifactId>
+         <version>3.1.6</version>
       </dependency>
 
       <dependency>
@@ -215,6 +264,13 @@
          <scope>runtime</scope>
       </dependency>
 
+      <dependency>
+         <!-- The SLF bridge 'log4j-over-slf4j' is required by the flowable-engine -->
+         <groupId>org.slf4j</groupId>
+         <artifactId>log4j-over-slf4j</artifactId>
+         <!-- scope 'provided', it is provided by the petals-bootstrap-launcher -->
+      </dependency>
+      
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-junit</artifactId>
@@ -237,7 +293,7 @@
                   <configuration>
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
-                        <usedDependency>org.flowable:flowable-cxf</usedDependency>
+                        <usedDependency>${flowable.groupId}:flowable-cxf</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>

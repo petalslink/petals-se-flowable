@@ -26,10 +26,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.test.ActivitiRule;
-import org.activiti.engine.test.Deployment;
+import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.test.FlowableRule;
+import org.flowable.engine.test.Deployment;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -50,7 +50,7 @@ public class ProcessDeploymentTest {
     }
 
     @Rule
-    public final ActivitiRule flowableRule = new ActivitiRule();
+    public final FlowableRule flowableRule = new FlowableRule();
     
     @Test
     @Deployment(resources = {"jbi/vacationRequest.bpmn20.xml"})

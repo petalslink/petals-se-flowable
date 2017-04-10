@@ -181,14 +181,14 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <ul>
      * <li>on the first request:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
      * </li>
      * <li>on the 2nd request,:
      * <ul>
-     * <li>the process instance is correctly finished in the Activiti engine,</li>
+     * <li>the process instance is correctly finished in the Flowable engine,</li>
      * <li>the 1st user task is completed by the right assignee,</li>
      * <li>the service reply is as expected,</li>
      * <li>service tasks invoked Petals services</li>
@@ -277,7 +277,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
             assertTrue(motivationFound);
         }
 
-        // Assertions about states of user task and process instance at Activiti Level
+        // Assertions about states of user task and process instance at Flowable Level
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
@@ -310,7 +310,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 this.flowableClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
                         FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID));
 
-        // Assertions about the process instance state through the SE Activiti
+        // Assertions about the process instance state through the SE Flowable
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, true);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
@@ -330,7 +330,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 AdjournmentResult.ALREADY_SUSPENDED);
         this.tryToSuspendProcessInstance("not-found", processStartedBeginFlowLogData, AdjournmentResult.NOT_FOUND);
 
-        // Assertions about the process instance state through the SE Activiti
+        // Assertions about the process instance state through the SE Flowable
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
@@ -338,7 +338,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, false);
 
-        // Assertions about current user task retrieveing through the SE Activiti
+        // Assertions about current user task retrieveing through the SE Flowable
         this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), false, processStartedBeginFlowLogData,
                 true);
         this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), true, processStartedBeginFlowLogData,
@@ -370,7 +370,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
             @Override
             public Message provides(final RequestMessage archiveRequestMsg) throws Exception {
-                // Assert the 1st request sent by Activiti on orchestrated service
+                // Assert the 1st request sent by Flowable on orchestrated service
                 this.archiveMessageExchange = archiveRequestMsg.getMessageExchange();
                 assertNotNull(this.archiveMessageExchange);
                 assertEquals(ARCHIVE_INTERFACE, this.archiveMessageExchange.getInterfaceName());
@@ -384,7 +384,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 final Archiver archiveRequest = (Archiver) archiveRequestObj;
                 assertEquals(response_1.getNumeroDde(), archiveRequest.getItem());
 
-                // Returns the reply of the service provider to the Activiti service task
+                // Returns the reply of the service provider to the Flowable service task
                 final ArchiverResponse archiverResponse = new ArchiverResponse();
                 archiverResponse.setItem("value of item");
                 archiverResponse.setItem2("value of item2");
@@ -462,7 +462,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         COMPONENT.sendDoneStatus(responseMsg_2, service);
 
-        // Wait the end of a service task (a service task is executed asynchronously by SE Activiti, see
+        // Wait the end of a service task (a service task is executed asynchronously by SE Flowable, see
         // PETALSSEACTIVITI-4)
         this.waitEndOfServiceTask(response_1.getNumeroDde(), "archiverLaDemandeService");
 
@@ -481,7 +481,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(2));
         // TODO: Should we have MONIT traces about the service call on the consumer side ?
         // Check the MONIT traces of the invoked services: the service is responsible to generate them, not the SE
-        // Activiti.
+        // Flowable.
         final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(processStartedBeginFlowLogData,
                 ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_2.get(3));
         assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_2.get(4));
@@ -495,7 +495,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, true);
 
-        // Assertions about states of user task and process instance at Activiti Level
+        // Assertions about states of user task and process instance at Flowable Level
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
         assertProcessInstanceFinished(response_1.getNumeroDde());
 
@@ -540,7 +540,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * Expected results:
      * <ul>
      * <li>a fault is returned to the caller</li>
-     * <li>no process instance is created on the Activiti engine</li>
+     * <li>no process instance is created on the Flowable engine</li>
      * </ul>
      * </p>
      */
@@ -638,7 +638,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <ul>
      * <li>on the first request:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -646,7 +646,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <li>on the 2nd request:
      * <ul>
      * <li>a fault is returned</li>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -738,7 +738,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <ul>
      * <li>on the first request:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -746,7 +746,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <li>on the 2nd request:
      * <ul>
      * <li>a fault is returned</li>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -839,7 +839,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <ul>
      * <li>on the first request:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -847,7 +847,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <li>on the 2nd request:
      * <ul>
      * <li>a fault is returned</li>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -938,7 +938,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <ul>
      * <li>on the first request:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -946,7 +946,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <li>on the 2nd request:
      * <ul>
      * <li>a fault is returned</li>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
@@ -1090,14 +1090,14 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <ul>
      * <li>on the first request:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the 1st user task is correctly assigned,</li>
      * <li>the service reply is as expected,</li>
      * </ul>
      * </li>
      * <li>on the 2nd request,:
      * <ul>
-     * <li>the process instance is correctly finished in the Activiti engine,</li>
+     * <li>the process instance is correctly finished in the Flowable engine,</li>
      * <li>the 1st user task is completed by the right assignee,</li>
      * <li>the service reply is as expected,</li>
      * <li>service tasks invoked Petals services</li>
@@ -1154,7 +1154,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                 OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
-        // Check Activiti engine against the process instance creation
+        // Check Flowable engine against the process instance creation
         assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
@@ -1197,7 +1197,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                 OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
 
-        // Check Activiti engine against the current user task
+        // Check Flowable engine against the current user task
         assertProcessInstanceFinished(response_1.getNumeroDde());
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
 
@@ -1236,7 +1236,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
 
-        // Check Activiti engine against the current user task
+        // Check Flowable engine against the current user task
         assertProcessInstanceFinished(response_1.getNumeroDde());
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
     }
@@ -1267,7 +1267,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
             @Override
             public Message provides(final RequestMessage archiveRequestMsg) throws Exception {
-                // Assert the 1st request sent by Activiti on orchestrated service
+                // Assert the 1st request sent by Flowable on orchestrated service
                 assertNotNull("No service request received under the given delay", archiveRequestMsg);
                 this.archiveMessageExchange = archiveRequestMsg.getMessageExchange();
                 assertNotNull(this.archiveMessageExchange);
@@ -1282,7 +1282,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 final Archiver archiveRequest = (Archiver) archiveRequestObj;
                 assertEquals(numberOfDays, archiveRequest.getItem());
 
-                // Returns the reply of the service provider to the Activiti service task
+                // Returns the reply of the service provider to the Flowable service task
                 final ArchiverResponse archiverResponse = new ArchiverResponse();
                 archiverResponse.setItem("value of item");
                 archiverResponse.setItem2("value of item2");
@@ -1357,7 +1357,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertMonitProviderEndLog(initialInteractionRequestFlowLogData, monitLogs_1.get(2));
         // TODO: Should we have MONIT traces about the service call on the consumer side ?
         // Check the MONIT traces of the invoked services: the service is responsible to generate them, not the SE
-        // Activiti.
+        // Flowable.
         final FlowLogData serviceTaskFlowLogData = assertMonitProviderBeginLog(processStartedBeginFlowLogData,
                 ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, monitLogs_1.get(3));
         assertMonitProviderEndLog(serviceTaskFlowLogData, monitLogs_1.get(4));
@@ -1518,8 +1518,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
             final FlowLogData processStartedBeginFlowLogData, final AdjournmentResult expectedResult) throws Exception {
 
         if (expectedResult == AdjournmentResult.SUSPENDED) {
-            // Check at Activiti level that the process instance is suspended
-            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            // Check at Flowable level that the process instance is suspended
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());
@@ -1562,8 +1562,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_suspendProcessInstance);
 
         if (expectedResult == AdjournmentResult.SUSPENDED) {
-            // Check at Activiti level that the process instance is suspended
-            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            // Check at Flowable level that the process instance is suspended
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());
@@ -1575,8 +1575,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
             final FlowLogData processStartedBeginFlowLogData, final ActivationResult expectedResult) throws Exception {
 
         if (expectedResult == ActivationResult.ACTIVATED) {
-            // Check at Activiti level that the process instance is activated
-            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            // Check at Flowable level that the process instance is activated
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());
@@ -1620,8 +1620,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_activateProcessInstance);
 
         if (expectedResult == ActivationResult.ACTIVATED) {
-            // Check at Activiti level that the process instance is activated
-            final List<org.activiti.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            // Check at Flowable level that the process instance is activated
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());

@@ -23,9 +23,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.ActivitiObjectNotFoundException;
-import org.activiti.engine.RuntimeService;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.common.api.FlowableException;
+import org.flowable.engine.common.api.FlowableObjectNotFoundException;
 import org.ow2.petals.components.flowable.generic._1.AdjournmentResult;
 import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
@@ -71,9 +71,9 @@ public class SuspendProcessInstancesOperation extends
             try {
                 this.runtimeService.suspendProcessInstanceById(processInstanceId);
                 result.setResult(AdjournmentResult.SUSPENDED);
-            } catch (final ActivitiObjectNotFoundException e) {
+            } catch (final FlowableObjectNotFoundException e) {
                 result.setResult(AdjournmentResult.NOT_FOUND);
-            } catch (final ActivitiException e) {
+            } catch (final FlowableException e) {
                 result.setResult(AdjournmentResult.ALREADY_SUSPENDED);
             }
         }

@@ -80,8 +80,8 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
         try {
             final JAXBContext jaxbContext = JAXBContext.newInstance(classesToBeBound);
 
-            this.marshalerPool = new GenericObjectPool<Marshaller>(new MarshalerFactory(jaxbContext));
-            this.unmarshalerPool = new GenericObjectPool<Unmarshaller>(new UnmarshalerFactory(jaxbContext));
+            this.marshalerPool = new GenericObjectPool<>(new MarshalerFactory(jaxbContext));
+            this.unmarshalerPool = new GenericObjectPool<>(new UnmarshalerFactory(jaxbContext));
 
         } catch (final JAXBException e) {
             throw new OperationInitializationException(this.operationName, e);

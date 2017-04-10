@@ -20,11 +20,13 @@ package org.ow2.petals.flowable.event;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.delegate.event.impl.FlowableProcessCancelledEventImpl;
+import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepFailureLogData;
@@ -35,31 +37,38 @@ import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepFailureLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ProcessInstanceCanceledEventListener extends AbstractMonitDirectLoggerEventListener implements
-        ActivitiEventListener {
+public class ProcessInstanceCanceledEventListener extends AbstractProcessEventListener
+        implements FlowableEventListener {
 
-    public ProcessInstanceCanceledEventListener(final Logger log) {
-        super(ActivitiEventType.PROCESS_CANCELLED, log);
+    public ProcessInstanceCanceledEventListener(final HistoryService historyService, final Logger log) {
+        super(FlowableEngineEventType.PROCESS_CANCELLED, historyService, log);
     }
 
     @Override
-    protected AbstractFlowLogData createLogData(final ActivitiEvent event) {
+    protected AbstractFlowLogData createLogData(final FlowableEvent event) {
 
-        final String processInstanceId = event.getProcessInstanceId();
-        this.log.fine("The process instance '" + processInstanceId + "' is canceled.");
+        if (event instanceof FlowableProcessCancelledEventImpl) {
+            final FlowableProcessCancelledEventImpl eventImpl = (FlowableProcessCancelledEventImpl) event;
 
-        final HistoricProcessInstanceQuery processQuery = event.getEngineServices().getHistoryService()
-                .createHistoricProcessInstanceQuery().processInstanceId(processInstanceId);
-        final HistoricProcessInstance processResult = processQuery.singleResult();
+            final String processInstanceId = eventImpl.getProcessInstanceId();
+            this.log.fine("The process instance '" + processInstanceId + "' is canceled.");
 
-        final Map<String, Object> processVariables = processResult.getProcessVariables();
+            final HistoricProcessInstanceQuery processQuery = this.historyService.createHistoricProcessInstanceQuery()
+                    .processInstanceId(processInstanceId);
+            final HistoricProcessInstance processResult = processQuery.singleResult();
 
-        final String flowInstanceId = (String) processVariables
-                .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-        final String flowStepId = (String) processVariables
-                .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+            final Map<String, Object> processVariables = processResult.getProcessVariables();
 
-        return new ProcessInstanceFlowStepFailureLogData(flowInstanceId, flowStepId, processResult.getDeleteReason());
+            final String flowInstanceId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+            final String flowStepId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
 
+            return new ProcessInstanceFlowStepFailureLogData(flowInstanceId, flowStepId,
+                    processResult.getDeleteReason());
+        } else {
+            this.log.warning("Unexpected event implementation: " + event.getClass().getName());
+            return null;
+        }
     }
 }

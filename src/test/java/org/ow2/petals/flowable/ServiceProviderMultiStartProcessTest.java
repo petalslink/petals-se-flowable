@@ -71,7 +71,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
      * <p>
      * Expected results:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the process instance is automatically completed with the right service call.</li>
      * </ul>
      * </p>
@@ -114,7 +114,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         // Wait the end of the process instance
         this.waitEndOfProcessInstance(caseFileNumber.toString());
 
-        // Assertions about state of process instance at Activiti Level
+        // Assertions about state of process instance at Flowable Level
         assertProcessInstanceFinished(caseFileNumber.toString());
 
         // Check MONIT traces
@@ -144,7 +144,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
      * <p>
      * Expected results:
      * <ul>
-     * <li>the process instance is correctly created in the Activiti engine,</li>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the process instance is automatically completed with the right service calls.</li>
      * </ul>
      * </p>
@@ -192,7 +192,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         // Wait the end of the process instance
         this.waitEndOfProcessInstance(response_1.getCaseFileNumber());
 
-        // Assertions about state of process instance at Activiti Level
+        // Assertions about state of process instance at Flowable Level
         assertProcessInstanceFinished(response_1.getCaseFileNumber());
 
         // Check MONIT traces
@@ -233,7 +233,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
                 assertTrue(requestObj instanceof Archiver);
 
-                // Returns the reply of the service provider to the Activiti service task
+                // Returns the reply of the service provider to the Flowable service task
                 return new ResponseToConsumerMessage(requestMsg, toByteArray(responseBean));
             }
 
@@ -273,7 +273,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
                 // TODO: Add an assertion about 'requestBean.getOrderId()'
                 assertEquals(expectedAgent, requestBean.getApprovedBy());
 
-                // Returns the reply of the service provider to the Activiti service task
+                // Returns the reply of the service provider to the Flowable service task
                 return new ResponseToConsumerMessage(requestMsg, toByteArray(responseBean));
             }
 

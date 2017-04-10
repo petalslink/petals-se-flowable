@@ -23,12 +23,12 @@ import java.net.URI;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.repository.ProcessDefinition;
-import org.activiti.engine.repository.ProcessDefinitionQuery;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.task.TaskQuery;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.repository.ProcessDefinitionQuery;
+import org.flowable.engine.task.Task;
+import org.flowable.engine.task.TaskQuery;
 import org.ow2.petals.components.flowable.generic._1.GetTasks;
 import org.ow2.petals.components.flowable.generic._1.GetTasksResponse;
 import org.ow2.petals.components.flowable.generic._1.InvalidRequest;

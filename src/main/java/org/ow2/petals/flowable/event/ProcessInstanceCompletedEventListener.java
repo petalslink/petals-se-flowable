@@ -20,14 +20,16 @@ package org.ow2.petals.flowable.event;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
-import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
+import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepEndLogData;
-import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
  * The event listener fired when a process instance is completed to log a MONIT trace.
@@ -35,31 +37,39 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ProcessInstanceCompletedEventListener extends AbstractMonitDirectLoggerEventListener implements
-        ActivitiEventListener {
+public class ProcessInstanceCompletedEventListener extends AbstractProcessEventListener
+        implements FlowableEventListener {
 
-    public ProcessInstanceCompletedEventListener(final Logger log) {
-        super(ActivitiEventType.PROCESS_COMPLETED, log);
+    public ProcessInstanceCompletedEventListener(final HistoryService historyService, final Logger log) {
+        super(FlowableEngineEventType.PROCESS_COMPLETED, historyService, log);
     }
 
     @Override
-    protected AbstractFlowLogData createLogData(final ActivitiEvent event) {
+    protected AbstractFlowLogData createLogData(final FlowableEvent event) {
 
-        final String processInstanceId = event.getProcessInstanceId();
-        this.log.fine("The process instance '" + processInstanceId + "' is completed.");
+        if (event instanceof FlowableEntityEventImpl) {
+            final FlowableEntityEventImpl eventImpl = (FlowableEntityEventImpl) event;
 
-        final HistoricProcessInstanceQuery processQuery = event.getEngineServices().getHistoryService()
-                .createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).includeProcessVariables();
-        final HistoricProcessInstance processResult = processQuery.singleResult();
+            final String processInstanceId = eventImpl.getProcessInstanceId();
+            this.log.fine("The process instance '" + processInstanceId + "' is completed.");
 
-        final Map<String, Object> processVariables = processResult.getProcessVariables();
+            final HistoricProcessInstanceQuery processQuery = this.historyService
+                    .createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
+                    .includeProcessVariables();
+            final HistoricProcessInstance processResult = processQuery.singleResult();
 
-        final String flowInstanceId = (String) processVariables
-                .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-        final String flowStepId = (String) processVariables
-                .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+            final Map<String, Object> processVariables = processResult.getProcessVariables();
 
-        return new ProcessInstanceFlowStepEndLogData(flowInstanceId, flowStepId);
+            final String flowInstanceId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+            final String flowStepId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
 
+            return new ProcessInstanceFlowStepEndLogData(flowInstanceId, flowStepId);
+
+        } else {
+            this.log.warning("Unexpected event implementation: " + event.getClass().getName());
+            return null;
+        }
     }
 }

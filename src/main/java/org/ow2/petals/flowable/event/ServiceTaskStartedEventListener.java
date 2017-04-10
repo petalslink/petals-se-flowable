@@ -20,15 +20,16 @@ package org.ow2.petals.flowable.event;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiActivityEvent;
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.runtime.ProcessInstanceQuery;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableActivityEvent;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.outgoing.cxf.transport.PetalsConduit;
-import org.ow2.petals.commons.log.FlowAttributes;
 
 /**
  * The event listener fired when a service task is started to set flow attributes in a context to be retrieved by the
@@ -37,33 +38,38 @@ import org.ow2.petals.commons.log.FlowAttributes;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ServiceTaskStartedEventListener extends AbstractEventListener implements
-        ActivitiEventListener {
+public class ServiceTaskStartedEventListener extends AbstractEventListener implements FlowableEventListener {
 
-    public ServiceTaskStartedEventListener(final Logger log) {
-        super(ActivitiEventType.ACTIVITY_STARTED, log);
+    private final RuntimeService runtimeService;
+
+    public ServiceTaskStartedEventListener(final RuntimeService runtimeService, final Logger log) {
+        super(FlowableEngineEventType.ACTIVITY_STARTED, log);
+        this.runtimeService = runtimeService;
     }
 
     @Override
-    protected void processEvent(final ActivitiEvent event) {
+    protected void processEvent(final FlowableEvent event) {
 
-        final ActivitiActivityEvent eventImpl = (ActivitiActivityEvent) event;
-        if ("serviceTask".equals(eventImpl.getActivityType())) {
+        if (event instanceof FlowableActivityEvent) {
+            final FlowableActivityEvent eventImpl = (FlowableActivityEvent) event;
 
-            final ProcessInstanceQuery processInstanceQuery = event.getEngineServices().getRuntimeService()
-                    .createProcessInstanceQuery().processInstanceId(event.getProcessInstanceId())
-                    .includeProcessVariables();
-            final ProcessInstance processInstance = processInstanceQuery.singleResult();
+            if ("serviceTask".equals(eventImpl.getActivityType())) {
 
-            final Map<String, Object> processVariables = processInstance.getProcessVariables();
+                final ProcessInstanceQuery processInstanceQuery = this.runtimeService.createProcessInstanceQuery()
+                        .processInstanceId(eventImpl.getProcessInstanceId()).includeProcessVariables();
+                final ProcessInstance processInstance = processInstanceQuery.singleResult();
 
-            final String flowInstanceId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-            final String flowStepId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+                final Map<String, Object> processVariables = processInstance.getProcessVariables();
 
-            PetalsConduit.flowAttributes.set(new FlowAttributes(flowInstanceId, flowStepId));
+                final String flowInstanceId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+                final String flowStepId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+
+                PetalsConduit.flowAttributes.set(new FlowAttributes(flowInstanceId, flowStepId));
+            }
+        } else {
+            this.log.warning("Unexpected event implementation: " + event.getClass().getName());
         }
-
     }
 }

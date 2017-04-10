@@ -19,7 +19,6 @@ package org.ow2.petals.flowable.identity;
 
 import java.io.File;
 
-import org.activiti.engine.impl.interceptor.SessionFactory;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 
 public class IdentityServiceMock implements IdentityService {
@@ -30,17 +29,7 @@ public class IdentityServiceMock implements IdentityService {
     }
 
     @Override
-    public SessionFactory getUserEntityManagerFactory() {
-        return null;
-    }
-
-    @Override
-    public SessionFactory getGroupEntityManagerFactory() {
-        return null;
-    }
-
-    @Override
-    public SessionFactory getMembershipEntityManagerFactory() {
+    public org.flowable.engine.IdentityService getIdentityService() {
         return null;
     }
 

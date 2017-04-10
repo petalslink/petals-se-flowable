@@ -25,9 +25,11 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FormProperty;
-import org.activiti.bpmn.model.UserTask;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.FormProperty;
+import org.flowable.bpmn.model.Process;
+import org.flowable.bpmn.model.UserTask;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoUserTaskIdMappingException;
@@ -110,7 +112,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
     @Override
     public void doAnnotationCoherenceCheck(final BpmnModel model) throws InvalidAnnotationForOperationException {
 
-        // The start event identifier is required
+        // The user task identifier is required
         if (this.userTaskId == null || this.userTaskId.trim().isEmpty()) {
             throw new NoUserTaskIdMappingException(this.wsdlOperation);
         }
@@ -120,30 +122,36 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
             throw new NoProcessInstanceIdMappingException(this.wsdlOperation);
         }
 
-        // The mapping defining the action identifier must be declared in the process definition
-        boolean isActionIdFound = false;
-        List<FormProperty> formPropertyList = null;
-        outerloop: for (final org.activiti.bpmn.model.Process process : model.getProcesses()) {
-            for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
-                // search the user task
-                if ((flowElt instanceof UserTask) && (flowElt.getId().equals(this.userTaskId))) {
-                    final UserTask userTask = (UserTask) flowElt;
-                    formPropertyList = userTask.getFormProperties();
-                    isActionIdFound = true;
-                    break outerloop;
-                }
-            }
-        }
-        if (!isActionIdFound) {
+        // The mapping defining the user task identifier must be declared in the process definition
+        final List<FormProperty> formPropertyList = this.findFormPropertiesOfUserTask(model);
+        if (formPropertyList == null) {
             throw new UserTaskIdNotFoundInModelException(this.wsdlOperation, this.userTaskId,
                     this.getProcessDefinitionId());
         } else {
-            if (formPropertyList != null && !formPropertyList.isEmpty()) {
-                for (final FormProperty formPropertie : formPropertyList) {
-                    this.getVariableTypes().put(formPropertie.getId(), formPropertie);
-                }
+            for (final FormProperty formPropertie : formPropertyList) {
+                this.getVariableTypes().put(formPropertie.getId(), formPropertie);
             }
         }
+    }
+
+    /**
+     * Find form properties of the current user task
+     * 
+     * @param model
+     *            BPMN model containing the process definition with the current user task
+     * @return The form properties of the current user task, or {@code null} if the no user task exists with the given
+     *         user task identifier ({@link #userTaskId}).
+     */
+    private List<FormProperty> findFormPropertiesOfUserTask(final BpmnModel model) {
+        final Process process = model.getProcessById(this.getProcessDefinitionId());
+        for (final FlowElement flowElt : process.getFlowElements()) {
+            // search the user task
+            if ((flowElt instanceof UserTask) && (flowElt.getId().equals(this.userTaskId))) {
+                final UserTask userTask = (UserTask) flowElt;
+                return userTask.getFormProperties();
+            }
+        }
+        return null;
     }
 
     @Override

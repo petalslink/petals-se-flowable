@@ -26,10 +26,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.converter.util.InputStreamProvider;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.impl.util.io.InputStreamSource;
+import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.engine.common.api.io.InputStreamProvider;
+import org.flowable.engine.common.impl.util.io.InputStreamSource;
+import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.exception.IncoherentProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.exception.InvalidVersionDeclaredException;
@@ -37,7 +38,6 @@ import org.ow2.petals.flowable.exception.NoProcessDefinitionDeclarationException
 import org.ow2.petals.flowable.exception.ProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.exception.UnexistingProcessFileException;
 import org.ow2.petals.flowable.incoming.operation.EmbeddedProcessDefinition;
-import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 
 /**
  * BPMN file reader

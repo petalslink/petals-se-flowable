@@ -23,9 +23,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.activiti.engine.ActivitiException;
-import org.activiti.engine.ActivitiObjectNotFoundException;
-import org.activiti.engine.RuntimeService;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.common.api.FlowableException;
+import org.flowable.engine.common.api.FlowableObjectNotFoundException;
 import org.ow2.petals.components.flowable.generic._1.ActivateProcessInstances;
 import org.ow2.petals.components.flowable.generic._1.ActivateProcessInstancesResponse;
 import org.ow2.petals.components.flowable.generic._1.ActivateProcessInstancesResponse.ProcessInstanceIdentifier;
@@ -71,9 +71,9 @@ public class ActivateProcessInstancesOperation extends
             try {
                 this.runtimeService.activateProcessInstanceById(processInstanceId);
                 result.setResult(ActivationResult.ACTIVATED);
-            } catch (final ActivitiObjectNotFoundException e) {
+            } catch (final FlowableObjectNotFoundException e) {
                 result.setResult(ActivationResult.NOT_FOUND);
-            } catch (final ActivitiException e) {
+            } catch (final FlowableException e) {
                 result.setResult(ActivationResult.ALREADY_ACTIVATED);
             }
         }

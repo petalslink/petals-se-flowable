@@ -27,8 +27,9 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FormProperty;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.FormProperty;
+import org.flowable.bpmn.model.Process;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoOutputMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessDefinitionIdMappingException;
@@ -145,7 +146,7 @@ public abstract class AnnotatedOperation {
         int processDefinitionIdCount = 0;
         BpmnModel modelContainingProcessDefinitionId = null;
         for (final BpmnModel bpmnModel : bpmnModels) {
-            for (final org.activiti.bpmn.model.Process process : bpmnModel.getProcesses()) {
+            for (final Process process : bpmnModel.getProcesses()) {
                 if (this.processDefinitionId.equals(process.getId())) {
                     processDefinitionIdCount++;
                     modelContainingProcessDefinitionId = bpmnModel;

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2017 Linagora
+ * Copyright (c) 2017 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -19,26 +19,23 @@ package org.ow2.petals.flowable.event;
 
 import java.util.logging.Logger;
 
-import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.HistoryService;
 import org.flowable.engine.delegate.event.FlowableEngineEventType;
-import org.ow2.petals.commons.log.Level;
-import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
- * Abstract class logging directly a MONIT trace on Flowable events
+ * Base class for listeners about process events
  * 
  * @author Christophe DENEUX - Linagora
  *
  */
-public abstract class AbstractMonitDirectLoggerEventListener extends AbstractMonitLoggerEventListener implements
-        FlowableEventListener {
+public abstract class AbstractProcessEventListener extends AbstractMonitDirectLoggerEventListener {
 
-    public AbstractMonitDirectLoggerEventListener(final FlowableEngineEventType listenEventType, final Logger log) {
+    protected final HistoryService historyService;
+
+    public AbstractProcessEventListener(final FlowableEngineEventType listenEventType,
+            final HistoryService historyService,
+            final Logger log) {
         super(listenEventType, log);
-    }
-
-    @Override
-    protected void flushLogData(final AbstractFlowLogData logData) {
-        this.log.log(Level.MONIT, "", logData);
+        this.historyService = historyService;
     }
 }

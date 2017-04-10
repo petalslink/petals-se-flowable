@@ -20,14 +20,16 @@ package org.ow2.petals.flowable.event;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEntityEvent;
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
-import org.activiti.engine.impl.persistence.entity.TaskEntity;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.common.api.delegate.event.FlowableEntityEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.impl.persistence.entity.TaskEntity;
+import org.flowable.engine.impl.persistence.entity.VariableInstance;
+import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.UserTaskFlowStepBeginLogData;
-import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
@@ -43,46 +45,44 @@ import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class UserTaskStartedEventListener extends AbstractMonitDirectLoggerEventListener implements
-        ActivitiEventListener {
+public class UserTaskStartedEventListener extends AbstractTaskEventListener implements FlowableEventListener {
 
     private final SimpleUUIDGenerator simpleUUIDGenerator;
 
-    public UserTaskStartedEventListener(final SimpleUUIDGenerator simpleUUIDGenerator, final Logger log) {
-        super(ActivitiEventType.TASK_CREATED, log);
+    public UserTaskStartedEventListener(final SimpleUUIDGenerator simpleUUIDGenerator, final TaskService taskService,
+            final Logger log) {
+        super(FlowableEngineEventType.TASK_CREATED, taskService, log);
         this.simpleUUIDGenerator = simpleUUIDGenerator;
     }
 
     @Override
-    protected AbstractFlowLogData createLogData(final ActivitiEvent event) {
-        
-        if (event instanceof ActivitiEntityEvent) {
-            final ActivitiEntityEvent entityEvent = (ActivitiEntityEvent)event;
+    protected AbstractFlowLogData createLogData(final FlowableEvent event) {
+
+        if (event instanceof FlowableEntityEvent) {
+            final FlowableEntityEvent entityEvent = (FlowableEntityEvent) event;
             final Object entity = entityEvent.getEntity();
             if (entity instanceof TaskEntity) {
-                final TaskEntity taskEntity = (TaskEntity)entity;
-                
-                final Map<String, Object> processVariables = taskEntity.getActivityInstanceVariables();
+                final TaskEntity taskEntity = (TaskEntity) entity;
+
+                final Map<String, VariableInstance> processVariables = taskEntity.getVariableInstances();
 
                 final String flowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID).getValue();
                 // TODO: Review the value of the flow previous step identifier to manage correctly process with branches
                 final String flowPreviousStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
-                
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID).getValue();
+
                 final String flowStepId = this.simpleUUIDGenerator.getNewID();
 
                 // We store the flow step id as task local variable
-                event.getEngineServices()
-                        .getTaskService()
-                        .setVariableLocal(taskEntity.getId(), FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID,
-                                flowStepId);
+                this.taskService.setVariableLocal(taskEntity.getId(),
+                        FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, flowStepId);
 
-                return new UserTaskFlowStepBeginLogData(flowInstanceId, flowStepId, flowPreviousStepId, taskEntity
-                        .getTaskDefinition().getKey(), taskEntity.getId());
+                return new UserTaskFlowStepBeginLogData(flowInstanceId, flowStepId, flowPreviousStepId,
+                        taskEntity.getTaskDefinitionKey(), taskEntity.getId());
             }
         }
-        
+
         return null;
 
     }

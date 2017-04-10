@@ -32,16 +32,16 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.activiti.engine.identity.Group;
-import org.activiti.engine.identity.User;
-import org.activiti.engine.impl.interceptor.SessionFactory;
-import org.activiti.engine.impl.persistence.entity.GroupEntity;
-import org.activiti.engine.impl.persistence.entity.UserEntity;
+import org.flowable.idm.api.Group;
+import org.flowable.idm.api.User;
+import org.flowable.idm.engine.impl.IdmIdentityServiceImpl;
+import org.flowable.idm.engine.impl.persistence.entity.GroupEntityImpl;
+import org.flowable.idm.engine.impl.persistence.entity.UserEntityImpl;
 import org.ow2.petals.flowable.identity.IdentityService;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceResourceNotFoundException;
 
-public class FileIdentityService implements IdentityService {
+public class FileIdentityService extends IdmIdentityServiceImpl implements IdentityService {
 
     /**
      * The resource used as default configuration file of the identity service, it contains the user list
@@ -66,32 +66,17 @@ public class FileIdentityService implements IdentityService {
     /**
      * Users list into a map: key=user-id, value=user-password
      */
-    private final Map<String, User> users = new ConcurrentHashMap<String, User>();
+    private final Map<String, User> users = new ConcurrentHashMap<>();
 
     /**
      * Groups list into a map: key=group-id, value=list of user-id
      */
-    private final Map<String, List<String>> groups = new ConcurrentHashMap<String, List<String>>();
+    private final Map<String, List<String>> groups = new ConcurrentHashMap<>();
 
     /**
      * Groups by user into a map: key=user-id, value=list of group-id
      */
-    private final Map<String, List<Group>> groupsByUser = new ConcurrentHashMap<String, List<Group>>();
-
-    @Override
-    public SessionFactory getUserEntityManagerFactory() {
-        return new FileUserEntityManagerFactory(this.users, this.groupsByUser);
-    }
-
-    @Override
-    public SessionFactory getGroupEntityManagerFactory() {
-        return new FileGroupEntityManagerFactory(this.groupsByUser);
-    }
-
-    @Override
-    public SessionFactory getMembershipEntityManagerFactory() {
-        return new FileMembershipEntityManagerFactory();
-    }
+    private final Map<String, List<Group>> groupsByUser = new ConcurrentHashMap<>();
 
     @Override
     public void init(final File configurationFile) throws IdentityServiceInitException {
@@ -136,11 +121,12 @@ public class FileIdentityService implements IdentityService {
 
         // Compute the map "Groups by user"
         for (final String user : this.users.keySet()) {
-            final List<Group> groupsList = new ArrayList<Group>();
+            final List<Group> groupsList = new ArrayList<>();
             this.groupsByUser.put(user, groupsList);
             for (final Entry<String, List<String>> groupEntry : this.groups.entrySet()) {
                 if (groupEntry.getValue().contains(user)) {
-                    final Group group = new GroupEntity(groupEntry.getKey());
+                    final Group group = new GroupEntityImpl();
+                    group.setId(groupEntry.getKey());
                     groupsList.add(group);
                 }
             }
@@ -229,7 +215,8 @@ public class FileIdentityService implements IdentityService {
         }
 
         for (final Entry<Object, Object> entry : usersProps.entrySet()) {
-            final User user = new UserEntity((String) entry.getKey());
+            final User user = new UserEntityImpl();
+            user.setId((String) entry.getKey());
             user.setPassword((String) entry.getValue());
             this.users.put((String) entry.getKey(), user);
         }
@@ -314,17 +301,21 @@ public class FileIdentityService implements IdentityService {
 
         for (final Entry<Object, Object> entry : groupsProps.entrySet()) {
             final String groupId = (String)entry.getKey();
-            final String users = (String)entry.getValue();
+            final String usersOfGroup = (String) entry.getValue();
             List<String> userList = this.groups.get(groupId);
             if (userList == null) {
-                userList = new ArrayList<String>();
+                userList = new ArrayList<>();
                 this.groups.put(groupId, userList);
             }
-            final StringTokenizer tokenizer = new StringTokenizer(users);
+            final StringTokenizer tokenizer = new StringTokenizer(usersOfGroup);
             while (tokenizer.hasMoreTokens()) {
                 userList.add(tokenizer.nextToken());
             }
         }
     }
 
+    @Override
+    public org.flowable.engine.IdentityService getIdentityService() {
+        return new FileIdentityServiceImpl(this.users, this.groups, this.groupsByUser);
+    }
 }

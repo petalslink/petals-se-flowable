@@ -20,14 +20,14 @@ package org.ow2.petals.flowable.event;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
-import org.activiti.engine.delegate.event.ActivitiProcessStartedEvent;
-import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.delegate.event.impl.FlowableProcessStartedEventImpl;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
-import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
  * The event listener fired when a process instance is started to log the MONIT trace.
@@ -36,44 +36,43 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  *
  */
 public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLoggerEventListener implements
-        ActivitiEventListener {
+        FlowableEventListener {
 
     public ProcessInstanceStartedEventListener(final Logger log) {
-        super(ActivitiEventType.PROCESS_STARTED, log);
+        super(FlowableEngineEventType.PROCESS_STARTED, log);
     }
 
     @Override
-    protected AbstractFlowLogData createLogData(final ActivitiEvent event) {
+    protected AbstractFlowLogData createLogData(final FlowableEvent event) {
 
-        final String processInstanceId = event.getProcessInstanceId();
-        this.log.fine("The process instance '" + processInstanceId + "' is started.");
+        if (event instanceof FlowableProcessStartedEventImpl) {
+            final FlowableProcessStartedEventImpl eventImpl = (FlowableProcessStartedEventImpl) event;
 
-        if (event instanceof ActivitiProcessStartedEvent) {
-            final ActivitiProcessStartedEvent eventImpl = (ActivitiProcessStartedEvent) event;
+            final String processInstanceId = eventImpl.getProcessInstanceId();
+            this.log.fine("The process instance '" + processInstanceId + "' is started.");
 
-                final Map<String, Object> processVariables = eventImpl.getVariables();
+            final Map<String, Object> processVariables = eventImpl.getVariables();
 
-                final String flowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-                final String flowStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
-                final String correlatedFlowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
-                final String correlatedFlowStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
+            final String flowInstanceId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+            final String flowStepId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+            final String correlatedFlowInstanceId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
+            final String correlatedFlowStepId = (String) processVariables
+                    .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
 
-                final ExecutionEntity entity = (ExecutionEntity) eventImpl.getEntity();
+            final ExecutionEntity entity = (ExecutionEntity) eventImpl.getEntity();
 
-                // TODO: Add a unit test where the process does not contain user task (the process instance is
-                // completely executed when creating it) to demonstrate that the following MONIT trace occurs before the
-                // trace 'consumeEnd'
-                return new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
-                        correlatedFlowStepId, entity.getProcessDefinition().getKey(), processInstanceId);
+            // TODO: Add a unit test where the process does not contain user task (the process instance is
+            // completely executed when creating it) to demonstrate that the following MONIT trace occurs before the
+            // trace 'consumeEnd'
+            return new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
+                    correlatedFlowStepId, entity.getProcessDefinitionKey(), processInstanceId);
 
         } else {
             this.log.warning("Unexpected event implementation: " + event.getClass().getName());
             return null;
         }
-
     }
 }

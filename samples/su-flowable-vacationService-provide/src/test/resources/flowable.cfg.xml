@@ -48,7 +48,7 @@
       </constructor-arg>
    </bean>
  
-   <bean id="processEngineConfiguration" class="org.activiti.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
+   <bean id="processEngineConfiguration" class="org.flowable.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
       <property name="jdbcUrl" value="jdbc:h2:mem:flowable;DB_CLOSE_DELAY=1000" />
       <property name="jdbcDriver" value="org.h2.Driver" />
       <property name="jdbcUsername" value="sa" />

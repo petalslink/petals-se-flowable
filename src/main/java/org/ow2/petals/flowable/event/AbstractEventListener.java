@@ -19,9 +19,9 @@ package org.ow2.petals.flowable.event;
 
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
 
 /**
  * Abstract class managing Flowable event
@@ -29,13 +29,13 @@ import org.activiti.engine.delegate.event.ActivitiEventType;
  * @author Christophe DENEUX - Linagora
  *
  */
-public abstract class AbstractEventListener implements ActivitiEventListener {
+public abstract class AbstractEventListener implements FlowableEventListener {
 
     protected final Logger log;
 
-    private final ActivitiEventType listenEventType;
+    private final FlowableEngineEventType listenEventType;
 
-    public AbstractEventListener(final ActivitiEventType listenEventType, final Logger log) {
+    public AbstractEventListener(final FlowableEngineEventType listenEventType, final Logger log) {
 
         assert log != null;
         assert listenEventType != null;
@@ -44,10 +44,10 @@ public abstract class AbstractEventListener implements ActivitiEventListener {
         this.listenEventType = listenEventType;
     }
 
-    protected abstract void processEvent(final ActivitiEvent event);
+    protected abstract void processEvent(final FlowableEvent event);
 
     @Override
-    public void onEvent(final ActivitiEvent event) {
+    public void onEvent(final FlowableEvent event) {
 
         assert event != null;
 
@@ -56,7 +56,7 @@ public abstract class AbstractEventListener implements ActivitiEventListener {
             this.processEvent(event);
             
         } else {
-            log.warning("Unexpected event type '" + event.getType().name() + "'. Event discarded !");
+            this.log.warning("Unexpected event type '" + event.getType().name() + "'. Event discarded !");
         }
 
     }
@@ -66,8 +66,8 @@ public abstract class AbstractEventListener implements ActivitiEventListener {
         return false;
     }
 
-    public ActivitiEventType getListenEventType() {
-        return listenEventType;
+    public FlowableEngineEventType getListenEventType() {
+        return this.listenEventType;
     }
 
 }

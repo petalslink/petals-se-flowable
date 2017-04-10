@@ -28,9 +28,9 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Properties;
 
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.identity.Group;
-import org.activiti.engine.identity.User;
+import org.flowable.engine.IdentityService;
+import org.flowable.idm.api.Group;
+import org.flowable.idm.api.User;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -53,22 +53,20 @@ public class FileIdentityServiceTest {
         final FileIdentityService fis = new FileIdentityService();
         fis.init(null);
         
-        final FileGroupManager fileGrpMngr = (FileGroupManager) fis.getGroupEntityManagerFactory().openSession();
-
-        final List<Group> kermitGroups = fileGrpMngr.findGroupsByUser("kermit");
+        final IdentityService identityService = fis.getIdentityService();
+        
+        final List<Group> kermitGroups = identityService.createGroupQuery().groupMember("kermit").list();
         assertEquals(6, kermitGroups.size());
         
-        final FileUserManager fileUserMngr = (FileUserManager) fis.getUserEntityManagerFactory().openSession();
-        final User kermitUser = fileUserMngr.findUserById("kermit");
+        final User kermitUser = identityService.createUserQuery().userId("kermit").singleResult();
         assertEquals("kermit", kermitUser.getPassword());
 
-        final List<Group> gonzoGroups = fileUserMngr.findGroupsByUser("gonzo");
+        final List<Group> gonzoGroups = identityService.createGroupQuery().groupMember("gonzo").list();
         assertEquals(4, gonzoGroups.size());
         
-        assertTrue(fileUserMngr.checkPassword("fozzie", "fozzie"));
-        assertFalse(fileUserMngr.checkPassword("kermit", "fozzie"));
+        assertTrue(identityService.checkPassword("fozzie", "fozzie"));
+        assertFalse(identityService.checkPassword("kermit", "fozzie"));
 
-        final IdentityService identityService = this.flowableClient.getIdentityService();
         final List<User> membersOfMngt = identityService.createUserQuery().memberOfGroup("management").list();
         assertEquals(2, membersOfMngt.size());
         assertFalse(membersOfMngt.get(0).getId().equals(membersOfMngt.get(1).getId()));
@@ -136,17 +134,16 @@ public class FileIdentityServiceTest {
         final FileIdentityService fis = new FileIdentityService();
         fis.init(baseConfigFile);
 
-        final FileGroupManager fileGrpMngr = (FileGroupManager) fis.getGroupEntityManagerFactory().openSession();
+        final IdentityService identityService = fis.getIdentityService();
 
-        final List<Group> user1Groups = fileGrpMngr.findGroupsByUser(user1);
+        final List<Group> user1Groups = identityService.createGroupQuery().groupMember(user1).list();
         assertEquals(2, user1Groups.size());
 
-        final FileUserManager fileUserMngr = (FileUserManager) fis.getUserEntityManagerFactory().openSession();
-        final User user2User = fileUserMngr.findUserById(user2);
+        final User user2User = identityService.createUserQuery().userId(user2).singleResult();
         assertEquals(user2Pwd, user2User.getPassword());
 
-        assertTrue(fileUserMngr.checkPassword(user2, user2Pwd));
-        assertFalse(fileUserMngr.checkPassword(user1, "invalid-pwd"));
+        assertTrue(identityService.checkPassword(user2, user2Pwd));
+        assertFalse(identityService.checkPassword(user1, "invalid-pwd"));
 
     }
 

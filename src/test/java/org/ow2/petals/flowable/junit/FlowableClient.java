@@ -27,16 +27,15 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.ow2.petals.flowable.identity.IdentityService;
-import org.ow2.petals.flowable.identity.file.FileConfigurator;
 import org.ow2.petals.flowable.identity.file.FileIdentityService;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
@@ -236,7 +235,7 @@ public class FlowableClient extends ExternalResource {
         assertTrue(pec instanceof ProcessEngineConfigurationImpl);
         final IdentityService identityService = new FileIdentityService();
         identityService.init(this.fileIdentityServiceCfg);
-        ((ProcessEngineConfigurationImpl) pec).addConfigurator(new FileConfigurator(identityService));
+        ((ProcessEngineConfigurationImpl) pec).setIdentityService(identityService.getIdentityService());
 
         this.flowableClientEngine = pec.buildProcessEngine();
     }
@@ -273,7 +272,7 @@ public class FlowableClient extends ExternalResource {
     /**
      * @return The {@link IdentityService} of the Flowable engine
      */
-    public org.activiti.engine.IdentityService getIdentityService() {
+    public org.flowable.engine.IdentityService getIdentityService() {
         return this.flowableClientEngine.getIdentityService();
     }
 

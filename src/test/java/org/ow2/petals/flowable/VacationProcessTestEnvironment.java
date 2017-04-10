@@ -175,7 +175,7 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
 
                     // Consume service 'archiver'
                     // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange
-                    // between Activiti and other services
+                    // between Flowable and other services
                     final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(
                             ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
                     serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);

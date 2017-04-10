@@ -32,8 +32,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.activiti.bpmn.model.FormProperty;
-import org.activiti.bpmn.model.FormValue;
+import org.flowable.bpmn.model.FormProperty;
+import org.flowable.bpmn.model.FormValue;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.operation.annotated.AnnotatedOperation;

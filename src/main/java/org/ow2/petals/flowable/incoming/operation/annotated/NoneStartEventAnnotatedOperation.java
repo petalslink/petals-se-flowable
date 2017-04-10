@@ -24,10 +24,11 @@ import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FormProperty;
-import org.activiti.bpmn.model.Process;
-import org.activiti.bpmn.model.StartEvent;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.FormProperty;
+import org.flowable.bpmn.model.Process;
+import org.flowable.bpmn.model.StartEvent;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoNoneStartEventIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoneStartEventIdNotFoundInModelException;
@@ -84,7 +85,7 @@ public class NoneStartEventAnnotatedOperation extends StartEventAnnotatedOperati
             throw new NoNoneStartEventIdMappingException(this.wsdlOperation);
         }
 
-        // The mapping defining the action identifier must be declared in the process definition
+        // The mapping defining the none start event identifier must be declared in the process definition
         final List<FormProperty> formPropertyList = this.findFormPropertiesOfStartEvent(model);
         if (formPropertyList == null) {
             throw new NoneStartEventIdNotFoundInModelException(this.getWsdlOperation(), this.noneStartEventId,
@@ -107,7 +108,7 @@ public class NoneStartEventAnnotatedOperation extends StartEventAnnotatedOperati
      */
     private List<FormProperty> findFormPropertiesOfStartEvent(final BpmnModel model) {
         final Process process = model.getProcessById(this.getProcessDefinitionId());
-        for (final org.activiti.bpmn.model.FlowElement flowElt : process.getFlowElements()) {
+        for (final FlowElement flowElt : process.getFlowElements()) {
             // search the None Start Event step
             if ((flowElt instanceof StartEvent) && (flowElt.getId().equals(this.noneStartEventId))
                     && ((StartEvent) flowElt).getEventDefinitions().isEmpty()) {

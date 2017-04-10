@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.cxf.Bus;
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.transport.AbstractTransportFactory;
@@ -49,31 +50,32 @@ public class PetalsCxfTransportFactory extends AbstractTransportFactory implemen
 
     private static final Logger LOG = LogUtils.getL7dLogger(PetalsCxfTransportFactory.class);
 
-    private static final Set<String> URI_PREFIXES = new HashSet<String>();
+    private static final Set<String> URI_PREFIXES = new HashSet<>();
 
     static {
         URI_PREFIXES.add("petals://");
     }
 
-    private Set<String> uriPrefixes = new HashSet<String>(URI_PREFIXES);
+    private Set<String> uriPrefixes = new HashSet<>(URI_PREFIXES);
 
     @Override
-    public Conduit getConduit(final EndpointInfo targetInfo) throws IOException {
-        return new PetalsConduit(this.createReference(targetInfo), this.bus);
+    public Conduit getConduit(final EndpointInfo targetInfo, final Bus bus) throws IOException {
+        return new PetalsConduit(this.createReference(targetInfo), bus);
     }
 
     @Override
-    public Conduit getConduit(final EndpointInfo localInfo, final EndpointReferenceType target) throws IOException {
+    public Conduit getConduit(final EndpointInfo localInfo, final EndpointReferenceType target, final Bus bus)
+            throws IOException {
         LOG.log(Level.FINE, "Creating conduit for {0}", localInfo.getAddress());
         if (target == null) {
-            return new PetalsConduit(this.createReference(localInfo), this.bus);
+            return new PetalsConduit(this.createReference(localInfo), bus);
         } else {
-            return new PetalsConduit(target, this.bus);
+            return new PetalsConduit(target, bus);
         }
     }
 
     @Override
-    public Destination getDestination(final EndpointInfo ei) throws IOException {
+    public Destination getDestination(final EndpointInfo ei, final Bus bus) throws IOException {
         // No Destination is required because CXF is used only on a client side
         return null;
     }
@@ -90,5 +92,4 @@ public class PetalsCxfTransportFactory extends AbstractTransportFactory implemen
         epr.setAddress(address);
         return epr;
     }
-
 }

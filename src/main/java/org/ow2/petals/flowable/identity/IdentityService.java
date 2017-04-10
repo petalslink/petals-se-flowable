@@ -19,7 +19,6 @@ package org.ow2.petals.flowable.identity;
 
 import java.io.File;
 
-import org.activiti.engine.impl.interceptor.SessionFactory;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 
 /**
@@ -40,18 +39,8 @@ public interface IdentityService {
     public void init(final File configurationFile) throws IdentityServiceInitException;
 
     /**
-     * @return The user manager
+     * @return The Flowable ({@link org.flowable.engine.IdentityService}) associated to the identity service
      */
-    public SessionFactory getUserEntityManagerFactory();
-
-    /**
-     * @return The group manager
-     */
-    public SessionFactory getGroupEntityManagerFactory();
-
-    /**
-     * @return The membership manager
-     */
-    public SessionFactory getMembershipEntityManagerFactory();
+    public org.flowable.engine.IdentityService getIdentityService();
 
 }

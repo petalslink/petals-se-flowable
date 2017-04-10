@@ -17,19 +17,19 @@
  */
 package org.ow2.petals.flowable.event;
 
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.delegate.event.ActivitiEntityEvent;
-import org.activiti.engine.delegate.event.ActivitiEvent;
-import org.activiti.engine.delegate.event.ActivitiEventListener;
-import org.activiti.engine.delegate.event.ActivitiEventType;
-import org.activiti.engine.impl.persistence.entity.TaskEntity;
-import org.activiti.engine.task.Task;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.common.api.delegate.event.FlowableEntityEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEvent;
+import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.impl.persistence.entity.TaskEntity;
+import org.flowable.engine.impl.persistence.entity.VariableInstance;
+import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.UserTaskFlowStepEndLogData;
-import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
  * <p>
@@ -43,48 +43,44 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class UserTaskCompletedEventListener extends AbstractMonitDirectLoggerEventListener implements
-        ActivitiEventListener {
+public class UserTaskCompletedEventListener extends AbstractTaskEventListener implements FlowableEventListener {
 
-    public UserTaskCompletedEventListener(final Logger log) {
-        super(ActivitiEventType.TASK_COMPLETED, log);
+    public UserTaskCompletedEventListener(final TaskService taskService, final Logger log) {
+        super(FlowableEngineEventType.TASK_COMPLETED, taskService, log);
     }
 
     @Override
-    protected AbstractFlowLogData createLogData(final ActivitiEvent event) {
-        
-        if (event instanceof ActivitiEntityEvent) {
-            final ActivitiEntityEvent entityEvent = (ActivitiEntityEvent)event;
+    protected AbstractFlowLogData createLogData(final FlowableEvent event) {
+
+        if (event instanceof FlowableEntityEvent) {
+            final FlowableEntityEvent entityEvent = (FlowableEntityEvent) event;
             final Object entity = entityEvent.getEntity();
             if (entity instanceof TaskEntity) {
-                final TaskEntity taskEntity = (TaskEntity)entity;
-                
-                final Map<String, Object> processVariables = taskEntity.getActivityInstanceVariables();
+                final TaskEntity taskEntity = (TaskEntity) entity;
 
-                final List<Task> tasks = event.getEngineServices().getTaskService().createTaskQuery()
-                        .taskId(taskEntity.getId()).includeTaskLocalVariables().list();
-                if (tasks.size() > 0) {
-                    final Map<String, Object> tasklocalVariables = tasks.get(0).getTaskLocalVariables();
+                final Map<String, VariableInstance> processVariables = taskEntity.getVariableInstances();
 
-                    final String flowInstanceId = (String) processVariables
-                            .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+                final String flowInstanceId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID).getValue();
 
-                    final String flowStepId = (String) tasklocalVariables
-                            .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
-                    final String correlatedFlowInstanceId = (String) tasklocalVariables
-                            .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
-                    final String correlatedFlowStepId = (String) tasklocalVariables
-                            .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
+                final String flowStepId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID).getValue();
+                final String correlatedFlowInstanceId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID).getValue();
+                final String correlatedFlowStepId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID).getValue();
 
-                    return new UserTaskFlowStepEndLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
-                            correlatedFlowStepId);
-                } else {
-                    return null;
-                }
+                return new UserTaskFlowStepEndLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
+                        correlatedFlowStepId);
+
+            } else {
+                this.log.warning("Unexpected event entity implementation: " + entity.getClass().getName());
+                return null;
             }
+        } else {
+            this.log.warning("Unexpected event implementation: " + event.getClass().getName());
+            return null;
         }
-        
-        return null;
 
     }
 }

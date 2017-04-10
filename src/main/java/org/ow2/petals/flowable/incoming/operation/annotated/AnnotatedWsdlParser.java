@@ -43,7 +43,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.activiti.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.BpmnModel;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedFaultMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedOutputMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedVariableException;

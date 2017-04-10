@@ -17,12 +17,15 @@
  */
 package org.ow2.petals.flowable;
 
-import org.activiti.bpmn.model.BaseElement;
-import org.activiti.bpmn.model.ServiceTask;
-import org.activiti.engine.impl.bpmn.parser.BpmnParse;
-import org.activiti.engine.impl.bpmn.parser.handler.AbstractBpmnParseHandler;
-import org.activiti.engine.impl.pvm.process.ActivityImpl;
-import org.activiti.engine.parse.BpmnParseHandler;
+import java.util.logging.Logger;
+
+import org.flowable.bpmn.model.BaseElement;
+import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.FlowNode;
+import org.flowable.bpmn.model.ServiceTask;
+import org.flowable.engine.impl.bpmn.parser.BpmnParse;
+import org.flowable.engine.impl.bpmn.parser.handler.AbstractBpmnParseHandler;
+import org.flowable.engine.parse.BpmnParseHandler;
 
 /**
  * <p>
@@ -40,6 +43,12 @@ import org.activiti.engine.parse.BpmnParseHandler;
  */
 public class ServiceTaskForceAsyncParseHandler extends AbstractBpmnParseHandler<ServiceTask> {
 
+    private final Logger log;
+
+    public ServiceTaskForceAsyncParseHandler(final Logger log) {
+        this.log = log;
+    }
+
     @Override
     protected Class<? extends BaseElement> getHandledType() {
         return ServiceTask.class;
@@ -49,8 +58,13 @@ public class ServiceTaskForceAsyncParseHandler extends AbstractBpmnParseHandler<
     protected void executeParse(final BpmnParse bpmnParse, final ServiceTask element) {
 
         // Make always async
-        final ActivityImpl activity = findActivity(bpmnParse, element.getId());
-        activity.setAsync(true);
+        final FlowElement serviceTaskFlowElt = bpmnParse.getCurrentProcess().getFlowElement(element.getId());
+        if (serviceTaskFlowElt instanceof FlowNode) {
+            ((FlowNode) serviceTaskFlowElt).setAsynchronous(true);
+        } else {
+            this.log.warning(String.format("Unable to find the service task '%s' to force its asynchronous execution.",
+                    element.getId()));
+        }
     }
 
 }

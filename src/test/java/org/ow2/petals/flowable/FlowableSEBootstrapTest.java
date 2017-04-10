@@ -30,10 +30,10 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.MalformedObjectNameException;
 import javax.xml.parsers.DocumentBuilder;
 
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.ProcessEngineConfiguration;
-import org.activiti.engine.impl.asyncexecutor.AsyncExecutor;
-import org.activiti.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
+import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.impl.asyncexecutor.AsyncExecutor;
+import org.flowable.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
 import org.h2.Driver;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -686,7 +686,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_JDBC_URL));
 
         // A JDBC URL that is not an URL
-        final String expectedUrlNotUrl = "jdbc:h2:tcp://localhost/mem:activiti";
+        final String expectedUrlNotUrl = "jdbc:h2:tcp://localhost/mem:flowable";
         this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_URL, expectedUrlNotUrl);
         assertEquals(expectedUrlNotUrl,
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_JDBC_URL));
@@ -871,7 +871,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             final AbstractComponent component = componentUnderTest.getComponentObject();
             assertNotNull(component);
             assertTrue(component instanceof FlowableSE);
-            final FlowableSE activitiComponent = (FlowableSE) component;
+            final FlowableSE flowableComponent = (FlowableSE) component;
 
             // Set values using the component bootstrap through JMX
             final String databaseType = "h2";
@@ -953,8 +953,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             componentUnderTest.install();
             componentUnderTest.start();
 
-            // Some parameter are set in the Activiti engine configuration
-            final ProcessEngine processEngine = activitiComponent.getProcessEngine();
+            // Some parameter are set in the Flowable engine configuration
+            final ProcessEngine processEngine = flowableComponent.getProcessEngine();
             assertNotNull(processEngine);
             final ProcessEngineConfiguration pec = processEngine.getProcessEngineConfiguration();
             assertNotNull(pec);
@@ -974,7 +974,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             assertEquals(jdbcMaxCheckoutTime, pec.getJdbcMaxCheckoutTime());
             assertEquals(jdbcMaxWaitTime, pec.getJdbcMaxWaitTime());
 
-            assertEquals(jobExecutorEnableJobExecutor, pec.isAsyncExecutorEnabled());
+            assertEquals(jobExecutorEnableJobExecutor, pec.isAsyncExecutorActivate());
 
             assertEquals(jobExecutorCorePoolSize, defaultAsyncExecutor.getCorePoolSize());
             assertEquals(jobExecutorMaxPoolSize, defaultAsyncExecutor.getMaxPoolSize());
@@ -992,7 +992,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
             assertEquals(engineEnableBpmnValidation,
                     ReflectionHelper.getFieldValue(FlowableSuManager.class,
-                            (FlowableSuManager) activitiComponent.getServiceUnitManager(),
+                            (FlowableSuManager) flowableComponent.getServiceUnitManager(),
                             "enableFlowableBpmnValidation", false));
 
         } finally {

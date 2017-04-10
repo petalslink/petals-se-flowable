@@ -30,10 +30,10 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 
-import org.activiti.bpmn.converter.BpmnXMLConverter;
-import org.activiti.bpmn.converter.util.InputStreamProvider;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.engine.impl.util.io.InputStreamSource;
+import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.engine.common.api.io.InputStreamProvider;
+import org.flowable.engine.common.impl.util.io.InputStreamSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.ow2.petals.flowable.AbstractTest;

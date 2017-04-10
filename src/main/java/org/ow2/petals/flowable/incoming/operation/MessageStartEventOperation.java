@@ -20,10 +20,10 @@ package org.ow2.petals.flowable.incoming.operation;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.IdentityService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.runtime.ProcessInstance;
+import org.flowable.engine.HistoryService;
+import org.flowable.engine.IdentityService;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.runtime.ProcessInstance;
 import org.ow2.petals.flowable.incoming.operation.annotated.MessageStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
 
