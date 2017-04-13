@@ -475,10 +475,11 @@
 
    <!-- Target : Stop Web services -->
    <target name="stopWebservices">
-      <parallel failonany="yes">
+      <!-- It seems that the soapui-maven-plugin:5.3.1-RC does not support to stop mocks concurrently -->
+      <!--parallel failonany="yes"-->
          <stopMock url="http://localhost:8088/mockNotifyVacationService" />
          <stopMock url="http://localhost:8088/mockArchiveService" />
-      </parallel>
+      <!--/parallel-->
    </target>
 
    <target name="launchContainer">
