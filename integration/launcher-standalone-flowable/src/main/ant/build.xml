@@ -124,7 +124,7 @@
    <!-- Target : Run -->
    <target name="run">
       <echo message="Launching Flowable component tests..." />
-      
+
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
       <!-- Wait the end of the process instance execution -->
@@ -277,18 +277,18 @@
             <flowInstanceIdEquals expected="${process-flow-instance-id}" />
          </assertFlowTreeNode>
       </petals-assert-flow-tree>
-      
+
       <!-- Sleep few seconds waiting the end of process instances -->
       <!-- TODO: Use a check against MONIT traces to known when the last process instance is ended -->
-      <sleep seconds="15"/>
+      <sleep seconds="15" />
 
       <petals-soapui-test testCase="Nominal TestCase with adjustment" />
       <petals-soapui-test testCase="Faulty TestCase - Unexpected validator" />
       <petals-soapui-test testCase="Faulty TestCase - Unexpected vacation request id" />
-      
+
       <!-- Sleep few seconds waiting the end of process instances -->
       <!-- TODO: Use a check against MONIT traces to known when the last process instance is ended -->
-      <sleep seconds="15"/>
+      <sleep seconds="15" />
 
       <checkAsyncExecutorMetrics />
       <checkDatabaseConnectionPoolMetrics />
@@ -475,11 +475,10 @@
 
    <!-- Target : Stop Web services -->
    <target name="stopWebservices">
-      <!-- It seems that the soapui-maven-plugin:5.3.1-RC does not support to stop mocks concurrently -->
-      <!--parallel failonany="yes"-->
+      <parallel failonany="yes">
          <stopMock url="http://localhost:8088/mockNotifyVacationService" />
          <stopMock url="http://localhost:8088/mockArchiveService" />
-      <!--/parallel-->
+      </parallel>
    </target>
 
    <target name="launchContainer">
@@ -520,7 +519,15 @@
                         </sequential>
                      </try>
                      <finally>
-                        <antcall target="stopWebservices" />
+                        <trycatch>
+                           <try>
+                              <antcall target="stopWebservices" />
+                           </try>
+                           <catch>
+                              <!-- NOP: avoid to fail the build if an error occurs stopping web-services -->
+                              <echo message="ERROR: an error occurs when stopping web-services" />
+                           </catch>
+                        </trycatch>
                      </finally>
                   </trycatch>
                </sequential>
