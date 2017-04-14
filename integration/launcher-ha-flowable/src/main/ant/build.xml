@@ -191,6 +191,7 @@
    <!-- Target : Run -->
    <target name="run">
       <echo message="Launching Flowable component tests..." />
+      <input />
 
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
@@ -258,11 +259,20 @@
       </sequential>
    </macrodef>
 
+   <macrodef name="launchRegistry">
+      <sequential>
+         <copy file="${project.build.directory}/${project.artifactId}/resources/cluster.xml"
+               tofile="${registry.home}/conf/cluster.xml"
+               overwrite="true" />
+         <startRegistryMember home="${registry.home}" />
+      </sequential>
+   </macrodef>
+
    <!-- Target : All -->
    <target name="all2">
       <antcall target="killAllContainers" />
       <antcall target="killAllRegistryMembers" />
-      <startRegistryMember home="${registry.home}" />
+      <launchRegistry />
       <launchContainer home="${petals.home.0}" name="${topology.container.name.0}" jmx.port="${container-0.port}" />
       <launchContainer home="${petals.home.1}" name="${topology.container.name.1}" jmx.port="${container-1.port}" />
       <launchContainer home="${petals.home.2}" name="${topology.container.name.2}" jmx.port="${container-2.port}" />

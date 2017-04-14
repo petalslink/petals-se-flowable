@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<tns:petals-registry-overlay
+   xmlns:tns="http://petals.ow2.org/registry-overlay/configuration/1.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://petals.ow2.org/registry-overlay/configuration/1.0 petalsRegistryOverlayCfgModel.xsd">
+	<tns:credentials>
+	   <tns:group>default-sample</tns:group>
+	   <tns:password>s3cr3t</tns:password>
+	</tns:credentials>
+	<tns:members>
+	   <!-- This member corresponds to the current registry overlay instance (as configured in member.properties)
+            Its value (localhost) is the host used by the other members of the cluster.
+            The default port is 7900 and will thus be the listening port.
+            The listening host (configurable in member.properties) is 127.0.0.1. -->
+		<tns:member id="sample-member-0">localhost</tns:member>
+		
+		<!-- A second and third members that can be used for demonstration purpose -->
+		<!--tns:member id="sample-member-1" port="7901">localhost</tns:member-->
+		<!--tns:member id="sample-member-2" port="7902">localhost</tns:member-->
+		
+		<!-- A fourth member running on another machine -->
+      <!--tns:member id="sample-member-2" port="7902">192.168.1.56</tns:member-->
+
+   </tns:members>
+      
+   <!-- By default, the support of the Hazelcast Management Center is enable -->
+   <tns:management-console enable="false">http://localhost:8080/mancenter</tns:management-console>
+
+</tns:petals-registry-overlay>
