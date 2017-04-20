@@ -18,7 +18,7 @@
 -->
 <definitions
    id="vacationRequestProcess"
-   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacationProcess"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationProcess"
    
    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -28,9 +28,9 @@
    xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
    xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
    
-   xmlns:vacationProcess="http://petals.ow2.org/samples/se-flowable/vacationProcess"
-   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/archiveService"
-   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/notifyVacationService"
+   xmlns:vacationProcess="http://petals.ow2.org/samples/se-flowable/vacation/vacationProcess"
+   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/vacation/archiveService"
+   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService"
    
    typeLanguage="http://www.w3.org/2001/XMLSchema"
    expressionLanguage="http://www.w3.org/1999/XPath" >
@@ -39,9 +39,9 @@
             Declaration of the Petals services
         ========================================== -->
    <!-- TODO: Relative imports are not supported by Activiti/Flowable: ACT-2173 -->
-   <import location="archiveService.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/archiveService"
+   <import location="archiveService.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/vacation/archiveService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
-   <import location="notifyVacationService.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/notifyVacationService"
+   <import location="notifyVacationService.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
 
    <!-- ===================================

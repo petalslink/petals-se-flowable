@@ -34,9 +34,9 @@ public class WsdlComplianceTest {
     @Test
     public void validate() throws Exception {
         assertWsdlCompliance(
-                new QName[] { new QName("http://petals.ow2.org/samples/se-flowable/vacationService", "new"),
-                        new QName("http://petals.ow2.org/samples/se-flowable/vacationService", "validate"),
-                        new QName("http://petals.ow2.org/samples/se-flowable/vacationService", "update") });
+                new QName[] { new QName("http://petals.ow2.org/samples/se-flowable/vacation/vacationService", "new"),
+                        new QName("http://petals.ow2.org/samples/se-flowable/vacation/vacationService", "validate"),
+                        new QName("http://petals.ow2.org/samples/se-flowable/vacation/vacationService", "update") });
     }
 
 }

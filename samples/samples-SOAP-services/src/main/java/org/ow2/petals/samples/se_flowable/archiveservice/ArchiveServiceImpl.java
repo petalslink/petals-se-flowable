@@ -22,7 +22,9 @@ import java.util.logging.Logger;
 import javax.jws.WebService;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-@WebService(serviceName = "archiveService", portName = "autogenerate", targetNamespace = "http://petals.ow2.org/samples/se-flowable/archiveService", wsdlLocation = "classpath:wsdl/archiveService.wsdl", endpointInterface = "org.ow2.petals.samples.se_flowable.archiveservice.Archive")
+import org.ow2.petals.samples.se_flowable.vacation.archiveservice.Archive;
+
+@WebService(serviceName = "archiveService", portName = "autogenerate", targetNamespace = "http://petals.ow2.org/samples/se-flowable/vacation/archiveService", wsdlLocation = "classpath:wsdl/archiveService.wsdl", endpointInterface = "org.ow2.petals.samples.se_flowable.vacation.archiveservice.Archive")
 public class ArchiveServiceImpl implements Archive {
 
     private static final Logger LOG = Logger.getLogger(ArchiveServiceImpl.class.getName());

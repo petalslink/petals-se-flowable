@@ -21,9 +21,9 @@
    xmlns:jbi="http://java.sun.com/xml/ns/jbi"
    xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
    xmlns:petals-se-flowable="http://petals.ow2.org/components/petals-se-flowable/1.0"
-   xmlns:process="http://petals.ow2.org/samples/se-flowable/vacationService"
-   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/archiveService"
-   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/notifyVacationService">
+   xmlns:process="http://petals.ow2.org/samples/se-flowable/vacation/vacationService"
+   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/vacation/archiveService"
+   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService">
 	
    <jbi:services binding-component="false">
 		

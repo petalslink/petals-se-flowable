@@ -26,8 +26,8 @@
    <xsl:param name="se-out-special-params:processInstanceId" />
 
    <xsl:template match="/">
-      <xsl:element name="vacationUpdateResponse" namespace="http://petals.ow2.org/samples/se-flowable/vacationService">
-         <xsl:element name="vacationRequestId" namespace="http://petals.ow2.org/samples/se-flowable/vacationRequest">
+      <xsl:element name="vacationUpdateResponse" namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService">
+         <xsl:element name="vacationRequestId" namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
             <xsl:value-of select="$se-out-special-params:processInstanceId" />
          </xsl:element>
       </xsl:element>

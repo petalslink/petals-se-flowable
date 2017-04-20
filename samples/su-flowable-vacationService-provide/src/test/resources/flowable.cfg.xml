@@ -20,12 +20,12 @@
    xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
 
    <bean id="archiveEndpoint" class="javax.xml.namespace.QName">
-      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-flowable/archiveService" />
+      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-flowable/vacation/archiveService" />
       <constructor-arg index="1" value="autogenerate" />
    </bean>
 
    <bean id="notifyEndpoint" class="javax.xml.namespace.QName">
-      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-flowable/notifyVacationService" />
+      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService" />
       <constructor-arg index="1" value="autogenerate" />
    </bean>
 

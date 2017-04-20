@@ -125,15 +125,20 @@
             <artifactId>maven-jaxb2-plugin</artifactId>
             <executions>
                <execution>
+                  <!-- must use the same id as in the parent if not there will be two executions of the plugin -->
+                  <id>generate</id>
                   <goals>
                      <goal>generate</goal>
                   </goals>
+                  <phase>generate-sources</phase>
                   <configuration>
+                     <addCompileSourceRoot>true</addCompileSourceRoot>
+                     <addTestCompileSourceRoot>false</addTestCompileSourceRoot>
+                     <schemaDirectory>${basedir}/src/main/resources/wsdl</schemaDirectory>
                      <schemaIncludes>
                         <schemaInclude>vacationService.wsdl</schemaInclude>
                         <schemaInclude>flowable-integration.wsdl</schemaInclude>
                      </schemaIncludes>
-                     <schemaDirectory>src/main/resources/wsdl</schemaDirectory>
                   </configuration>
                </execution>
             </executions>

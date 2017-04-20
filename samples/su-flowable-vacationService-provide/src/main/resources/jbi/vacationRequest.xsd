@@ -17,12 +17,12 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <xsd:schema
-   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacationRequest"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    
    xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
    
-   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacationRequest"
+   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
    elementFormDefault="qualified" jaxb:version="2.1">
 
  

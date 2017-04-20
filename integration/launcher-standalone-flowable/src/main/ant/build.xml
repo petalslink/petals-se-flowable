@@ -134,9 +134,9 @@
          <!-- Retrieve the initial flow that has created the process instance -->
          <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
          <flowStepCriteria name="flowStepInterfaceName"
-                           value="{http://petals.ow2.org/samples/se-flowable/vacationService}vacation" />
+                           value="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacation" />
          <flowStepCriteria name="flowStepOperationName"
-                           value="{http://petals.ow2.org/samples/se-flowable/vacationService}new" />
+                           value="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}new" />
          <flowStepInfo attribute="flowInstanceId" property="initial-flow-instance-id" />
          <flowStepInfo attribute="flowStepId" property="initial-flow-step-id" />
       </petals-extract-flow-step-info>
@@ -176,9 +176,9 @@
          <!-- Retrieve the flow step that has launched the vacation request validation -->
          <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
          <flowStepCriteria name="flowStepInterfaceName"
-                           value="{http://petals.ow2.org/samples/se-flowable/vacationService}vacation" />
+                           value="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacation" />
          <flowStepCriteria name="flowStepOperationName"
-                           value="{http://petals.ow2.org/samples/se-flowable/vacationService}validate" />
+                           value="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}validate" />
          <flowStepInfo attribute="flowInstanceId" property="validation-flow-instance-id" />
          <flowStepInfo attribute="flowStepId" property="validation-flow-step-id" />
       </petals-extract-flow-step-info>
@@ -197,11 +197,11 @@
             <!-- Service task invokes a Petals service ... -->
             <attributeEquals name="traceCode" value="provideFlowStepBegin" />
             <attributeEquals name="flowStepInterfaceName"
-                             value="{http://petals.ow2.org/samples/se-flowable/notifyVacationService}notifyVacation" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}notifyVacation" />
             <attributeEquals name="flowStepServiceName"
-                             value="{http://petals.ow2.org/samples/se-flowable/notifyVacationService}notifyVacationService" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}notifyVacationService" />
             <attributeEquals name="flowStepOperationName"
-                             value="{http://petals.ow2.org/samples/se-flowable/notifyVacationService}newVacationRequest" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}newVacationRequest" />
             <attributeSet name="flowStepEndpointName" />
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
             <flowStepInfo attribute="flowStepId" property="flowStep.1.id" />
@@ -224,11 +224,11 @@
             <!-- Service task invokes a Petals service ... -->
             <attributeEquals name="traceCode" value="provideFlowStepBegin" />
             <attributeEquals name="flowStepInterfaceName"
-                             value="{http://petals.ow2.org/samples/se-flowable/notifyVacationService}notifyVacation" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}notifyVacation" />
             <attributeEquals name="flowStepServiceName"
-                             value="{http://petals.ow2.org/samples/se-flowable/notifyVacationService}notifyVacationService" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}notifyVacationService" />
             <attributeEquals name="flowStepOperationName"
-                             value="{http://petals.ow2.org/samples/se-flowable/notifyVacationService}vacationRequestApproved" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}vacationRequestApproved" />
             <attributeSet name="flowStepEndpointName" />
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
          </assertFlowStep>
@@ -236,11 +236,11 @@
             <!-- Service task invokes a Petals service ... -->
             <attributeEquals name="traceCode" value="provideFlowStepBegin" />
             <attributeEquals name="flowStepInterfaceName"
-                             value="{http://petals.ow2.org/samples/se-flowable/archiveService}archive" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/archiveService}archive" />
             <attributeEquals name="flowStepServiceName"
-                             value="{http://petals.ow2.org/samples/se-flowable/archiveService}archiveService" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/archiveService}archiveService" />
             <attributeEquals name="flowStepOperationName"
-                             value="{http://petals.ow2.org/samples/se-flowable/archiveService}archiveVacationRequest" />
+                             value="{http://petals.ow2.org/samples/se-flowable/vacation/archiveService}archiveVacationRequest" />
             <attributeSet name="flowStepEndpointName" />
             <attributeEquals name="flowPreviousStepId" value="${flowStep.0.id}" />
          </assertFlowStep>
@@ -255,11 +255,11 @@
       <petals-extract-flow-step-info refid="flows" row="0">
          <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
          <flowStepCriteria name="flowStepInterfaceName"
-                           value="{http://petals.ow2.org/samples/se-flowable/vacationService}vacation" />
+                           value="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacation" />
          <flowStepCriteria name="flowStepServiceName"
-                           value="{http://petals.ow2.org/samples/se-flowable/vacationService}vacationService" />
+                           value="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacationService" />
          <flowStepCriteria name="flowStepOperationName"
-                           value="{http://petals.ow2.org/samples/se-flowable/vacationService}new" />
+                           value="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}new" />
          <flowStepInfo attribute="flowInstanceId" property="initial-flow-instance-id" />
          <flowStepInfo attribute="flowStepId" property="initial-flow-step-id" />
       </petals-extract-flow-step-info>

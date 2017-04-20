@@ -139,7 +139,7 @@
                                            sa.url="${the-sa.url}"
                                            sa.id="${the-sa.id}"
                                            su.id="${the-su.id}"
-                                           su.services="{http://petals.ow2.org/samples/se-flowable/vacationService}vacationService"
+                                           su.services="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacationService"
                                            container.jmx.port="${topology.container.jmx.port}"
                                            container.name="${topology.container.name}"
                                            container.home="${topology.container.home}">

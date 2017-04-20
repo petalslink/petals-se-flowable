@@ -23,8 +23,8 @@
    <import resource="classpath:META-INF/cxf/cxf.xml" />
    <import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
    
-   <jaxws:endpoint id="archiveService" implementor="org.ow2.petals.samples.se_bpmn.archiveservice.ArchiveServiceImpl"
+   <jaxws:endpoint id="archiveService" implementor="org.ow2.petals.samples.se_flowable.archiveservice.ArchiveServiceImpl"
       address="/archiveService" />
-   <jaxws:endpoint id="notifyVacationService" implementor="org.ow2.petals.samples.se_bpmn.notifyvacationservice.NotifyVacationServiceImpl"
+   <jaxws:endpoint id="notifyVacationService" implementor="org.ow2.petals.samples.se_flowable.notifyvacationservice.NotifyVacationServiceImpl"
       address="/notifyVacationService" />
 </beans>

@@ -17,10 +17,10 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <wsdl:definitions name="vacation"
-   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacationService"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService"
 
-   xmlns:vacationService="http://petals.ow2.org/samples/se-flowable/vacationService"
-   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacationRequest"
+   xmlns:vacationService="http://petals.ow2.org/samples/se-flowable/vacation/vacationService"
+   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
 
    xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -28,9 +28,9 @@
    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
    <wsdl:types>
-      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacationService">
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService">
 
-         <xsd:import namespace="http://petals.ow2.org/samples/se-flowable/vacationRequest" schemaLocation="vacationRequest.xsd" />
+         <xsd:import namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" schemaLocation="vacationRequest.xsd" />
 
          <xsd:element name="newVacationResponse">
             <xsd:complexType>

@@ -16,6 +16,6 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<vacationUpdateResponse xmlns="http://petals.ow2.org/samples/se-flowable/vacationService">
-<vacationRequestId xmlns="http://petals.ow2.org/samples/se-flowable/vacationRequest">AZE123</vacationRequestId>
+<vacationUpdateResponse xmlns="http://petals.ow2.org/samples/se-flowable/vacation/vacationService">
+<vacationRequestId xmlns="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">AZE123</vacationRequestId>
 </vacationUpdateResponse>

@@ -17,10 +17,10 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <wsdl:definitions name="notifyVacationService"
-   targetNamespace="http://petals.ow2.org/samples/se-flowable/notifyVacationService"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService"
 
-   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/notifyVacationService"
-   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacationRequest"
+   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService"
+   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
 
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
@@ -36,9 +36,9 @@
      -->
 
    <wsdl:types>
-      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/notifyVacationService">
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService">
 
-         <xsd:import namespace="http://petals.ow2.org/samples/se-flowable/vacationRequest" schemaLocation="vacationRequest.xsd" />
+         <xsd:import namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" schemaLocation="vacationRequest.xsd" />
          
          <xsd:element name="newVacationRequest">
             <xsd:complexType>
@@ -126,7 +126,7 @@
    <wsdl:binding name="notifyVacationBinding" type="notifyService:notifyVacation">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="newVacationRequest">
-         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/notifyService/newVacationRequest" />
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/newVacationRequest" />
          <wsdl:input name="newVacationRequestInput">
             <soap:body use="literal" />
          </wsdl:input>
@@ -135,7 +135,7 @@
          </wsdl:output>
       </wsdl:operation>
       <wsdl:operation name="vacationRequestApproved">
-         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/notifyService/vacationRequestApproved" />
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/vacationRequestApproved" />
          <wsdl:input name="vacationRequestApproved">
             <soap:body use="literal" />
          </wsdl:input>
@@ -144,7 +144,7 @@
          </wsdl:output>
       </wsdl:operation>
       <wsdl:operation name="vacationRequestUpdated">
-         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/notifyService/vacationRequestUpdated" />
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/vacationRequestUpdated" />
          <wsdl:input name="vacationRequestUpdated">
             <soap:body use="literal" />
          </wsdl:input>
@@ -159,7 +159,7 @@
          <!-- TODO: We should use an XML binding instead of SOAP binding to avoid to rework SOAP enveloppe on requests/replies
                     exchanged between Flowable and Petals -->
          <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
-         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/notifyVacationService}notifyVacation" />
+         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}notifyVacation" />
       </wsdl:port>
    </wsdl:service>
 </wsdl:definitions>

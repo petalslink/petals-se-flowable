@@ -17,7 +17,7 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <jbi:jbi version="1.0"
-   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/archiveService"
+   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/vacation/archiveService"
    xmlns:jbi="http://java.sun.com/xml/ns/jbi"
    xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
    xmlns:soap="http://petals.ow2.org/components/soap/version-4"

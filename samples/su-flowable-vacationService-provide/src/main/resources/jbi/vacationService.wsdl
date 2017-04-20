@@ -17,21 +17,21 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <wsdl:definitions name="vacationService"
-   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacationService"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService"
 
-   xmlns:vacationService="http://petals.ow2.org/samples/se-flowable/vacationService"
+   xmlns:vacationService="http://petals.ow2.org/samples/se-flowable/vacation/vacationService"
 
    xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
    
-   <wsdl:import location="vacation.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/vacationService" />
+   <wsdl:import location="vacation.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService" />
 
    <wsdl:binding name="vacationBinding" type="vacationService:vacation">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="new">
-         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacationService/newVacationRequest" />
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/newVacationRequest" />
          <bpmn:operation processDefinitionId="vacationRequest" action="startEvent" none-start-event-id="start" />
          <bpmn:userId>/*[local-name()='vacationRequest']/*[local-name()='enquirer']</bpmn:userId>
          <bpmn:variable name="numberOfDays">/*[local-name()='vacationRequest']/*[local-name()='day-number']</bpmn:variable>
@@ -46,7 +46,7 @@
          </wsdl:output>
       </wsdl:operation>
       <wsdl:operation name="validate">
-         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacationService/handleRequest" />
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/handleRequest" />
          <bpmn:operation processDefinitionId="vacationRequest" action="userTask" user-task-id="handleVacationRequest" />
          <bpmn:processInstanceId>/*[local-name()='validationRequest']/*[local-name()='vacationRequestId']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='validationRequest']/*[local-name()='approved-by']</bpmn:userId>
@@ -73,7 +73,7 @@
          </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="update">
-         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacationService/updateVacationRequest" />
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/updateVacationRequest" />
          <bpmn:operation processDefinitionId="vacationRequest" action="userTask" user-task-id="adjustVacationRequest" />
          <bpmn:processInstanceId>/*[local-name()='vacationUpdateRequest']/*[local-name()='vacationRequestId']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='vacationUpdateRequest']/*[local-name()='enquirer']</bpmn:userId>

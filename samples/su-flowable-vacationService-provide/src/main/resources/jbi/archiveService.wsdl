@@ -17,10 +17,10 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <wsdl:definitions name="archiveService"
-   targetNamespace="http://petals.ow2.org/samples/se-flowable/archiveService"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/archiveService"
 
-   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/archiveService"
-   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacationRequest"
+   xmlns:archiveService="http://petals.ow2.org/samples/se-flowable/vacation/archiveService"
+   xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
    
    xmlns:xformat="http://cxf.apache.org/bindings/xformat"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -37,9 +37,9 @@
      -->
 
    <wsdl:types>
-      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/archiveService">
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/archiveService">
 
-         <xsd:import namespace="http://petals.ow2.org/samples/se-flowable/vacationRequest" schemaLocation="vacationRequest.xsd" />
+         <xsd:import namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" schemaLocation="vacationRequest.xsd" />
 
          <xsd:element name="archiveVacationRequest">
             <xsd:complexType>
@@ -85,7 +85,7 @@
    <wsdl:binding name="archiveSoapBinding" type="archiveService:archive">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="archiveVacationRequest">
-         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/archiveService/archiveVacationRequest" />
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/archiveService/archiveVacationRequest" />
          <wsdl:input name="archiveVacationRequest">
             <soap:body use="literal" />
          </wsdl:input>
@@ -107,7 +107,7 @@
                  exchanged between Flowable and Petals -->
       <wsdl:port name="autogenerate" binding="archiveService:archiveSoapBinding">
          <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
-         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/archiveService}archive" />
+         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/vacation/archiveService}archive" />
       </wsdl:port>
    </wsdl:service>
 
