@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.flowable.junit;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_DRIVER;
@@ -26,6 +25,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngine;
@@ -35,10 +35,8 @@ import org.flowable.engine.TaskService;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
-import org.ow2.petals.flowable.identity.IdentityService;
-import org.ow2.petals.flowable.identity.file.FileIdentityService;
-
-import com.ebmwebsourcing.easycommons.lang.UncheckedException;
+import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
+import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
 
 /**
  * The {@link FlowableClient} {@link Rule} allows creation of a client connected to a Flowabl server. It is guaranteed
@@ -58,6 +56,8 @@ import com.ebmwebsourcing.easycommons.lang.UncheckedException;
  * </pre>
  */
 public class FlowableClient extends ExternalResource {
+
+    private static final Logger LOG = Logger.getLogger(FlowableClient.class.getName());
 
     /**
      * The default JDBC username
@@ -90,9 +90,9 @@ public class FlowableClient extends ExternalResource {
     private final String jdbcPwd;
 
     /**
-     * The configuration file of the file-based identity service
+     * The configuration file of the IDM engine configurator
      */
-    private final File fileIdentityServiceCfg;
+    private final File idmEngineConfiguratorCfg;
 
     private ProcessEngine flowableClientEngine;
 
@@ -109,7 +109,7 @@ public class FlowableClient extends ExternalResource {
      * </p>
      */
     public FlowableClient() {
-        this(null);
+        this((String) null);
     }
 
     /**
@@ -123,12 +123,31 @@ public class FlowableClient extends ExternalResource {
      * </ul>
      * </p>
      * 
-     * @param identityServiceCfg
-     *            Configuration file of the identity service, as resource name
+     * @param idmEngineConfiguratorCfg
+     *            Configuration file of the IDM engine configurator, as resource name
      */
-    public FlowableClient(final String identityServiceCfg) {
+    public FlowableClient(final String idmEngineConfiguratorCfg) {
+        this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:ativiti-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME, DEFAULT_JDBC_PWD,
+                idmEngineConfiguratorCfg);
+    }
+
+    /**
+     * <p>
+     * Creates a temporary Flowable client connected to a default Flowable server:
+     * <ul>
+     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC URL: an embedded in-memoty H2 database,</li>
+     * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
+     * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param idmEngineConfiguratorCfg
+     *            Configuration file of the IDM engine configurator
+     */
+    public FlowableClient(final File idmEngineConfiguratorCfg) {
         this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:ativiti-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME,
-                DEFAULT_JDBC_PWD, identityServiceCfg);
+                DEFAULT_JDBC_PWD, idmEngineConfiguratorCfg);
     }
 
     /**
@@ -144,11 +163,12 @@ public class FlowableClient extends ExternalResource {
      * 
      * @param h2JdbcUrl
      *            The JDBC URL for H2 database
-     * @param identityServiceCfg
-     *            Configuration file of the identity service, as resource name
+     * @param idmEngineConfiguratorCfg
+     *            Configuration file of the IDM engine configurator, as resource name
      */
-    public FlowableClient(final String h2JdbcUrl, final String identityServiceCfg) {
-        this(DEFAULT_JDBC_DRIVER, h2JdbcUrl.toString(), DEFAULT_JDBC_USERNAME, DEFAULT_JDBC_PWD, identityServiceCfg);
+    public FlowableClient(final String h2JdbcUrl, final String idmEngineConfiguratorCfg) {
+        this(DEFAULT_JDBC_DRIVER, h2JdbcUrl.toString(), DEFAULT_JDBC_USERNAME, DEFAULT_JDBC_PWD,
+                idmEngineConfiguratorCfg);
     }
 
     /**
@@ -164,12 +184,12 @@ public class FlowableClient extends ExternalResource {
      * 
      * @param fileForJdbcUrl
      *            The file path of the Flowable database set as JDBC URL
-     * @param identityServiceCfg
-     *            Configuration file of the identity service, as resource name
+     * @param idmEngineConfiguratorCfg
+     *            Configuration file of the IDM engine configurator, as resource name
      */
-    public FlowableClient(final File fileForJdbcUrl, final String identityServiceCfg) {
+    public FlowableClient(final File fileForJdbcUrl, final String idmEngineConfiguratorCfg) {
         this(DEFAULT_JDBC_DRIVER, String.format("jdbc:h2:%s", convertFile2Url(fileForJdbcUrl)), DEFAULT_JDBC_USERNAME,
-                DEFAULT_JDBC_PWD, identityServiceCfg);
+                DEFAULT_JDBC_PWD, idmEngineConfiguratorCfg);
     }
 
     private static String convertFile2Url(final File fileForJdbcUrl) {
@@ -181,41 +201,52 @@ public class FlowableClient extends ExternalResource {
         }
     }
 
+    private static File convertUrl2File(final URL url) {
+        try {
+            return new File(url.toURI());
+        } catch (final URISyntaxException e) {
+            fail(e.getMessage());
+            return null;
+        }
+    }
+
     /**
      * 
-     * @param identityServiceCfg
-     *            Configuration file of the identity service, as resource name
+     * @param idmEngineConfiguratorCfg
+     *            Configuration file of the IDM engine configurator, as resource name
      */
     public FlowableClient(final String jdbcDriver, final String jdbcUrl, final String jdbcUsername,
-            final String jdbcPwd, final String identityServiceCfg) {
+            final String jdbcPwd, final String idmEngineConfiguratorCfg) {
+
+        this(jdbcDriver, jdbcUrl, jdbcUsername, jdbcPwd,
+                idmEngineConfiguratorCfg == null ? null
+                        : convertUrl2File(
+                                Thread.currentThread().getContextClassLoader().getResource(idmEngineConfiguratorCfg)));
+    }
+
+    /**
+     * 
+     * @param idmEngineConfiguratorCfg
+     *            Configuration file of the IDM engine configurator
+     */
+    public FlowableClient(final String jdbcDriver, final String jdbcUrl, final String jdbcUsername,
+            final String jdbcPwd, final File idmEngineConfiguratorCfg) {
         this.jdbcDriver = jdbcDriver;
         this.jdbcUrl = jdbcUrl;
         this.jdbcUsername = jdbcUsername;
         this.jdbcPwd = jdbcPwd;
-
-        if (identityServiceCfg != null) {
-            final URL identityServiceCfgUrl = Thread.currentThread().getContextClassLoader()
-                    .getResource(identityServiceCfg);
-            assertNotNull("Identity service config file is missing !", identityServiceCfgUrl);
-            try {
-                this.fileIdentityServiceCfg = new File(identityServiceCfgUrl.toURI());
-            } catch (final URISyntaxException e) {
-                throw new UncheckedException(e);
-            }
-        } else {
-            this.fileIdentityServiceCfg = null;
-        }
+        this.idmEngineConfiguratorCfg = idmEngineConfiguratorCfg;
     }
 
     @Override
     protected void before() throws Throwable {
-        this.initializeFlowableClient();
+        this.create();
     }
 
     @Override
     protected void after() {
         try {
-            this.destroyFlowableClient();
+            this.delete();
         } catch (final Exception e) {
             e.printStackTrace();
         }
@@ -224,7 +255,7 @@ public class FlowableClient extends ExternalResource {
     /**
      * Initialize & start the Flowable client
      */
-    private void initializeFlowableClient() throws Exception {
+    public void create() throws Exception {
 
         final ProcessEngineConfiguration pec = ProcessEngineConfiguration.createStandaloneProcessEngineConfiguration();
         pec.setJdbcDriver(this.jdbcDriver);
@@ -233,9 +264,15 @@ public class FlowableClient extends ExternalResource {
         pec.setDatabaseSchemaUpdate("true");
 
         assertTrue(pec instanceof ProcessEngineConfigurationImpl);
-        final IdentityService identityService = new FileIdentityService();
-        identityService.init(this.fileIdentityServiceCfg);
-        ((ProcessEngineConfigurationImpl) pec).setIdentityService(identityService.getIdentityService());
+
+        final AbstractProcessEngineConfigurator idmEngineConfigurator = new FileIdmEngineConfigurator();
+        if (this.idmEngineConfiguratorCfg != null) {
+            idmEngineConfigurator.setConfigurationFile(this.idmEngineConfiguratorCfg);
+        }
+
+        ((ProcessEngineConfigurationImpl) pec).setDisableIdmEngine(false);
+        idmEngineConfigurator.setLogger(LOG);
+        ((ProcessEngineConfigurationImpl) pec).setIdmProcessEngineConfigurator(idmEngineConfigurator);
 
         this.flowableClientEngine = pec.buildProcessEngine();
     }
@@ -243,7 +280,7 @@ public class FlowableClient extends ExternalResource {
     /**
      * Free the Flowable client, without freeing the Flowable database
      */
-    private void destroyFlowableClient() throws Exception {
+    public void delete() throws Exception {
 
         this.flowableClientEngine.close();
     }

@@ -319,18 +319,18 @@
       </xs:annotation>
    </xs:element>
 
-   <xs:element name="engine-identity-service-class-name" type="petalsCDK:settablestring" default="true">
+   <xs:element name="idm-engine-configurator-class-name" type="petalsCDK:settablestring" default="true">
       <xs:annotation>
-         <xs:documentation>Define the identity service to push into Flowable engine.</xs:documentation>
-         <xs:documentation xml:lang="fr">Défini le service d'identité à utiliser avec le moteur Flowable
+         <xs:documentation>Define the IDM engine configurator to push into Flowable engine.</xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le configurateur du moteur de gestion des identités à utiliser avec le moteur Flowable
          </xs:documentation>
       </xs:annotation>
    </xs:element>
 
-   <xs:element name="engine-identity-service-config-file" type="petalsCDK:settablestring" default="true">
+   <xs:element name="idm-engine-configurator-config-file" type="petalsCDK:settablestring" default="true">
       <xs:annotation>
-         <xs:documentation>Define the configuration file of the identity service</xs:documentation>
-         <xs:documentation xml:lang="fr">Défini le fichier de configuration du service d'identité
+         <xs:documentation>Define the configuration file of the IDM engine configurator</xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le fichier de configuration du configurateur du moteur de gestion des identités 
          </xs:documentation>
       </xs:annotation>
    </xs:element>

@@ -31,27 +31,34 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 
+import org.flowable.engine.cfg.ProcessEngineConfigurator;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.idm.api.Group;
 import org.flowable.idm.api.User;
-import org.flowable.idm.engine.impl.IdmIdentityServiceImpl;
 import org.flowable.idm.engine.impl.persistence.entity.GroupEntityImpl;
 import org.flowable.idm.engine.impl.persistence.entity.UserEntityImpl;
-import org.ow2.petals.flowable.identity.IdentityService;
+import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceResourceNotFoundException;
 
-public class FileIdentityService extends IdmIdentityServiceImpl implements IdentityService {
+/**
+ * A {@link ProcessEngineConfigurator} that integrates an identity management engine based on files.
+ * 
+ * @author Christophe DENEUX - Linagora
+ */
+public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator {
 
     /**
      * The resource used as default configuration file of the identity service, it contains the user list
      */
-    private static final String DEFAULT_CFG_RESOURCE_USERS = "/file-identity-service-users.properties";
+    private static final String DEFAULT_CFG_RESOURCE_USERS = "/file-idm-configurator-users.properties";
 
     /**
      * The resource used as default configuration file of the identity service, it contains the group list
      */
-    private static final String DEFAULT_CFG_RESOURCE_GROUPS = "/file-identity-service-groups.properties";
+    private static final String DEFAULT_CFG_RESOURCE_GROUPS = "/file-idm-configurator-groups.properties";
 
     /**
      * Property name of the identity service containing declaration of users
@@ -79,15 +86,43 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
     private final Map<String, List<Group>> groupsByUser = new ConcurrentHashMap<>();
 
     @Override
-    public void init(final File configurationFile) throws IdentityServiceInitException {
-
-        assert configurationFile == null || (configurationFile != null && configurationFile.exists()) : "The configuration file does not exist";
-        assert configurationFile == null || (configurationFile != null && configurationFile.isFile()) : "The configuration file is not a valid file";
+    public void configure(final ProcessEngineConfigurationImpl processEngineConfiguration) {
 
         try {
-            if (configurationFile != null) {
+            this.loadFiles();
+
+            // Compute the map "Groups by user"
+            for (final String user : this.users.keySet()) {
+                final List<Group> groupsList = new ArrayList<>();
+                this.groupsByUser.put(user, groupsList);
+                for (final Entry<String, List<String>> groupEntry : this.groups.entrySet()) {
+                    if (groupEntry.getValue().contains(user)) {
+                        final Group group = new GroupEntityImpl();
+                        group.setId(groupEntry.getKey());
+                        groupsList.add(group);
+                    }
+                }
+            }
+
+            processEngineConfiguration
+                    .setIdmIdentityService(new FileIdentityServiceImpl(this.users, this.groups, this.groupsByUser));
+
+        } catch (final IdentityServiceInitException e) {
+            this.logger.log(Level.WARNING, "An error occurs loading files of the file-based IDM engine.", e);
+        }
+    }
+
+    private void loadFiles() throws IdentityServiceInitException {
+
+        assert this.configurationFile == null || (this.configurationFile != null
+                && this.configurationFile.exists()) : "The configuration file does not exist";
+        assert this.configurationFile == null || (this.configurationFile != null
+                && this.configurationFile.isFile()) : "The configuration file is not a valid file";
+
+        try {
+            if (this.configurationFile != null) {
                 final Properties props = new Properties();
-                final Reader cfgFileReader = new FileReader(configurationFile);
+                final Reader cfgFileReader = new FileReader(this.configurationFile);
                 try {
                     props.load(cfgFileReader);
                 } finally {
@@ -118,19 +153,6 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
         } catch (final IOException e) {
             throw new IdentityServiceInitException(e);
         }
-
-        // Compute the map "Groups by user"
-        for (final String user : this.users.keySet()) {
-            final List<Group> groupsList = new ArrayList<>();
-            this.groupsByUser.put(user, groupsList);
-            for (final Entry<String, List<String>> groupEntry : this.groups.entrySet()) {
-                if (groupEntry.getValue().contains(user)) {
-                    final Group group = new GroupEntityImpl();
-                    group.setId(groupEntry.getKey());
-                    groupsList.add(group);
-                }
-            }
-        }
     }
 
     /**
@@ -152,8 +174,8 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
             try {
                 this.readUsersResource(usersFileName);
             } catch (final IdentityServiceResourceNotFoundException e) {
-                throw new IdentityServiceInitException("The file declaring users (" + usersFileName
-                        + ") does not exist.");
+                throw new IdentityServiceInitException(
+                        "The file declaring users (" + usersFileName + ") does not exist.");
             }
         } else if (!tmpFile.isFile()) {
             throw new IdentityServiceInitException("The file declaring users (" + usersFileName + ") is not a file.");
@@ -177,6 +199,51 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
     }
 
     /**
+     * Read a file containing the group declarations. If the file is not an absolute file, it is read a resource.
+     * 
+     * @param groupsFileName
+     *            The file name or resource name
+     * @throws IdentityServiceInitException
+     *             An error occurs reading the file.
+     */
+    private void readGroupsFile(final String groupsFileName) throws IdentityServiceInitException {
+
+        assert groupsFileName != null;
+
+        final File tmpFile = new File(groupsFileName.trim());
+        if (!tmpFile.isAbsolute()) {
+            readGroupsResource(groupsFileName);
+        } else if (!tmpFile.exists()) {
+            try {
+                this.readGroupsResource(groupsFileName);
+            } catch (final IdentityServiceResourceNotFoundException e) {
+                throw new IdentityServiceInitException(
+                        "The file declaring groups (" + groupsFileName + ") does not exist.");
+            }
+        } else if (!tmpFile.isFile()) {
+            throw new IdentityServiceInitException("The file declaring groups (" + groupsFileName + ") is not a file.");
+        } else {
+            try {
+                final InputStream groupsFileInputStream = new FileInputStream(tmpFile);
+                assert groupsFileInputStream != null;
+                try {
+                    this.readGroups(groupsFileInputStream);
+                } finally {
+                    try {
+                        groupsFileInputStream.close();
+                    } catch (final IOException e) {
+                        // NOP: We discard exception on close
+                        this.logger.log(Level.WARNING, String.format(
+                                "An error occurs closing file '%s'. Error skipped.", tmpFile.getAbsolutePath()), e);
+                    }
+                }
+            } catch (final FileNotFoundException e) {
+                throw new IdentityServiceInitException(e);
+            }
+        }
+    }
+
+    /**
      * Read a resource containing the user declarations
      * 
      * @param usersResourceName
@@ -190,7 +257,7 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
 
         assert usersResourceName != null;
 
-        final InputStream usersInputStream = FileIdentityService.class.getResourceAsStream(usersResourceName);
+        final InputStream usersInputStream = this.getClass().getResourceAsStream(usersResourceName);
         if (usersInputStream != null) {
             try {
                 this.readUsers(usersInputStream);
@@ -199,10 +266,41 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
                     usersInputStream.close();
                 } catch (final IOException e) {
                     // NOP: We discard exception on close
+                    this.logger.log(Level.WARNING,
+                            String.format("An error occurs closing resource '%s'. Error skipped.", usersResourceName),
+                            e);
                 }
             }
         } else {
             throw new IdentityServiceResourceNotFoundException(usersResourceName);
+        }
+    }
+
+    /**
+     * Read a resource containing the group declarations
+     * 
+     * @param groupsResourceName
+     *            The resource name
+     * @throws IdentityServiceInit
+     *             An error occurs reading the resource.
+     */
+    private void readGroupsResource(final String groupsResourceName) throws IdentityServiceInitException {
+
+        assert groupsResourceName != null;
+
+        final InputStream groupsInputStream = this.getClass().getResourceAsStream(groupsResourceName);
+        assert groupsInputStream != null : "Resource [" + groupsResourceName
+                + "] containing group declaration not found";
+        try {
+            this.readGroups(groupsInputStream);
+        } finally {
+            try {
+                groupsInputStream.close();
+            } catch (final IOException e) {
+                // NOP: We discard exception on close
+                this.logger.log(Level.WARNING,
+                        String.format("An error occurs closing resource '%s'. Error skipped.", groupsResourceName), e);
+            }
         }
     }
 
@@ -222,75 +320,6 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
         }
     }
 
-    /**
-     * Read a file containing the group declarations. If the file is not an absolute file, it is read a resource.
-     * 
-     * @param groupsFileName
-     *            The file name or resource name
-     * @throws IdentityServiceInitException
-     *             An error occurs reading the file.
-     */
-    private void readGroupsFile(final String groupsFileName) throws IdentityServiceInitException {
-
-        assert groupsFileName != null;
-
-        final File tmpFile = new File(groupsFileName.trim());
-        if (!tmpFile.isAbsolute()) {
-            readGroupsResource(groupsFileName);
-        } else if (!tmpFile.exists()) {
-            try {
-                this.readGroupsResource(groupsFileName);
-            } catch (final IdentityServiceResourceNotFoundException e) {
-                throw new IdentityServiceInitException("The file declaring groups (" + groupsFileName
-                        + ") does not exist.");
-            }
-        } else if (!tmpFile.isFile()) {
-            throw new IdentityServiceInitException("The file declaring groups (" + groupsFileName + ") is not a file.");
-        } else {
-            try {
-                final InputStream groupsFileInputStream = new FileInputStream(tmpFile);
-                assert groupsFileInputStream != null;
-                try {
-                    this.readGroups(groupsFileInputStream);
-                } finally {
-                    try {
-                        groupsFileInputStream.close();
-                    } catch (final IOException e) {
-                        // NOP: We discard exception on close
-                    }
-                }
-            } catch (final FileNotFoundException e) {
-                throw new IdentityServiceInitException(e);
-            }
-        }
-    }
-
-    /**
-     * Read a resource containing the group declarations
-     * 
-     * @param groupsResourceName
-     *            The resource name
-     * @throws IdentityServiceInit
-     *             An error occurs reading the resource.
-     */
-    private void readGroupsResource(final String groupsResourceName) throws IdentityServiceInitException {
-
-        assert groupsResourceName != null;
-
-        final InputStream groupsInputStream = FileIdentityService.class.getResourceAsStream(groupsResourceName);
-        assert groupsInputStream != null : "Resource [" + groupsResourceName
-                + "] containing group declaration not found";
-        try {
-            this.readGroups(groupsInputStream);
-        } finally {
-            try {
-                groupsInputStream.close();
-            } catch (final IOException e) {
-                // NOP: We discard exception on close
-            }
-        }
-    }
-
     private void readGroups(final InputStream groupsInputStream) throws IdentityServiceInitException {
         final Properties groupsProps = new Properties();
         try {
@@ -300,7 +329,7 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
         }
 
         for (final Entry<Object, Object> entry : groupsProps.entrySet()) {
-            final String groupId = (String)entry.getKey();
+            final String groupId = (String) entry.getKey();
             final String usersOfGroup = (String) entry.getValue();
             List<String> userList = this.groups.get(groupId);
             if (userList == null) {
@@ -314,8 +343,4 @@ public class FileIdentityService extends IdmIdentityServiceImpl implements Ident
         }
     }
 
-    @Override
-    public org.flowable.engine.IdentityService getIdentityService() {
-        return new FileIdentityServiceImpl(this.users, this.groups, this.groupsByUser);
-    }
 }

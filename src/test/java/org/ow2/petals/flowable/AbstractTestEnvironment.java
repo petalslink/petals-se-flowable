@@ -60,7 +60,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     public FlowableClient flowableClient = new FlowableClient(
             new File(new File(this.getComponentUnderTest().getBaseDirectory(), "work"),
                     DEFAULT_JDBC_URL_DATABASE_FILENAME),
-            VACATION_SU_HOME + "identityService.properties");
+            VACATION_SU_HOME + "idm-engine-configurator.properties");
 
     protected abstract ComponentUnderTest getComponentUnderTest();
 

@@ -21,7 +21,7 @@ import java.io.File;
 
 import javax.xml.namespace.QName;
 
-import org.ow2.petals.flowable.identity.file.FileIdentityService;
+import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
 
 /**
  * The component class of the Flowable BPMN Service Engine related constants.
@@ -309,24 +309,24 @@ public final class FlowableSEConstants {
     public static final boolean DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION = true;
 
     /**
-     * Tag name of the component JBI descriptor about the class name of the identity service to use.
+     * Tag name of the component JBI descriptor about the class name of the IDM engine configurator to use.
      */
-    public static final String ENGINE_IDENTITY_SERVICE_CLASS_NAME = "engine-identity-service-class-name";
+    public static final String IDM_ENGINE_CONFIGURATOR_CLASS_NAME = "idm-engine-configurator-class-name";
 
     /**
-     * Default value of {@link #ENGINE_IDENTITY_SERVICE_CLASS_NAME}.
+     * Default value of {@link #IDM_ENGINE_CONFIGURATOR_CLASS_NAME}.
      */
-    public static final String DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME = FileIdentityService.class.getName();
+    public static final String DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME = FileIdmEngineConfigurator.class.getName();
 
     /**
-     * Tag name of the component JBI descriptor about the configuration file of the identity service.
+     * Tag name of the component JBI descriptor about the configuration file of the IDM engine configurator.
      */
-    public static final String ENGINE_IDENTITY_SERVICE_CFG_FILE = "engine-identity-service-config-file";
+    public static final String IDM_ENGINE_CONFIGURATOR_CFG_FILE = "idm-engine-configurator-config-file";
 
     /**
-     * Default value of {@link #ENGINE_IDENTITY_SERVICE_CFG_FILE}.
+     * Default value of {@link #IDM_ENGINE_CONFIGURATOR_CFG_FILE}.
      */
-    public static final File DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE = null;
+    public static final File DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE = null;
 
     /**
      * Constants relatives to the Flowable components

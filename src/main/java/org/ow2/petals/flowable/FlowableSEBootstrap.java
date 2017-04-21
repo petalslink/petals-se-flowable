@@ -31,8 +31,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXE
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
-import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE;
-import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE;
@@ -43,6 +41,8 @@ import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_MA
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
+import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
@@ -69,7 +69,7 @@ import javax.jbi.JBIException;
 import javax.management.InvalidAttributeValueException;
 
 import org.ow2.petals.component.framework.DefaultBootstrap;
-import org.ow2.petals.flowable.identity.IdentityService;
+import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
 
 /**
  * The component class of the Flowable BPMN Service Engine.
@@ -100,9 +100,9 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
 
     public static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
 
-    public static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME = "engineIdentityServiceClassName";
+    public static final String ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME = "idmEngineConfiguratorClassName";
 
-    public static final String ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE = "engineIdentityServiceCfgFile";
+    public static final String ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE = "idmEngineConfiguratorCfgFile";
 
     // Parameters of the Flowable job executor
     public static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
@@ -145,8 +145,8 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_DATABASE_TYPE);
             attributes.add(ATTR_NAME_DATABASE_SCHEMA_UPDATE);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION);
-            attributes.add(ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME);
-            attributes.add(ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE);
+            attributes.add(ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
+            attributes.add(ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE);
 
             // Parameters of the Flowable job executor
             attributes.add(ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR);
@@ -694,75 +694,77 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
     }
 
     /**
-     * Get the identity service class name
+     * Get the IDM engine configurator class name
      * 
-     * @return the identity service class name
+     * @return the IDM engine configurator class name
      */
-    public String getEngineIdentityServiceClassName() {
+    public String getIdmEngineConfiguratorClassName() {
 
         try {
-            return FlowableParameterReader.getEngineIdentityServiceClassName(
-                    this.getParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME), this.getLogger()).getName();
+            return FlowableParameterReader.getIdmEngineConfiguratorClassName(
+                    this.getParam(IDM_ENGINE_CONFIGURATOR_CLASS_NAME), this.getLogger()).getName();
         } catch (final JBIException e) {
-            return FlowableSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME;
+            return FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
         }
     }
 
     /**
-     * Set the identity service class name
+     * Set the IDM engine configurator class name
      * 
      * @param value
-     *            the identity service class name. Must be a loadable class implementing {@link IdentityService}
+     *            the IDM engine configurator class name. Must be a loadable class implementing
+     *            {@link AbstractProcessEngineConfigurator}
      * @throws InvalidAttributeValueException
      */
-    public void setEngineIdentityServiceClassName(final String value) throws InvalidAttributeValueException {
+    public void setIdmEngineConfiguratorClassName(final String value) throws InvalidAttributeValueException {
 
         if (value == null || value.trim().isEmpty()) {
-            // No identity service configured
-            this.setParam(ENGINE_IDENTITY_SERVICE_CLASS_NAME, null);
+            // No IDM engine configurator configured
+            this.setParam(IDM_ENGINE_CONFIGURATOR_CLASS_NAME, null);
         } else {
-            this.setParamAsImplementationClassURI(ENGINE_IDENTITY_SERVICE_CLASS_NAME, value, IdentityService.class);
+            this.setParamAsImplementationClassURI(IDM_ENGINE_CONFIGURATOR_CLASS_NAME, value,
+                    AbstractProcessEngineConfigurator.class);
         }
     }
 
     /**
-     * Get the identity service configuration file
+     * Get the IDM engine configurator configuration file
      * 
-     * @return the identity service configuration file
+     * @return the IDM engine configurator configuration file
      */
-    public String getEngineIdentityServiceCfgFile() {
+    public String getIdmEngineConfiguratorCfgFile() {
 
         final File confFile = FlowableParameterReader.getEngineIdentityServiceConfigurationFile(
-                this.getParam(ENGINE_IDENTITY_SERVICE_CFG_FILE), this.getLogger());
+                this.getParam(IDM_ENGINE_CONFIGURATOR_CFG_FILE), this.getLogger());
         return confFile == null ? null : confFile.getAbsolutePath();
     }
 
     /**
-     * Set the identity service configuration file
+     * Set the IDM engine configurator configuration file
      * 
      * @param value
-     *            the identity service configuration file
+     *            the IDM engine configurator configuration file
      */
-    public void setEngineIdentityServiceCfgFile(final String value) throws InvalidAttributeValueException {
+    public void setIdmEngineConfiguratorCfgFile(final String value) throws InvalidAttributeValueException {
 
         if (value == null || value.trim().isEmpty()) {
-            // No identity service configuration file configured
-            this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, null);
+            // No IDM engine configurator configuration file configured
+            this.setParam(IDM_ENGINE_CONFIGURATOR_CFG_FILE, null);
         } else {
             final File tmpFile = new File(value.trim());
             if (!tmpFile.isAbsolute()) {
-                // The identity service configuration file is a resource
+                // The IDM engine configurator configuration file is a resource
 
                 // TODO: Add a check to verify that the resource
-                this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, value.trim());
+                this.setParam(IDM_ENGINE_CONFIGURATOR_CFG_FILE, value.trim());
             } else if (!tmpFile.exists()) {
                 throw new InvalidAttributeValueException(
-                        "The identity service configuration file (" + value.trim() + ") does not exist.");
+                        "The IDM engine configurator configuration file (" + value.trim() + ") does not exist.");
             } else if (!tmpFile.isFile()) {
                 throw new InvalidAttributeValueException(
-                        "The identity service configuration file (" + value.trim() + ") is not a file.");
+                        "The IDM engine configurator configuration file (" + value.trim() + ") is not a file.");
             } else {
-                this.setParam(ENGINE_IDENTITY_SERVICE_CFG_FILE, value.trim());
+                this.setParam(IDM_ENGINE_CONFIGURATOR_CFG_FILE, value.trim());
             }
         }
 

@@ -87,9 +87,9 @@
                      minOccurs="0" />
                   <xs:element ref="petals-se-flowable:engine-enable-bpmn-validation" maxOccurs="1" minOccurs="0" />
                   <!-- the Flowable identity service parameters -->
-                  <xs:element ref="petals-se-flowable:engine-identity-service-class-name" maxOccurs="1"
+                  <xs:element ref="petals-se-flowable:idm-engine-configurator-class-name" maxOccurs="1"
                      minOccurs="0" />
-                  <xs:element ref="petals-se-flowable:engine-identity-service-config-file" maxOccurs="1"
+                  <xs:element ref="petals-se-flowable:idm-engine-configurator-config-file" maxOccurs="1"
                      minOccurs="0" />
                </xs:sequence>
             </xs:extension>

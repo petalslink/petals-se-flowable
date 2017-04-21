@@ -21,8 +21,8 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
-import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE;
-import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME;
+import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
@@ -77,7 +77,6 @@ import org.flowable.engine.impl.asyncexecutor.AsyncExecutor;
 import org.flowable.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.parse.BpmnParseHandler;
-import org.flowable.idm.api.IdmIdentityService;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.petals.component.framework.listener.AbstractListener;
@@ -92,8 +91,7 @@ import org.ow2.petals.flowable.event.ProcessInstanceStartedEventListener;
 import org.ow2.petals.flowable.event.ServiceTaskStartedEventListener;
 import org.ow2.petals.flowable.event.UserTaskCompletedEventListener;
 import org.ow2.petals.flowable.event.UserTaskStartedEventListener;
-import org.ow2.petals.flowable.identity.IdentityService;
-import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
+import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
 import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.integration.ActivateProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.GetProcessInstancesOperation;
@@ -398,19 +396,19 @@ public class FlowableSE extends AbstractServiceEngine {
 
             ((FlowableSuManager) getServiceUnitManager()).setEnableFlowableBpmnValidation(enableFlowableBpmnValidation);
 
-            final Class<?> identityServiceClass = FlowableParameterReader.getEngineIdentityServiceClassName(
-                    this.getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CLASS_NAME), this.getLogger());
+            final Class<?> idmEngineConfiguratorClass = FlowableParameterReader.getIdmEngineConfiguratorClassName(
+                    this.getComponentExtensions().get(IDM_ENGINE_CONFIGURATOR_CLASS_NAME), this.getLogger());
 
-            final File identityServiceCfgFile = FlowableParameterReader.getEngineIdentityServiceConfigurationFile(
-                    this.getComponentExtensions().get(ENGINE_IDENTITY_SERVICE_CFG_FILE), this.getLogger());
+            final File idmEngineConfiguratorCfgFile = FlowableParameterReader.getEngineIdentityServiceConfigurationFile(
+                    this.getComponentExtensions().get(IDM_ENGINE_CONFIGURATOR_CFG_FILE), this.getLogger());
 
             this.getLogger().config("Flowable engine configuration:");
             this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableFlowableJobExecutor);
             this.getLogger().config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + enableFlowableBpmnValidation);
             this.getLogger()
-                    .config("   - " + ENGINE_IDENTITY_SERVICE_CLASS_NAME + " = " + identityServiceClass.getName());
-            this.getLogger().config("   - " + ENGINE_IDENTITY_SERVICE_CFG_FILE + " = "
-                    + (identityServiceCfgFile == null ? "<null>" : identityServiceCfgFile.getAbsolutePath()));
+                    .config("   - " + IDM_ENGINE_CONFIGURATOR_CLASS_NAME + " = " + idmEngineConfiguratorClass.getName());
+            this.getLogger().config("   - " + IDM_ENGINE_CONFIGURATOR_CFG_FILE + " = "
+                    + (idmEngineConfiguratorCfgFile == null ? "<null>" : idmEngineConfiguratorCfgFile.getAbsolutePath()));
 
             /* Create an Flowable ProcessEngine with database configuration */
             final ProcessEngineConfiguration pec = ProcessEngineConfiguration
@@ -438,7 +436,7 @@ public class FlowableSE extends AbstractServiceEngine {
             pec.setAsyncExecutorActivate(false);
 
             // Override the default configuration of the identity service.
-            this.registerIdentityService(pec, identityServiceClass, identityServiceCfgFile);
+            this.registerIdentityService(pec, idmEngineConfiguratorClass, idmEngineConfiguratorCfgFile);
 
             // Add post BPMN parse handlers
             this.addPostBpmnParseHandlers(pec);
@@ -529,42 +527,42 @@ public class FlowableSE extends AbstractServiceEngine {
     }
 
     /**
-     * Initialize the identity service
+     * Initialize the identity management engine
      * 
      * @param pec
      *            The Flowable process engine configuration. Not <code>null</code>.
-     * @param identityServiceClass
-     *            The identity service class to use. Not <code>null</code>. Must implement {@link IdentityService}.
-     * @param identityServiceCfgFile
-     *            The identity service configuration file. If <code>null</code>, the default configuration of the
-     *            identity service will be used.
+     * @param idmEngineConfiguratorClass
+     *            The identity service class defining which identity management engine will be used. Not
+     *            <code>null</code>. Must implement {@link IdentityService}.
+     * @param idmCfgFile
+     *            The identity management engine configuration file. If <code>null</code>, the default configuration of
+     *            the identity management engine will be used.
      */
     private final void registerIdentityService(final ProcessEngineConfiguration pec,
-            final Class<?> identityServiceClass, final File identityServiceCfgFile) throws JBIException {
+            final Class<?> idmEngineConfiguratorClass, final File idmCfgFile) throws JBIException {
 
         assert pec != null : "pec can not be null";
-        assert identityServiceClass != null : "identityServiceClass can not be null";
-        assert IdentityService.class.isAssignableFrom(
-                identityServiceClass) : "The identity service class does not implement IdentityService";
-        assert IdmIdentityService.class.isAssignableFrom(
-                identityServiceClass) : "The identity service class does not implement IdmIdentityService";
+        assert idmEngineConfiguratorClass != null : "idmEngineConfiguratorClass can not be null";
+        assert AbstractProcessEngineConfigurator.class.isAssignableFrom(
+                idmEngineConfiguratorClass) : "The IDM engine configurator service class defining which IDM engine will be used does not implement AbstractProcessEngineConfigurator";
 
-        Object identityServiceObj;
+        final Object idmEngineConfiguratorObj;
         try {
-            identityServiceObj = identityServiceClass.newInstance();
-            assert identityServiceObj instanceof IdentityService;
-            final IdentityService identityService = (IdentityService) identityServiceObj;
-
-            identityService.init(identityServiceCfgFile);
+            idmEngineConfiguratorObj = idmEngineConfiguratorClass.newInstance();
+            assert idmEngineConfiguratorObj instanceof AbstractProcessEngineConfigurator;
+            final AbstractProcessEngineConfigurator idmEngineConfigurator = (AbstractProcessEngineConfigurator) idmEngineConfiguratorObj;
 
             if (pec instanceof ProcessEngineConfigurationImpl) {
-                ((ProcessEngineConfigurationImpl) pec).setIdentityService(identityService.getIdentityService());
+                ((ProcessEngineConfigurationImpl) pec).setDisableIdmEngine(false);
+                idmEngineConfigurator.setConfigurationFile(idmCfgFile);
+                idmEngineConfigurator.setLogger(this.getLogger());
+                ((ProcessEngineConfigurationImpl) pec).setIdmProcessEngineConfigurator(idmEngineConfigurator);
             } else {
                 this.getLogger().warning(
-                        "The implementation of the process engine configuration is not the expected one ! Identity service not overriden !");
+                        "The implementation of the process engine configuration is not the expected one ! Identity management engine not overriden !");
             }
-        } catch (final InstantiationException | IllegalAccessException | IdentityServiceInitException e) {
-            throw new JBIException("An error occurred while instantiating the identity service.", e);
+        } catch (final InstantiationException | IllegalAccessException e) {
+            throw new JBIException("An error occurred while instantiating the identity management engine.", e);
         }
     }
 

@@ -116,16 +116,16 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
                     new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
             .setParameter(
-                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE),
+                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
                     // Generate identity service configuration files
                     new ParameterGenerator() {
 
                         @Override
                         public String generate() throws Exception {
-                            final URL identityServiceCfg = Thread.currentThread().getContextClassLoader()
-                                    .getResource(VACATION_SU_HOME + "identityService.properties");
-                            assertNotNull("Identity service config file is missing !", identityServiceCfg);
-                            return new File(identityServiceCfg.toURI()).getAbsolutePath();
+                            final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
+                                    .getResource(VACATION_SU_HOME + "idm-engine-configurator.properties");
+                            assertNotNull("IDM engine configurator config file is missing !", idmEngineConfiguratorCfg);
+                            return new File(idmEngineConfiguratorCfg.toURI()).getAbsolutePath();
                         }
 
                     })

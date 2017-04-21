@@ -20,8 +20,8 @@ package org.ow2.petals.flowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE;
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 
 import java.io.File;
 import java.util.List;
@@ -44,8 +44,8 @@ import org.ow2.petals.component.framework.jbidescriptor.generated.Component;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.junit.mbean.AbstractBootstrapTest;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
-import org.ow2.petals.flowable.identity.IdentityService;
-import org.ow2.petals.flowable.identity.IdentityServiceMock;
+import org.ow2.petals.flowable.identity.IdmEngineConfiguratorMock;
+import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -153,10 +153,10 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         params.add(eltEnableEngineBpmnValidation);
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME);
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
         params.add(eltEngineIdentityServiceClassName);
         final Element eltEngineIdentityServiceCfgFile = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE);
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE);
         params.add(eltEngineIdentityServiceCfgFile);
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
@@ -268,11 +268,11 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEnableEngineBpmnValidation.setTextContent(" ");
         params.add(eltEnableEngineBpmnValidation);
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME);
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
         eltEngineIdentityServiceClassName.setTextContent(" ");
         params.add(eltEngineIdentityServiceClassName);
         final Element eltEngineIdentityServiceCfgFile = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE);
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE);
         eltEngineIdentityServiceCfgFile.setTextContent(" ");
         params.add(eltEngineIdentityServiceCfgFile);
 
@@ -369,11 +369,11 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEnableEngineBpmnValidation.setTextContent("invalid-value");
         params.add(eltEnableEngineBpmnValidation);
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME);
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
         eltEngineIdentityServiceClassName.setTextContent("invalid-value");
         params.add(eltEngineIdentityServiceClassName);
         final Element eltEngineIdentityServiceCfgFile = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE);
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE);
         eltEngineIdentityServiceCfgFile.setTextContent("invalid-value");
         params.add(eltEngineIdentityServiceCfgFile);
 
@@ -530,17 +530,17 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEnableEngineBpmnValidation.setTextContent(engineEnableBpmnValidation);
         params.add(eltEnableEngineBpmnValidation);
 
-        final Element eltEngineIdentityServiceClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CLASS_NAME);
-        final String engineIdentityServiceClassName = IdentityServiceMock.class.getName();
-        eltEngineIdentityServiceClassName.setTextContent(engineIdentityServiceClassName);
-        params.add(eltEngineIdentityServiceClassName);
+        final Element eltIdmEngineConfiguratorClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
+        final String idmEngineConfiguratorClassName = IdmEngineConfiguratorMock.class.getName();
+        eltIdmEngineConfiguratorClassName.setTextContent(idmEngineConfiguratorClassName);
+        params.add(eltIdmEngineConfiguratorClassName);
 
-        final Element eltEngineIdentityServiceCfgFile = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_IDENTITY_SERVICE_CFG_FILE);
-        final String engineIdentityServiceCfgFile = "my.identity.service.cfg.file";
-        eltEngineIdentityServiceCfgFile.setTextContent(engineIdentityServiceCfgFile);
-        params.add(eltEngineIdentityServiceCfgFile);
+        final Element eltIdmEngineConfiguratorCfgFile = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE);
+        final String idmEngineConfiguratorCfgFile = "my.idm-engine-configurator.cfg.file";
+        eltIdmEngineConfiguratorCfgFile.setTextContent(idmEngineConfiguratorCfgFile);
+        params.add(eltIdmEngineConfiguratorCfgFile);
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
@@ -566,10 +566,10 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_DATABASE_SCHEMA_UPDATE));
         assertEquals(engineEnableBpmnValidation, this.jmxClient
                 .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION));
-        assertEquals(engineIdentityServiceClassName, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
+        assertEquals(idmEngineConfiguratorClassName, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME));
+        assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE));
         assertEquals(engineEnableJobExecutor,
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR));
         assertEquals(jobExecutorCorePoolSize, this.jmxClient
@@ -630,10 +630,10 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_DATABASE_SCHEMA_UPDATE));
         assertEquals(String.valueOf(FlowableSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION), this.jmxClient
                 .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION));
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
+        assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME));
+        assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE));
         assertEquals(String.valueOf(FlowableSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR),
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR));
         assertEquals(FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE, this.jmxClient
@@ -783,17 +783,17 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME, null);
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, null);
+        assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME, "");
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, "");
+        assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME, " ");
-        assertEquals(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME));
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, " ");
+        assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME));
     }
 
     /**
@@ -804,7 +804,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
                 "not-loadable-class");
     }
 
@@ -816,7 +816,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
                 String.class.getName());
     }
 
@@ -828,17 +828,17 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE, null);
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE, null);
         assertEquals(null, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE, "");
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE, "");
         assertEquals(null, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE, " ");
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE, " ");
         assertEquals(null, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE));
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE));
     }
 
     /**
@@ -853,7 +853,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         final File absFile = this.tempFolder.newFile();
         assertTrue(absFile.delete()); // We must remove the file previously created
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CFG_FILE,
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE,
                 absFile.getAbsolutePath());
     }
 
@@ -945,9 +945,9 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION,
                     String.valueOf(engineEnableBpmnValidation));
 
-            final String engineIdentityServiceClass = "org.ow2.petals.flowable.identity.file.FileIdentityService";
-            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_IDENTITY_SERVICE_CLASS_NAME,
-                    engineIdentityServiceClass);
+            final String idmEngineConfiguratorClass = FileIdmEngineConfigurator.class.getName();
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
+                    idmEngineConfiguratorClass);
 
             // We continue component lifecycle to be able to check are correctly used
             componentUnderTest.install();

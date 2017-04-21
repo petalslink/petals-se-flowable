@@ -17,8 +17,8 @@
  */
 package org.ow2.petals.flowable;
 
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE;
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_DRIVER;
 
 import java.io.File;
@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
 
-import org.ow2.petals.flowable.identity.IdentityService;
+import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
 
 /**
  * Utility class to get the right value of component parameter. If the value of a parameter is invalid, a default value
@@ -55,60 +55,62 @@ public class FlowableParameterReader {
 
     /**
      * 
-     * @param identityServiceClassNameConfigured
+     * @param idmEngineConfiguratorClassNameConfigured
      * @param log
      * @return
      * @throws JBIException
      *             The default identity service class name is not found
      */
-    public static final Class<?> getEngineIdentityServiceClassName(final String identityServiceClassNameConfigured,
+    public static final Class<?> getIdmEngineConfiguratorClassName(final String idmEngineConfiguratorClassNameConfigured,
             final Logger log) throws JBIException {
-        Class<?> identityServiceClass;
+        final Class<?> idmEngineConfiguratorClass;
         try {
-            if (identityServiceClassNameConfigured == null || identityServiceClassNameConfigured.trim().isEmpty()) {
-                log.info("No identity service configured. Default value used.");
-                return FlowableSE.class.getClassLoader().loadClass(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME);
+            if (idmEngineConfiguratorClassNameConfigured == null || idmEngineConfiguratorClassNameConfigured.trim().isEmpty()) {
+                log.info("No IDM engine configurator configured. Default value used.");
+                return FlowableSE.class.getClassLoader().loadClass(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
             } else {
                 try {
-                    identityServiceClass = FlowableSE.class.getClassLoader().loadClass(
-                            identityServiceClassNameConfigured.trim());
-                    if (!IdentityService.class.isAssignableFrom(identityServiceClass)) {
-                        log.warning("Identity service does not implement " + IdentityService.class.getName()
+                    idmEngineConfiguratorClass = FlowableSE.class.getClassLoader().loadClass(
+                            idmEngineConfiguratorClassNameConfigured.trim());
+                    if (!AbstractProcessEngineConfigurator.class.isAssignableFrom(idmEngineConfiguratorClass)) {
+                        log.warning("IDM engine configurator does not implement "
+                                + AbstractProcessEngineConfigurator.class.getName()
                                 + ". Default value used.");
-                        return FlowableSE.class.getClassLoader().loadClass(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME);
+                        return FlowableSE.class.getClassLoader().loadClass(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
                     } else {
-                        return identityServiceClass;
+                        return idmEngineConfiguratorClass;
                     }
                 } catch (final ClassNotFoundException e) {
-                    log.warning("Identity service class not found: " + identityServiceClassNameConfigured
+                    log.warning("IDM engine configurator class not found: " + idmEngineConfiguratorClassNameConfigured
                             + ". Default value used.");
-                    return FlowableSE.class.getClassLoader().loadClass(DEFAULT_ENGINE_IDENTITY_SERVICE_CLASS_NAME);
+                    return FlowableSE.class.getClassLoader().loadClass(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
                 }
             }
         } catch (final ClassNotFoundException e) {
-            throw new JBIException("Default identity service not found.", e);
+            throw new JBIException("Default IDM engine configurator not found.", e);
         }
     }
 
-    public static final File getEngineIdentityServiceConfigurationFile(final String identityServiceCfgFileConfigured,
+    public static final File getEngineIdentityServiceConfigurationFile(final String idmEngineConfiguratorCfgFileConfigured,
             final Logger log) {
-        if (identityServiceCfgFileConfigured == null || identityServiceCfgFileConfigured.trim().isEmpty()) {
-            log.info("No identity service configuration file configured. Default configuration used.");
-            return DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE;
+        if (idmEngineConfiguratorCfgFileConfigured == null || idmEngineConfiguratorCfgFileConfigured.trim().isEmpty()) {
+            log.info("No IDM engine configurator configuration file configured. Default configuration used.");
+            return DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE;
         } else {
-            final File tmpFile = new File(identityServiceCfgFileConfigured.trim());
+            final File tmpFile = new File(idmEngineConfiguratorCfgFileConfigured.trim());
             if (!tmpFile.isAbsolute()) {
-                log.warning("The identity service configuration file configured (" + identityServiceCfgFileConfigured
-                        + ") is not an absolute file. Default configuration used.");
-                return DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE;
+                log.warning(String.format("The IDM engine configurator configuration file configured (%s) is not an absolute file. Default configuration used.", idmEngineConfiguratorCfgFileConfigured));
+                return DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE;
             } else if (!tmpFile.exists()) {
-                log.warning("The identity service configuration file configured (" + identityServiceCfgFileConfigured
-                        + ") does not exist. Default configuration used.");
-                return DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE;
+                log.warning(String.format(
+                        "The IDM engine configurator configuration file configured (%s) does not exist. Default configuration used.",
+                        idmEngineConfiguratorCfgFileConfigured));
+                return DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE;
             } else if (!tmpFile.isFile()) {
-                log.warning("The identity service configuration file configured (" + identityServiceCfgFileConfigured
-                        + ") is not a file. Default configuration used.");
-                return DEFAULT_ENGINE_IDENTITY_SERVICE_CFG_FILE;
+                log.warning(String.format(
+                        "The IDM engine configurator configuration file configured (%s) is not a file. Default configuration used.",
+                        idmEngineConfiguratorCfgFileConfigured));
+                return DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE;
             } else {
                 return tmpFile;
             }

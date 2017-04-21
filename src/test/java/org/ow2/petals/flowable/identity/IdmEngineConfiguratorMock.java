@@ -17,20 +17,14 @@
  */
 package org.ow2.petals.flowable.identity;
 
-import java.io.File;
+import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 
-import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
-
-public class IdentityServiceMock implements IdentityService {
+public class IdmEngineConfiguratorMock extends AbstractProcessEngineConfigurator {
 
     @Override
-    public void init(File configurationFile) throws IdentityServiceInitException {
-        // NOP
-    }
+    public void configure(final ProcessEngineConfigurationImpl processEngineConfiguration) {
 
-    @Override
-    public org.flowable.engine.IdentityService getIdentityService() {
-        return null;
+        processEngineConfiguration.setIdmIdentityService(null);
     }
 
 }

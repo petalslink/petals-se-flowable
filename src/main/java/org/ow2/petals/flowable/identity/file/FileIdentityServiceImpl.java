@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.flowable.engine.common.api.FlowableException;
-import org.flowable.engine.impl.IdentityServiceImpl;
 import org.flowable.idm.api.Group;
 import org.flowable.idm.api.GroupQuery;
 import org.flowable.idm.api.User;
 import org.flowable.idm.api.UserQuery;
+import org.flowable.idm.engine.impl.IdmIdentityServiceImpl;
 
-public class FileIdentityServiceImpl extends IdentityServiceImpl {
+public class FileIdentityServiceImpl extends IdmIdentityServiceImpl {
 
     /**
      * Users list into a map: key=user-id, value=user-password
