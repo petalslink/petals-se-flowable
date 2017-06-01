@@ -58,7 +58,7 @@ public class SuspendProcessInstancesOperation extends
     }
 
     @Override
-    public SuspendProcessInstancesResponse doExecute(final SuspendProcessInstances incomingObject) {
+    public SuspendProcessInstancesResponse doExecute(final SuspendProcessInstances incomingObject) throws Exception {
 
         final SuspendProcessInstancesResponse response = new SuspendProcessInstancesResponse();
         final List<ProcessInstanceIdentifier> results = response.getProcessInstanceIdentifier();

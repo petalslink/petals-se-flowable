@@ -58,7 +58,7 @@ public class ActivateProcessInstancesOperation extends
     }
 
     @Override
-    public ActivateProcessInstancesResponse doExecute(final ActivateProcessInstances incomingObject) {
+    public ActivateProcessInstancesResponse doExecute(final ActivateProcessInstances incomingObject) throws Exception {
 
         final ActivateProcessInstancesResponse response = new ActivateProcessInstancesResponse();
         final List<ProcessInstanceIdentifier> results = response.getProcessInstanceIdentifier();

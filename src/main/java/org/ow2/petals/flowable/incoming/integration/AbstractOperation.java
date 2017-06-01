@@ -17,8 +17,6 @@
  */
 package org.ow2.petals.flowable.incoming.integration;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.logging.Level;
@@ -43,6 +41,7 @@ import org.ow2.petals.flowable.incoming.integration.exception.InvalidRequestExce
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
 
 import com.ebmwebsourcing.easycommons.lang.ExceptionHelper;
+import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
 
 public abstract class AbstractOperation<T, V> implements FlowableService {
 
@@ -142,9 +141,9 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
      * @throws Exception
      */
     private InputStream object2InputStream(final Object response) throws Exception {
-        // TODO: Avoid to use ByteArray(In|Out)put stream, try to pipe streams because of memory problem
-        // with big payloads
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        // TODO: Avoid to use EasyByteArrayOutput stream, try to pipe streams because of memory problem with big
+        // payloads
+        final EasyByteArrayOutputStream baos = new EasyByteArrayOutputStream();
         try {
             final Marshaller marshaller = this.marshalerPool.borrowObject();
             try {
@@ -156,7 +155,7 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
             baos.close();
         }
 
-        return new ByteArrayInputStream(baos.toByteArray());
+        return baos.toByteArrayInputStream();
 
     }
 
@@ -166,7 +165,7 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
      *            Incoming payload as {@link Object}, not <code>null</code>
      * @return The response as {@link Object}
      */
-    public abstract V doExecute(final T incomingObject);
+    public abstract V doExecute(final T incomingObject) throws Exception;
 
     @Override
     public void log(final Logger logger, final Level logLevel) {

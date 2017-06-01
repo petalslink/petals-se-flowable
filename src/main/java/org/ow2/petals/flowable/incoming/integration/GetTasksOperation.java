@@ -20,8 +20,12 @@ package org.ow2.petals.flowable.incoming.integration;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
 
 import java.net.URI;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.xml.datatype.DatatypeFactory;
 
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.TaskService;
@@ -64,7 +68,7 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
     }
 
     @Override
-    public GetTasksResponse doExecute(final GetTasks incomingObject) {
+    public GetTasksResponse doExecute(final GetTasks incomingObject) throws Exception {
 
         final TaskQuery taskQuery = this.taskService.createTaskQuery();
 
@@ -104,6 +108,15 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
             final org.ow2.petals.components.flowable.generic._1.Task responseTask = new org.ow2.petals.components.flowable.generic._1.Task();
             responseTask.setProcessInstanceIdentifier(task.getProcessInstanceId());
             responseTask.setTaskIdentifier(task.getTaskDefinitionKey());
+            responseTask.setTaskName(task.getName());
+            responseTask.setTaskDescription(task.getDescription());
+            final Date taskDueDate = task.getDueDate();
+            if (taskDueDate != null) {
+                final GregorianCalendar gregCal = new GregorianCalendar();
+                gregCal.setTime(task.getDueDate());
+                responseTask.setTaskDueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(gregCal));
+            }
+            responseTask.setTaskPriority(task.getPriority());
             responseTasks.getTask().add(responseTask);
 
             final ProcessDefinitionQuery processDefQuery = this.repositoryService.createProcessDefinitionQuery()

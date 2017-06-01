@@ -74,6 +74,10 @@
             <xsd:attribute name="process-definition-identifier" type="xsd:string" use="required" />
             <xsd:attribute name="process-instance-identifier" type="xsd:string" use="required" />
             <xsd:attribute name="task-identifier" type="xsd:string" use="required" />
+            <xsd:attribute name="task-name" type="xsd:string" use="required" />
+            <xsd:attribute name="task-description" type="xsd:string" use="required" />
+            <xsd:attribute name="task-due-date" type="xsd:dateTime" use="optional" />
+            <xsd:attribute name="task-priority" type="xsd:int" use="required" />
          </xsd:complexType>
 
          <xsd:element name="getProcessInstances">

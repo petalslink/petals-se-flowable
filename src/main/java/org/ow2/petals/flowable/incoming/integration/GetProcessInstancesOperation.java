@@ -84,7 +84,7 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
     }
 
     @Override
-    public GetProcessInstancesResponse doExecute(final GetProcessInstances incomingObject) {
+    public GetProcessInstancesResponse doExecute(final GetProcessInstances incomingObject) throws Exception {
 
         // By default, we search active process instance
         final ProcessInstanceState state = incomingObject.getState();
