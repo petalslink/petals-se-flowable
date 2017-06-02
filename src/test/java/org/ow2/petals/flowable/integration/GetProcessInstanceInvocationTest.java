@@ -54,8 +54,7 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
     public void invalidRequest_WsdlUncompliant() throws Exception {
 
         this.testInvalidRequest_WsdlUncompliant(NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_PROCESSINSTANCES_PORT_TYPE,
-                ITG_PROCESSINSTANCES_SERVICE,
-                ITG_OP_GETPROCESSINSTANCES);
+                ITG_PROCESSINSTANCES_SERVICE, ITG_OP_GETPROCESSINSTANCES);
     }
 
     /**
@@ -79,8 +78,7 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
 
         // We use a response as request
         this.testInvalidRequest_WsdlCompliant(NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_PROCESSINSTANCES_PORT_TYPE,
-                ITG_PROCESSINSTANCES_SERVICE,
-                ITG_OP_GETPROCESSINSTANCES, new GetProcessInstancesResponse());
+                ITG_PROCESSINSTANCES_SERVICE, ITG_OP_GETPROCESSINSTANCES, new GetProcessInstancesResponse());
     }
 
     /**
@@ -102,8 +100,7 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
     public void invalidRequest_EmptyRequest() throws Exception {
 
         this.testInvalidRequest_Empty(NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_PROCESSINSTANCES_PORT_TYPE,
-                ITG_PROCESSINSTANCES_SERVICE,
-                ITG_OP_GETPROCESSINSTANCES);
+                ITG_PROCESSINSTANCES_SERVICE, ITG_OP_GETPROCESSINSTANCES);
     }
 
     /**
@@ -125,7 +122,7 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
     @Test
     public void noArguments() throws Exception {
 
-        final Object getProcessInstancesRespObj = this.testValidRequest_NoArguments(NATIVE_PROCESSINSTANCES_SVC_CFG,
+        final Object getProcessInstancesRespObj = this.testRequest(NATIVE_PROCESSINSTANCES_SVC_CFG,
                 ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE, ITG_OP_GETPROCESSINSTANCES,
                 new GetProcessInstances());
 

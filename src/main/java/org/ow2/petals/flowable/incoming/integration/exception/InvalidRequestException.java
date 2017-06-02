@@ -19,13 +19,17 @@ package org.ow2.petals.flowable.incoming.integration.exception;
 
 import javax.xml.namespace.QName;
 
+import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
+
+import com.ebmwebsourcing.easycommons.lang.ExceptionHelper;
+
 /**
  * The incoming request received by the integration service is invalid, ie. not compliant with the service contract.
  * 
  * @author Christophe DENEUX - Linagora
  *
  */
-public class InvalidRequestException extends IntegrationOperationException {
+public class InvalidRequestException extends FaultException {
 
     private static final long serialVersionUID = -1107793733817534060L;
 
@@ -41,6 +45,14 @@ public class InvalidRequestException extends IntegrationOperationException {
 
     public InvalidRequestException(final String message) {
         super(message);
+    }
+
+    @Override
+    public Object getBean() {
+        final InvalidRequest bean = new InvalidRequest();
+        bean.setMessage(this.getMessage());
+        bean.setStacktrace(ExceptionHelper.getStackTrace(this));
+        return bean;
     }
 
 }

@@ -23,6 +23,38 @@
    <wsdl:types>
       <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified"
          targetNamespace="http://petals.ow2.org/components/flowable/generic/1.0">
+         
+         <xsd:element name="getUser">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="getUserResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="user" type="flowable:User" minOccurs="1" maxOccurs="1"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:complexType name="User">
+            <xsd:sequence>
+                  <xsd:element name="id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+                  <xsd:element name="first-name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                  <xsd:element name="last-name" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                  <xsd:element name="email" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            </xsd:sequence>
+         </xsd:complexType>
+         
+         <xsd:element name="unknownUser">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
 
          <xsd:element name="getTasks">
             <xsd:complexType>
@@ -250,6 +282,15 @@
    <wsdl:message name="invalidRequest">
       <wsdl:part name="fault" element="flowable:invalidRequest" />
    </wsdl:message>
+   <wsdl:message name="getUserRequest">
+      <wsdl:part name="getUserRequest" element="flowable:getUser" />
+   </wsdl:message>
+   <wsdl:message name="getUserResponse">
+      <wsdl:part name="getUserResponse" element="flowable:getUserResponse" />
+   </wsdl:message>
+   <wsdl:message name="unknownUser">
+      <wsdl:part name="fault" element="flowable:unknownUser" />
+   </wsdl:message>
    <wsdl:message name="getTasksRequest">
       <wsdl:part name="getTasksRequest" element="flowable:getTasks" />
    </wsdl:message>
@@ -274,6 +315,15 @@
    <wsdl:message name="activateProcessInstancesResponse">
       <wsdl:part name="activateProcessInstancesResponse" element="flowable:activateProcessInstancesResponse" />
    </wsdl:message>
+
+   <wsdl:portType name="User">
+      <wsdl:operation name="getUser">
+         <wsdl:input message="flowable:getUserRequest" />
+         <wsdl:output message="flowable:getUserResponse" />
+         <wsdl:fault message="flowable:unknownUser" name="unknownUser" />
+         <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
+      </wsdl:operation>
+   </wsdl:portType>
 
    <wsdl:portType name="Task">
       <wsdl:operation name="getTasks">
@@ -300,6 +350,25 @@
          <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
    </wsdl:portType>
+
+   <wsdl:binding name="UserServiceSoapBinding" type="flowable:User">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="getUser">
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/getUser" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="unknownUser">
+            <soap:fault name="unknownUser" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="invalidRequest">
+            <soap:fault name="invalidRequest" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
 
    <wsdl:binding name="TaskServiceSoapBinding" type="flowable:Task">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
@@ -361,6 +430,11 @@
 		This section must be overridden at the SU definition and the matching
 		Service and
 	-->
+   <wsdl:service name="UserService">
+      <wsdl:port name="autogenerate" binding="flowable:UserServiceSoapBinding">
+         <soap:address location="autogenerate" />
+      </wsdl:port>
+   </wsdl:service>
    <wsdl:service name="TaskService">
       <wsdl:port name="autogenerate" binding="flowable:TaskServiceSoapBinding">
          <soap:address location="autogenerate" />

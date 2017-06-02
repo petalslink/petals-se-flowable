@@ -43,9 +43,11 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.PETALS_SENDER
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_ACTIVATEPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETUSER;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SUSPENDPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE_NAME;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_PORT_TYPE_NAME;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -96,6 +98,7 @@ import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.integration.ActivateProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.GetProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.GetTasksOperation;
+import org.ow2.petals.flowable.incoming.integration.GetUserOperation;
 import org.ow2.petals.flowable.incoming.integration.SuspendProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.flowable.monitoring.Monitoring;
@@ -509,6 +512,11 @@ public class FlowableSE extends AbstractServiceEngine {
                                             ITG_OP_GETTASKS),
                                     new GetTasksOperation(this.flowableEngine.getTaskService(),
                                             this.flowableEngine.getRepositoryService(), this.getLogger()));
+                        } else if (ITG_USER_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
+                            this.flowableServices.put(
+                                    new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
+                                            ITG_OP_GETUSER),
+                                    new GetUserOperation(this.flowableEngine.getIdentityService(), this.getLogger()));
                         } else {
                             this.getLogger().log(Level.WARNING,
                                     "Unexpected/Uknown integration operations: " + integrationInterfaceName);

@@ -34,13 +34,12 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 import org.ow2.petals.component.framework.api.message.Exchange;
-import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
 import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.integration.exception.EmptyRequestException;
+import org.ow2.petals.flowable.incoming.integration.exception.FaultException;
 import org.ow2.petals.flowable.incoming.integration.exception.InvalidRequestException;
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
 
-import com.ebmwebsourcing.easycommons.lang.ExceptionHelper;
 import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
 
 public abstract class AbstractOperation<T, V> implements FlowableService {
@@ -117,13 +116,11 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
                 } else {
                     throw new EmptyRequestException(this.operationName);
                 }
-            } catch (final InvalidRequestException e) {
+            } catch (final FaultException e) {
+
                 this.log.log(Level.WARNING, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);
                 final Fault fault = exchange.createFault();
-                final InvalidRequest invalidRequest = new InvalidRequest();
-                invalidRequest.setMessage(e.getMessage());
-                invalidRequest.setStacktrace(ExceptionHelper.getStackTrace(e));
-                try (final InputStream isFault = this.object2InputStream(invalidRequest)) {
+                try (final InputStream isFault = this.object2InputStream(e.getBean())) {
                     fault.setContent(new StreamSource(isFault));
                 }
                 exchange.setFault(fault);

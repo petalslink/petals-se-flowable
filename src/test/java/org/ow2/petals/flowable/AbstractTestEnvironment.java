@@ -48,6 +48,8 @@ import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
  */
 public abstract class AbstractTestEnvironment extends AbstractTest {
 
+    protected static final String NATIVE_USER_SVC_CFG = "native-user";
+
     protected static final String NATIVE_TASKS_SVC_CFG = "native-tasks";
 
     protected static final String NATIVE_PROCESSINSTANCES_SVC_CFG = "native-process-instances";

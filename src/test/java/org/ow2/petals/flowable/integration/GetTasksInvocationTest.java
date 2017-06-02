@@ -91,8 +91,7 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
 
         // We use a response as request
         this.testInvalidRequest_WsdlCompliant(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
-                ITG_OP_GETTASKS,
-                new GetTasksResponse());
+                ITG_OP_GETTASKS, new GetTasksResponse());
     }
 
     /**
@@ -135,8 +134,7 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
     @Test
     public void noArguments() throws Exception {
 
-        final Object getTasksRespObj = this.testValidRequest_NoArguments(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE,
-                ITG_TASK_SERVICE,
+        final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
                 ITG_OP_GETTASKS, new GetTasks());
 
         assertTrue(getTasksRespObj instanceof GetTasksResponse);
@@ -146,8 +144,23 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
         assertEquals(0, getTasksResp.getTasks().getTask().size());
     }
 
+    /**
+     * <p>
+     * Check the processing of the integration service {@link GetTasksOperation} when:
+     * <ul>
+     * <li>valid arguments are given to retrieve a task instance</li>
+     * </ul>
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>no error occurs</li>
+     * <li>the task instance is retrieved</li>
+     * </ul>
+     * </p>
+     */
     @Test
-    public void getTask() throws Exception {
+    public void validRequest() throws Exception {
 
         // --------------------------------------------------------
         // ---- Create a new instance of the process definition
@@ -188,8 +201,8 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
         getTasks.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
         getTasks.setProcessInstanceIdentifier(response_1.getNumeroDde());
         getTasks.setTaskDefinitionIdentifier(BPMN_PROCESS_1ST_USER_TASK_KEY);
-        final Object getTasksRespObj = this.testValidRequest_NoArguments(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE,
-                ITG_TASK_SERVICE, ITG_OP_GETTASKS, getTasks);
+        final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                ITG_OP_GETTASKS, getTasks);
 
         assertTrue(getTasksRespObj instanceof GetTasksResponse);
         final GetTasksResponse getTasksResp = (GetTasksResponse) getTasksRespObj;

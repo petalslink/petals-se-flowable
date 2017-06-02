@@ -375,6 +375,26 @@ public final class FlowableSEConstants {
         public static final String ITG_NAMESPACE = "http://petals.ow2.org/components/flowable/generic/1.0";
 
         /**
+         * Interface name (local part) of the integration service 'User'
+         */
+        public static final String ITG_USER_PORT_TYPE_NAME = "User";
+
+        /**
+         * Interface name of the integration service 'User'
+         */
+        public static final QName ITG_USER_PORT_TYPE = new QName(ITG_NAMESPACE, ITG_USER_PORT_TYPE_NAME);
+
+        /**
+         * Name (local part) of the integration service 'User'
+         */
+        public static final String ITG_USER_SERVICE_NAME = "UserService";
+
+        /**
+         * Name of the integration service 'User'
+         */
+        public static final QName ITG_USER_SERVICE = new QName(ITG_NAMESPACE, ITG_USER_SERVICE_NAME);
+
+        /**
          * Interface name (local part) of the integration service 'Task'
          */
         public static final String ITG_TASK_PORT_TYPE_NAME = "Task";
@@ -415,6 +435,16 @@ public final class FlowableSEConstants {
          */
         public static final QName ITG_PROCESSINSTANCES_SERVICE = new QName(ITG_NAMESPACE,
                 ITG_PROCESSINSTANCES_SERVICE_NAME);
+
+        /**
+         * Name (local part) of the integration operation to get user information
+         */
+        public static final String ITG_OP_GETUSER_NAME = "getUser";
+
+        /**
+         * Name of the integration operation to get user information
+         */
+        public static final QName ITG_OP_GETUSER = new QName(ITG_NAMESPACE, ITG_OP_GETUSER_NAME);
 
         /**
          * Name (local part) of the integration operation to search tasks

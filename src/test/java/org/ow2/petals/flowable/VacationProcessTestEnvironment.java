@@ -21,6 +21,8 @@ import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.I
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_PORT_TYPE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_SERVICE;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -50,9 +52,12 @@ import org.ow2.petals.components.flowable.generic._1.GetProcessInstances;
 import org.ow2.petals.components.flowable.generic._1.GetProcessInstancesResponse;
 import org.ow2.petals.components.flowable.generic._1.GetTasks;
 import org.ow2.petals.components.flowable.generic._1.GetTasksResponse;
+import org.ow2.petals.components.flowable.generic._1.GetUser;
+import org.ow2.petals.components.flowable.generic._1.GetUserResponse;
 import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstancesResponse;
+import org.ow2.petals.components.flowable.generic._1.UnknownUser;
 import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.Archiver;
 import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.ArchiverResponse;
 import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.AckResponse;
@@ -182,6 +187,22 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
 
                     return serviceConfiguration;
                 }
+            }).registerNativeServiceToDeploy(NATIVE_USER_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+                @Override
+                public ServiceConfiguration create(final String nativeEndpointName) {
+
+                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("component.wsdl");
+                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
+                    return new ProvidesServiceConfiguration(ITG_USER_PORT_TYPE, ITG_USER_SERVICE, nativeEndpointName,
+                            nativeServiceWsdlUrl);
+                }
+
+                @Override
+                public QName getNativeService() {
+                    return ITG_USER_SERVICE;
+                }
             }).registerNativeServiceToDeploy(NATIVE_TASKS_SVC_CFG, new NativeServiceConfigurationFactory() {
 
                 @Override
@@ -233,7 +254,8 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
                     ArchiverResponse.class, GetTasks.class, GetTasksResponse.class, GetProcessInstances.class,
                     GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class, InvalidRequest.class,
                     SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
-                    ActivateProcessInstances.class, ActivateProcessInstancesResponse.class);
+                    ActivateProcessInstances.class, ActivateProcessInstancesResponse.class, GetUser.class,
+                    GetUserResponse.class, UnknownUser.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

@@ -56,21 +56,23 @@ public class FileUserQueryImpl extends UserQueryImpl {
     }
 
     protected List<User> executeQuery() {
+        final List<User> result = new ArrayList<>();
         if (this.getId() != null) {
-            final List<User> result = new ArrayList<>();
-            result.add(this.users.get(this.getId()));
-            return result;
+            final User user = this.users.get(this.getId());
+            if (user != null) {
+                result.add(user);
+            }
         } else if (this.getGroupId() != null) {
-            final List<User> result = new ArrayList<>();
             final List<String> userIds = this.groups.get(this.getGroupId());
             if (userIds != null) {
                 for (final String userId : userIds) {
                     result.add(this.users.get(userId));
                 }
             }
-            return result;
         } else {
-            return new ArrayList<>(this.users.values());
+            result.addAll(this.users.values());
         }
+
+        return result;
     }
 }

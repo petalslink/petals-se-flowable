@@ -163,21 +163,9 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
 
     /**
      * <p>
-     * Check the processing of the integration service operation when:
-     * <ul>
-     * <li>no argument is given</li>
-     * </ul>
-     * </p>
-     * <p>
-     * Expected results:
-     * <ul>
-     * <li>no error occurs</li>
-     * <li>no fault occurs</li>
-     * <li>no task returns because no process instance exists</li>
-     * </ul>
-     * </p>
+     * Check the processing of the integration service operation with the given request. No error and no fault expected.
      */
-    protected Object testValidRequest_NoArguments(final String suName, final QName interfaceName,
+    protected Object testRequest(final String suName, final QName interfaceName,
             final QName serviceName, final QName operationName, final Object request) throws Exception {
 
         IN_MEMORY_LOG_HANDLER.clear();
@@ -200,6 +188,36 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
         final FlowLogData providerBegin = assertMonitProviderBeginLog(interfaceName, serviceName,
                 COMPONENT_UNDER_TEST.getNativeEndpointName(serviceName), operationName, monitLogs.get(0));
         assertMonitProviderEndLog(providerBegin, monitLogs.get(1));
+
+        return responseObj;
+    }
+
+    /**
+     * <p>
+     * Check the processing of the integration service operation with the given request. Fault expected.
+     */
+    protected Object testRequestWithFault(final String suName, final QName interfaceName, final QName serviceName,
+            final QName operationName, final Object request) throws Exception {
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, suName,
+                operationName, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
+
+        final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
+
+        assertNull("An error is set in the response", responseMsg.getError());
+        assertTrue("A XML payload is set in the response", responseMsg.isFault());
+        assertNotNull("No fault in response", responseMsg.getFault());
+        final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
+
+        COMPONENT.sendDoneStatus(responseMsg);
+
+        // Check MONIT traces
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs.size());
+        final FlowLogData providerBegin = assertMonitProviderBeginLog(interfaceName, serviceName,
+                COMPONENT_UNDER_TEST.getNativeEndpointName(serviceName), operationName, monitLogs.get(0));
+        assertMonitProviderFailureLog(providerBegin, monitLogs.get(1));
 
         return responseObj;
     }
