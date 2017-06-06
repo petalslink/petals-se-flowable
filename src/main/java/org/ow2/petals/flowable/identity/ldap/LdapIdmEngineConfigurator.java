@@ -284,18 +284,18 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
         }
 
         final String user = cfgProps.getProperty(PROP_USER);
-        if (user == null || user.trim().isEmpty()) {
-            throw new IdentityServiceInitException(
-                    "The parameter 'user' is not defined in the identity service configuration file.");
+        if (user != null && !user.trim().isEmpty()) {
+            ldapConfiguration.setUser(user);
+        } else {
+            this.logger.config("No user set as credentials.");
         }
-        ldapConfiguration.setUser(user);
 
         final String password = cfgProps.getProperty(PROP_PASSWORD);
-        if (password == null || password.trim().isEmpty()) {
-            throw new IdentityServiceInitException(
-                    "The parameter 'password' is not defined in the identity service configuration file.");
+        if (password != null && !password.trim().isEmpty()) {
+            ldapConfiguration.setPassword(password);
+        } else {
+            this.logger.config("No password set as credentials.");
         }
-        ldapConfiguration.setPassword(password);
 
         final String searchTimeLimitStr = cfgProps.getProperty(PROP_SEARCH_TIME_LIMIT);
         if (searchTimeLimitStr != null && !searchTimeLimitStr.trim().isEmpty()) {
