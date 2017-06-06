@@ -20,22 +20,11 @@ package org.ow2.petals.flowable.identity;
 import java.io.File;
 import java.util.logging.Logger;
 
-public abstract class AbstractProcessEngineConfigurator
-        extends org.flowable.engine.cfg.AbstractProcessEngineConfigurator implements SeFlowableIdmServiceConfigurator {
+import org.flowable.engine.cfg.ProcessEngineConfigurator;
 
-    /**
-     * The configuration file of this identity management engine.
-     */
-    protected File configurationFile;
+public interface SeFlowableIdmServiceConfigurator extends ProcessEngineConfigurator {
 
-    protected Logger logger;
+    public void setConfigurationFile(final File configurationFile);
 
-    public void setConfigurationFile(final File configurationFile) {
-        this.configurationFile = configurationFile;
-    }
-
-    public void setLogger(final Logger logger) {
-        this.logger = logger;
-    }
-
+    public void setLogger(final Logger logger);
 }

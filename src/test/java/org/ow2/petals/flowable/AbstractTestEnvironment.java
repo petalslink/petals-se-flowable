@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
+import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
 import org.ow2.petals.flowable.junit.FlowableClient;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
@@ -62,7 +63,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     public FlowableClient flowableClient = new FlowableClient(
             new File(new File(this.getComponentUnderTest().getBaseDirectory(), "work"),
                     DEFAULT_JDBC_URL_DATABASE_FILENAME),
-            VACATION_SU_HOME + "idm-engine-configurator.properties");
+            new FileIdmEngineConfigurator(), VACATION_SU_HOME + "idm-engine-configurator.properties");
 
     protected abstract ComponentUnderTest getComponentUnderTest();
 

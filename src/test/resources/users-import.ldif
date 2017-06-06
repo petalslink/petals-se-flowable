@@ -1,0 +1,138 @@
+#
+# Copyright (c) 2017 Linagora
+#
+# This program/library is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 2.1 of the License, or (at your
+# option) any later version.
+#
+# This program/library is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+# for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program/library; If not, see http://www.gnu.org/licenses/
+# for the GNU Lesser General Public License version 2.1.
+
+version: 1
+
+dn: dc=petals,dc=org
+dc: petals
+objectClass: domain
+objectClass: top
+
+dn: ou=users,dc=petals,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: users
+
+dn: ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+#
+# User definitions
+#
+
+dn: cn=Petals ESB,ou=users,dc=petals,dc=org
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: petals
+userPassword: abcdefg
+cn: Petals
+sn: ESB
+
+dn: cn=Kermit Flowable,ou=users,dc=petals,dc=org
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: kermit
+userPassword: abcdefg
+cn: Kermit
+sn: Flowable
+mail: kermit@petals.org
+
+dn: cn=Fozzie Flowable,ou=users,dc=petals,dc=org
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+userPassword: abcdefg
+uid: fozzie
+cn: Fozzie
+sn: Flowable
+mail: fozzie@petals.org
+
+dn: cn=Gonzo Flowable,ou=users,dc=petals,dc=org
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: gonzo
+userPassword: abcdefg
+cn: Gonzo Steinbeck
+sn: Flowable
+mail: gonzo@petals.org
+
+#
+# Group definitions
+#
+
+dn: cn=admin,ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+ou: groups
+uniqueMember: cn=Kermit Flowable,ou=users,dc=petals,dc=org
+cn: admin
+
+dn: cn=manager,ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+ou: groups
+uniqueMember: cn=Kermit Flowable,ou=users,dc=petals,dc=org
+uniqueMember: cn=Gonzo Flowable,ou=users,dc=petals,dc=org
+cn: manager
+
+dn: cn=management,ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+ou: groups
+uniqueMember: cn=Kermit Flowable,ou=users,dc=petals,dc=org
+uniqueMember: cn=Gonzo Flowable,ou=users,dc=petals,dc=org
+cn: management
+
+dn: cn=accountancy,ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+ou: groups
+uniqueMember: cn=Kermit Flowable,ou=users,dc=petals,dc=org
+uniqueMember: cn=Fozzie Flowable,ou=users,dc=petals,dc=org
+uniqueMember: cn=Gonzo Flowable,ou=users,dc=petals,dc=org
+cn: accountancy
+
+dn: cn=engineering,ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+ou: groups
+uniqueMember: cn=Kermit Flowable,ou=users,dc=petals,dc=org
+cn: engineering
+
+dn: cn=sales,ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+ou: groups
+uniqueMember: cn=Kermit Flowable,ou=users,dc=petals,dc=org
+uniqueMember: cn=Gonzo Flowable,ou=users,dc=petals,dc=org
+cn: sales
+
+dn: cn=user,ou=groups,dc=petals,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+ou: groups
+uniqueMember: cn=Fozzie Flowable,ou=users,dc=petals,dc=org
+cn: user

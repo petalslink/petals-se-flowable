@@ -133,7 +133,7 @@ public class FileIdentityServiceImplTest {
             osBaseConfigFile.close();
         }
 
-        final FlowableClient flowableClient = new FlowableClient(baseConfigFile);
+        final FlowableClient flowableClient = new FlowableClient(new FileIdmEngineConfigurator(), baseConfigFile);
         flowableClient.create();
         try {
             final IdentityService identityService = flowableClient.getIdentityService();

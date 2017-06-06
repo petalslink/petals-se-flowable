@@ -257,6 +257,20 @@
          <artifactId>cxf-core</artifactId>
          <version>3.1.6</version>
       </dependency>
+      
+      
+      <dependency>
+         <!-- flowable-ldap add support of LDAP integration -->
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-ldap</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <!-- flowable-ldap-configurator add support of LDAP integration -->
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-ldap-configurator</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
 
       <dependency>
          <!-- TODO: The JDBC Driver should be set as shared library. How to set the default one ? -->
@@ -280,6 +294,12 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-junit-external-resources</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.zapodot</groupId>
+         <artifactId>embedded-ldap-junit</artifactId>
+         <version>0.5.2</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

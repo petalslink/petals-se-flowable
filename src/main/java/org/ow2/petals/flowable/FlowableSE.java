@@ -93,7 +93,7 @@ import org.ow2.petals.flowable.event.ProcessInstanceStartedEventListener;
 import org.ow2.petals.flowable.event.ServiceTaskStartedEventListener;
 import org.ow2.petals.flowable.event.UserTaskCompletedEventListener;
 import org.ow2.petals.flowable.event.UserTaskStartedEventListener;
-import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
 import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.integration.ActivateProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.GetProcessInstancesOperation;
@@ -551,14 +551,14 @@ public class FlowableSE extends AbstractServiceEngine {
 
         assert pec != null : "pec can not be null";
         assert idmEngineConfiguratorClass != null : "idmEngineConfiguratorClass can not be null";
-        assert AbstractProcessEngineConfigurator.class.isAssignableFrom(
+        assert SeFlowableIdmServiceConfigurator.class.isAssignableFrom(
                 idmEngineConfiguratorClass) : "The IDM engine configurator service class defining which IDM engine will be used does not implement AbstractProcessEngineConfigurator";
 
         final Object idmEngineConfiguratorObj;
         try {
             idmEngineConfiguratorObj = idmEngineConfiguratorClass.newInstance();
-            assert idmEngineConfiguratorObj instanceof AbstractProcessEngineConfigurator;
-            final AbstractProcessEngineConfigurator idmEngineConfigurator = (AbstractProcessEngineConfigurator) idmEngineConfiguratorObj;
+            assert idmEngineConfiguratorObj instanceof SeFlowableIdmServiceConfigurator;
+            final SeFlowableIdmServiceConfigurator idmEngineConfigurator = (SeFlowableIdmServiceConfigurator) idmEngineConfiguratorObj;
 
             if (pec instanceof ProcessEngineConfigurationImpl) {
                 ((ProcessEngineConfigurationImpl) pec).setDisableIdmEngine(false);

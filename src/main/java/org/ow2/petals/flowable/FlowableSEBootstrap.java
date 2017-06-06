@@ -69,7 +69,7 @@ import javax.jbi.JBIException;
 import javax.management.InvalidAttributeValueException;
 
 import org.ow2.petals.component.framework.DefaultBootstrap;
-import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
 
 /**
  * The component class of the Flowable BPMN Service Engine.
@@ -713,7 +713,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
      * 
      * @param value
      *            the IDM engine configurator class name. Must be a loadable class implementing
-     *            {@link AbstractProcessEngineConfigurator}
+     *            {@link SeFlowableIdmServiceConfigurator}
      * @throws InvalidAttributeValueException
      */
     public void setIdmEngineConfiguratorClassName(final String value) throws InvalidAttributeValueException {
@@ -723,7 +723,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
             this.setParam(IDM_ENGINE_CONFIGURATOR_CLASS_NAME, null);
         } else {
             this.setParamAsImplementationClassURI(IDM_ENGINE_CONFIGURATOR_CLASS_NAME, value,
-                    AbstractProcessEngineConfigurator.class);
+                    SeFlowableIdmServiceConfigurator.class);
         }
     }
 
