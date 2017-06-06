@@ -102,7 +102,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
 
     public static final String ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME = "idmEngineConfiguratorClassName";
 
-    public static final String ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE = "idmEngineConfiguratorCfgFile";
+    public static final String ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE = "idmEngineConfiguratorConfigFile";
 
     // Parameters of the Flowable job executor
     public static final String ATTR_NAME_ENGINE_ENABLE_JOB_EXECUTOR = "engineEnableJobExecutor";
@@ -732,7 +732,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
      * 
      * @return the IDM engine configurator configuration file
      */
-    public String getIdmEngineConfiguratorCfgFile() {
+    public String getIdmEngineConfiguratorConfigFile() {
 
         final File confFile = FlowableParameterReader.getEngineIdentityServiceConfigurationFile(
                 this.getParam(IDM_ENGINE_CONFIGURATOR_CFG_FILE), this.getLogger());
@@ -745,7 +745,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
      * @param value
      *            the IDM engine configurator configuration file
      */
-    public void setIdmEngineConfiguratorCfgFile(final String value) throws InvalidAttributeValueException {
+    public void setIdmEngineConfiguratorConfigFile(final String value) throws InvalidAttributeValueException {
 
         if (value == null || value.trim().isEmpty()) {
             // No IDM engine configurator configuration file configured
