@@ -52,8 +52,10 @@
    </developers>
 
    <properties>
-      <flowable.version>6.0.1-PETALS-0-SNAPSHOT</flowable.version>
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <flowable.version>6.0.1</flowable.version>
+      <flowable.groupId>org.flowable</flowable.groupId>
+      <!--flowable.version>6.0.1-PETALS-0-SNAPSHOT</flowable.version-->
+      <!--flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
    </properties>
 
    <dependencyManagement>

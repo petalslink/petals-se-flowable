@@ -33,6 +33,13 @@
    <packaging>jar</packaging>
    <description>JUnit framework for service unit of the BPMN Service Engine based on Flowable</description>
 
+   <properties>
+      <flowable.version>6.0.1</flowable.version>
+      <flowable.groupId>org.flowable</flowable.groupId>
+      <!--flowable.version>6.0.1-PETALS-0-SNAPSHOT</flowable.version-->
+      <!--flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
+   </properties>
+
    <dependencyManagement>
       <!-- Align dependencies with those of Flowable -->
       <dependencies>
@@ -80,9 +87,9 @@
          <artifactId>junit</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.ow2.petals.flowable</groupId>
+         <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-bpmn-model</artifactId>
-         <version>6.0.1-PETALS-0-SNAPSHOT</version>
+         <version>${flowable.version}</version>
       </dependency>
 
       <dependency>
