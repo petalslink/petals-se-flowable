@@ -19,8 +19,6 @@ package org.ow2.petals.flowable.outgoing.cxf.transport;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.PETALS_SENDER_COMP_NAME;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -105,8 +103,31 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
         final MessageImpl msg = new MessageImpl();
 
-        final Fault fault = asyncExchange.getFault();
-        if (fault == null) {
+        if (asyncExchange.isFaultMessage()) {
+            // TODO: Add a unit test
+            // Faults received from the NMR are SOAP Fault
+            final Fault fault = asyncExchange.getFault();
+            try {
+                final Source faultSource = fault.getContent();
+                final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
+                final Result result = new StreamResult(ebaos);
+                final Transformer transformer = Transformers.takeTransformer();
+                try {
+                    transformer.transform(faultSource, result);
+                } finally {
+                    Transformers.releaseTransformer(transformer);
+                }
+
+                msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());
+                cxfExchange.setInFaultMessage(msg);
+            } catch (final TransformerException e) {
+                // TODO: The error should be pushed into CXF exchange
+                LOG.log(Level.WARNING, "An error occurs", e);
+            }
+        } else if (asyncExchange.isErrorStatus()) {
+            // TODO: The error should be pushed into CXF exchange
+            LOG.log(Level.WARNING, "An error occurs", asyncExchange.getExchangeId());
+        } else {
             // TODO: MUST be optimized using directly XML message instead of SOAP message though CXF and Flowable using
             // an XML binding definition in the service WSDL. Waiting, we must wrapped the reply into a SOAP Envelope.
             try {
@@ -122,7 +143,6 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
                 DOMHelper.prettyPrint(xmlPayload, ebaos);
 
-                // TODO: Change log level to FINE
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("Output XML payload received: " + ebaos.toString());
                 }
@@ -133,26 +153,6 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 cxfExchange.setInMessage(msg);
 
             } catch (final MessagingException e) {
-                // TODO: The error should be pushed into CXF exchange
-                LOG.log(Level.WARNING, "An error occurs", e);
-            }
-        } else {
-            // TODO: Add a unit test
-            // Faults received from the NMR are SOAP Fault
-            try {
-                final Source faultSource = fault.getContent();
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                final Result result = new StreamResult(baos);
-                final Transformer transformer = Transformers.takeTransformer();
-                try {
-                    transformer.transform(faultSource, result);
-                } finally {
-                    Transformers.releaseTransformer(transformer);
-                }
-
-                msg.setContent(InputStream.class, new ByteArrayInputStream(baos.toByteArray()));
-                cxfExchange.setInFaultMessage(msg);
-            } catch (final TransformerException e) {
                 // TODO: The error should be pushed into CXF exchange
                 LOG.log(Level.WARNING, "An error occurs", e);
             }
