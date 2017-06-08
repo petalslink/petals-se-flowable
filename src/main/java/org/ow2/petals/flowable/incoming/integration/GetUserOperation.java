@@ -34,7 +34,7 @@ import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializ
 import org.ow2.petals.flowable.incoming.integration.exception.UnknownUserException;
 
 /**
- * The integration operation to search tasks
+ * The integration operation to get user information
  * 
  * @author Christophe DENEUX - Linagora
  * 

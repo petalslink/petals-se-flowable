@@ -447,6 +447,16 @@ public final class FlowableSEConstants {
         public static final QName ITG_OP_GETUSER = new QName(ITG_NAMESPACE, ITG_OP_GETUSER_NAME);
 
         /**
+         * Name (local part) of the integration operation to search users
+         */
+        public static final String ITG_OP_SEARCHUSERS_NAME = "search";
+
+        /**
+         * Name of the integration operation to search users
+         */
+        public static final QName ITG_OP_SEARCHUSERS = new QName(ITG_NAMESPACE, ITG_OP_SEARCHUSERS_NAME);
+
+        /**
          * Name (local part) of the integration operation to search tasks
          */
         public static final String ITG_OP_GETTASKS_NAME = "getTasks";

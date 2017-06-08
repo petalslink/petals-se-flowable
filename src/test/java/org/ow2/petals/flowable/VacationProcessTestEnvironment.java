@@ -55,6 +55,8 @@ import org.ow2.petals.components.flowable.generic._1.GetTasksResponse;
 import org.ow2.petals.components.flowable.generic._1.GetUser;
 import org.ow2.petals.components.flowable.generic._1.GetUserResponse;
 import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
+import org.ow2.petals.components.flowable.generic._1.SearchUsers;
+import org.ow2.petals.components.flowable.generic._1.SearchUsersResponse;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstancesResponse;
 import org.ow2.petals.components.flowable.generic._1.UnknownUser;
@@ -255,7 +257,7 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
                     GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class, InvalidRequest.class,
                     SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
                     ActivateProcessInstances.class, ActivateProcessInstancesResponse.class, GetUser.class,
-                    GetUserResponse.class, UnknownUser.class);
+                    GetUserResponse.class, UnknownUser.class, SearchUsers.class, SearchUsersResponse.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

@@ -56,6 +56,22 @@
             </xsd:complexType>
          </xsd:element>
 
+         <xsd:element name="searchUsers">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="group-id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="searchUsersResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="user-id" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
          <xsd:element name="getTasks">
             <xsd:complexType>
                <xsd:sequence>
@@ -288,6 +304,12 @@
    <wsdl:message name="getUserResponse">
       <wsdl:part name="getUserResponse" element="flowable:getUserResponse" />
    </wsdl:message>
+   <wsdl:message name="searchUsersRequest">
+      <wsdl:part name="searchUsersRequest" element="flowable:searchUsers" />
+   </wsdl:message>
+   <wsdl:message name="searchUsersResponse">
+      <wsdl:part name="searchUsersResponse" element="flowable:searchUsersResponse" />
+   </wsdl:message>
    <wsdl:message name="unknownUser">
       <wsdl:part name="fault" element="flowable:unknownUser" />
    </wsdl:message>
@@ -317,10 +339,15 @@
    </wsdl:message>
 
    <wsdl:portType name="User">
-      <wsdl:operation name="getUser">
+      <wsdl:operation name="get">
          <wsdl:input message="flowable:getUserRequest" />
          <wsdl:output message="flowable:getUserResponse" />
          <wsdl:fault message="flowable:unknownUser" name="unknownUser" />
+         <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="search">
+         <wsdl:input message="flowable:searchUsersRequest" />
+         <wsdl:output message="flowable:searchUsersResponse" />
          <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
       </wsdl:operation>
    </wsdl:portType>
@@ -353,8 +380,8 @@
 
    <wsdl:binding name="UserServiceSoapBinding" type="flowable:User">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
-      <wsdl:operation name="getUser">
-         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/getUser" />
+      <wsdl:operation name="get">
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/get" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -364,6 +391,18 @@
          <wsdl:fault name="unknownUser">
             <soap:fault name="unknownUser" use="literal" />
          </wsdl:fault>
+         <wsdl:fault name="invalidRequest">
+            <soap:fault name="invalidRequest" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="search">
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/search" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
          <wsdl:fault name="invalidRequest">
             <soap:fault name="invalidRequest" use="literal" />
          </wsdl:fault>
