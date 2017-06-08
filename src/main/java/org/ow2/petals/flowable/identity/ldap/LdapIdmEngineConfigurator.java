@@ -57,6 +57,31 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
     public static final String PROP_PORT = "port";
 
     /**
+     * Property name of the identity service containing declaration of parameter 'securityAuthentication'
+     */
+    public static final String PROP_SECURITY_AUTHENTICATION = "securityAuthentication";
+
+    /**
+     * Value of {@link #PROP_SECURITY_AUTHENTICATION} for a no authentication
+     */
+    public static final String PROP_SECURITY_AUTHENTICATION_NONE = "none";
+
+    /**
+     * Value of {@link #PROP_SECURITY_AUTHENTICATION} for a simple authentication
+     */
+    public static final String PROP_SECURITY_AUTHENTICATION_SIMPLE = "simple";
+
+    /**
+     * Value of {@link #PROP_SECURITY_AUTHENTICATION} for a strong authentication
+     */
+    public static final String PROP_SECURITY_AUTHENTICATION_STRONG = "strong";
+
+    /**
+     * Default value of {@link #PROP_SECURITY_AUTHENTICATION}
+     */
+    public static final String PROP_SECURITY_AUTHENTICATION_DEFAULT = PROP_SECURITY_AUTHENTICATION_SIMPLE;
+
+    /**
      * Property name of the identity service containing declaration of parameter 'user'
      */
     public static final String PROP_USER = "user";
@@ -282,16 +307,36 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
         } catch (final NumberFormatException e) {
             throw new IdentityServiceInitException("The parameter 'port' is not valid: '" + portStr + "'.");
         }
+        
+        //
+        // Security
+        //
+        
+        final String securityAuthenticationStr = cfgProps.getProperty(PROP_SECURITY_AUTHENTICATION);
+        String securityAutehnticationValue = PROP_SECURITY_AUTHENTICATION_DEFAULT;
+        if (securityAuthenticationStr == null || securityAuthenticationStr.trim().isEmpty()) {
+            this.logger.config(String.format("No value set for '%s'. Default value used: '%s'.", PROP_SECURITY_AUTHENTICATION, PROP_SECURITY_AUTHENTICATION_DEFAULT));
+        } else {
+            if (PROP_SECURITY_AUTHENTICATION_NONE.equals(securityAuthenticationStr)
+                    || PROP_SECURITY_AUTHENTICATION_SIMPLE.equals(securityAuthenticationStr)
+                    || PROP_SECURITY_AUTHENTICATION_STRONG.equals(securityAuthenticationStr)) {
+                securityAutehnticationValue = securityAuthenticationStr;
+            } else {
+                this.logger.config(String.format("Invalid value set for '%s': '%s'. Default value used: '%s'.",
+                        PROP_SECURITY_AUTHENTICATION, securityAuthenticationStr, PROP_SECURITY_AUTHENTICATION_DEFAULT));
+            }
+        }
+        ldapConfiguration.setSecurityAuthentication(securityAutehnticationValue);
 
         final String user = cfgProps.getProperty(PROP_USER);
-        if (user != null && !user.trim().isEmpty()) {
+        if (user != null) {
             ldapConfiguration.setUser(user);
         } else {
             this.logger.config("No user set as credentials.");
         }
 
         final String password = cfgProps.getProperty(PROP_PASSWORD);
-        if (password != null && !password.trim().isEmpty()) {
+        if (password != null) {
             ldapConfiguration.setPassword(password);
         } else {
             this.logger.config("No password set as credentials.");
