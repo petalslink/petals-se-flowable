@@ -40,10 +40,12 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.JDBC_PASSWORD
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.JDBC_URL;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.JDBC_USERNAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.PETALS_SENDER_COMP_NAME;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_GROUP_PORT_TYPE_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_ACTIVATEPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETUSER;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SEARCHGROUPS;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SEARCHUSERS;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SUSPENDPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE_NAME;
@@ -100,6 +102,7 @@ import org.ow2.petals.flowable.incoming.integration.ActivateProcessInstancesOper
 import org.ow2.petals.flowable.incoming.integration.GetProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.GetTasksOperation;
 import org.ow2.petals.flowable.incoming.integration.GetUserOperation;
+import org.ow2.petals.flowable.incoming.integration.SearchGroupsOperation;
 import org.ow2.petals.flowable.incoming.integration.SearchUsersOperation;
 import org.ow2.petals.flowable.incoming.integration.SuspendProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
@@ -523,6 +526,12 @@ public class FlowableSE extends AbstractServiceEngine {
                                     new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
                                             ITG_OP_SEARCHUSERS),
                                     new SearchUsersOperation(this.flowableEngine.getIdentityService(), this.getLogger()));
+                        } else if (ITG_GROUP_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
+                            this.flowableServices.put(
+                                    new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
+                                            ITG_OP_SEARCHGROUPS),
+                                    new SearchGroupsOperation(this.flowableEngine.getIdentityService(),
+                                            this.getLogger()));
                         } else {
                             this.getLogger().log(Level.WARNING,
                                     "Unexpected/Uknown integration operations: " + integrationInterfaceName);

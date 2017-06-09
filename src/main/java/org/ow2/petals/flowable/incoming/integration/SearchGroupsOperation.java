@@ -17,17 +17,18 @@
  */
 package org.ow2.petals.flowable.incoming.integration;
 
-import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SEARCHUSERS;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SEARCHGROUPS;
 
 import java.net.URI;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.flowable.engine.IdentityService;
-import org.flowable.idm.api.UserQuery;
+import org.flowable.idm.api.Group;
+import org.flowable.idm.api.GroupQuery;
 import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
-import org.ow2.petals.components.flowable.generic._1.SearchUsers;
-import org.ow2.petals.components.flowable.generic._1.SearchUsersResponse;
+import org.ow2.petals.components.flowable.generic._1.SearchGroups;
+import org.ow2.petals.components.flowable.generic._1.SearchGroupsResponse;
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
 
 /**
@@ -36,33 +37,33 @@ import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializ
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class SearchUsersOperation extends AbstractOperation<SearchUsers, SearchUsersResponse> {
+public class SearchGroupsOperation extends AbstractOperation<SearchGroups, SearchGroupsResponse> {
 
     public static final URI FAULT_ACTOR = URI
-            .create("http://petals.ow2.org/components/flowable/generic/1.0/SearchUsers");
+            .create("http://petals.ow2.org/components/flowable/generic/1.0/SearchGroups");
 
     /**
      * The Flowable identity service
      */
     private final IdentityService identityService;
 
-    public SearchUsersOperation(final IdentityService identityService, final Logger log)
+    public SearchGroupsOperation(final IdentityService identityService, final Logger log)
             throws OperationInitializationException {
-        super(ITG_OP_SEARCHUSERS, FAULT_ACTOR,
-                new Class[] { SearchUsers.class, SearchUsersResponse.class, InvalidRequest.class }, log);
+        super(ITG_OP_SEARCHGROUPS, FAULT_ACTOR,
+                new Class[] { SearchGroups.class, SearchGroupsResponse.class, InvalidRequest.class }, log);
         this.identityService = identityService;
     }
 
     @Override
-    public SearchUsersResponse doExecute(final SearchUsers incomingObject) throws Exception {
+    public SearchGroupsResponse doExecute(final SearchGroups incomingObject) throws Exception {
 
-        final UserQuery userQuery = this.identityService.createUserQuery();
-        userQuery.memberOfGroup(incomingObject.getGroupId());
+        final GroupQuery groupQuery = this.identityService.createGroupQuery();
+        groupQuery.groupMember(incomingObject.getUserId());
 
-        final List<org.flowable.idm.api.User> users = userQuery.list();
-        final SearchUsersResponse response = new SearchUsersResponse();
-        for (final org.flowable.idm.api.User foundUser : users) {
-            response.getUserId().add(foundUser.getId());
+        final List<Group> groups = groupQuery.list();
+        final SearchGroupsResponse response = new SearchGroupsResponse();
+        for (final org.flowable.idm.api.Group foundGroup : groups) {
+            response.getGroupId().add(foundGroup.getId());
         }
         return response;
     }

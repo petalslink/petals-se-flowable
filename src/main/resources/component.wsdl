@@ -71,6 +71,22 @@
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
+
+         <xsd:element name="searchGroups">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="user-id" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="searchGroupsResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="group-id" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
          
          <xsd:element name="getTasks">
             <xsd:complexType>
@@ -313,6 +329,12 @@
    <wsdl:message name="unknownUser">
       <wsdl:part name="fault" element="flowable:unknownUser" />
    </wsdl:message>
+   <wsdl:message name="searchGroupsRequest">
+      <wsdl:part name="searchGroupsRequest" element="flowable:searchGroups" />
+   </wsdl:message>
+   <wsdl:message name="searchGroupsResponse">
+      <wsdl:part name="searchGroupsResponse" element="flowable:searchGroupsResponse" />
+   </wsdl:message>
    <wsdl:message name="getTasksRequest">
       <wsdl:part name="getTasksRequest" element="flowable:getTasks" />
    </wsdl:message>
@@ -352,6 +374,14 @@
       </wsdl:operation>
    </wsdl:portType>
 
+   <wsdl:portType name="Group">
+      <wsdl:operation name="search">
+         <wsdl:input message="flowable:searchGroupsRequest" />
+         <wsdl:output message="flowable:searchGroupsResponse" />
+         <wsdl:fault message="flowable:invalidRequest" name="invalidRequest" />
+      </wsdl:operation>
+   </wsdl:portType>
+
    <wsdl:portType name="Task">
       <wsdl:operation name="getTasks">
          <wsdl:input message="flowable:getTasksRequest" />
@@ -381,7 +411,7 @@
    <wsdl:binding name="UserServiceSoapBinding" type="flowable:User">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="get">
-         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/get" />
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/user/get" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -396,7 +426,23 @@
          </wsdl:fault>
       </wsdl:operation>
       <wsdl:operation name="search">
-         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/search" />
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/user/search" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="invalidRequest">
+            <soap:fault name="invalidRequest" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:binding name="GroupServiceSoapBinding" type="flowable:Group">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="search">
+         <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/groups/search" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -471,6 +517,11 @@
 	-->
    <wsdl:service name="UserService">
       <wsdl:port name="autogenerate" binding="flowable:UserServiceSoapBinding">
+         <soap:address location="autogenerate" />
+      </wsdl:port>
+   </wsdl:service>
+   <wsdl:service name="GroupService">
+      <wsdl:port name="autogenerate" binding="flowable:GroupServiceSoapBinding">
          <soap:address location="autogenerate" />
       </wsdl:port>
    </wsdl:service>

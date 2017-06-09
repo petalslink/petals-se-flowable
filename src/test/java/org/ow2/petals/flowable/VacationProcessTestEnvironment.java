@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_GROUP_PORT_TYPE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_GROUP_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
@@ -55,6 +57,8 @@ import org.ow2.petals.components.flowable.generic._1.GetTasksResponse;
 import org.ow2.petals.components.flowable.generic._1.GetUser;
 import org.ow2.petals.components.flowable.generic._1.GetUserResponse;
 import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
+import org.ow2.petals.components.flowable.generic._1.SearchGroups;
+import org.ow2.petals.components.flowable.generic._1.SearchGroupsResponse;
 import org.ow2.petals.components.flowable.generic._1.SearchUsers;
 import org.ow2.petals.components.flowable.generic._1.SearchUsersResponse;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
@@ -205,6 +209,22 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
                 public QName getNativeService() {
                     return ITG_USER_SERVICE;
                 }
+            }).registerNativeServiceToDeploy(NATIVE_GROUP_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+                @Override
+                public ServiceConfiguration create(final String nativeEndpointName) {
+
+                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("component.wsdl");
+                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
+                    return new ProvidesServiceConfiguration(ITG_GROUP_PORT_TYPE, ITG_GROUP_SERVICE, nativeEndpointName,
+                            nativeServiceWsdlUrl);
+                }
+
+                @Override
+                public QName getNativeService() {
+                    return ITG_GROUP_SERVICE;
+                }
             }).registerNativeServiceToDeploy(NATIVE_TASKS_SVC_CFG, new NativeServiceConfigurationFactory() {
 
                 @Override
@@ -257,7 +277,8 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
                     GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class, InvalidRequest.class,
                     SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
                     ActivateProcessInstances.class, ActivateProcessInstancesResponse.class, GetUser.class,
-                    GetUserResponse.class, UnknownUser.class, SearchUsers.class, SearchUsersResponse.class);
+                    GetUserResponse.class, UnknownUser.class, SearchUsers.class, SearchUsersResponse.class,
+                    SearchGroups.class, SearchGroupsResponse.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

@@ -395,6 +395,26 @@ public final class FlowableSEConstants {
         public static final QName ITG_USER_SERVICE = new QName(ITG_NAMESPACE, ITG_USER_SERVICE_NAME);
 
         /**
+         * Interface name (local part) of the integration service 'Group'
+         */
+        public static final String ITG_GROUP_PORT_TYPE_NAME = "Group";
+
+        /**
+         * Interface name of the integration service 'Group'
+         */
+        public static final QName ITG_GROUP_PORT_TYPE = new QName(ITG_NAMESPACE, ITG_GROUP_PORT_TYPE_NAME);
+
+        /**
+         * Name (local part) of the integration service 'Group'
+         */
+        public static final String ITG_GROUP_SERVICE_NAME = "GroupService";
+
+        /**
+         * Name of the integration service 'Group'
+         */
+        public static final QName ITG_GROUP_SERVICE = new QName(ITG_NAMESPACE, ITG_GROUP_SERVICE_NAME);
+
+        /**
          * Interface name (local part) of the integration service 'Task'
          */
         public static final String ITG_TASK_PORT_TYPE_NAME = "Task";
@@ -455,6 +475,16 @@ public final class FlowableSEConstants {
          * Name of the integration operation to search users
          */
         public static final QName ITG_OP_SEARCHUSERS = new QName(ITG_NAMESPACE, ITG_OP_SEARCHUSERS_NAME);
+
+        /**
+         * Name (local part) of the integration operation to search groups
+         */
+        public static final String ITG_OP_SEARCHGROUPS_NAME = "search";
+
+        /**
+         * Name of the integration operation to search groups
+         */
+        public static final QName ITG_OP_SEARCHGROUPS = new QName(ITG_NAMESPACE, ITG_OP_SEARCHGROUPS_NAME);
 
         /**
          * Name (local part) of the integration operation to search tasks
