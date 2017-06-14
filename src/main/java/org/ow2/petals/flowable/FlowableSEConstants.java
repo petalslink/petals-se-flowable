@@ -459,7 +459,7 @@ public final class FlowableSEConstants {
         /**
          * Name (local part) of the integration operation to get user information
          */
-        public static final String ITG_OP_GETUSER_NAME = "getUser";
+        public static final String ITG_OP_GETUSER_NAME = "get";
 
         /**
          * Name of the integration operation to get user information
