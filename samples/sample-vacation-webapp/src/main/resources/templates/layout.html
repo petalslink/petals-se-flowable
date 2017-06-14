@@ -32,7 +32,7 @@
             <ul class="nav navbar-nav">
               <li><a th:href="@{/}" href="requests.html">My Requests</a></li>
               <li><a th:href="@{/manager}" href="manager.html">Manage Requests</a></li>
-              <li><a th:href="@{/login}" href="login.html" th:text="'Login (currently as ' + ${session['scopedTarget.userSession'].username} + ')'"></a></li>
+              <li><a th:href="@{/login}" href="login.html" th:text="'Login' + ((${session['scopedTarget.userSession']} != null and ${session['scopedTarget.userSession'].username} != null) ? (' (currently as ' + ${session['scopedTarget.userSession'].username} + ')') : '')"></a></li>
             </ul>
           </div>
         </div>
