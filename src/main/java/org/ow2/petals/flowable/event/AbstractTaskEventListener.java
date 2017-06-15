@@ -30,6 +30,8 @@ import org.flowable.engine.delegate.event.FlowableEngineEventType;
  */
 public abstract class AbstractTaskEventListener extends AbstractMonitDirectLoggerEventListener {
 
+    protected final String MISSING_VARIABLE_PATTERN = "Unable to find the variable '%s' into the process instance '%s'.";
+
     protected final TaskService taskService;
 
     public AbstractTaskEventListener(final FlowableEngineEventType listenEventType, final TaskService taskService,

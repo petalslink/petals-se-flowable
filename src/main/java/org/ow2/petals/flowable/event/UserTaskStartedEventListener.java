@@ -66,11 +66,21 @@ public class UserTaskStartedEventListener extends AbstractTaskEventListener impl
 
                 final Map<String, VariableInstance> processVariables = taskEntity.getVariableInstances();
 
-                final String flowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID).getValue();
+                final VariableInstance varFlowInstanceId = processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+                if (varFlowInstanceId == null) {
+                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN,
+                            FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID,
+                            taskEntity.getProcessInstanceId()));
+                }
+
                 // TODO: Review the value of the flow previous step identifier to manage correctly process with branches
-                final String flowPreviousStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID).getValue();
+                final VariableInstance varFlowPreviousStepId = processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+                if (varFlowPreviousStepId == null) {
+                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN,
+                            FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, taskEntity.getProcessInstanceId()));
+                }
 
                 final String flowStepId = this.simpleUUIDGenerator.getNewID();
 
@@ -78,8 +88,14 @@ public class UserTaskStartedEventListener extends AbstractTaskEventListener impl
                 this.taskService.setVariableLocal(taskEntity.getId(),
                         FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, flowStepId);
 
-                return new UserTaskFlowStepBeginLogData(flowInstanceId, flowStepId, flowPreviousStepId,
-                        taskEntity.getTaskDefinitionKey(), taskEntity.getId());
+                if (varFlowInstanceId != null && varFlowPreviousStepId != null) {
+                    return new UserTaskFlowStepBeginLogData((String) varFlowInstanceId.getValue(), flowStepId,
+                            (String) varFlowPreviousStepId.getValue(), taskEntity.getTaskDefinitionKey(),
+                            taskEntity.getId());
+                } else {
+                    this.log.warning("No MONIT trace generated because a process instance variable is missing.");
+                    return null;
+                }
             }
         }
 
