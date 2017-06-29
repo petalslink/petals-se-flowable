@@ -35,7 +35,7 @@
       <maven-enforcer-plugin.rules.bannedLogDependencies>false</maven-enforcer-plugin.rules.bannedLogDependencies>
       <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
       
-      <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
+      <spring-boot.version>1.2.8.RELEASE</spring-boot.version>
       <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
    </properties>
 
@@ -116,7 +116,7 @@
                <dependency>
                   <groupId>org.springframework</groupId>
                   <artifactId>springloaded</artifactId>
-                  <version>1.2.0.RELEASE</version>
+                  <version>1.2.7.RELEASE</version>
                </dependency>
             </dependencies>
          </plugin>
