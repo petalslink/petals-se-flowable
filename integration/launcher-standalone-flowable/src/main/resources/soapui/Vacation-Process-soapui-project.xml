@@ -560,9 +560,66 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:element name="vacationRequestId" type="xsd:string"/>
-</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://cdeneux-laptop:8088/mockArchiveService</con:endpoint><con:endpoint>http://localhost:9003/archiveService</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-flowable/vacation/archiveService}archive</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/archiveService/archiveVacationRequest" name="archiveVacationRequest" bindingOperationName="archiveVacationRequest" inputName="archiveVacationRequest" sendsAttachments="false" anonymous="optional" type="Request-Response" receivesAttachments="false" id="1d124566-09f0-4ccd-b598-145eb8b3213d"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="TaskServiceSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/components/flowable/generic/1.0}TaskServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/processInstancesService?wsdl" id="00379364-bd11-4821-a659-7237965c7ae7" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/processInstancesService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/processInstancesService?wsdl</con:url><con:content><![CDATA[<w:definitions name="FlowableGenericWsdl" targetNamespace="http://petals.ow2.org/components/flowable/generic/1.0" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:flowable="http://petals.ow2.org/components/flowable/generic/1.0" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="xsd" xmlns:ns11="xs" xmlns:ns12="http" xmlns:ns13="ns21" xmlns:ns15="w" xmlns:ns16="ns12" xmlns:ns17="wsdl" xmlns:ns18="ns10" xmlns:ns19="ns8" xmlns:ns2="http://petals.ow2.org/wsdlExtensions" xmlns:ns20="flowable" xmlns:ns21="mime" xmlns:ns21_="ns27" xmlns:ns22="soap" xmlns:ns23="ns19" xmlns:ns24="ns17" xmlns:ns26="ns35" xmlns:ns27="ns13" xmlns:ns28="ns32" xmlns:ns29="ns16" xmlns:ns31="ns24" xmlns:ns32="xml" xmlns:ns32_="ns2" xmlns:ns33="ns29" xmlns:ns34="ns18" xmlns:ns34_="ns33" xmlns:ns35="ns11" xmlns:ns35_="ns15" xmlns:ns36="ns5" xmlns:ns37="ns22" xmlns:ns38="ns23" xmlns:ns39="ns34" xmlns:ns40="ns6" xmlns:ns46="ns31" xmlns:ns47="ns20" xmlns:ns48="ns26" xmlns:ns49="ns7" xmlns:ns5="http://www.w3.org/ns/wsdl/http" xmlns:ns50="ns37" xmlns:ns6="http://www.w3.org/ns/wsdl/soap" xmlns:ns7="http://www.w3.org/ns/wsdl" xmlns:ns8="soap12" xmlns:ns9="ns9" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://cdeneux-laptop:8088/mockArchiveService</con:endpoint><con:endpoint>http://localhost:9003/archiveService</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-flowable/vacation/archiveService}archive</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/archiveService/archiveVacationRequest" name="archiveVacationRequest" bindingOperationName="archiveVacationRequest" inputName="archiveVacationRequest" sendsAttachments="false" anonymous="optional" type="Request-Response" receivesAttachments="false" id="1d124566-09f0-4ccd-b598-145eb8b3213d"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="TaskServiceSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/components/flowable/generic/1.0}TaskServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/taskService?wsdl" id="00379364-bd11-4821-a659-7237965c7ae7" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/taskService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/taskService?wsdl</con:url><con:content><![CDATA[<w:definitions name="FlowableGenericWsdl" targetNamespace="http://petals.ow2.org/components/flowable/generic/1.0" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:flowable="http://petals.ow2.org/components/flowable/generic/1.0" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="http://petals.ow2.org/wsdlExtensions" xmlns:ns11="xs" xmlns:ns12="soap12" xmlns:ns13="ns21" xmlns:ns15="w" xmlns:ns16="xsd" xmlns:ns17="wsdl" xmlns:ns18="ns10" xmlns:ns19="ns8" xmlns:ns19_="http" xmlns:ns20="flowable" xmlns:ns21="mime" xmlns:ns21_="ns27" xmlns:ns22="soap" xmlns:ns23="ns19" xmlns:ns23_="ns30" xmlns:ns24="ns17" xmlns:ns25="ns28" xmlns:ns26="ns23" xmlns:ns27="ns13" xmlns:ns27_="ns35" xmlns:ns28="ns9" xmlns:ns29="ns16" xmlns:ns29_="ns32" xmlns:ns30="ns12" xmlns:ns31="ns20" xmlns:ns32="xml" xmlns:ns33="ns24" xmlns:ns34="ns18" xmlns:ns34_="ns29" xmlns:ns35="ns11" xmlns:ns35_="ns33" xmlns:ns36="ns15" xmlns:ns37="ns22" xmlns:ns39="ns34" xmlns:ns45="ns31" xmlns:ns47="ns26" xmlns:ns48="ns7" xmlns:ns49="ns37" xmlns:ns51="ns19_" xmlns:ns7="http://www.w3.org/ns/wsdl" xmlns:ns8="http://www.w3.org/ns/wsdl/http" xmlns:ns9="http://www.w3.org/ns/wsdl/soap" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <w:types>
     <xs:schema elementFormDefault="qualified" targetNamespace="http://petals.ow2.org/components/flowable/generic/1.0">
+      <xs:element name="getUser">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="id" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="getUserResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="user" type="flowable:User"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:complexType name="User">
+        <xs:sequence>
+          <xs:element maxOccurs="1" minOccurs="1" name="id" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="first-name" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="last-name" type="xs:string"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="email" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="unknownUser">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="id" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="searchUsers">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="group-id" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="searchUsersResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="user-id" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="searchGroups">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="user-id" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="searchGroupsResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" minOccurs="0" name="group-id" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="getTasks">
         <xs:complexType>
           <xs:sequence>
@@ -610,6 +667,10 @@
         <xs:attribute name="process-definition-identifier" type="xs:string" use="required"/>
         <xs:attribute name="process-instance-identifier" type="xs:string" use="required"/>
         <xs:attribute name="task-identifier" type="xs:string" use="required"/>
+        <xs:attribute name="task-name" type="xs:string" use="required"/>
+        <xs:attribute name="task-description" type="xs:string" use="required"/>
+        <xs:attribute name="task-due-date" type="xs:dateTime" use="optional"/>
+        <xs:attribute name="task-priority" type="xs:int" use="required"/>
       </xs:complexType>
       <xs:element name="getProcessInstances">
         <xs:complexType>
@@ -760,6 +821,27 @@
   <w:message name="invalidRequest">
     <w:part element="flowable:invalidRequest" name="fault"/>
   </w:message>
+  <w:message name="getUserRequest">
+    <w:part element="flowable:getUser" name="getUserRequest"/>
+  </w:message>
+  <w:message name="getUserResponse">
+    <w:part element="flowable:getUserResponse" name="getUserResponse"/>
+  </w:message>
+  <w:message name="searchUsersRequest">
+    <w:part element="flowable:searchUsers" name="searchUsersRequest"/>
+  </w:message>
+  <w:message name="searchUsersResponse">
+    <w:part element="flowable:searchUsersResponse" name="searchUsersResponse"/>
+  </w:message>
+  <w:message name="unknownUser">
+    <w:part element="flowable:unknownUser" name="fault"/>
+  </w:message>
+  <w:message name="searchGroupsRequest">
+    <w:part element="flowable:searchGroups" name="searchGroupsRequest"/>
+  </w:message>
+  <w:message name="searchGroupsResponse">
+    <w:part element="flowable:searchGroupsResponse" name="searchGroupsResponse"/>
+  </w:message>
   <w:message name="getTasksRequest">
     <w:part element="flowable:getTasks" name="getTasksRequest"/>
   </w:message>
@@ -784,6 +866,26 @@
   <w:message name="activateProcessInstancesResponse">
     <w:part element="flowable:activateProcessInstancesResponse" name="activateProcessInstancesResponse"/>
   </w:message>
+  <w:portType name="User">
+    <w:operation name="get">
+      <w:input message="flowable:getUserRequest"/>
+      <w:output message="flowable:getUserResponse"/>
+      <w:fault message="flowable:unknownUser" name="unknownUser"/>
+      <w:fault message="flowable:invalidRequest" name="invalidRequest"/>
+    </w:operation>
+    <w:operation name="search">
+      <w:input message="flowable:searchUsersRequest"/>
+      <w:output message="flowable:searchUsersResponse"/>
+      <w:fault message="flowable:invalidRequest" name="invalidRequest"/>
+    </w:operation>
+  </w:portType>
+  <w:portType name="Group">
+    <w:operation name="search">
+      <w:input message="flowable:searchGroupsRequest"/>
+      <w:output message="flowable:searchGroupsResponse"/>
+      <w:fault message="flowable:invalidRequest" name="invalidRequest"/>
+    </w:operation>
+  </w:portType>
   <w:portType name="Task">
     <w:operation name="getTasks">
       <w:input message="flowable:getTasksRequest"/>
@@ -808,6 +910,51 @@
       <w:fault message="flowable:invalidRequest" name="invalidRequest"/>
     </w:operation>
   </w:portType>
+  <w:binding name="UserServiceSoapBinding" type="flowable:User">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <w:operation name="get">
+      <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/user/get"/>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+      <w:fault name="unknownUser">
+        <soap:fault name="unknownUser" use="literal"/>
+      </w:fault>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
+    </w:operation>
+    <w:operation name="search">
+      <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/user/search"/>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
+    </w:operation>
+  </w:binding>
+  <w:binding name="GroupServiceSoapBinding" type="flowable:Group">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <w:operation name="search">
+      <soap:operation soapAction="http://petals.ow2.org/components/flowable/generic/1.0/groups/search"/>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+      <w:fault name="invalidRequest">
+        <soap:fault name="invalidRequest" use="literal"/>
+      </w:fault>
+    </w:operation>
+  </w:binding>
   <w:binding name="TaskServiceSoapBinding" type="flowable:Task">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
     <w:operation name="getTasks">
@@ -862,14 +1009,24 @@
       </w:fault>
     </w:operation>
   </w:binding>
+  <w:service name="UserService">
+    <w:port binding="flowable:UserServiceSoapBinding" name="edpt-df09e2f0-7157-11e7-9b9c-02429e84236e">
+      <soap:address location="http://localhost:8084/petals/services/taskService"/>
+    </w:port>
+  </w:service>
+  <w:service name="GroupService">
+    <w:port binding="flowable:GroupServiceSoapBinding" name="edpt-df09e2f1-7157-11e7-9b9c-02429e84236e">
+      <soap:address location="http://localhost:8084/petals/services/taskService"/>
+    </w:port>
+  </w:service>
   <w:service name="TaskService">
-    <w:port binding="flowable:TaskServiceSoapBinding" name="edpt-b5e67430-19df-11e7-a2a0-02427676be34">
-      <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
+    <w:port binding="flowable:TaskServiceSoapBinding" name="edpt-df09e2f2-7157-11e7-9b9c-02429e84236e">
+      <soap:address location="http://localhost:8084/petals/services/taskService"/>
     </w:port>
   </w:service>
   <w:service name="ProcessInstancesService">
-    <w:port binding="flowable:ProcessInstancesServiceSoapBinding" name="edpt-b5e67431-19df-11e7-a2a0-02427676be34">
-      <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
+    <w:port binding="flowable:ProcessInstancesServiceSoapBinding" name="edpt-df09e2f3-7157-11e7-9b9c-02429e84236e">
+      <soap:address location="http://localhost:8084/petals/services/taskService"/>
     </w:port>
   </w:service>
 </w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint><con:endpoint>http://localhost:8084/petals/services/taskService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/getTasks" name="getTasks" bindingOperationName="getTasks" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="ebcfda08-af1b-49e2-ab7f-e49eebd63c21"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="ProcessInstancesServiceSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/components/flowable/generic/1.0}ProcessInstancesServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/processInstancesService?wsdl" id="6d4d6fc6-c4b3-440e-b1d8-2b077d2d8299" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/processInstancesService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/processInstancesService?wsdl</con:url><con:content><![CDATA[<w:definitions name="FlowableGenericWsdl" targetNamespace="http://petals.ow2.org/components/flowable/generic/1.0" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:flowable="http://petals.ow2.org/components/flowable/generic/1.0" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="xsd" xmlns:ns11="xs" xmlns:ns12="http" xmlns:ns13="ns21" xmlns:ns15="w" xmlns:ns16="ns12" xmlns:ns17="wsdl" xmlns:ns18="ns10" xmlns:ns19="ns8" xmlns:ns2="http://petals.ow2.org/wsdlExtensions" xmlns:ns20="flowable" xmlns:ns21="mime" xmlns:ns21_="ns27" xmlns:ns22="soap" xmlns:ns23="ns19" xmlns:ns24="ns17" xmlns:ns26="ns35" xmlns:ns27="ns13" xmlns:ns28="ns32" xmlns:ns29="ns16" xmlns:ns31="ns24" xmlns:ns32="xml" xmlns:ns32_="ns2" xmlns:ns33="ns29" xmlns:ns34="ns18" xmlns:ns34_="ns33" xmlns:ns35="ns11" xmlns:ns35_="ns15" xmlns:ns36="ns5" xmlns:ns37="ns22" xmlns:ns38="ns23" xmlns:ns39="ns34" xmlns:ns40="ns6" xmlns:ns46="ns31" xmlns:ns47="ns20" xmlns:ns48="ns26" xmlns:ns49="ns7" xmlns:ns5="http://www.w3.org/ns/wsdl/http" xmlns:ns50="ns37" xmlns:ns6="http://www.w3.org/ns/wsdl/soap" xmlns:ns7="http://www.w3.org/ns/wsdl" xmlns:ns8="soap12" xmlns:ns9="ns9" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -1184,7 +1341,7 @@
       <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
     </w:port>
   </w:service>
-</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="42841b1a-196c-4d67-a9e6-fc5316439e5d"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/suspendProcessInstances" name="suspendProcessInstances" bindingOperationName="suspendProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="36ddc83d-961c-4c11-a8b7-516fc8088709"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/activateProcessInstances" name="activateProcessInstances" bindingOperationName="activateProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="a7587071-30d0-421a-9890-9a8cdc1afe3b"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1" id="d321bdb1-1509-4a46-9bf2-75c1c1824db0"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>187</con:value></con:property><con:property><con:name>task-assignement-max-loop</con:name><con:value>150</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="7c065596-0bd9-4c52-a78e-4682e049e6b4"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="42841b1a-196c-4d67-a9e6-fc5316439e5d"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/suspendProcessInstances" name="suspendProcessInstances" bindingOperationName="suspendProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="36ddc83d-961c-4c11-a8b7-516fc8088709"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/activateProcessInstances" name="activateProcessInstances" bindingOperationName="activateProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="a7587071-30d0-421a-9890-9a8cdc1afe3b"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1" id="d321bdb1-1509-4a46-9bf2-75c1c1824db0"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>5</con:value></con:property><con:property><con:name>task-assignement-max-loop</con:name><con:value>150</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="7c065596-0bd9-4c52-a78e-4682e049e6b4"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
    <soapenv:Header/>
    <soapenv:Body>
       <vac:vacationRequest>
@@ -1228,7 +1385,7 @@ declare namespace ns='http://petals.ow2.org/components/flowable/generic/1.0';
          <!--Optional:-->
          <!--ns:process-definition-identifier>?</ns:process-definition-identifier-->
          <!--Optional:-->
-         <ns:process-instance-identifier>187</ns:process-instance-identifier>
+         <ns:process-instance-identifier>5</ns:process-instance-identifier>
       </ns:getProcessInstances>
    </soapenv:Body>
 </soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="bda4e891-7b86-45b9-80e9-12ca6485b2f7"/><con:assertion type="Schema Compliance" id="0197bb6f-e233-4889-901a-361b2bbecb57"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" id="38c4a499-41ec-49b3-bf39-80394d478498"/><con:assertion type="XPath Match" name="XPath Match - Expected number of process instance returned" id="4081441f-9f82-432d-a6b4-3b686f031111"><con:configuration><path>declare namespace soap='http://schemas.xmlsoap.org/soap/envelope/';
@@ -1248,7 +1405,7 @@ if (count >= 0){
       <ns:getTasks>
          <ns:active>true</ns:active>
          <ns:assignee>kermit</ns:assignee>
-         <ns:process-instance-identifier>187</ns:process-instance-identifier>
+         <ns:process-instance-identifier>5</ns:process-instance-identifier>
       </ns:getTasks>
    </soapenv:Body>
 </soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="49d38004-c4b1-46ab-a521-1c92832db19c"/><con:assertion type="Schema Compliance" id="f6eef380-15f3-4fc2-aad5-69e3ae01f9c9"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" id="235ec1b7-99e8-4670-be9f-7467e35b0c67"/><con:assertion type="GroovyScriptAssertion" id="8e3914f7-b4ce-4d7b-9467-4c63d6c4375f" name="Script Assertion"><con:configuration><scriptText>//Define Groovy Utils and holder for validating the XML reponse content
@@ -1278,7 +1435,7 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task) = 1</co
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>187</vac1:vacationRequestId>
+         <vac1:vacationRequestId>5</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <approval>true</approval>
       </vac:validationRequest>
@@ -1288,14 +1445,14 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task) = 1</co
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>187</vac1:vacationRequestId>
+         <vac1:vacationRequestId>5</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <approval>true</approval>
       </vac:validationRequest>
    </soapenv:Body>
 </soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="7b63ba57-850e-496e-a443-25905fd1c20c"/><con:assertion type="Schema Compliance" id="5003a2c2-a83a-4889-8638-394695d67528"><con:configuration/></con:assertion><con:assertion type="Not SOAP Fault Assertion" name="SOAP Fault" id="60f31f59-f173-4a88-aa1a-79d45ec80bdc"/><con:assertion type="XPath Match" name="XPath Match - Expected fault" id="d98d647e-7103-4684-99fe-441d7de3b24f"><con:configuration><path>declare namespace soapenv='http://schemas.xmlsoap.org/soap/envelope/';
 declare namespace ns='http://petals.ow2.org/samples/se-flowable/vacation/vacationService';
-count(//soapenv:Envelope/soapenv:Body/soapenv:Fault/detail/ns:vacationRequestAlreadyValidated)</path><content>1</content><allowWildcards>false</allowWildcards><ignoreNamspaceDifferences>false</ignoreNamspaceDifferences><ignoreComments>false</ignoreComments></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase with adjustment" searchProperties="true" id="821d56d3-64a5-4085-8942-09d4f3d29453"><con:settings/><con:testStep type="properties" name="Properties" id="14bad904-c21e-4e8a-9ef6-e78615010cf4"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>132</con:value></con:property><con:property><con:name>task-assignement-kermit-1</con:name><con:value>150</con:value></con:property><con:property><con:name>task-assignement-initiator</con:name><con:value>150</con:value></con:property><con:property><con:name>task-assignement-kermit-2</con:name><con:value>150</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="65213bd5-4799-4f53-b6ff-2db4680e9643"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="70fadffa-fa43-4edd-b79f-dfa7787dfd5b"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+count(//soapenv:Envelope/soapenv:Body/soapenv:Fault/detail/ns:vacationRequestAlreadyValidated)</path><content>1</content><allowWildcards>false</allowWildcards><ignoreNamspaceDifferences>false</ignoreNamspaceDifferences><ignoreComments>false</ignoreComments></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase with adjustment" searchProperties="true" id="821d56d3-64a5-4085-8942-09d4f3d29453"><con:settings/><con:testStep type="properties" name="Properties" id="14bad904-c21e-4e8a-9ef6-e78615010cf4"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>37</con:value></con:property><con:property><con:name>task-assignement-kermit-1</con:name><con:value>150</con:value></con:property><con:property><con:name>task-assignement-initiator</con:name><con:value>150</con:value></con:property><con:property><con:name>task-assignement-kermit-2</con:name><con:value>150</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="65213bd5-4799-4f53-b6ff-2db4680e9643"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="70fadffa-fa43-4edd-b79f-dfa7787dfd5b"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
    <soapenv:Header/>
    <soapenv:Body>
       <vac:vacationRequest>
@@ -1379,7 +1536,7 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task)</path><
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>132</vac1:vacationRequestId>
+         <vac1:vacationRequestId>37</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <rejection-reason>Delivery week of your project</rejection-reason>
          <approval>false</approval>
@@ -1440,7 +1597,7 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task)</path><
          <vac1:day-number>10</vac1:day-number>
          <vac1:start-date>2015-05-03</vac1:start-date>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>132</vac1:vacationRequestId>
+         <vac1:vacationRequestId>37</vac1:vacationRequestId>
          <confirmed>true</confirmed>
       </vac:vacationUpdateRequest>
    </soapenv:Body>
@@ -1496,7 +1653,7 @@ count(//soap:Envelope/soap:Body/ns1:getTasksResponse/ns1:tasks/ns1:task)</path><
    <soapenv:Body>
       <vac:validationRequest>
          <!-- vacationRequestId retrieved from the response of the vacation request creation -->
-         <vac1:vacationRequestId>132</vac1:vacationRequestId>
+         <vac1:vacationRequestId>37</vac1:vacationRequestId>
          <approved-by>kermit</approved-by>
          <approval>true</approval>
       </vac:validationRequest>
