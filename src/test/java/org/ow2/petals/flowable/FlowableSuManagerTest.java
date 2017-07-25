@@ -158,7 +158,7 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
 
                     return serviceConfiguration;
@@ -208,9 +208,10 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "");
+                    serviceConfiguration
+                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "");
 
                     return serviceConfiguration;
                 }
@@ -260,9 +261,9 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
@@ -312,7 +313,7 @@ public class FlowableSuManagerTest extends AbstractTest {
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
@@ -363,9 +364,9 @@ public class FlowableSuManagerTest extends AbstractTest {
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE), "");
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
@@ -418,9 +419,9 @@ public class FlowableSuManagerTest extends AbstractTest {
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE), processFile);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
@@ -477,12 +478,12 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "1"), version);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
 
                     return serviceConfiguration;
@@ -536,14 +537,14 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "1"), version);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "2"), "");
 
                     return serviceConfiguration;
@@ -598,14 +599,14 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "1"), version1);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
@@ -661,12 +662,12 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "1"), version1);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
@@ -721,14 +722,14 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "1"), version1);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.PROCESS_FILE + "2"), "");
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
+                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
                             FlowableSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
@@ -808,14 +809,18 @@ public class FlowableSuManagerTest extends AbstractTest {
                 serviceConfiguration.addResource(bpmnUrl);
 
                 // First process definition
-                serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"),
+                serviceConfiguration.setServicesSectionParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"),
                         "vacationRequest.bpmn20.xml");
-                serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version1"), "1");
+                serviceConfiguration
+                        .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version1"), "1");
 
                 // 2nd process definition
-                serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"),
+                serviceConfiguration.setServicesSectionParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"),
                         "vacationRequest.bpmn20.xml");
-                serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version2"), "1");
+                serviceConfiguration
+                        .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version2"), "1");
 
                 return serviceConfiguration;
             }

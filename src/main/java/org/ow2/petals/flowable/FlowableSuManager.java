@@ -33,10 +33,10 @@ import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.DeploymentBuilder;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
@@ -57,6 +57,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnn
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.flowable.utils.BpmnReader;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
@@ -106,71 +107,119 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
         final Jbi jbiDescriptor = suDH.getDescriptor();
 
         // Check the JBI descriptor
-        if (jbiDescriptor == null || jbiDescriptor.getServices() == null
-                || jbiDescriptor.getServices().getProvides() == null
-                || jbiDescriptor.getServices().getProvides().isEmpty()) {
-            throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain a 'provides' section.");
+        if (jbiDescriptor == null || jbiDescriptor.getServices() == null) {
+            throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain a 'services' section.");
         }
-
-        // Check that there is only one Provides section in the SU
-        if (jbiDescriptor.getServices().getProvides().size() != 1) {
-            throw new PEtALSCDKException("Invalid JBI descriptor: it must not have more than one 'provides' section.");
-        }
-
-        // Get the provides
-        final Provides provides = jbiDescriptor.getServices().getProvides().get(0);
-        if (provides == null) {
-            throw new PEtALSCDKException("Invalid JBI descriptor: the 'provides' section is invalid.");
-        }
-
-        // Get the extension configuration for the Flowable process(es) to be deployed from the SU jbi.xml
-        final SuConfigurationParameters extensions = suDH.getConfigurationExtensions(provides);
-        if (extensions == null) {
-            throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain any component extension.");
-        }
-
-        String tenantId = extensions.get(FlowableSEConstants.TENANT_ID);
+        
+        String tenantId = this.extractTenantId(jbiDescriptor.getServices());
         if (tenantId == null) {
             // TODO: Improve the default value declaration
             tenantId = "myTenant"; // default value
         }
 
-        String categoryId = extensions.get(FlowableSEConstants.CATEGORY_ID);
+        String categoryId = this.extractCategoryId(jbiDescriptor.getServices());
         if (categoryId == null) {
             // TODO: Improve the default value declaration
             categoryId = "myCategory"; // default value
         }
 
         // Read BPMN models from files of the service-unit
-        final BpmnReader bpmnReader = new BpmnReader(extensions, suDH.getInstallRoot(), this.logger);
+        final BpmnReader bpmnReader = new BpmnReader(jbiDescriptor.getServices(), suDH.getInstallRoot(), this.logger);
         final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels = bpmnReader.readBpmnModels();
 
-        // Create processing operations
-        final List<BpmnModel> bpmnModels = new ArrayList<>(embeddedBpmnModels.size());
-        for (final EmbeddedProcessDefinition embeddedBpmnModel : embeddedBpmnModels.values()) {
-            bpmnModels.add(embeddedBpmnModel.getModel());
+
+        final List<Provides> provides = jbiDescriptor.getServices().getProvides();
+        if (provides == null || provides.isEmpty()) {
+            this.logger.info(String.format(
+                    "No provider defined in the service unit '%s'. Perhaps it's the deployment of a process used only through call activity steps.",
+                    suDH.getName()));
+
+            // Deploy processes from the BPMN models into the BPMN engine
+            this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, null, suDH.getInstallRoot());
+
+        } else if (provides.size() > 1) {
+            // Check that there is only one Provides section in the SU
+            throw new PEtALSCDKException("Invalid JBI descriptor: it must not have more than one 'provides' section.");
+        } else {
+
+            final Provides theOnlyOneProvide = provides.get(0);
+            if (theOnlyOneProvide == null) {
+                throw new PEtALSCDKException("Invalid JBI descriptor: the 'provides' section is invalid.");
+            }
+
+            // Create processing operations
+            final List<BpmnModel> bpmnModels = new ArrayList<>(embeddedBpmnModels.size());
+            for (final EmbeddedProcessDefinition embeddedBpmnModel : embeddedBpmnModels.values()) {
+                bpmnModels.add(embeddedBpmnModel.getModel());
+            }
+
+            final List<FlowableOperation> operations = this.createProcessingOperations(suDH.getInstallRoot(),
+                    suDH.getEndpointDescription(theOnlyOneProvide), bpmnModels, tenantId);
+
+            // Deploy processes from the BPMN models into the BPMN engine
+            this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, operations, suDH.getInstallRoot());
+
+            // Enable processing operations
+            final String edptName = theOnlyOneProvide.getEndpointName();
+            final QName serviceName = theOnlyOneProvide.getServiceName();
+            for (final FlowableOperation operation : operations) {
+                // Store the FlowableOperation in the map with the corresponding end-point
+                final ServiceEndpointOperationKey eptAndOperation = new ServiceEndpointOperationKey(serviceName,
+                        edptName, operation.getWsdlOperation());
+                getComponent().registerFlowableService(eptAndOperation, operation);
+            }
+            getComponent().logEptOperationToFlowableOperation(this.logger, Level.FINEST);
         }
-
-        final List<FlowableOperation> operations = this.createProcessingOperations(suDH.getInstallRoot(),
-                suDH.getEndpointDescription(provides), bpmnModels, tenantId);
-
-        // Deploy processes from the BPMN models into the BPMN engine
-        this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, operations, suDH.getInstallRoot());
-
-        // Enable processing operations
-        final String edptName = provides.getEndpointName();
-        final QName serviceName = provides.getServiceName();
-        for (final FlowableOperation operation : operations) {
-            // Store the FlowableOperation in the map with the corresponding end-point
-            final ServiceEndpointOperationKey eptAndOperation = new ServiceEndpointOperationKey(serviceName, edptName,
-                    operation.getWsdlOperation());
-            getComponent().registerFlowableService(eptAndOperation, operation);
-        }
-        getComponent().logEptOperationToFlowableOperation(this.logger, Level.FINEST);
 
         if (this.logger.isLoggable(Level.FINE)) {
             this.logger.fine("End FlowableSuManager.doDeploy()");
         }
+    }
+    
+    /**
+     * Extracts the tenant identifier from the JBI descriptor definition
+     * 
+     * @param services
+     *            Extra parameters of the section 'services'
+     * @return the tenant id or {@code null} if not found.
+     */
+    private String extractTenantId(final Services services) {
+        assert services != null;
+        
+        final List<Element> extensions = services.getAnyOrAny();
+        for (final Element e : extensions) {
+            assert e != null;
+
+            if (FlowableSEConstants.TENANT_ID.equals(e.getLocalName())) {
+                return e.getTextContent();
+            }
+        }
+
+        // Here no param 'tenant id' was found
+        return null;
+    }
+
+    /**
+     * Extracts the category identifier from the JBI descriptor definition
+     * 
+     * @param services
+     *            Extra parameters of the section 'services'
+     * @return the category id or {@code null} if not found.
+     */
+    private String extractCategoryId(final Services services) {
+        assert services != null;
+
+        final List<Element> extensions = services.getAnyOrAny();
+        for (final Element e : extensions) {
+            assert e != null;
+
+            if (FlowableSEConstants.CATEGORY_ID.equals(e.getLocalName())) {
+                return e.getTextContent();
+            }
+        }
+
+        // Here no param 'category id' was found
+        return null;
     }
 
     @Override
@@ -195,10 +244,14 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
     protected void doUndeploy(final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
         this.logger.fine("Start FlowableSuManager.doUndeploy(SU =" + suDH.getName() + ")");
         try {
-            final String edptName = suDH.getDescriptor().getServices().getProvides().iterator().next()
-                    .getEndpointName();
-            // Remove the FlowableOperation in the map with the corresponding end-point
-            getComponent().removeFlowableService(edptName);
+            final List<Provides> provides = suDH.getDescriptor().getServices().getProvides();
+            if (provides != null && !provides.isEmpty()) {
+                final String edptName = suDH.getDescriptor().getServices().getProvides().iterator().next()
+                        .getEndpointName();
+                // Remove the FlowableOperation in the map with the corresponding end-point
+                getComponent().removeFlowableService(edptName);
+            }
+            
 
             /**
              * // Get the operation Name of the end point ServiceUnitDataHandler suDataHandler
@@ -213,6 +266,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
              * "          is removed from MAP eptOperationToFlowableOperation" ); }
              */
             // TODO Manage the undeployement of the process: be careful of multi SU deployement for the same process
+            
         } finally {
             this.logger.fine("End FlowableSuManager.doUndeploy()");
         }
@@ -330,10 +384,12 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             }
 
             // For each operation we must set its deployed process instance identifier
-            for (final ProcessDefinition processDefinition : processDefinitions) {
-                for (final FlowableOperation operation : operations) {
-                    if (processDefinition.getKey().equals(operation.getProcessDefinitionId())) {
-                        operation.setDeployedProcessDefinitionId(processDefinition.getId());
+            if (operations != null) {
+                for (final ProcessDefinition processDefinition : processDefinitions) {
+                    for (final FlowableOperation operation : operations) {
+                        if (processDefinition.getKey().equals(operation.getProcessDefinitionId())) {
+                            operation.setDeployedProcessDefinitionId(processDefinition.getId());
+                        }
                     }
                 }
             }

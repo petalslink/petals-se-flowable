@@ -34,12 +34,6 @@
 			
          <!-- WSDL file -->
          <petalsCDK:wsdl>vacationService.wsdl</petalsCDK:wsdl>
-			
-         <!-- SE Flowable specific fields -->
-         <petals-se-flowable:tenant_id>my-tenant</petals-se-flowable:tenant_id>
-         <petals-se-flowable:category_id>samples</petals-se-flowable:category_id>
-         <petals-se-flowable:process_file1>vacationRequest.bpmn20.xml</petals-se-flowable:process_file1>
-         <petals-se-flowable:version1>1</petals-se-flowable:version1>
 
       </jbi:provides>
       
@@ -58,5 +52,11 @@
          <petalsCDK:timeout>15000</petalsCDK:timeout>
          <petalsCDK:mep>InOut</petalsCDK:mep>
       </jbi:consumes>
+         
+      <!-- SE Flowable specific fields -->
+      <petals-se-flowable:tenant_id>my-tenant</petals-se-flowable:tenant_id>
+      <petals-se-flowable:category_id>samples</petals-se-flowable:category_id>
+      <petals-se-flowable:process_file1>vacationRequest.bpmn20.xml</petals-se-flowable:process_file1>
+      <petals-se-flowable:version1>1</petals-se-flowable:version1>
    </jbi:services>
 </jbi:jbi>

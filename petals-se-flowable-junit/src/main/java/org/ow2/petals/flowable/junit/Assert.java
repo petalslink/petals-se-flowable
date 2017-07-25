@@ -42,11 +42,11 @@ import javax.xml.transform.stream.StreamResult;
 import org.flowable.bpmn.model.BpmnModel;
 import org.ow2.easywsdl.wsdl.api.Description;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
-import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.CDKJBIDescriptorBuilder;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Provides;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
 import org.ow2.petals.component.framework.util.ServiceUnitUtil;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 import org.ow2.petals.flowable.incoming.operation.EmbeddedProcessDefinition;
@@ -105,9 +105,10 @@ public class Assert {
             assertNotNull("Invalid JBI descriptor", jbiDescriptor.getServices().getProvides());
             assertEquals("Invalid JBI descriptor", 1, jbiDescriptor.getServices().getProvides().size());
 
-            final Provides provides = jbiDescriptor.getServices().getProvides().get(0);
+            final Services services = jbiDescriptor.getServices();
+            final Provides provides = services.getProvides().get(0);
 
-            final BpmnReader bpmnReader = new BpmnReader(new SuConfigurationParameters(provides.getAny(), null),
+            final BpmnReader bpmnReader = new BpmnReader(services,
                     jbiDescriptorFile.getParent(), LOGGER);
             final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels = bpmnReader.readBpmnModels();
 

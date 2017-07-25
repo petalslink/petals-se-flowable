@@ -180,9 +180,11 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"),
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"),
                             "vacationRequest.bpmn20.xml");
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
+                    serviceConfiguration
+                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
 
                     // Consume service 'archiver'
                     // TODO: The consume section seems mandatory to retrieve the consume endpoint on async exchange

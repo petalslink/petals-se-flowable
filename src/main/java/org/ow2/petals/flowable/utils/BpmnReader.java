@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,7 +31,7 @@ import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.engine.common.api.io.InputStreamProvider;
 import org.flowable.engine.common.impl.util.io.InputStreamSource;
-import org.ow2.petals.component.framework.api.configuration.SuConfigurationParameters;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.exception.IncoherentProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.exception.InvalidVersionDeclaredException;
@@ -38,6 +39,7 @@ import org.ow2.petals.flowable.exception.NoProcessDefinitionDeclarationException
 import org.ow2.petals.flowable.exception.ProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.exception.UnexistingProcessFileException;
 import org.ow2.petals.flowable.incoming.operation.EmbeddedProcessDefinition;
+import org.w3c.dom.Element;
 
 /**
  * BPMN file reader
@@ -50,7 +52,7 @@ public class BpmnReader {
     /**
      * The configuration extensions of the service unit from which BPMN files will be read.
      */
-    private final SuConfigurationParameters extensions;
+    private final Services jbiServices;
 
     /**
      * The root directory of the service unit from which BPMN files will be read.
@@ -70,12 +72,12 @@ public class BpmnReader {
      * @param logger
      *            A {@link Logger} instance. Not <code>null</code>.
      */
-    public BpmnReader(final SuConfigurationParameters extensions, final String suRootPath, final Logger logger) {
-        assert extensions != null;
+    public BpmnReader(final Services jbiServices, final String suRootPath, final Logger logger) {
+        assert jbiServices != null;
         assert suRootPath != null;
         assert logger != null;
 
-        this.extensions = extensions;
+        this.jbiServices = jbiServices;
         this.suRootPath = suRootPath;
         this.logger = logger;
     }
@@ -95,10 +97,10 @@ public class BpmnReader {
      */
     public Map<String, EmbeddedProcessDefinition> readBpmnModels() throws ProcessDefinitionDeclarationException {
 
-        final Map<String, EmbeddedProcessDefinition> bpmnModels = new HashMap<String, EmbeddedProcessDefinition>();
+        final Map<String, EmbeddedProcessDefinition> bpmnModels = new HashMap<>();
 
-        final String uniqueProcessFileName = this.extensions.get(FlowableSEConstants.PROCESS_FILE);
-        final String uniqueVersionStr = this.extensions.get(FlowableSEConstants.VERSION);
+        final String uniqueProcessFileName = extractProcessFile(this.jbiServices, null);
+        final String uniqueVersionStr = extractVersion(this.jbiServices, null);
         if (uniqueProcessFileName == null && uniqueVersionStr == null) {
             // The SU does not contain an unique process definition, perhaps several process definitions
 
@@ -113,8 +115,8 @@ public class BpmnReader {
             String multiVersionStr;
             int nbProcesses = 1;
             do {
-                multiProcessFileName = this.extensions.get(FlowableSEConstants.PROCESS_FILE + nbProcesses);
-                multiVersionStr = this.extensions.get(FlowableSEConstants.VERSION + nbProcesses);
+                multiProcessFileName = extractProcessFile(this.jbiServices, nbProcesses);
+                multiVersionStr = extractVersion(this.jbiServices, nbProcesses);
                 if (nbProcesses == 1 && multiProcessFileName == null && multiVersionStr == null) {
                     throw new NoProcessDefinitionDeclarationException();
                 } else if (multiProcessFileName != null && multiVersionStr != null) {
@@ -136,6 +138,62 @@ public class BpmnReader {
         }
 
         return bpmnModels;
+    }
+
+    /**
+     * Extracts the BPMN process file from the JBI descriptor definition
+     * 
+     * @param services
+     *            Extra parameters of the section 'services'
+     * @param idx
+     *            Counter in case of multiple process files, or {@code null}
+     * @return the process file or {@code null} if not found.
+     */
+    private static String extractProcessFile(final Services services, final Integer idx) {
+        assert services != null;
+
+        final String tagLocalName = (idx == null ? FlowableSEConstants.PROCESS_FILE
+                : FlowableSEConstants.PROCESS_FILE + idx.toString());
+
+        final List<Element> extensions = services.getAnyOrAny();
+        for (final Element e : extensions) {
+            assert e != null;
+
+            if (tagLocalName.equals(e.getLocalName())) {
+                return e.getTextContent();
+            }
+        }
+
+        // Here no process file was found
+        return null;
+    }
+
+    /**
+     * Extracts the BPMN process version from the JBI descriptor definition
+     * 
+     * @param services
+     *            Extra parameters of the section 'services'
+     * @param idx
+     *            Counter in case of multiple versions, or {@code null}
+     * @return the version or {@code null} if not found.
+     */
+    private static String extractVersion(final Services services, final Integer idx) {
+        assert services != null;
+
+        final String tagLocalName = (idx == null ? FlowableSEConstants.VERSION
+                : FlowableSEConstants.VERSION + idx.toString());
+
+        final List<Element> extensions = services.getAnyOrAny();
+        for (final Element e : extensions) {
+            assert e != null;
+
+            if (tagLocalName.equals(e.getLocalName())) {
+                return e.getTextContent();
+            }
+        }
+
+        // Here no version was found
+        return null;
     }
 
     /**

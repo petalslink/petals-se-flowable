@@ -69,6 +69,8 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
 
     protected static final String CALL_ACTIVITY_SU = "call-activity-su";
 
+    protected static final String CALL_ACTIVITY_PROVIDER_SU = "call-activity-provider-su";
+
     private static final String CALL_ACTIVITY_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/call-activity/level1";
 
     protected static final QName CALL_ACTIVITY_INTERFACE = new QName(CALL_ACTIVITY_NAMESPACE, "call-activity");
@@ -114,6 +116,29 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                 @Override
                 public ServiceConfiguration create() {
 
+                    final ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
+
+                    final URL bpmnUrl_3 = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/call-activity/Process-Level-3.bpmn");
+                    assertNotNull("BPMN file not found", bpmnUrl_3);
+                    serviceConfiguration.addResource(bpmnUrl_3);
+
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "Process-Level-3.bpmn");
+                    serviceConfiguration
+                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
+
+                    // Consume service 'core'
+                    final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(
+                            CORE_SVC_INTERFACE, CORE_SVC_SERVICE, CORE_SVC_ENDPOINT);
+                    serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
+
+                    return serviceConfiguration;
+                }
+            }).registerServiceToDeploy(CALL_ACTIVITY_PROVIDER_SU, new ServiceConfigurationFactory() {
+                @Override
+                public ServiceConfiguration create() {
+
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("su/call-activity/call-activity.wsdl");
                     assertNotNull("WSDl not found", wsdlUrl);
@@ -145,27 +170,27 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                     assertNotNull("BPMN file not found", bpmnUrl_1);
                     serviceConfiguration.addResource(bpmnUrl_1);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"),
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"),
                             "Process-Level-1.bpmn");
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version1"), "1");
+                    serviceConfiguration
+                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version1"), "1");
 
                     final URL bpmnUrl_2 = Thread.currentThread().getContextClassLoader()
                             .getResource("su/call-activity/Process-Level-2.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl_2);
                     serviceConfiguration.addResource(bpmnUrl_2);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"),
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"),
                             "Process-Level-2.bpmn");
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version2"), "1");
+                    serviceConfiguration
+                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version2"), "1");
 
                     final URL bpmnUrl_3 = Thread.currentThread().getContextClassLoader()
                             .getResource("su/call-activity/Process-Level-3.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl_3);
                     serviceConfiguration.addResource(bpmnUrl_3);
-
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file3"),
-                            "Process-Level-3.bpmn");
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version3"), "1");
 
                     // Consume service 'archiver'
                     final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(

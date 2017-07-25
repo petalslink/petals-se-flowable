@@ -128,9 +128,11 @@ public abstract class MultistartProcessTestEnvironment extends AbstractTestEnvir
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"),
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"),
                             "multi-start.bpmn");
-                    serviceConfiguration.setParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
+                    serviceConfiguration
+                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
 
                     // Consume service 'archiver'
                     final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(

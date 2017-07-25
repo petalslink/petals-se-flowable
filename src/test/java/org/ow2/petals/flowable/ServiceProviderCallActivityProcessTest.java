@@ -93,7 +93,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
 
             // Send the 1st valid request for start event 'request
             final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
-                    CALL_ACTIVITY_SU, OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                    CALL_ACTIVITY_PROVIDER_SU, OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                     toByteArray(start));
 
             // Assert the response of the 1st valid request
@@ -173,7 +173,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
             userTaskRequest.setCallActivityId(callActivityId_level2.toString());
             userTaskRequest.setUnlocker(BPMN_USER);
             final RequestToProviderMessage userTaskRequestMsg = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
-                    CALL_ACTIVITY_SU, OPERATION_UNLOCK, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                    CALL_ACTIVITY_PROVIDER_SU, OPERATION_UNLOCK, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                     toByteArray(userTaskRequest));
             final ResponseMessage userTaskResponseMsg = COMPONENT.sendAndGetResponse(userTaskRequestMsg);
             COMPONENT.sendStatus(new StatusToProviderMessage(userTaskResponseMsg, ExchangeStatus.DONE), false);
