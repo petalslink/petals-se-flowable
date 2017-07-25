@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2015-2017 Linagora
+ * Copyright (c) 2017 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,49 +20,47 @@ package org.ow2.petals.flowable;
 import java.util.logging.Logger;
 
 import org.flowable.bpmn.model.BaseElement;
+import org.flowable.bpmn.model.CallActivity;
 import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.FlowNode;
-import org.flowable.bpmn.model.ServiceTask;
 import org.flowable.engine.impl.bpmn.parser.BpmnParse;
 import org.flowable.engine.impl.bpmn.parser.handler.AbstractBpmnParseHandler;
 import org.flowable.engine.parse.BpmnParseHandler;
 
 /**
  * <p>
- * A {@link BpmnParseHandler} to force service task to be asynchronous.
+ * A {@link BpmnParseHandler} to force call activity to be asynchronous.
  * </p>
  * <p>
- * When a service task is just placed after an start event, we are not able to retrieve MONIT variables when the service
- * task starts. To be able to retrieve these variables, the service task MUST be asynchronous.
+ * When a call activity is just placed after an start event, we are not able to retrieve MONIT variables when the call
+ * activity starts. To be able to retrieve these variables, the call activity task MUST be asynchronous.
  * </p>
- * 
- * @see PETALSSEACTIVITI-4
  * 
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ServiceTaskForceAsyncParseHandler extends AbstractBpmnParseHandler<ServiceTask> {
+public class CallActivityForceAsyncParseHandler extends AbstractBpmnParseHandler<CallActivity> {
 
     private final Logger log;
 
-    public ServiceTaskForceAsyncParseHandler(final Logger log) {
+    public CallActivityForceAsyncParseHandler(final Logger log) {
         this.log = log;
     }
 
     @Override
     protected Class<? extends BaseElement> getHandledType() {
-        return ServiceTask.class;
+        return CallActivity.class;
     }
 
     @Override
-    protected void executeParse(final BpmnParse bpmnParse, final ServiceTask element) {
+    protected void executeParse(final BpmnParse bpmnParse, final CallActivity element) {
 
         // Make always async
-        final FlowElement serviceTaskFlowElt = bpmnParse.getCurrentProcess().getFlowElement(element.getId());
-        if (serviceTaskFlowElt instanceof FlowNode) {
-            ((FlowNode) serviceTaskFlowElt).setAsynchronous(true);
+        final FlowElement callActivityFlowElt = bpmnParse.getCurrentProcess().getFlowElement(element.getId());
+        if (callActivityFlowElt instanceof FlowNode) {
+            ((FlowNode) callActivityFlowElt).setAsynchronous(true);
         } else {
-            this.log.warning(String.format("Unable to find the service task '%s' to force its asynchronous execution.",
+            this.log.warning(String.format("Unable to find the call activity '%s' to force its asynchronous execution.",
                     element.getId()));
         }
     }

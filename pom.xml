@@ -357,6 +357,9 @@
                         <include>multi-start/multi-start.wsdl</include>
                         <include>multi-start/archivageService.wsdl</include>
                         <include>multi-start/coreService.wsdl</include>
+                        <include>call-activity/call-activity.wsdl</include>
+                        <include>call-activity/archivageService.wsdl</include>
+                        <include>call-activity/coreService.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
                   </configuration>

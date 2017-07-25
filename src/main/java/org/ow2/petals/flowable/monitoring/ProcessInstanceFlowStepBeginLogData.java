@@ -60,7 +60,7 @@ public final class ProcessInstanceFlowStepBeginLogData extends AbstractFlowLogDa
 
         super(TraceCode.CONSUME_EXT_FLOW_STEP_BEGIN, flowInstanceId, flowStepId);
 
-        FlowableActivityFlowStepData.addFlowableActivityFlowStepData(this, correlatedFlowInstanceId,
+        FlowableActivityFlowStepData.addCorrelatedFlowStepData(this, correlatedFlowInstanceId,
                 correlatedFlowStepId);
         this.putData(PROCESS_DEFINITION_KEY, processDefinition);
         this.putData(PROCESS_INSTANCE_ID_KEY, processInstanceId);

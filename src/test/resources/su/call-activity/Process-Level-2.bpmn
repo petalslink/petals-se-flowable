@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath"
+   
+   xmlns:process="http://petals.ow2.org/se-flowable/unit-test/call-activity/level2" 
+   xmlns:archivage="http://petals.ow2.org/se-flowable/unit-test/call-activity/archivageService" 
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/call-activity/level2">
+
+   <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
+   <import location="classpath:su/call-activity/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/call-activity/archivageService"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <interface name="Archive Service" implementationRef="archivage:archiver">
+      <operation id="archiveOperation" name="Archive Operation" implementationRef="archivage:archiver">
+         <inMessageRef>process:archiverRequestMessage</inMessageRef>
+         <outMessageRef>process:archiverResponseMessage</outMessageRef>
+      </operation>
+   </interface>
+
+   <message id="archiverRequestMessage" itemRef="process:archiverRequestItem" />
+   <message id="archiverResponseMessage" itemRef="process:archiverResponseItem" />
+
+   <itemDefinition id="archiverRequestItem" structureRef="archivage:archiver" />
+   <itemDefinition id="archiverResponseItem" structureRef="archivage:archiverResponse" />
+   
+   <process id="processLevel2" name="Process level 2" isExecutable="true">
+      <startEvent id="startevent1" name="Start"/>
+      <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="servicetask1"/>
+      <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveAttachment" />
+            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTaskArchiveAttachment" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachment</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachment</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachment.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow2" sourceRef="servicetask1" targetRef="callactivity1"/>
+      <callActivity id="callactivity1" name="Call activity" calledElement="processLevel3">
+         <extensionElements>
+            <activiti:in source="customer" target="customer" />
+            <activiti:in source="address" target="address" />
+         </extensionElements>
+      </callActivity>
+      <sequenceFlow id="flow3" sourceRef="callactivity1" targetRef="usertask1"/>
+      <userTask id="usertask1" name="User Task" activiti:candidateUsers="kermit"/>
+      <sequenceFlow id="flow4" sourceRef="usertask1" targetRef="endevent1"/>
+      <endEvent id="endevent1" name="End"/>
+   </process>
+   
+   <bpmndi:BPMNDiagram id="BPMNDiagram_processLevel3">
+      <bpmndi:BPMNPlane bpmnElement="processLevel3" id="BPMNPlane_processLevel3">
+         <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="80.0" y="200.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="680.0" y="200.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
+            <omgdc:Bounds height="55.0" width="105.0" x="180.0" y="190.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
+            <omgdc:Bounds height="55.0" width="105.0" x="370.0" y="190.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
+            <omgdc:Bounds height="55.0" width="105.0" x="526.0" y="190.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+            <omgdi:waypoint x="115.0" y="217.0"></omgdi:waypoint>
+            <omgdi:waypoint x="180.0" y="217.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+            <omgdi:waypoint x="285.0" y="217.0"></omgdi:waypoint>
+            <omgdi:waypoint x="370.0" y="217.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+            <omgdi:waypoint x="475.0" y="217.0"></omgdi:waypoint>
+            <omgdi:waypoint x="526.0" y="217.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+            <omgdi:waypoint x="631.0" y="217.0"></omgdi:waypoint>
+            <omgdi:waypoint x="680.0" y="217.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+      </bpmndi:BPMNPlane>
+   </bpmndi:BPMNDiagram>
+</definitions>

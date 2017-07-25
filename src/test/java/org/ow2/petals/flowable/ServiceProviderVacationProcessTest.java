@@ -1198,7 +1198,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
 
         // Check Flowable engine against the current user task
-        assertProcessInstanceFinished(response_1.getNumeroDde());
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
 
         // --------------------------------------------------------
@@ -1237,7 +1237,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
 
         // Check Flowable engine against the current user task
-        assertProcessInstanceFinished(response_1.getNumeroDde());
+        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
         assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
     }
 

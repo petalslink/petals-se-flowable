@@ -123,7 +123,8 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
 
         final HistoricProcessInstanceQuery query = this.flowableClient.getHistoryService()
                 .createHistoricProcessInstanceQuery();
-        final HistoricProcessInstance processInstance = query.processInstanceId(processInstanceId).singleResult();
+        final HistoricProcessInstance processInstance = query.processInstanceId(processInstanceId).finished()
+                .singleResult();
         assertNotNull(processInstance);
     }
 
@@ -185,7 +186,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
                         Thread.sleep(250);
                         final HistoricProcessInstanceQuery histProcInstQuery = AbstractTestEnvironment.this.flowableClient
                                 .getHistoryService().createHistoricProcessInstanceQuery()
-                                .processInstanceId(processInstanceId);
+                                .processInstanceId(processInstanceId).finished();
                         if (histProcInstQuery.singleResult() != null) {
                             // the process instance is finished
                             run = false;
@@ -198,7 +199,10 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             }
         });
         waitingThread.start();
-        lock.await(60, TimeUnit.SECONDS);
+        if (!lock.await(60, TimeUnit.SECONDS)) {
+            throw new AssertionError(
+                    String.format("Process instance '%s' not finished in the waiting time.", processInstanceId));
+        }
     }
 
     /**
@@ -206,10 +210,10 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its end.
-     * @param taskDefinitionKey
+     * @param serviceTaskDefinitionKey
      *            The service task identifier in the process definition
      */
-    protected void waitEndOfServiceTask(final String processInstanceId, final String taskDefinitionKey)
+    protected void waitEndOfServiceTask(final String processInstanceId, final String serviceTaskDefinitionKey)
             throws InterruptedException {
         final CountDownLatch lock = new CountDownLatch(1);
         final Thread waitingThread = new Thread(new Runnable() {
@@ -222,7 +226,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
                         // Caution: service tasks are stored in activity historic, not in task historic.
                         final HistoricActivityInstanceQuery histSvcTaskQuery = AbstractTestEnvironment.this.flowableClient
                                 .getHistoryService().createHistoricActivityInstanceQuery()
-                                .processInstanceId(processInstanceId).activityId(taskDefinitionKey).finished();
+                                .processInstanceId(processInstanceId).activityId(serviceTaskDefinitionKey).finished();
                         if (histSvcTaskQuery.singleResult() != null) {
                             // the process instance is finished
                             run = false;
@@ -235,7 +239,54 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             }
         });
         waitingThread.start();
-        lock.await(60, TimeUnit.SECONDS);
+        if (!lock.await(60, TimeUnit.SECONDS)) {
+            throw new AssertionError(
+                    String.format("Service task '%s' of process instance '%s' not ended in the waiting time.",
+                            serviceTaskDefinitionKey, processInstanceId));
+        }
+    }
+
+    /**
+     * Wait that a user task of a process instance is assignated to a candidate user.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its assignment.
+     * @param taskDefinitionKey
+     *            The user task identifier in the process definition
+     * @param candidateUser
+     *            The candidate user of the user task
+     */
+    protected void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
+            final String candidateUser) throws InterruptedException {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final Thread waitingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean run = true;
+                try {
+                    while (run) {
+                        Thread.sleep(250);
+
+                        final TaskQuery taskQuery = AbstractTestEnvironment.this.flowableClient.getTaskService()
+                                .createTaskQuery().processInstanceId(processInstanceId)
+                                .taskDefinitionKey(taskDefinitionKey).taskCandidateUser(candidateUser);
+                        if (taskQuery.singleResult() != null) {
+                            // the process instance is finished
+                            run = false;
+                            lock.countDown();
+                        }
+                    }
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        waitingThread.start();
+        if (!lock.await(60, TimeUnit.SECONDS)) {
+            throw new AssertionError(
+                    String.format("User task '%s' of process instance '%s' not assigned in the waiting time.",
+                            taskDefinitionKey, processInstanceId));
+        }
     }
 
 }

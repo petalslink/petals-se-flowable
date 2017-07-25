@@ -90,6 +90,7 @@ import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 import org.ow2.petals.flowable.event.AbstractEventListener;
+import org.ow2.petals.flowable.event.CallActivityStartedEventListener;
 import org.ow2.petals.flowable.event.ProcessInstanceCanceledEventListener;
 import org.ow2.petals.flowable.event.ProcessInstanceCompletedEventListener;
 import org.ow2.petals.flowable.event.ProcessInstanceStartedEventListener;
@@ -170,6 +171,11 @@ public class FlowableSE extends AbstractServiceEngine {
      * Event listener fired when a user task is completed
      */
     private AbstractEventListener userTaskCompletedEventListener;
+
+    /**
+     * Event listener fired when a call activity is started
+     */
+    private AbstractEventListener callActivityStartedEventListener;
 
     /**
      * An UUID generator.
@@ -602,6 +608,7 @@ public class FlowableSE extends AbstractServiceEngine {
         if (pec instanceof ProcessEngineConfigurationImpl) {
             final List<BpmnParseHandler> postBpmnParseHandlers = new ArrayList<>();
             postBpmnParseHandlers.add(new ServiceTaskForceAsyncParseHandler(this.getLogger()));
+            postBpmnParseHandlers.add(new CallActivityForceAsyncParseHandler(this.getLogger()));
             ((ProcessEngineConfigurationImpl) pec).setPostBpmnParseHandlers(postBpmnParseHandlers);
         } else {
             this.getLogger().warning(
@@ -643,6 +650,11 @@ public class FlowableSE extends AbstractServiceEngine {
         this.userTaskCompletedEventListener = new UserTaskCompletedEventListener(taskService, this.getLogger());
         runtimeService.addEventListener(this.userTaskCompletedEventListener,
                 this.userTaskCompletedEventListener.getListenEventType());
+
+        this.callActivityStartedEventListener = new CallActivityStartedEventListener(runtimeService,
+                this.simpleUUIDGenerator, this.getLogger());
+        runtimeService.addEventListener(this.callActivityStartedEventListener,
+                this.callActivityStartedEventListener.getListenEventType());
 
         try {
             // Startup Flowable engine against running states of the SE:
@@ -826,6 +838,7 @@ public class FlowableSE extends AbstractServiceEngine {
         runtimeService.removeEventListener(this.serviceTaskStartedEventListener);
         runtimeService.removeEventListener(this.userTaskStartedEventListener);
         runtimeService.removeEventListener(this.userTaskCompletedEventListener);
+        runtimeService.removeEventListener(this.callActivityStartedEventListener);
 
     }
 

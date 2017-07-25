@@ -36,14 +36,45 @@ public class FlowableActivityFlowStepData {
      */
     public static final String CORRELATED_FLOW_STEP_ID_KEY = "correlatedFlowStepId";
 
+    /**
+     * Name of the MONIT trace attribute containing the process definition of the process instance created.
+     */
+    public static final String PROCESS_DEFINITION_KEY = "processDefinition";
+
+    /**
+     * Name of the MONIT trace attribute containing the identifier of process instance created.
+     */
+    public static final String PROCESS_INSTANCE_ID_KEY = "processInstanceId";
+
+    /**
+     * Name of the MONIT trace attribute containing the call activity definition of the call activity instance created.
+     */
+    public static final String CALL_ACTIVITY_DEFINITION_KEY = "callActivityDefinition";
+
+    /**
+     * Name of the MONIT trace attribute containing the identifier of call activity instance created.
+     */
+    public static final String CALL_ACTIVITY_INSTANCE_ID_KEY = "callActivityInstanceId";
+
     private FlowableActivityFlowStepData() {
         // No constructor because it is an utility class
     }
 
-    public static void addFlowableActivityFlowStepData(final AbstractFlowLogData logData,
-            final String correlatedFlowInstanceId,
-            final String correlatedFlowStepId) {
+    public static void addCorrelatedFlowStepData(final AbstractFlowLogData logData,
+            final String correlatedFlowInstanceId, final String correlatedFlowStepId) {
         logData.putData(CORRELATED_FLOW_INSTANCE_ID_KEY, correlatedFlowInstanceId);
         logData.putData(CORRELATED_FLOW_STEP_ID_KEY, correlatedFlowStepId);
+    }
+
+    public static void addProcessInstanceFlowStepData(final AbstractFlowLogData logData, final String processDefinition,
+            final String processInstanceId) {
+        logData.putData(PROCESS_DEFINITION_KEY, processDefinition);
+        logData.putData(PROCESS_INSTANCE_ID_KEY, processInstanceId);
+    }
+
+    public static void addCallActivityFlowStepData(final AbstractFlowLogData logData, final String callActivityDefinition,
+            final String callActivityInstanceId) {
+        logData.putData(CALL_ACTIVITY_DEFINITION_KEY, callActivityDefinition);
+        logData.putData(CALL_ACTIVITY_INSTANCE_ID_KEY, callActivityInstanceId);
     }
 }

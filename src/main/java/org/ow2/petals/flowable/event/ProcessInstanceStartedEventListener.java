@@ -48,27 +48,33 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
         if (event instanceof FlowableProcessStartedEventImpl) {
             final FlowableProcessStartedEventImpl eventImpl = (FlowableProcessStartedEventImpl) event;
 
-            final String processInstanceId = eventImpl.getProcessInstanceId();
-            this.log.fine("The process instance '" + processInstanceId + "' is started.");
+            if (eventImpl.getNestedProcessDefinitionId() == null) {
 
-            final Map<String, Object> processVariables = eventImpl.getVariables();
+                final String processInstanceId = eventImpl.getProcessInstanceId();
+                this.log.fine("The process instance '" + processInstanceId + "' is started.");
 
-            final String flowInstanceId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-            final String flowStepId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
-            final String correlatedFlowInstanceId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
-            final String correlatedFlowStepId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
+                final Map<String, Object> processVariables = eventImpl.getVariables();
 
-            final ExecutionEntity entity = (ExecutionEntity) eventImpl.getEntity();
+                final String flowInstanceId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+                final String flowStepId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+                final String correlatedFlowInstanceId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
+                final String correlatedFlowStepId = (String) processVariables
+                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
 
-            // TODO: Add a unit test where the process does not contain user task (the process instance is
-            // completely executed when creating it) to demonstrate that the following MONIT trace occurs before the
-            // trace 'consumeEnd'
-            return new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
-                    correlatedFlowStepId, entity.getProcessDefinitionKey(), processInstanceId);
+                final ExecutionEntity entity = (ExecutionEntity) eventImpl.getEntity();
+
+                // TODO: Add a unit test where the process does not contain user task (the process instance is
+                // completely executed when creating it) to demonstrate that the following MONIT trace occurs before the
+                // trace 'consumeEnd'
+                return new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
+                        correlatedFlowStepId, entity.getProcessDefinitionKey(), processInstanceId);
+            } else {
+                // A call activity or a sub-process is started
+                return null;
+            }
 
         } else {
             this.log.warning("Unexpected event implementation: " + event.getClass().getName());

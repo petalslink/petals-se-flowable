@@ -33,6 +33,8 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 public abstract class AbstractMonitDirectLoggerEventListener extends AbstractMonitLoggerEventListener implements
         FlowableEventListener {
 
+    protected final static String MISSING_VARIABLE_PATTERN = "Unable to find the variable '%s' into the process instance '%s'.";
+
     public AbstractMonitDirectLoggerEventListener(final FlowableEngineEventType listenEventType, final Logger log) {
         super(listenEventType, log);
     }

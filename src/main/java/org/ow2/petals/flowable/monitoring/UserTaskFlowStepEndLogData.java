@@ -44,7 +44,7 @@ public final class UserTaskFlowStepEndLogData extends ProvideFlowStepEndLogData 
             final String correlatedFlowStepId) {
 
         super(flowInstanceId, flowStepId, null);
-        FlowableActivityFlowStepData.addFlowableActivityFlowStepData(this, correlatedFlowInstanceId,
+        FlowableActivityFlowStepData.addCorrelatedFlowStepData(this, correlatedFlowInstanceId,
                 correlatedFlowStepId);
 
     }
