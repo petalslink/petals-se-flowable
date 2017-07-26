@@ -210,7 +210,8 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 .singleResult();
         final String flowInstanceIdProcess = (String) ((FlowLogData) firstLogOfProcess.getParameters()[0])
                 .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
-        final List<LogRecord> processMonitLogs = extractMonitLog(allMonitLogs, flowInstanceIdProcess);
+        final List<LogRecord> processMonitLogs = new MonitLogFilter(allMonitLogs).flowInstanceId(flowInstanceIdProcess)
+                .results();
         
         assertEquals(12, processMonitLogs.size());
         final FlowLogData initialProcessFlowLogData = assertMonitConsumerExtBeginLog(processMonitLogs.get(0));
