@@ -27,6 +27,8 @@ import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.flowable.engine.runtime.DeadLetterJobQuery;
+import org.flowable.engine.runtime.Job;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
@@ -41,7 +43,9 @@ import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.ResponseToConsumerMessage;
+import org.ow2.petals.component.framework.junit.impl.message.StatusToConsumerMessage;
 import org.ow2.petals.component.framework.junit.impl.message.StatusToProviderMessage;
+import org.ow2.petals.component.framework.logger.ProvideFlowStepFailureLogData;
 import org.ow2.petals.components.flowable.generic._1.GetTasks;
 import org.ow2.petals.components.flowable.generic._1.GetTasksResponse;
 import org.ow2.petals.components.flowable.generic._1.Task;
@@ -65,6 +69,8 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * 
  */
 public class ServiceProviderCallActivityProcessTest extends CallActivityProcessTestEnvironment {
+
+    private static final String ERROR_MSG = "A dummy error occurs";
 
     private static final String CUSTOMER_ADRESS = "customer adress";
 
@@ -261,13 +267,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
             public Message provides(final RequestMessage requestMsg) throws Exception {
 
                 this.msgExchange = requestMsg.getMessageExchange();
-                assertNotNull(this.msgExchange);
-                assertEquals(ARCHIVE_INTERFACE, this.msgExchange.getInterfaceName());
-                assertEquals(ARCHIVE_SERVICE, this.msgExchange.getService());
-                assertNotNull(this.msgExchange.getEndpoint());
-                assertEquals(ARCHIVE_ENDPOINT, this.msgExchange.getEndpoint().getEndpointName());
-                assertEquals(ARCHIVER_OPERATION, this.msgExchange.getOperation());
-                assertEquals(this.msgExchange.getStatus(), ExchangeStatus.ACTIVE);
+                assertIsArchiveServiceRequest(this.msgExchange);
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
                 assertTrue(requestObj instanceof Archiver);
                 callActivityId_level1.append(((Archiver) requestObj).getItem());
@@ -285,5 +285,168 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 assertEquals(statusDoneMsg.getMessageExchange().getStatus(), ExchangeStatus.DONE);
             }
         };
+    }
+
+    /**
+     * <p>
+     * Check the processing of an error returned by a Petals service invoked from a service task.
+     * </p>
+     * <p>
+     * Expected results:
+     * <ul>
+     * <li>the error is correctly pushed to the Flowable engine as a technical error,</li>
+     * <li>the service task is retried several times.</li>
+     * </ul>
+     * </p>
+     */
+    @Test
+    public void jbiErrorOnServiceTask() throws Exception {
+
+        // Create a new instance of the process definition
+        final StringBuilder processInstance_level1 = new StringBuilder();
+        final StringBuilder callActivityId_level2 = new StringBuilder();
+        {
+            final Start start = new Start();
+            start.setCustomer(BPMN_USER);
+            start.setAddress(CUSTOMER_ADRESS);
+
+            // Send the 1st valid request for start event 'request
+            final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                    CALL_ACTIVITY_PROVIDER_SU, OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                    toByteArray(start));
+
+            // Assert the response of the 1st valid request
+            final ServiceProviderImplementation archiverServiceImpl = this
+                    .getArchiveAttachmentsServiceImplAsError(new ArchiverResponse(), callActivityId_level2);
+            COMPONENT.sendAndCheckResponseAndSendStatus(request_1, archiverServiceImpl, new MessageChecks() {
+
+                @Override
+                public void checks(final Message message) throws Exception {
+                    // Check the reply
+                    final Source fault = message.getFault();
+                    assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
+                    assertNotNull("No XML payload in response", message.getPayload());
+                    final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
+                    assertTrue(responseObj instanceof StartResponse);
+                    final StartResponse response = (StartResponse) responseObj;
+                    assertNotNull(response.getCaseFileNumber());
+                    processInstance_level1.append(response.getCaseFileNumber());
+                }
+            }, ExchangeStatus.DONE);
+        }
+
+        // 2nd service task invocation try
+        {
+            final RequestMessage requestMsg2 = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
+            assertIsArchiveServiceRequest(requestMsg2.getMessageExchange());
+            COMPONENT_UNDER_TEST.pushStatusToConsumer(
+                    new StatusToConsumerMessage(requestMsg2, new Exception("A dummy error occurs")));
+        }
+
+        // 3nd service task invocation try
+        {
+            final RequestMessage requestMsg3 = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
+            assertIsArchiveServiceRequest(requestMsg3.getMessageExchange());
+            COMPONENT_UNDER_TEST.pushStatusToConsumer(
+                    new StatusToConsumerMessage(requestMsg3, new Exception("A dummy error occurs")));
+        }
+
+        // Wait that the process instance is moved as a dead letter
+        this.waitProcessInstanceAsDeadLetterJob(callActivityId_level2.toString());
+
+        // Resume the dead letter job
+        final DeadLetterJobQuery deadLetterJobQuery = this.flowableClient.getManagementService()
+                .createDeadLetterJobQuery().processInstanceId(callActivityId_level2.toString());
+        final Job deadLetterJob = deadLetterJobQuery.singleResult();
+        assertNotNull(deadLetterJob);
+        this.flowableClient.getManagementService().moveDeadLetterJobToExecutableJob(deadLetterJob.getId(), 2);
+
+        // service task invocation tries after re-activation
+        for (int i = 0; i < 2; i++) {
+            final RequestMessage requestMsg = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
+            assertIsArchiveServiceRequest(requestMsg.getMessageExchange());
+            COMPONENT_UNDER_TEST.pushStatusToConsumer(
+                    new StatusToConsumerMessage(requestMsg, new Exception("A dummy error occurs")));
+        }
+
+        // Wait that the process instance is moved as a dead letter
+        this.waitProcessInstanceAsDeadLetterJob(callActivityId_level2.toString());
+
+        // Check MONIT traces
+        final List<LogRecord> allMonitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final LogRecord firstLogOfProcessService = new MonitLogFilter(allMonitLogs)
+                .traceCode(TraceCode.PROVIDE_FLOW_STEP_BEGIN)
+                .interfaceName(
+                        new QName("http://petals.ow2.org/se-flowable/unit-test/call-activity/level1", "call-activity"))
+                .serviceName(new QName("http://petals.ow2.org/se-flowable/unit-test/call-activity/level1",
+                        "call-activity-service"))
+                .operationName(new QName("http://petals.ow2.org/se-flowable/unit-test/call-activity/level1", "start"))
+                .singleResult();
+        final String flowInstanceIdProcessService = (String) ((FlowLogData) firstLogOfProcessService.getParameters()[0])
+                .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
+        final LogRecord firstLogOfProcess = new MonitLogFilter(allMonitLogs)
+                .traceCode(TraceCode.CONSUME_EXT_FLOW_STEP_BEGIN)
+                .property(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY, flowInstanceIdProcessService)
+                .singleResult();
+        final String flowInstanceIdProcess = (String) ((FlowLogData) firstLogOfProcess.getParameters()[0])
+                .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
+        final List<LogRecord> processMonitLogs = new MonitLogFilter(allMonitLogs).flowInstanceId(flowInstanceIdProcess)
+                .results();
+
+        assertEquals(12, processMonitLogs.size());
+        final FlowLogData initialProcessFlowLogData = assertMonitConsumerExtBeginLog(processMonitLogs.get(0));
+        assertEquals("process instance id missing in log trace", processInstance_level1.toString(), initialProcessFlowLogData
+                        .get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
+        final FlowLogData firstCallActivity = assertMonitProviderBeginLog(initialProcessFlowLogData, null, null, null,
+                null, processMonitLogs.get(1));
+        assertEquals(processInstance_level1.toString(),
+                firstCallActivity.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
+        assertEquals("processLevel2", firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_DEFINITION_KEY));
+        assertEquals("call activity instance id missing in log trace", callActivityId_level2.toString(),
+                firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_INSTANCE_ID_KEY));
+
+        for (int i = 0; i < 5; i++) {
+            final FlowLogData archiverFlowLogData = assertMonitProviderBeginLog(firstCallActivity, ARCHIVE_INTERFACE,
+                    ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, processMonitLogs.get(2 + 2 * i));
+            final FlowLogData archiverFlowLogDataFailure = assertMonitProviderFailureLog(archiverFlowLogData,
+                    processMonitLogs.get(3 + 2 * i));
+            assertEquals("Unexpected error message", ERROR_MSG,
+                    archiverFlowLogDataFailure.get(ProvideFlowStepFailureLogData.FLOW_STEP_FAILURE_MESSAGE_NAME));
+        }
+
+    }
+
+    private ServiceProviderImplementation getArchiveAttachmentsServiceImplAsError(final ArchiverResponse responseBean,
+            final StringBuilder callActivityId_level1) {
+
+        return new ServiceProviderImplementation() {
+
+            @Override
+            public Message provides(final RequestMessage requestMsg) throws Exception {
+
+                assertIsArchiveServiceRequest(requestMsg.getMessageExchange());
+                final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
+                assertTrue(requestObj instanceof Archiver);
+                callActivityId_level1.append(((Archiver) requestObj).getItem());
+
+                // Returns an error to the Flowable service task
+                return new StatusToConsumerMessage(requestMsg, new Exception(ERROR_MSG));
+            }
+
+            @Override
+            public boolean statusExpected() {
+                return false;
+            }
+        };
+    }
+
+    private static void assertIsArchiveServiceRequest(final MessageExchange msgExchange) {
+        assertNotNull(msgExchange);
+        assertEquals(ARCHIVE_INTERFACE, msgExchange.getInterfaceName());
+        assertEquals(ARCHIVE_SERVICE, msgExchange.getService());
+        assertNotNull(msgExchange.getEndpoint());
+        assertEquals(ARCHIVE_ENDPOINT, msgExchange.getEndpoint().getEndpointName());
+        assertEquals(ARCHIVER_OPERATION, msgExchange.getOperation());
+        assertEquals(msgExchange.getStatus(), ExchangeStatus.ACTIVE);
     }
 }

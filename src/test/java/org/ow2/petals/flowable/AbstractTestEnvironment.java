@@ -29,6 +29,7 @@ import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.history.HistoricTaskInstance;
 import org.flowable.engine.history.HistoricTaskInstanceQuery;
+import org.flowable.engine.runtime.DeadLetterJobQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.engine.task.Task;
@@ -167,6 +168,41 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
                 .taskDefinitionKey(taskDefinitionKey).singleResult();
         assertNotNull(nextTask);
         assertEquals(user, nextTask.getAssignee());
+    }
+
+    /**
+     * Wait that a process instance is put as dead letter job.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the process instance to wait its placement as dead letter job.
+     */
+    protected void waitProcessInstanceAsDeadLetterJob(final String processInstanceId) throws InterruptedException {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final Thread waitingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean run = true;
+                try {
+                    while (run) {
+                        Thread.sleep(250);
+                        final DeadLetterJobQuery deadLetterJobQuery = AbstractTestEnvironment.this.flowableClient
+                                .getManagementService().createDeadLetterJobQuery().processInstanceId(processInstanceId);
+                        if (deadLetterJobQuery.singleResult() != null) {
+                            // the process instance is put as dead letter job
+                            run = false;
+                            lock.countDown();
+                        }
+                    }
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        waitingThread.start();
+        if (!lock.await(60, TimeUnit.SECONDS)) {
+            throw new AssertionError(
+                    String.format("Process instance '%s' not put as dead letter job.", processInstanceId));
+        }
     }
 
     /**

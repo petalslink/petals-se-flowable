@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.ManagementService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RuntimeService;
@@ -334,6 +335,13 @@ public class FlowableClient extends ExternalResource {
      */
     public org.flowable.engine.IdentityService getIdentityService() {
         return this.flowableClientEngine.getIdentityService();
+    }
+
+    /**
+     * @return The {@link ManagementService} of the Flowable engine
+     */
+    public ManagementService getManagementService() {
+        return this.flowableClientEngine.getManagementService();
     }
 
 }

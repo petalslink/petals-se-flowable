@@ -22,6 +22,8 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.PETALS_SENDER
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -125,8 +127,36 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 LOG.log(Level.WARNING, "An error occurs", e);
             }
         } else if (asyncExchange.isErrorStatus()) {
-            // TODO: The error should be pushed into CXF exchange
-            LOG.log(Level.WARNING, "An error occurs", asyncExchange.getExchangeId());
+            // TODO: The error is pushed into CXF exchange as a standard fault
+            LOG.log(Level.WARNING, String.format("An error occurs on exchange '%s'", asyncExchange.getExchangeId()),
+                    asyncExchange.getError());
+            final Document xmlPayload = DocumentBuilders.newDocument();
+            final Element envelope = xmlPayload.createElementNS("http://schemas.xmlsoap.org/soap/envelope/",
+                    "soap:Envelope");
+            final Element body = xmlPayload.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "soap:Body");
+            final Element fault = xmlPayload.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "soap:Fault");
+            xmlPayload.appendChild(envelope).appendChild(body).appendChild(fault);
+
+            final Element faultCode = xmlPayload.createElementNS(null, "faultcode");
+            faultCode.setTextContent("soap:Server");
+            fault.appendChild(faultCode);
+            final Element faultString = xmlPayload.createElementNS(null, "faultstring");
+            final StringWriter sw = new StringWriter();
+            try (final PrintWriter pw = new PrintWriter(sw)) {
+                asyncExchange.getError().printStackTrace(pw);
+            }
+            faultString.setTextContent(sw.toString());
+            fault.appendChild(faultString);
+
+            final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
+            DOMHelper.prettyPrint(xmlPayload, ebaos);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Error received as common soap fault: " + ebaos.toString());
+            }
+
+            msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());
+            cxfExchange.setInMessage(msg);
         } else {
             // TODO: MUST be optimized using directly XML message instead of SOAP message though CXF and Flowable using
             // an XML binding definition in the service WSDL. Waiting, we must wrapped the reply into a SOAP Envelope.
