@@ -62,7 +62,7 @@ public abstract class AnnotatedOperation {
      * The place holder of the incoming request containing the user identifier with which the BPMN operation must be
      * executed
      */
-    private final XPathExpression userIdHolder;
+    protected final XPathExpression userIdHolder;
 
     /**
      * The definition of variables of the operation read from the WSDL
@@ -157,11 +157,6 @@ public abstract class AnnotatedOperation {
             throw new ProcessDefinitionIdNotFoundInModelException(this.wsdlOperation, this.processDefinitionId);
         } else if (processDefinitionIdCount > 1) {
             throw new ProcessDefinitionIdDuplicatedInModelException(this.wsdlOperation, this.processDefinitionId);
-        }
-
-        // The mapping defining the user id is required
-        if (this.userIdHolder == null) {
-            throw new NoUserIdMappingException(this.wsdlOperation);
         }
 
         // The mapping defining the output XSLT style-sheet is required

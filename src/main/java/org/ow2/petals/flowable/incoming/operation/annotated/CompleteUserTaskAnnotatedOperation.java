@@ -32,6 +32,7 @@ import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.UserTask;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoUserTaskIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.UserTaskIdNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
@@ -115,6 +116,11 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperation {
         // The user task identifier is required
         if (this.userTaskId == null || this.userTaskId.trim().isEmpty()) {
             throw new NoUserTaskIdMappingException(this.wsdlOperation);
+        }
+
+        // The mapping defining the user id is required
+        if (this.userIdHolder == null) {
+            throw new NoUserIdMappingException(this.wsdlOperation);
         }
 
         // The mapping defining the process instance id is required to complete a user task

@@ -227,27 +227,32 @@ public abstract class FlowableOperation implements FlowableService {
      * 
      * @param incomingPayload
      *            The incoming XML payload
-     * @return The user identifier
+     * @return The user identifier, or {@code null} if no user id XPath expression is set
      * @throws OperationProcessingException
      *             An error occurs retrieving the user identifier
      */
     private String getUserIdFromIncomingPayload(final Document incomingPayload) throws OperationProcessingException {
-        final String userId;
-        try {
-            synchronized (this.userIdXPathExpr) {
-                userId = this.userIdXPathExpr.evaluate(incomingPayload);
-            }
-            if (userId == null || userId.trim().isEmpty()) {
-                throw new NoUserIdValueException(this.wsdlOperation);
-            }
 
-            if (this.logger.isLoggable(Level.FINE)) {
-                this.logger.fine("User identifier value: " + userId);
-            }
+        if (this.userIdXPathExpr != null) {
+            final String userId;
+            try {
+                synchronized (this.userIdXPathExpr) {
+                    userId = this.userIdXPathExpr.evaluate(incomingPayload);
+                }
+                if (userId == null || userId.trim().isEmpty()) {
+                    throw new NoUserIdValueException(this.wsdlOperation);
+                }
 
-            return userId;
-        } catch (final XPathExpressionException e) {
-            throw new OperationProcessingException(this.wsdlOperation, e);
+                if (this.logger.isLoggable(Level.FINE)) {
+                    this.logger.fine("User identifier value: " + userId);
+                }
+
+                return userId;
+            } catch (final XPathExpressionException e) {
+                throw new OperationProcessingException(this.wsdlOperation, e);
+            }
+        } else {
+            return null;
         }
     }
 
@@ -335,7 +340,7 @@ public abstract class FlowableOperation implements FlowableService {
      * @param domSource
      *            The incoming XML payload
      * @param userId
-     *            The user identifier
+     *            The user identifier. Can be {@code null} if no user id XPath expression is defined for the operation
      * @param processVars
      * @param outputNamedValues
      *            The output named values to generate response

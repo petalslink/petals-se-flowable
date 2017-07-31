@@ -392,34 +392,29 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
      * </ul>
      * </p>
      * <p>
-     * Expected results: An error occurs about a missing or empty user id placeholder for both BPMN actions, and an
-     * error occurs about no valid annotated operation found.
+     * Expected results: An error occurs about a missing or empty user id placeholder for action 'startEvent', and one
+     * valid annotated operation found.
      * </p>
      */
     @Test
     public void parse_WsdlWithUserIdPlaceHolderMissing() throws SAXException, IOException {
 
-        assertEquals(0,
+        assertEquals(1,
                 this.parser
                         .parse(this.readWsdlDocument("parser/missing-and-empty-user-id.wsdl"),
                                 Arrays.asList(this.readBpmnModel("parser/vacationRequest.bpmn20.xml")), SU_ROOT_PATH)
                         .size());
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
-        assertEquals(7, encounteredErrors.size());
-        boolean missingTagUserIdMappingOp1 = false;
+        assertEquals(5, encounteredErrors.size());
         boolean missingTagUserIdMappingOp2 = false;
         boolean tagNoSetUserIdMappingOp1 = false;
         boolean tagNoSetUserIdMappingOp2 = false;
         boolean emptyUserIdMappingOp1 = false;
         boolean emptyUserIdMappingOp2 = false;
-        boolean noBpmnOperationExceptionFound = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoUserIdMappingException) {
-                if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingTag")
-                        .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
-                    missingTagUserIdMappingOp1 = true;
-                } else if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingTag")
+                if (new QName(WSDL_TARGET_NAMESPACE, "validerDemande_missingTag")
                         .equals(((NoUserIdMappingException) exception).getWsdlOperation())) {
                     missingTagUserIdMappingOp2 = true;
                 } else if (new QName(WSDL_TARGET_NAMESPACE, "demanderConges_missingValue")
@@ -438,19 +433,15 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
                     fail("Unexpected operation: "
                             + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
-            } else if (exception instanceof NoBpmnOperationException) {
-                noBpmnOperationExceptionFound = true;
             } else {
                 fail("Unexpected error: " + exception.getClass());
             }
         }
-        assertTrue(missingTagUserIdMappingOp1);
         assertTrue(missingTagUserIdMappingOp2);
         assertTrue(tagNoSetUserIdMappingOp1);
         assertTrue(tagNoSetUserIdMappingOp2);
         assertTrue(emptyUserIdMappingOp1);
         assertTrue(emptyUserIdMappingOp2);
-        assertTrue(noBpmnOperationExceptionFound);
     }
 
     /**
