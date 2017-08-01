@@ -165,7 +165,7 @@ public abstract class StartEventOperation extends FlowableOperation {
         outputNamedValues.put(new QName(FlowableOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
                 SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID), bpmnProcessIdValue);
         outputNamedValues.put(new QName(FlowableOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
-                SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), bpmnUserId);
+                SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), bpmnUserId == null ? "" : bpmnUserId);
     }
 
     protected abstract ProcessInstance createProcessInstance(final Map<String, Object> processVars)
