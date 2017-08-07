@@ -97,7 +97,7 @@ public class CompleteUserTaskOperation extends FlowableOperation {
     public CompleteUserTaskOperation(final CompleteUserTaskAnnotatedOperation annotatedOperation,
             final TaskService taskService, final IdentityService identityService, final HistoryService historyService,
             final RuntimeService runtimeService, final Logger logger) {
-        super(annotatedOperation, logger);
+        super(annotatedOperation, annotatedOperation.getOutputTemplate(), logger);
         this.identityService = identityService;
         this.taskService = taskService;
         this.historyService = historyService;

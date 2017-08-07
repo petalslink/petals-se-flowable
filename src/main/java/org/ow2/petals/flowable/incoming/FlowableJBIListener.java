@@ -105,20 +105,12 @@ public class FlowableJBIListener extends AbstractJBIListener {
                 // Provider role
                 if (exchange.isProviderRole()) {
                     try {
+                        // The MEP is checked by the Flowable operation execution below
+
                         // Get the InMessage
                         final NormalizedMessage normalizedMessage = exchange.getInMessage();
                         if (logger.isLoggable(Level.FINE)) {
                             logger.fine("normalizedMessage = " + normalizedMessage.toString());
-                        }
-
-                        // Validate Message pattern
-                        if (!exchange.isInOutPattern()) {
-                            // TODO: Add a unit test
-                            if (logger.isLoggable(Level.WARNING)) {
-                                logger.warning(this.logHint
-                                        + " encountered a problem. The exchange pattern must be IN/OUT !");
-                            }
-                            throw new MessagingException("The exchange pattern must be IN/OUT !");
                         }
 
                         final String eptName = exchange.getEndpointName();

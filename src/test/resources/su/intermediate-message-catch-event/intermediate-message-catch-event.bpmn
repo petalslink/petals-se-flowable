@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath"
+   
+   xmlns:imce="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event"
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event">
+   
+   <import location="intermediate-message-catch-event.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event"
+    importType="http://schemas.xmlsoap.org/wsdl/" />
+   
+   <process id="intermediate-message-catch-event" name="Process Intermediate Message Catch Event" isExecutable="true">
+      <startEvent id="startevent1" name="Start"/>
+      <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="messageIntermediateCatchEventId"/>
+      <intermediateCatchEvent id="messageIntermediateCatchEventId" name="MessageCatchEventName">
+         <messageEventDefinition id="messageEvtDefId" messageRef="imce:myMessageId" />
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow4" sourceRef="messageIntermediateCatchEventId" targetRef="endevent1"/>
+      <endEvent id="endevent1" name="End"/>
+   </process>
+   
+   <!-- TODO: It seems that a bug exists in line 38 of org.flowable.engine.impl.bpmn.parser.handler.MessageEventDefinitionParseHandler: we should use message.getId() instead of message.getName() -->
+   <message id="myMessageId" name="myMessageName" itemRef="imce:myMessageItem" />
+   <itemDefinition id="myMessageItem" structureRef="imce:Start" />
+   
+</definitions>

@@ -31,7 +31,6 @@ import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FormProperty;
 import org.flowable.bpmn.model.Process;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
-import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoOutputMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoUserIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.ProcessDefinitionIdDuplicatedInModelException;
@@ -75,11 +74,6 @@ public abstract class AnnotatedOperation {
     private final Map<String, FormProperty> variableTypes = new HashMap<>();
 
     /**
-     * The output XSLT style-sheet compiled
-     */
-    private final Templates outputTemplate;
-
-    /**
      * The XSLT style-sheet compiled associated to WSDL faults. The key is the class simple name of the exception
      * associated to the fault.
      */
@@ -104,8 +98,6 @@ public abstract class AnnotatedOperation {
      *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
      * @param variables
      *            The definition of variables of the operation
-     * @param outputTemplate
-     *            The output XSLT style-sheet compiled
      * @param faultTemplates
      *            The XSLT style-sheet compiled associated to WSDL faults
      * @throws InvalidAnnotationForOperationException
@@ -113,14 +105,13 @@ public abstract class AnnotatedOperation {
      */
     protected AnnotatedOperation(final QName wsdlOperation, final String processDefinitionId,
             final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
-            final Templates outputTemplate, final Map<String, Templates> faultTemplates)
+            final Map<String, Templates> faultTemplates)
             throws InvalidAnnotationForOperationException {
         super();
         this.wsdlOperation = wsdlOperation;
         this.processDefinitionId = processDefinitionId;
         this.userIdHolder = userIdHolder;
         this.variables = variables;
-        this.outputTemplate = outputTemplate;
         this.faultTemplates = faultTemplates;
     }
 
@@ -157,11 +148,6 @@ public abstract class AnnotatedOperation {
             throw new ProcessDefinitionIdNotFoundInModelException(this.wsdlOperation, this.processDefinitionId);
         } else if (processDefinitionIdCount > 1) {
             throw new ProcessDefinitionIdDuplicatedInModelException(this.wsdlOperation, this.processDefinitionId);
-        }
-
-        // The mapping defining the output XSLT style-sheet is required
-        if (this.outputTemplate == null) {
-            throw new NoOutputMappingException(wsdlOperation);
         }
 
         this.doAnnotationCoherenceCheck(modelContainingProcessDefinitionId);
@@ -253,13 +239,6 @@ public abstract class AnnotatedOperation {
      */
     public Map<String, FormProperty> getVariableTypes() {
         return this.variableTypes;
-    }
-
-    /**
-     * @return The output XSLT style-sheet compiled
-     */
-    public Templates getOutputTemplate() {
-        return this.outputTemplate;
     }
 
     /**

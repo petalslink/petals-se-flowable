@@ -80,6 +80,8 @@ public class NoneStartEventAnnotatedOperation extends StartEventAnnotatedOperati
     @Override
     public void doAnnotationCoherenceCheck(final BpmnModel model) throws InvalidAnnotationForOperationException {
 
+        super.doAnnotationCoherenceCheck(model);
+
         // The start event identifier is required
         if (this.noneStartEventId == null || this.noneStartEventId.trim().isEmpty()) {
             throw new NoNoneStartEventIdMappingException(this.wsdlOperation);

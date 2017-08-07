@@ -99,6 +99,8 @@ public class MessageStartEventAnnotatedOperation extends StartEventAnnotatedOper
     @Override
     public void doAnnotationCoherenceCheck(final BpmnModel model) throws InvalidAnnotationForOperationException {
 
+        super.doAnnotationCoherenceCheck(model);
+
         // The start event message name is required
         if (this.startEventMessageName == null || this.startEventMessageName.trim().isEmpty()) {
             throw new NoStartEventMessageNameMappingException(this.wsdlOperation);

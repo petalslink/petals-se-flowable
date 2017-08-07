@@ -32,7 +32,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnn
  * @author Christophe DENEUX - Linagora
  * 
  */
-public abstract class StartEventAnnotatedOperation extends AnnotatedOperation {
+public abstract class StartEventAnnotatedOperation extends AnnotatedOperationWithOut {
 
     public static final String BPMN_ACTION = "startEvent";
 

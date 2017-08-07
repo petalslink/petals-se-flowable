@@ -116,6 +116,12 @@ public class AnnotatedWsdlParser {
     private static final String BPMN_ANNOTATION_START_EVENT_MESSAGE_NAME = "start-event-message-name";
 
     /**
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the message name of the step
+     * 'intermediate message catch event' on which the action will be realized
+     */
+    private static final String BPMN_ANNOTATION_MESSAGE_EVENT_NAME = "message-event-name";
+
+    /**
      * Local part of the attribute of {@link #BPMN_ANNOTATION_OPERATION} containing the user task identifier on which
      * the action will be realized
      */
@@ -340,6 +346,19 @@ public class AnnotatedWsdlParser {
             annotatedOperation = new CompleteUserTaskAnnotatedOperation(wsdlOperationName, processDefinitionKey,
                     userTaskId, bpmnProcessInstanceId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate,
                     bpmnFaultTemplates);
+        } else if (IntermediateMessageCatchEventAnnotatedOperation.BPMN_ACTION.equals(action)) {
+
+            // get the intermediate message catch event id on which the action must be done
+            final String messageEventId = ((Element) bpmnOperation).getAttribute(BPMN_ANNOTATION_MESSAGE_EVENT_NAME);
+
+            // Get the node "bpmn:processId" and its message
+            final XPathExpression bpmnProcessInstanceId = this.getProcessInstanceIdXpathExpr(wsdlOperation,
+                    wsdlOperationName, xpathBuilder);
+
+            annotatedOperation = new IntermediateMessageCatchEventAnnotatedOperation(wsdlOperationName,
+                    processDefinitionKey, bpmnProcessInstanceId, messageEventId, bpmnOperationVariables,
+                    bpmnFaultTemplates);
+
         } else {
             throw new UnsupportedActionException(wsdlOperationName, action);
         }

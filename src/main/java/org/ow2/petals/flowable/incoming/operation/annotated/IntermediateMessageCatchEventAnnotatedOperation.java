@@ -26,48 +26,44 @@ import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
 import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.EventDefinition;
 import org.flowable.bpmn.model.FlowElement;
-import org.flowable.bpmn.model.FormProperty;
+import org.flowable.bpmn.model.IntermediateCatchEvent;
+import org.flowable.bpmn.model.MessageEventDefinition;
 import org.flowable.bpmn.model.Process;
-import org.flowable.bpmn.model.UserTask;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.IntermediateMessageCatchEventIdNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoIntermediateMessageCatchEventIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
-import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoUserIdMappingException;
-import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoUserTaskIdMappingException;
-import org.ow2.petals.flowable.incoming.operation.annotated.exception.UserTaskIdNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
-import org.ow2.petals.flowable.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
-import org.ow2.petals.flowable.incoming.operation.exception.TaskCompletedException;
-import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedUserException;
 
 /**
- * The BPMN operation 'complete user task' extracted from WDSL according to BPMN annotations. This operation is used to
- * complete a user task of process instance..
+ * The BPMN operation 'intermediate message catch event' extracted from WDSL according to BPMN annotations. This
+ * operation is used to notify a process instance of an event receipt.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOut {
+public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOperation {
 
-    public static final String BPMN_ACTION = "userTask";
+    public static final String BPMN_ACTION = "intermediateMessageCatch";
 
     private static final List<String> EXCEPTIONS_MAPPED;
 
     static {
-        EXCEPTIONS_MAPPED = new ArrayList<String>();
+        EXCEPTIONS_MAPPED = new ArrayList<>();
         for (final Class<OperationProcessingFault> exception : new Class[] { ProcessInstanceNotFoundException.class,
-                TaskCompletedException.class, NoProcessInstanceIdValueException.class, NoUserIdValueException.class,
-                UnexpectedUserException.class }) {
+                NoProcessInstanceIdValueException.class }) {
             EXCEPTIONS_MAPPED.add(exception.getSimpleName());
         }
     }
 
     /**
-     * The identifier of the user task on which the completion action must be realized on the BPMN process side
+     * The message name associated to the intermediate catch event in the BPMN definition
      */
-    private final String userTaskId;
+    private final String messageEventName;
 
     /**
      * The place holder of the incoming request containing the process instance identifier on which the BPMN operation
@@ -81,27 +77,24 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
      *            The WSDL operation containing the current annotations
      * @param processDefinitionId
      *            The BPMN process definition identifier associated to the BPMN operation. Not <code>null</code>.
-     * @param userTaskId
      * @param processInstanceIdHolder
      *            The placeholder of BPMN process instance identifier associated to the BPMN operation. Not
      *            <code>null</code>.
-     * @param userIdHolder
-     *            The placeholder of BPMN user identifier associated to the BPMN operation. Not <code>null</code>.
+     * @param messageEventName
+     *            The message name associated to the intermediate catch event in the BPMN model
      * @param variables
      *            The definition of variables of the operation
-     * @param outputTemplate
-     *            The output XSLT style-sheet compiled
      * @param faultTemplates
      *            The XSLT style-sheet compiled associated to WSDL faults
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
-    public CompleteUserTaskAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
-            final String userTaskId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+    public IntermediateMessageCatchEventAnnotatedOperation(final QName wsdlOperationName,
+            final String processDefinitionId, final XPathExpression processInstanceIdHolder,
+            final String messageEventName, final Map<String, XPathExpression> variables,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
-        this.userTaskId = userTaskId;
+        super(wsdlOperationName, processDefinitionId, null, variables, faultTemplates);
+        this.messageEventName = messageEventName;
         this.processInstanceIdHolder = processInstanceIdHolder;
     }
 
@@ -113,53 +106,39 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
     @Override
     public void doAnnotationCoherenceCheck(final BpmnModel model) throws InvalidAnnotationForOperationException {
 
-        super.doAnnotationCoherenceCheck(model);
-
-        // The user task identifier is required
-        if (this.userTaskId == null || this.userTaskId.trim().isEmpty()) {
-            throw new NoUserTaskIdMappingException(this.wsdlOperation);
+        // The message event identifier is required
+        if (this.messageEventName == null || this.messageEventName.trim().isEmpty()) {
+            throw new NoIntermediateMessageCatchEventIdMappingException(this.wsdlOperation);
         }
 
-        // The mapping defining the user id is required
-        if (this.userIdHolder == null) {
-            throw new NoUserIdMappingException(this.wsdlOperation);
-        }
-
-        // The mapping defining the process instance id is required to complete a user task
+        // The mapping defining the process instance id is required for intermediate message catch event
         if (this.processInstanceIdHolder == null) {
             throw new NoProcessInstanceIdMappingException(this.wsdlOperation);
         }
 
-        // The mapping defining the user task identifier must be declared in the process definition
-        final List<FormProperty> formPropertyList = this.findFormPropertiesOfUserTask(model);
-        if (formPropertyList == null) {
-            throw new UserTaskIdNotFoundInModelException(this.wsdlOperation, this.userTaskId,
-                    this.getProcessDefinitionId());
-        } else {
-            for (final FormProperty formPropertie : formPropertyList) {
-                this.getVariableTypes().put(formPropertie.getId(), formPropertie);
-            }
-        }
-    }
-
-    /**
-     * Find form properties of the current user task
-     * 
-     * @param model
-     *            BPMN model containing the process definition with the current user task
-     * @return The form properties of the current user task, or {@code null} if the no user task exists with the given
-     *         user task identifier ({@link #userTaskId}).
-     */
-    private List<FormProperty> findFormPropertiesOfUserTask(final BpmnModel model) {
+        // The mapping defining the intermediate message catch event identifier must be declared in the process
+        // definition
         final Process process = model.getProcessById(this.getProcessDefinitionId());
+        boolean catchEventFound = false;
         for (final FlowElement flowElt : process.getFlowElements()) {
-            // search the user task
-            if ((flowElt instanceof UserTask) && (flowElt.getId().equals(this.userTaskId))) {
-                final UserTask userTask = (UserTask) flowElt;
-                return userTask.getFormProperties();
+            // search the intermediate message catch event
+            if (flowElt instanceof IntermediateCatchEvent) {
+                final IntermediateCatchEvent intermediateCatchEvent = (IntermediateCatchEvent) flowElt;
+                final List<EventDefinition> eventDefinitions = intermediateCatchEvent.getEventDefinitions();
+                if (eventDefinitions != null && eventDefinitions.size() == 1
+                        && eventDefinitions.get(0) instanceof MessageEventDefinition) {
+                    final String messageRef = ((MessageEventDefinition) eventDefinitions.get(0)).getMessageRef();
+                    if (this.messageEventName.equals(model.getMessage(messageRef).getName())) {
+                        catchEventFound = true;
+                        break;
+                    }
+                }
             }
         }
-        return null;
+        if (!catchEventFound) {
+            throw new IntermediateMessageCatchEventIdNotFoundInModelException(this.wsdlOperation, this.messageEventName,
+                    this.getProcessDefinitionId());
+        }
     }
 
     @Override
@@ -175,10 +154,11 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
     }
 
     /**
-     * @return The identifier of the user task on which the completion action must be realized on the BPMN process side
+     * @return The message name of the intermediate catch event on which the action must be realized on the BPMN process
+     *         side
      */
-    public String getUserTaskId() {
-        return this.userTaskId;
+    public String getMessageEventName() {
+        return this.messageEventName;
     }
 
 }

@@ -46,11 +46,13 @@ import org.ow2.petals.flowable.exception.ProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.incoming.operation.CompleteUserTaskOperation;
 import org.ow2.petals.flowable.incoming.operation.EmbeddedProcessDefinition;
 import org.ow2.petals.flowable.incoming.operation.FlowableOperation;
+import org.ow2.petals.flowable.incoming.operation.IntermediateMessageCatchEventOperation;
 import org.ow2.petals.flowable.incoming.operation.MessageStartEventOperation;
 import org.ow2.petals.flowable.incoming.operation.NoneStartEventOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.AnnotatedWsdlParser;
 import org.ow2.petals.flowable.incoming.operation.annotated.CompleteUserTaskAnnotatedOperation;
+import org.ow2.petals.flowable.incoming.operation.annotated.IntermediateMessageCatchEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.MessageStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationException;
@@ -456,6 +458,10 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                         getComponent().getProcessEngine().getTaskService(),
                         getComponent().getProcessEngine().getIdentityService(),
                         getComponent().getProcessEngine().getHistoryService(),
+                        getComponent().getProcessEngine().getRuntimeService(), this.logger));
+            } else if (annotatedOperation instanceof IntermediateMessageCatchEventAnnotatedOperation) {
+                operations.add(new IntermediateMessageCatchEventOperation(
+                        (IntermediateMessageCatchEventAnnotatedOperation) annotatedOperation,
                         getComponent().getProcessEngine().getRuntimeService(), this.logger));
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported

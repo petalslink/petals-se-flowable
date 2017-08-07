@@ -41,6 +41,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.Duplicated
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedOutputMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedVariableException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.FaultXslNotFoundException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.IntermediateMessageCatchEventIdNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidBpmnActionAttributesException;
@@ -51,6 +52,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoBpmnOper
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoBpmnOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoFaultMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoFaultNameMappingException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoIntermediateMessageCatchEventIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoOutputMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessDefinitionIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
@@ -1803,5 +1805,88 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
         assertTrue(invalidFaultXsltMappingOp1);
         assertTrue(invalidFaultXsltMappingOp2);
         assertTrue(noBpmnOperationExceptionFound);
+    }
+
+    /**
+     * <p>
+     * Check the parser against a WSDL containing BPMN annotations 'intermediate message catch event'.
+     */
+    @Test
+    public void parse_WsdlIntermediateMessageCatchEvent() throws SAXException, IOException {
+
+        final List<AnnotatedOperation> operations =
+                this.parser.parse(this.readWsdlDocument("parser/intermediate-message-catch-event.wsdl"),
+                        Arrays.asList(this.readBpmnModel("parser/intermediate-message-catch-event.bpmn")),
+                        SU_ROOT_PATH);
+        assertEquals(1, operations.size());
+        assertEquals("valid", operations.get(0).wsdlOperation.getLocalPart());
+
+        final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
+        assertEquals(8, encounteredErrors.size());
+        boolean attrMsgEventNameMissing = false;
+        boolean attrMsgEventNameEmpty = false;
+        boolean procDefIdMissing = false;
+        boolean procDefIdEmpty = false;
+        boolean eventUnknown = false;
+        boolean procInstIdMissing = false;
+        boolean procInstIdNoValue = false;
+        boolean procInstIdEmpty = false;
+        for (final InvalidAnnotationException exception : encounteredErrors) {
+            if (exception instanceof NoProcessInstanceIdMappingException) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_procInstIdMissing")
+                        .equals(((NoProcessInstanceIdMappingException) exception).getWsdlOperation())) {
+                    procInstIdMissing = true;
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_procInstIdNoValue")
+                        .equals(((NoProcessInstanceIdMappingException) exception).getWsdlOperation())) {
+                    procInstIdNoValue = true;
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_procInstIdEmpty")
+                        .equals(((NoProcessInstanceIdMappingException) exception).getWsdlOperation())) {
+                    procInstIdEmpty = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
+                }
+            } else if (exception instanceof NoProcessDefinitionIdMappingException) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_procDefIdMissing")
+                        .equals(((NoProcessDefinitionIdMappingException) exception).getWsdlOperation())) {
+                    procDefIdMissing = true;
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_procDefIdEmpty")
+                        .equals(((NoProcessDefinitionIdMappingException) exception).getWsdlOperation())) {
+                    procDefIdEmpty = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
+                }
+            } else if (exception instanceof NoIntermediateMessageCatchEventIdMappingException) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_attrMsgEventNameMissing")
+                        .equals(((NoIntermediateMessageCatchEventIdMappingException) exception).getWsdlOperation())) {
+                    attrMsgEventNameMissing = true;
+                } else if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_attrMsgEventNameEmpty")
+                        .equals(((NoIntermediateMessageCatchEventIdMappingException) exception).getWsdlOperation())) {
+                    attrMsgEventNameEmpty = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
+                }
+            } else if (exception instanceof IntermediateMessageCatchEventIdNotFoundInModelException) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_eventUnknown").equals(
+                        ((IntermediateMessageCatchEventIdNotFoundInModelException) exception).getWsdlOperation())) {
+                    eventUnknown = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
+                }
+            } else {
+                fail("Unexpected error: " + exception.getClass());
+            }
+        }
+        assertTrue(attrMsgEventNameMissing);
+        assertTrue(attrMsgEventNameEmpty);
+        assertTrue(eventUnknown);
+        assertTrue(procDefIdMissing);
+        assertTrue(procDefIdEmpty);
+        assertTrue(procInstIdMissing);
+        assertTrue(procInstIdNoValue);
+        assertTrue(procInstIdEmpty);
     }
 }

@@ -37,6 +37,7 @@ import org.flowable.bpmn.model.FormValue;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.operation.annotated.AnnotatedOperation;
+import org.ow2.petals.flowable.incoming.operation.exception.InvalidMEPException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
@@ -132,13 +133,14 @@ public abstract class FlowableOperation implements FlowableService {
      *            The process definition identifier to associate to the operation to create
      * @param logger
      */
-    protected FlowableOperation(final AnnotatedOperation annotatedOperation, final Logger logger) {
+    protected FlowableOperation(final AnnotatedOperation annotatedOperation, final Templates outTemplates,
+            final Logger logger) {
         this.wsdlOperation = annotatedOperation.getWsdlOperation();
         this.processDefinitionId = annotatedOperation.getProcessDefinitionId();
         this.userIdXPathExpr = annotatedOperation.getUserIdHolder();
         this.variables = annotatedOperation.getVariables();
         this.variableTypes = annotatedOperation.getVariableTypes();
-        this.outputTemplate = annotatedOperation.getOutputTemplate();
+        this.outputTemplate = outTemplates;
         this.faultTemplates = annotatedOperation.getFaultTemplates();
         this.logger = logger;
     }
@@ -162,10 +164,24 @@ public abstract class FlowableOperation implements FlowableService {
         this.logger.fine("Flowable ActionType (TaskId) = " + this.getAction());
     }
 
+    /**
+     * Check if the current MEP has sens in the co,text of the Flowable operation
+     * 
+     * @param exchange
+     *            The current exchange
+     * @throws OperationProcessingException
+     *             An error occurs du
+     */
+    protected void checkMEP(final Exchange exchange) throws InvalidMEPException {
+        // By default all MEPs are accepted
+    }
+
     @Override
     public final void execute(final Exchange exchange) {
 
         try {
+            this.checkMEP(exchange);
+
             final Document incomingPayload = exchange.getInMessageContentAsDocument();
 
             if (this.logger.isLoggable(Level.FINE)) {
@@ -189,26 +205,35 @@ public abstract class FlowableOperation implements FlowableService {
                 final Map<QName, String> xslParameters = new HashMap<>();
                 this.doExecute(incomingPayload, userId, variableValues, xslParameters, exchange);
 
-                try {
-                    exchange.setOutMessageContent(XslUtils.createXmlPayload(this.outputTemplate, xslParameters,
-                            this.logger));
-                } catch (final TransformerException e) {
-                    throw new OperationProcessingException(this.wsdlOperation, e);
+                if (exchange.isInOutPattern()) {
+                    try {
+                        exchange.setOutMessageContent(
+                                XslUtils.createXmlPayload(this.outputTemplate, xslParameters, this.logger));
+                    } catch (final TransformerException e) {
+                        throw new OperationProcessingException(this.wsdlOperation, e);
+                    }
                 }
 
             } catch (final OperationProcessingFault e) {
-                // A fault occurs during the operation processing
-                final Templates faultTemplate = this.faultTemplates.get(e.getClass().getSimpleName());
-                if (faultTemplate == null) {
-                    // No fault mapped --> Processing as an error
-                    throw new OperationProcessingException(this.wsdlOperation, e);
-                }
-                final Fault fault = exchange.createFault();
-                try {
-                    fault.setContent(XslUtils.createXmlPayload(faultTemplate, e.getXslParameters(), this.logger));
-                    exchange.setFault(fault);
-                } catch (final TransformerException e1) {
-                    throw new OperationProcessingException(this.wsdlOperation, e1);
+                // A fault occurs during the operation processing.
+
+                // A fault can be returned only for MEPs 'InOut' and 'RobustInOnly'
+                if (exchange.isInOutPattern() || exchange.isRobustInOnlyPattern()) {
+                    final Templates faultTemplate = this.faultTemplates.get(e.getClass().getSimpleName());
+                    if (faultTemplate == null) {
+                        // No fault mapped --> Processing as an error
+                        throw new OperationProcessingException(this.wsdlOperation, e);
+                    }
+                    final Fault fault = exchange.createFault();
+                    try {
+                        fault.setContent(XslUtils.createXmlPayload(faultTemplate, e.getXslParameters(), this.logger));
+                        exchange.setFault(fault);
+                    } catch (final TransformerException e1) {
+                        throw new OperationProcessingException(this.wsdlOperation, e1);
+                    }
+                } else {
+                    // pattern 'InOnly'
+                    exchange.setError(e);
                 }
             }
         } catch (final OperationProcessingException e) {
