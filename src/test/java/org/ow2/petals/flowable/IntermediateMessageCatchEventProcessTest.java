@@ -25,6 +25,10 @@ import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
+import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
+import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
+import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.AlreadyUnlocked;
+import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.NotLocked;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Start;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.StartResponse;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Unlock;
@@ -40,10 +44,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  */
 public class IntermediateMessageCatchEventProcessTest extends IntermediateMessageCatchEventProcessTestEnvironment {
 
-    private static final String ERROR_MSG = "A dummy error occurs";
-
-    private static final String CUSTOMER_ADRESS = "customer adress";
-
     /**
      * <p>
      * Check the message processing where: a valid request is sent to event receipt.
@@ -52,12 +52,21 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
      * Expected results:
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
-     * <li>the process instance is automatically completed when the event is received.</li>
+     * <li>if the event is received when not expected by the BPMN engine, an error is returned,</li>
+     * <li>if the event is received when expected by the BPMN engine, no error occurs and the process execution
+     * continues,</li>
+     * <li>if the event is received when already recieved by the BPMN engine, an error is returned,</li>
+     * <li>the process instance is automatically completed when all is correctly done.</li>
      * </ul>
      * </p>
      */
     @Test
-    public void nominal() throws Exception {
+    public void execute() throws Exception {
+
+        // ------------------------------------------------------------
+        // Create a new instance of the process definition:
+        // - After creation, the process instance is waiting a user task completion
+        // ------------------------------------------------------------
 
         // Create a new instance of the process definition
         final StringBuilder processInstance = new StringBuilder();
@@ -83,19 +92,108 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         }
 
         assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
 
-        // Send the event to the process instance
+        // ----------------------------------------------------------------------------
+        // Send the intermediate message event when not expected by the BPMN engine
+        // - Expected status ERROR with MEP InOnly
+        // - Expected fault with MEP RobustInOnly
+        // ----------------------------------------------------------------------------
         {
             final Unlock unlockRequest = new Unlock();
             unlockRequest.setInstanceId(processInstance.toString());
 
-            final RequestToProviderMessage request_2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                    INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
+                    AbsItfOperation.MEPPatternConstants.IN_ONLY.value(), toByteArray(unlockRequest));
+            COMPONENT_UNDER_TEST.pushRequestToProvider(request);
+            final StatusMessage response = COMPONENT_UNDER_TEST.pollStatusFromProvider();
+            assertEquals(ExchangeStatus.ERROR, response.getStatus());
+            assertTrue(response.getError() instanceof UnexpectedMessageEventException);
+        }
+        {
+            final Unlock unlockRequest = new Unlock();
+            unlockRequest.setInstanceId(processInstance.toString());
+
+            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                     INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
                     AbsItfOperation.MEPPatternConstants.ROBUST_IN_ONLY.value(), toByteArray(unlockRequest));
-            COMPONENT_UNDER_TEST.pushRequestToProvider(request_2);
-            final StatusMessage response_2 = COMPONENT_UNDER_TEST.pollStatusFromProvider();
-            assertEquals(ExchangeStatus.DONE, response_2.getStatus());
+            COMPONENT_UNDER_TEST.pushRequestToProvider(request);
+            final ResponseMessage response = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            assertEquals(ExchangeStatus.ACTIVE, response.getStatus());
+            final Source fault = response.getFault();
+            assertNotNull("No fault returns", fault);
+            final Object responseObj = UNMARSHALLER.unmarshal(fault);
+            assertTrue(responseObj instanceof NotLocked);
+            final NotLocked responseBean = (NotLocked) responseObj;
+            assertEquals(processInstance.toString(), responseBean.getInstanceId());
+            assertEquals("myMessageName", responseBean.getEventName());
         }
+
+        assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
+
+        // Complete the user task
+        this.flowableClient.completeUserTask(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        assertUserTaskEnded(processInstance.toString(), USER_TASK_1, BPMN_USER);
+
+        // ----------------------------------------------------------------------------
+        // Send the intermediate message event when expected by the BPMN engine
+        // ----------------------------------------------------------------------------
+        {
+            final Unlock unlockRequest = new Unlock();
+            unlockRequest.setInstanceId(processInstance.toString());
+
+            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                    INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
+                    AbsItfOperation.MEPPatternConstants.ROBUST_IN_ONLY.value(), toByteArray(unlockRequest));
+            COMPONENT_UNDER_TEST.pushRequestToProvider(request);
+            final StatusMessage response = COMPONENT_UNDER_TEST.pollStatusFromProvider();
+            assertEquals(ExchangeStatus.DONE, response.getStatus());
+        }
+
+        assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        waitUserTaskAssignment(processInstance.toString(), USER_TASK_2, BPMN_USER);
+
+        // ----------------------------------------------------------------------------
+        // Send the intermediate message event when it was already processed by the BPMN engine
+        // - Expected status ERROR with MEP InOnly
+        // - Expected fault with MEP RobustInOnly
+        // ----------------------------------------------------------------------------
+        {
+            final Unlock unlockRequest = new Unlock();
+            unlockRequest.setInstanceId(processInstance.toString());
+
+            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                    INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
+                    AbsItfOperation.MEPPatternConstants.IN_ONLY.value(), toByteArray(unlockRequest));
+            COMPONENT_UNDER_TEST.pushRequestToProvider(request);
+            final StatusMessage response = COMPONENT_UNDER_TEST.pollStatusFromProvider();
+            assertEquals(ExchangeStatus.ERROR, response.getStatus());
+            assertTrue(response.getError() instanceof MessageEventReceivedException);
+        }
+        {
+            final Unlock unlockRequest = new Unlock();
+            unlockRequest.setInstanceId(processInstance.toString());
+
+            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                    INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
+                    AbsItfOperation.MEPPatternConstants.ROBUST_IN_ONLY.value(), toByteArray(unlockRequest));
+            COMPONENT_UNDER_TEST.pushRequestToProvider(request);
+            final ResponseMessage response = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            assertEquals(ExchangeStatus.ACTIVE, response.getStatus());
+            final Source fault = response.getFault();
+            assertNotNull("No fault returns", fault);
+            final Object responseObj = UNMARSHALLER.unmarshal(fault);
+            assertTrue(responseObj instanceof AlreadyUnlocked);
+            final AlreadyUnlocked responseBean = (AlreadyUnlocked) responseObj;
+            assertEquals(processInstance.toString(), responseBean.getInstanceId());
+            assertEquals("myMessageName", responseBean.getEventName());
+        }
+
+        // Complete the 2nd user task
+        this.flowableClient.completeUserTask(processInstance.toString(), USER_TASK_2, BPMN_USER);
+        assertUserTaskEnded(processInstance.toString(), USER_TASK_2, BPMN_USER);
 
         // Wait the end of the process instance
         waitEndOfProcessInstance(processInstance.toString());

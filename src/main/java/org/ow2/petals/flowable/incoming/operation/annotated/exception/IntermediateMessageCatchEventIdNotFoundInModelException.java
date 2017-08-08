@@ -20,44 +20,45 @@ package org.ow2.petals.flowable.incoming.operation.annotated.exception;
 import javax.xml.namespace.QName;
 
 /**
- * The annotation defining the intermediate message catch event identifier is required for the given WSDL binding
- * operation.
+ * The identifier of the activity associated to a intermediate message catch event is required in the BPMN model
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
 public class IntermediateMessageCatchEventIdNotFoundInModelException extends InvalidAnnotationForOperationException {
 
-    private static final long serialVersionUID = -7681993234219908379L;
+    private static final long serialVersionUID = -550620840410922149L;
 
-    private static final String MESSAGE_PATTERN = "The annotation defining the intermediate message catch event identifier is set to a value '%s' that does not exist into the process definition '%s'";
+    private static final String MESSAGE_PATTERN = "The identifier of the activity associated to the intermediate message catch event '%s' is required in the process '%s'";
 
     /**
-     * The intermediate message catch event identifier that does not exist in the BPMN model
+     * The message name associated to the intermediate message catch event for which the identifier is missing in the
+     * BPMN model
      */
-    private final String messageEventId;
+    private final String messageEventName;
 
     /**
-     * The process definition identifier for which the user task identifier is not found
+     * The identifier of the process definition containing the invalid intermediate message event activity
      */
     private final String processDefinitionId;
 
     public IntermediateMessageCatchEventIdNotFoundInModelException(final QName wsdlOperation,
-            final String messageEventId, final String processDefinitionId) {
-        super(wsdlOperation, String.format(MESSAGE_PATTERN, messageEventId, processDefinitionId));
-        this.messageEventId = messageEventId;
+            final String messageEventName, final String processDefinitionId) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, messageEventName, processDefinitionId));
+        this.messageEventName = messageEventName;
         this.processDefinitionId = processDefinitionId;
     }
 
     /**
-     * @return The intermediate message catch event identifier that does not exist in the BPMN model
+     * @return The message name associated to the intermediate message catch event for which the identifier is missing
+     *         in the BPMN model
      */
-    public String getMessageEventId() {
-        return this.messageEventId;
+    public String getMessageEventName() {
+        return this.messageEventName;
     }
 
     /**
-     * @return The process definition identifier for which the action identifier is not found
+     * @return The identifier of the process definition containing the invalid intermediate message event activity
      */
     public String getProcessDefinitionId() {
         return this.processDefinitionId;

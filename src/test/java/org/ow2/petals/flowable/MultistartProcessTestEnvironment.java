@@ -201,6 +201,10 @@ public abstract class MultistartProcessTestEnvironment extends AbstractTestEnvir
         }
     }
 
+    public MultistartProcessTestEnvironment() {
+        super(VACATION_SU_HOME + "idm-engine-configurator.properties");
+    }
+
     @Override
     protected ComponentUnderTest getComponentUnderTest() {
         return COMPONENT_UNDER_TEST;

@@ -69,6 +69,11 @@ public abstract class FlowableOperation implements FlowableService {
     public static final String SCHEMA_OUTPUT_XSLT_PARAM_TASK_ID = "taskId";
 
     /**
+     * Local part of the special parameter name about the message name for the output XSLT style-sheet
+     */
+    public static final String SCHEMA_OUTPUT_XSLT_PARAM_MESSAGE_NAME = "messageName";
+
+    /**
      * Namespace of process instance parameters for the output XSLT style-sheet
      */
     protected static final String SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS = "http://petals.ow2.org/se/flowable/output-params/1.0/process-instance";

@@ -34,6 +34,7 @@ import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.task.Task;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
@@ -123,7 +124,7 @@ public class FlowableClient extends ExternalResource {
      * Creates a temporary Flowable client connected to a default Flowable server:
      * <ul>
      * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
-     * <li>JDBC URL: an embedded in-memoty H2 database,</li>
+     * <li>JDBC URL: an embedded in-memory H2 database,</li>
      * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
      * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
      * </ul>
@@ -136,7 +137,8 @@ public class FlowableClient extends ExternalResource {
      */
     public FlowableClient(final SeFlowableIdmServiceConfigurator idmEngineConfigurator,
             final String idmEngineConfiguratorCfg) {
-        this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:ativiti-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME, DEFAULT_JDBC_PWD,
+        this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:flowable-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME,
+                DEFAULT_JDBC_PWD,
                 idmEngineConfigurator, idmEngineConfiguratorCfg);
     }
 
@@ -160,6 +162,24 @@ public class FlowableClient extends ExternalResource {
             final File idmEngineConfiguratorCfg) {
         this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:ativiti-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME, DEFAULT_JDBC_PWD,
                 idmEngineConfigurator, idmEngineConfiguratorCfg);
+    }
+
+    /**
+     * <p>
+     * Creates a temporary Flowable client connected to a default Flowable server:
+     * <ul>
+     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC URL: an embedded H2 database as file,</li>
+     * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
+     * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param fileForJdbcUrl
+     *            The file path of the Flowable database set as JDBC URL
+     */
+    public FlowableClient(final File fileForJdbcUrl) {
+        this(fileForJdbcUrl, new FileIdmEngineConfigurator(), null);
     }
 
     /**
@@ -342,6 +362,34 @@ public class FlowableClient extends ExternalResource {
      */
     public ManagementService getManagementService() {
         return this.flowableClientEngine.getManagementService();
+    }
+
+    /**
+     * Complete a user task
+     * 
+     * @param processInstanceId
+     *            The identifier of process instance containing the user task to complete
+     * @param userTaskDefKey
+     *            The identifier of the user task to complete
+     * @param candidateUser
+     *            The user that completes the user task
+     */
+    public void completeUserTask(final String processInstanceId, final String userTaskDefKey,
+            final String candidateUser) {
+        final Task userTask = this.getTaskService().createTaskQuery().processInstanceId(processInstanceId)
+                .taskDefinitionKey(userTaskDefKey).taskCandidateUser(candidateUser).singleResult();
+
+        // Before to complete the task, we set explicitly its assignee. It is not done by Flowable engine when
+        // completing the task.
+        this.getTaskService().setAssignee(userTask.getId(), candidateUser);
+
+        // Now we can complete the user task
+        this.getIdentityService().setAuthenticatedUserId(candidateUser);
+        try {
+            this.getTaskService().complete(userTask.getId());
+        } finally {
+            this.getIdentityService().setAuthenticatedUserId(null);
+        }
     }
 
 }

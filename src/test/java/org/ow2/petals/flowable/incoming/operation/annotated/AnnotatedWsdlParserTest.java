@@ -41,7 +41,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.Duplicated
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedOutputMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedVariableException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.FaultXslNotFoundException;
-import org.ow2.petals.flowable.incoming.operation.annotated.exception.IntermediateMessageCatchEventIdNotFoundInModelException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.IntermediateMessageEventNameNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidBpmnActionAttributesException;
@@ -1868,9 +1868,9 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
                     fail("Unexpected operation: "
                             + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
-            } else if (exception instanceof IntermediateMessageCatchEventIdNotFoundInModelException) {
+            } else if (exception instanceof IntermediateMessageEventNameNotFoundInModelException) {
                 if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_eventUnknown").equals(
-                        ((IntermediateMessageCatchEventIdNotFoundInModelException) exception).getWsdlOperation())) {
+                        ((IntermediateMessageEventNameNotFoundInModelException) exception).getWsdlOperation())) {
                     eventUnknown = true;
                 } else {
                     fail("Unexpected operation: "

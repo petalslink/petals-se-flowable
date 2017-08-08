@@ -70,6 +70,17 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
 
     protected abstract ComponentUnderTest getComponentUnderTest();
 
+    public AbstractTestEnvironment() {
+        this(null);
+    }
+
+    public AbstractTestEnvironment(final String fileIdmEngineConfiguratorCfgFile) {
+        this.flowableClient = new FlowableClient(
+                new File(new File(this.getComponentUnderTest().getBaseDirectory(), "work"),
+                        DEFAULT_JDBC_URL_DATABASE_FILENAME),
+                new FileIdmEngineConfigurator(), fileIdmEngineConfiguratorCfgFile);
+    }
+
     /**
      * All log traces must be cleared before starting a unit test
      */

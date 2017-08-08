@@ -77,6 +77,24 @@
             </xsd:complexType>
          </xsd:element>
 
+         <xsd:element name="notLocked">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="instance-id" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="event-name" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="alreadyUnlocked">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="instance-id" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="event-name" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
       </xsd:schema>
    </wsdl:types>
 
@@ -92,6 +110,12 @@
    <wsdl:message name="instanceUnknown">
       <wsdl:part name="fault" element="tns:instanceUnknown" />
    </wsdl:message>
+   <wsdl:message name="notLocked">
+      <wsdl:part name="fault" element="tns:notLocked" />
+   </wsdl:message>
+   <wsdl:message name="alreadyUnlocked">
+      <wsdl:part name="fault" element="tns:alreadyUnlocked" />
+   </wsdl:message>
 
    <wsdl:portType name="intermediate-message-catch-event">
       <wsdl:operation name="start">
@@ -104,6 +128,8 @@
             <!-- With a MEP RobustInOnly, no output is required but without 'output' the WSDL seems to be invalid -->
          </wsdl:output>
          <wsdl:fault message="tns:instanceUnknown" name="instanceUnknown" />
+         <wsdl:fault message="tns:notLocked" name="notLocked" />
+         <wsdl:fault message="tns:alreadyUnlocked" name="alreadyUnlocked" />
       </wsdl:operation>
    </wsdl:portType>
 
@@ -133,6 +159,14 @@
          <wsdl:fault name="instanceUnknown">
             <bpmn:fault name="ProcessInstanceNotFoundException">instanceUnknown.xsl</bpmn:fault>
             <soap:fault name="instanceUnknown" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="notLocked">
+            <bpmn:fault name="UnexpectedMessageEventException">unexpectedMessageEvent.xsl</bpmn:fault>
+            <soap:fault name="notLocked" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="alreadyUnlocked">
+            <bpmn:fault name="MessageEventReceivedException">messageEventReceived.xsl</bpmn:fault>
+            <soap:fault name="alreadyUnlocked" use="literal" />
          </wsdl:fault>
       </wsdl:operation>
    </wsdl:binding>

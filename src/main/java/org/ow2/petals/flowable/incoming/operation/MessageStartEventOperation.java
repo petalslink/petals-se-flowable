@@ -40,12 +40,12 @@ public class MessageStartEventOperation extends StartEventOperation {
     /**
      * The start event message name on which the action must be realized on the BPMN process side
      */
-    protected final String startEventMessageName;
+    private final String startEventMessageName;
 
     /**
      * The tenant identifier in which the process definition is deployed
      */
-    protected final String tenantId;
+    private final String tenantId;
 
     /**
      * @param annotatedOperation

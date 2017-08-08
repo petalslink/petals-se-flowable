@@ -462,7 +462,8 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             } else if (annotatedOperation instanceof IntermediateMessageCatchEventAnnotatedOperation) {
                 operations.add(new IntermediateMessageCatchEventOperation(
                         (IntermediateMessageCatchEventAnnotatedOperation) annotatedOperation,
-                        getComponent().getProcessEngine().getRuntimeService(), this.logger));
+                        getComponent().getProcessEngine().getRuntimeService(),
+                        getComponent().getProcessEngine().getHistoryService(), this.logger));
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported
                 // here.

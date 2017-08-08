@@ -82,12 +82,12 @@ public class CompleteUserTaskOperation extends FlowableOperation {
     /**
      * The compiled XPath expression of the process instance identifier placeholder
      */
-    protected final XPathExpression proccesInstanceIdXPathExpr;
+    private final XPathExpression proccesInstanceIdXPathExpr;
 
     /**
      * The task identifier on which the action must be realize on the BPMN process side
      */
-    protected final String userTaskId;
+    private final String userTaskId;
 
     /**
      * @param annotatedOperation
@@ -211,7 +211,7 @@ public class CompleteUserTaskOperation extends FlowableOperation {
      * @param bpmnUserId
      *            The user identifier used for the task assignee
      * @throws OperationProcessingFault
-     *             The cause to have not found an active task for the process instance identifier
+     *             The cause why no active task was found for the process instance identifier
      * @throws OperationProcessingException
      *             No cause found.
      */

@@ -40,7 +40,7 @@ public class NoneStartEventOperation extends StartEventOperation {
     /**
      * The message start event identifier on which the action must be realized on the BPMN process side
      */
-    protected final String noneStartEventId;
+    private final String noneStartEventId;
 
     /**
      * @param annotatedOperation

@@ -39,6 +39,8 @@ import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
+import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.AlreadyUnlocked;
+import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.NotLocked;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Start;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.StartResponse;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Unlock;
@@ -73,6 +75,14 @@ public abstract class IntermediateMessageCatchEventProcessTestEnvironment extend
 
     protected static final String BPMN_USER = "kermit";
 
+    protected static final String USER_TASK_1 = "userTask1";
+
+    protected static final String USER_TASK_2 = "userTask2";
+
+    protected static String getFileIdmEngineConfiguratorCfgFile() {
+        return null;
+    }
+
     protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
             // A async job executor is required to process service task
@@ -98,6 +108,16 @@ public abstract class IntermediateMessageCatchEventProcessTestEnvironment extend
                             .getResource("su/intermediate-message-catch-event/instanceUnknown.xsl");
                     assertNotNull("Output XSL 'instanceUnknown.xsl' not found", instanceUnknownXslUrl);
                     serviceConfiguration.addResource(instanceUnknownXslUrl);
+
+                    final URL unexpectedMessageEventXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/intermediate-message-catch-event/unexpectedMessageEvent.xsl");
+                    assertNotNull("Output XSL 'unexpectedMessageEvent.xsl' not found", unexpectedMessageEventXslUrl);
+                    serviceConfiguration.addResource(unexpectedMessageEventXslUrl);
+
+                    final URL messageEventReceivedXslUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/intermediate-message-catch-event/messageEventReceived.xsl");
+                    assertNotNull("Output XSL 'messageEventReceived.xsl' not found", messageEventReceivedXslUrl);
+                    serviceConfiguration.addResource(messageEventReceivedXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
                             .getResource("su/intermediate-message-catch-event/intermediate-message-catch-event.bpmn");
@@ -142,7 +162,8 @@ public abstract class IntermediateMessageCatchEventProcessTestEnvironment extend
 
     static {
         try {
-            final JAXBContext context = JAXBContext.newInstance(Start.class, StartResponse.class, Unlock.class);
+            final JAXBContext context = JAXBContext.newInstance(Start.class, StartResponse.class, Unlock.class,
+                    NotLocked.class, AlreadyUnlocked.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

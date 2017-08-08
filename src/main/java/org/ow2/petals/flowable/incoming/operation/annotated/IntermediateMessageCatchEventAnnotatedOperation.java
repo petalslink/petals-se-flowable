@@ -32,12 +32,15 @@ import org.flowable.bpmn.model.IntermediateCatchEvent;
 import org.flowable.bpmn.model.MessageEventDefinition;
 import org.flowable.bpmn.model.Process;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.IntermediateMessageCatchEventIdNotFoundInModelException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.IntermediateMessageEventNameNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoIntermediateMessageCatchEventIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
+import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
+import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
 
 /**
  * The BPMN operation 'intermediate message catch event' extracted from WDSL according to BPMN annotations. This
@@ -55,7 +58,8 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
     static {
         EXCEPTIONS_MAPPED = new ArrayList<>();
         for (final Class<OperationProcessingFault> exception : new Class[] { ProcessInstanceNotFoundException.class,
-                NoProcessInstanceIdValueException.class }) {
+                NoProcessInstanceIdValueException.class, UnexpectedMessageEventException.class,
+                MessageEventReceivedException.class }) {
             EXCEPTIONS_MAPPED.add(exception.getSimpleName());
         }
     }
@@ -64,6 +68,11 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
      * The message name associated to the intermediate catch event in the BPMN definition
      */
     private final String messageEventName;
+
+    /**
+     * The name of the activity associated to the message event receipt in the BPMN definition
+     */
+    private String messageCatcherActivityId = null;
 
     /**
      * The place holder of the incoming request containing the process instance identifier on which the BPMN operation
@@ -119,7 +128,6 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
         // The mapping defining the intermediate message catch event identifier must be declared in the process
         // definition
         final Process process = model.getProcessById(this.getProcessDefinitionId());
-        boolean catchEventFound = false;
         for (final FlowElement flowElt : process.getFlowElements()) {
             // search the intermediate message catch event
             if (flowElt instanceof IntermediateCatchEvent) {
@@ -129,14 +137,20 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
                         && eventDefinitions.get(0) instanceof MessageEventDefinition) {
                     final String messageRef = ((MessageEventDefinition) eventDefinitions.get(0)).getMessageRef();
                     if (this.messageEventName.equals(model.getMessage(messageRef).getName())) {
-                        catchEventFound = true;
+                        this.messageCatcherActivityId = flowElt.getId();
+                        if (this.messageCatcherActivityId == null) {
+                            // The identifier of the activity associated to the intermediate message event is missing
+                            throw new IntermediateMessageCatchEventIdNotFoundInModelException(this.wsdlOperation,
+                                    this.messageEventName, this.getProcessDefinitionId());
+                        }
                         break;
                     }
                 }
             }
         }
-        if (!catchEventFound) {
-            throw new IntermediateMessageCatchEventIdNotFoundInModelException(this.wsdlOperation, this.messageEventName,
+        if (this.messageCatcherActivityId == null) {
+            // The message name was not found in the BPMN definition
+            throw new IntermediateMessageEventNameNotFoundInModelException(this.wsdlOperation, this.messageEventName,
                     this.getProcessDefinitionId());
         }
     }
@@ -159,6 +173,14 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
      */
     public String getMessageEventName() {
         return this.messageEventName;
+    }
+
+    /**
+     * @return The message name of the intermediate catch event on which the action must be realized on the BPMN process
+     *         side
+     */
+    public String getMessageCatcherActivityId() {
+        return this.messageCatcherActivityId;
     }
 
 }
