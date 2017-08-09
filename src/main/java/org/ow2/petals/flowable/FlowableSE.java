@@ -91,6 +91,8 @@ import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
 import org.ow2.petals.flowable.event.AbstractEventListener;
 import org.ow2.petals.flowable.event.CallActivityStartedEventListener;
+import org.ow2.petals.flowable.event.IntermediateCatchMessageEventEndedEventListener;
+import org.ow2.petals.flowable.event.IntermediateCatchMessageEventStartedEventListener;
 import org.ow2.petals.flowable.event.ProcessInstanceCanceledEventListener;
 import org.ow2.petals.flowable.event.ProcessInstanceCompletedEventListener;
 import org.ow2.petals.flowable.event.ProcessInstanceStartedEventListener;
@@ -176,6 +178,16 @@ public class FlowableSE extends AbstractServiceEngine {
      * Event listener fired when a call activity is started
      */
     private AbstractEventListener callActivityStartedEventListener;
+
+    /**
+     * Event listener fired when a intermediate catch message event is started
+     */
+    private AbstractEventListener intermediateCatchMessageEventStartedEventListener;
+
+    /**
+     * Event listener fired when a intermediate catch message event is ended
+     */
+    private AbstractEventListener intermediateCatchMessageEventEndedEventListener;
 
     /**
      * An UUID generator.
@@ -656,6 +668,16 @@ public class FlowableSE extends AbstractServiceEngine {
         runtimeService.addEventListener(this.callActivityStartedEventListener,
                 this.callActivityStartedEventListener.getListenEventType());
 
+        this.intermediateCatchMessageEventStartedEventListener = new IntermediateCatchMessageEventStartedEventListener(
+                this.simpleUUIDGenerator, runtimeService, this.getLogger());
+        runtimeService.addEventListener(this.intermediateCatchMessageEventStartedEventListener,
+                this.intermediateCatchMessageEventStartedEventListener.getListenEventType());
+
+        this.intermediateCatchMessageEventEndedEventListener = new IntermediateCatchMessageEventEndedEventListener(
+                runtimeService, this.getLogger());
+        runtimeService.addEventListener(this.intermediateCatchMessageEventEndedEventListener,
+                this.intermediateCatchMessageEventEndedEventListener.getListenEventType());
+
         try {
             // Startup Flowable engine against running states of the SE:
             // - Flowable Engine must be started when the SE is in state 'STOPPED' to be able to deploy process
@@ -839,6 +861,8 @@ public class FlowableSE extends AbstractServiceEngine {
         runtimeService.removeEventListener(this.userTaskStartedEventListener);
         runtimeService.removeEventListener(this.userTaskCompletedEventListener);
         runtimeService.removeEventListener(this.callActivityStartedEventListener);
+        runtimeService.removeEventListener(this.intermediateCatchMessageEventStartedEventListener);
+        runtimeService.removeEventListener(this.intermediateCatchMessageEventEndedEventListener);
 
     }
 

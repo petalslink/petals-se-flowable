@@ -17,6 +17,11 @@
  */
 package org.ow2.petals.flowable.event;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -60,34 +65,30 @@ public class UserTaskCompletedEventListener extends AbstractTaskEventListener im
 
                 final Map<String, VariableInstance> processVariables = taskEntity.getVariableInstances();
 
-                final VariableInstance varFlowInstanceId = processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+                final VariableInstance varFlowInstanceId = processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
                 if (varFlowInstanceId == null) {
-                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN,
-                            FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID,
+                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN, VAR_PETALS_FLOW_INSTANCE_ID,
                             taskEntity.getProcessInstanceId()));
                 }
 
                 final VariableInstance varFlowStepId = processVariables
                         .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
                 if (varFlowStepId == null) {
-                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN,
-                            FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, taskEntity.getProcessInstanceId()));
+                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN, VAR_PETALS_FLOW_STEP_ID,
+                            taskEntity.getProcessInstanceId()));
                 }
 
                 final VariableInstance varCorrelatedFlowInstanceId = processVariables
                         .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
                 if (varCorrelatedFlowInstanceId == null) {
-                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN,
-                            FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID,
+                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN, VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID,
                             taskEntity.getProcessInstanceId()));
                 }
 
                 final VariableInstance varCorrelatedFlowStepId = processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
+                        .get(VAR_PETALS_CORRELATED_FLOW_STEP_ID);
                 if (varCorrelatedFlowStepId == null) {
-                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN,
-                            FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID,
+                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN, VAR_PETALS_CORRELATED_FLOW_STEP_ID,
                             taskEntity.getProcessInstanceId()));
                 }
 
@@ -97,7 +98,7 @@ public class UserTaskCompletedEventListener extends AbstractTaskEventListener im
                             (String) varFlowStepId.getValue(), (String) varCorrelatedFlowInstanceId.getValue(),
                             (String) varCorrelatedFlowStepId.getValue());
                 } else {
-                    this.log.warning("No MONIT trace generated because a process instance variable is missing.");
+                    this.log.warning("No MONIT end trace generated because a process instance variable is missing.");
                     return null;
                 }
 

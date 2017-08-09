@@ -17,6 +17,11 @@
  */
 package org.ow2.petals.flowable.event;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -26,7 +31,6 @@ import org.flowable.engine.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.delegate.event.impl.FlowableProcessStartedEventImpl;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
-import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
 
 /**
@@ -35,8 +39,8 @@ import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLoggerEventListener implements
-        FlowableEventListener {
+public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLoggerEventListener
+        implements FlowableEventListener {
 
     public ProcessInstanceStartedEventListener(final Logger log) {
         super(FlowableEngineEventType.PROCESS_STARTED, log);
@@ -55,14 +59,11 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
 
                 final Map<String, Object> processVariables = eventImpl.getVariables();
 
-                final String flowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-                final String flowStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+                final String flowInstanceId = (String) processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
+                final String flowStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
                 final String correlatedFlowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
-                final String correlatedFlowStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID);
+                        .get(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
+                final String correlatedFlowStepId = (String) processVariables.get(VAR_PETALS_CORRELATED_FLOW_STEP_ID);
 
                 final ExecutionEntity entity = (ExecutionEntity) eventImpl.getEntity();
 

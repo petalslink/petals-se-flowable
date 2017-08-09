@@ -17,6 +17,10 @@
  */
 package org.ow2.petals.flowable.incoming.operation;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -30,7 +34,9 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ExecutionQuery;
+import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.flowable.incoming.operation.annotated.IntermediateMessageCatchEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.InvalidMEPException;
@@ -130,9 +136,18 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
             throw new OperationProcessingException(this.wsdlOperation, String.format(
                     "More than one itermediate message catch event match the message '%s'.", this.messageEventName));
         }
+        final String executionId = executionList.get(0).getId();
+
+        // Set flow attributes as local variables. They will be used by Flowable event listener to generate a MONIT
+        // trace
+        final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
+        final Map<String, Object> localVariables = new HashMap<String, Object>(2);
+        localVariables.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
+        localVariables.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
+        this.runtimeService.setVariablesLocal(executionId, localVariables);
 
         // We notify Flowable that a event was received
-        this.runtimeService.messageEventReceivedAsync(this.messageEventName, executionList.get(0).getId());
+        this.runtimeService.messageEventReceivedAsync(this.messageEventName, executionId);
 
         // No output because only MEPs 'InOnly' and 'RobustInOnly' have sens here
     }

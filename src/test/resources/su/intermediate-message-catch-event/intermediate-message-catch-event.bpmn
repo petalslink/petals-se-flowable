@@ -46,7 +46,9 @@
          </potentialOwner>
       </userTask>
       <sequenceFlow id="flow2" sourceRef="userTask1" targetRef="messageIntermediateCatchEventId"/>
-      <intermediateCatchEvent id="messageIntermediateCatchEventId" name="MessageCatchEventName">
+      <intermediateCatchEvent id="messageIntermediateCatchEventId" name="MessageCatchEventName" activiti:async="true">
+         <!-- Execution of the intermediate catch event is set to asynchronous to force its execution by the async
+              executor of the SE Flowable and not by the Flowable client of the unit test -->
          <messageEventDefinition id="messageEvtDefId" messageRef="imce:myMessageId" />
       </intermediateCatchEvent>
       <sequenceFlow id="flow3" sourceRef="messageIntermediateCatchEventId" targetRef="userTask2"/>
@@ -61,7 +63,6 @@
       <endEvent id="endevent1" name="End"/>
    </process>
    
-   <!-- TODO: It seems that a bug exists in line 38 of org.flowable.engine.impl.bpmn.parser.handler.MessageEventDefinitionParseHandler: we should use message.getId() instead of message.getName() -->
    <message id="myMessageId" name="myMessageName" itemRef="imce:myMessageItem" />
    <itemDefinition id="myMessageItem" structureRef="imce:Start" />
    

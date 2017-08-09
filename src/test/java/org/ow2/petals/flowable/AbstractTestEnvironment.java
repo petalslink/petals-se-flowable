@@ -30,6 +30,7 @@ import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.history.HistoricTaskInstance;
 import org.flowable.engine.history.HistoricTaskInstanceQuery;
 import org.flowable.engine.runtime.DeadLetterJobQuery;
+import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.engine.task.Task;
@@ -333,6 +334,47 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             throw new AssertionError(
                     String.format("User task '%s' of process instance '%s' not assigned in the waiting time.",
                             taskDefinitionKey, processInstanceId));
+        }
+    }
+
+    /**
+     * Wait that an intermediate catch message event is ready to receive message.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its assignment.
+     * @param messageName
+     *            The message name of the intermediate catch message event
+     */
+    protected void waitIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName)
+            throws InterruptedException {
+        final CountDownLatch lock = new CountDownLatch(1);
+        final Thread waitingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean run = true;
+                try {
+                    while (run) {
+                        Thread.sleep(250);
+
+                        final ExecutionQuery execution = AbstractTestEnvironment.this.flowableClient.getRuntimeService()
+                                .createExecutionQuery().processInstanceId(processInstanceId)
+                                .messageEventSubscriptionName(messageEventName);
+                        if (execution.singleResult() != null) {
+                            // the intermediate catch message event is ready to receive message.
+                            run = false;
+                            lock.countDown();
+                        }
+                    }
+                } catch (final InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        waitingThread.start();
+        if (!lock.await(60, TimeUnit.SECONDS)) {
+            throw new AssertionError(String.format(
+                    "Intermediate catch message event of process instance '%s' not ready to receive message '%s' in the waiting time.",
+                    processInstanceId, messageEventName));
         }
     }
 

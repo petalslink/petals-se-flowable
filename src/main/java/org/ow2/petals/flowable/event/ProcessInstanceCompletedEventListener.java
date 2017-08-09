@@ -17,6 +17,9 @@
  */
 package org.ow2.petals.flowable.event;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -28,7 +31,6 @@ import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
-import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepEndLogData;
 
 /**
@@ -53,17 +55,14 @@ public class ProcessInstanceCompletedEventListener extends AbstractProcessEventL
             final String processInstanceId = eventImpl.getProcessInstanceId();
             this.log.fine("The process instance '" + processInstanceId + "' is completed.");
 
-            final HistoricProcessInstanceQuery processQuery = this.historyService
-                    .createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
-                    .includeProcessVariables();
+            final HistoricProcessInstanceQuery processQuery = this.historyService.createHistoricProcessInstanceQuery()
+                    .processInstanceId(processInstanceId).includeProcessVariables();
             final HistoricProcessInstance processResult = processQuery.singleResult();
 
             final Map<String, Object> processVariables = processResult.getProcessVariables();
 
-            final String flowInstanceId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-            final String flowStepId = (String) processVariables
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+            final String flowInstanceId = (String) processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
+            final String flowStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
 
             return new ProcessInstanceFlowStepEndLogData(flowInstanceId, flowStepId);
 

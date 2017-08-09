@@ -17,6 +17,9 @@
  */
 package org.ow2.petals.flowable.event;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -28,7 +31,6 @@ import org.flowable.engine.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.ow2.petals.commons.log.FlowAttributes;
-import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.outgoing.cxf.transport.PetalsConduit;
 
 /**
@@ -61,10 +63,8 @@ public class ServiceTaskStartedEventListener extends AbstractEventListener imple
 
                 final Map<String, Object> processVariables = processInstance.getProcessVariables();
 
-                final String flowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-                final String flowStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+                final String flowInstanceId = (String) processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
+                final String flowStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
 
                 PetalsConduit.flowAttributes.set(new FlowAttributes(flowInstanceId, flowStepId));
             }

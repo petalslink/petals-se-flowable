@@ -17,16 +17,23 @@
  */
 package org.ow2.petals.flowable;
 
+import java.util.List;
+import java.util.logging.LogRecord;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.transform.Source;
 
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.commons.log.FlowLogData;
+import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
+import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
+import org.ow2.petals.flowable.monitoring.IntermediateCatchMessageEventFlowStepBeginLogData;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.AlreadyUnlocked;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.NotLocked;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Start;
@@ -134,8 +141,10 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
 
         // Complete the user task
+        IN_MEMORY_LOG_HANDLER.clear();
         this.flowableClient.completeUserTask(processInstance.toString(), USER_TASK_1, BPMN_USER);
         assertUserTaskEnded(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        waitIntermediateCatchMessageEvent(processInstance.toString(), "myMessageName");
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when expected by the BPMN engine
@@ -154,6 +163,32 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
 
         assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
         waitUserTaskAssignment(processInstance.toString(), USER_TASK_2, BPMN_USER);
+
+        // Check MONIT traces. Caution:
+        // - as the user task is completed by the Flowable client, no MONIT trace is generated
+        // - the last trace is associated to the next user task
+        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(5, monitLogs_1.size());
+        final FlowLogData intermediateCatchMessageEventBeginFlowLogData = assertMonitProviderBeginLog(null, null, null,
+                null, monitLogs_1.get(0));
+        assertEquals("messageIntermediateCatchEventId", intermediateCatchMessageEventBeginFlowLogData
+                .get(IntermediateCatchMessageEventFlowStepBeginLogData.INTERMEDIATE_CATCH_MESSAGE_EVENT_ID));
+        assertEquals("myMessageName", intermediateCatchMessageEventBeginFlowLogData
+                .get(IntermediateCatchMessageEventFlowStepBeginLogData.MESSAGE_NAME));
+        assertNotNull(intermediateCatchMessageEventBeginFlowLogData
+                .get(IntermediateCatchMessageEventFlowStepBeginLogData.INTERMEDIATE_CATCH_MESSAGE_EVENT_INSTANCE_ID));
+        final FlowLogData unlockRequestFlowLogData = assertMonitProviderBeginLog(
+                INTERMEDIATE_MESSAGE_CATCH_EVENT_INTERFACE, INTERMEDIATE_MESSAGE_CATCH_EVENT_SERVICE,
+                INTERMEDIATE_MESSAGE_CATCH_EVENT_ENDPOINT, OPERATION_UNLOCK, monitLogs_1.get(1));
+        final FlowLogData intermediateCatchMessageEventEndFlowLogData = assertMonitProviderEndLog(
+                intermediateCatchMessageEventBeginFlowLogData, monitLogs_1.get(3));
+        assertEquals(unlockRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                intermediateCatchMessageEventEndFlowLogData
+                        .get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
+        assertEquals(unlockRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
+                intermediateCatchMessageEventEndFlowLogData
+                        .get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        assertMonitProviderEndLog(unlockRequestFlowLogData, monitLogs_1.get(2));
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when it was already processed by the BPMN engine
@@ -200,9 +235,6 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
 
         // Assertions about state of process instance at Flowable Level
         assertProcessInstanceFinished(processInstance.toString());
-
-        // Check MONIT traces
-        // TODO: To do when MONIT traces will be defined
 
     }
 }

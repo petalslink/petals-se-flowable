@@ -17,6 +17,9 @@
  */
 package org.ow2.petals.flowable.event;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
+
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -30,7 +33,6 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.CallActivityForceAsyncParseHandler;
-import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.CallActivityFlowStepBeginLogData;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
@@ -82,14 +84,12 @@ public class CallActivityStartedEventListener extends AbstractMonitDirectLoggerE
 
                 final Map<String, Object> processVariables = processInstance.getProcessVariables();
 
-                final String flowInstanceId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
+                final String flowInstanceId = (String) processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
 
-                final String previousFlowStepId = (String) processVariables
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID);
+                final String previousFlowStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
                 if (previousFlowStepId == null) {
-                    this.log.warning(String.format(MISSING_VARIABLE_PATTERN,
-                            FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, parentInstanceId));
+                    this.log.warning(
+                            String.format(MISSING_VARIABLE_PATTERN, VAR_PETALS_FLOW_STEP_ID, parentInstanceId));
                 }
 
                 final String flowStepId = this.simpleUUIDGenerator.getNewID();
@@ -99,9 +99,9 @@ public class CallActivityStartedEventListener extends AbstractMonitDirectLoggerE
                 // callACtivityVariables.put(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, flowStepId);
 
                 this.runtimeService.setVariable(((FlowableProcessStartedEventImpl) event).getExecutionId(),
-                        FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
+                        VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
                 this.runtimeService.setVariable(((FlowableProcessStartedEventImpl) event).getExecutionId(),
-                        FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, flowStepId);
+                        VAR_PETALS_FLOW_STEP_ID, flowStepId);
 
                 final ExecutionEntity parentEntity = callActivityEntity.getParent();
 
