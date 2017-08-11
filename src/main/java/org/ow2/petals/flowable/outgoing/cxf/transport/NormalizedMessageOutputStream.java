@@ -110,7 +110,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                                     + consume.getInterfaceName() + " vs " + interfaceName
                                     + "), using Consumes information.");
                 }
-                if (serviceName != null && !consume.getServiceName().equals(serviceName)) {
+                if (serviceName != null && !serviceName.equals(consume.getServiceName())) {
                     this.sender.getLogger().log(Level.WARNING,
                             "Mismatch between JBI Consumes service name and process information ("
                                     + consume.getServiceName() + " vs " + serviceName
