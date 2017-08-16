@@ -19,6 +19,7 @@ package org.ow2.petals.flowable.event;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
 
 import java.util.Map;
 import java.util.logging.Logger;
@@ -98,10 +99,14 @@ public class CallActivityStartedEventListener extends AbstractMonitDirectLoggerE
                 // callACtivityVariables.put(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
                 // callACtivityVariables.put(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, flowStepId);
 
-                this.runtimeService.setVariable(((FlowableProcessStartedEventImpl) event).getExecutionId(),
+                this.runtimeService.setVariable(eventImpl.getExecutionId(),
                         VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
-                this.runtimeService.setVariable(((FlowableProcessStartedEventImpl) event).getExecutionId(),
+                this.runtimeService.setVariable(eventImpl.getExecutionId(),
                         VAR_PETALS_FLOW_STEP_ID, flowStepId);
+
+                // Placeholders must be copied in the call activity scope
+                this.runtimeService.setVariable(eventImpl.getExecutionId(), VAR_PETALS_PLACEHOLDERS,
+                        processVariables.get(VAR_PETALS_PLACEHOLDERS));
 
                 final ExecutionEntity parentEntity = callActivityEntity.getParent();
 

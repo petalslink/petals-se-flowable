@@ -442,28 +442,32 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             final QName wsdlOperation = annotatedOperation.getWsdlOperation();
             this.logger.fine("Processing WSDL annotated operation: " + wsdlOperation);
 
+            final FlowableSE component = this.getComponent();
+
             // create the right FlowableOperation according to the bpmnActionType
             if (annotatedOperation instanceof NoneStartEventAnnotatedOperation) {
                 operations.add(new NoneStartEventOperation((NoneStartEventAnnotatedOperation) annotatedOperation,
-                        getComponent().getProcessEngine().getIdentityService(),
-                        getComponent().getProcessEngine().getRuntimeService(),
-                        getComponent().getProcessEngine().getHistoryService(), this.simpleUUIDGenerator, this.logger));
+                        component.getProcessEngine().getIdentityService(),
+                        component.getProcessEngine().getRuntimeService(),
+                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
+                        component.getPlaceHolders(), this.logger));
             } else if (annotatedOperation instanceof MessageStartEventAnnotatedOperation) {
                 operations.add(new MessageStartEventOperation((MessageStartEventAnnotatedOperation) annotatedOperation,
-                        getComponent().getProcessEngine().getIdentityService(),
-                        getComponent().getProcessEngine().getRuntimeService(),
-                        getComponent().getProcessEngine().getHistoryService(), this.simpleUUIDGenerator, this.logger));
+                        component.getProcessEngine().getIdentityService(),
+                        component.getProcessEngine().getRuntimeService(),
+                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
+                        component.getPlaceHolders(), this.logger));
             } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
                 operations.add(new CompleteUserTaskOperation((CompleteUserTaskAnnotatedOperation) annotatedOperation,
-                        getComponent().getProcessEngine().getTaskService(),
-                        getComponent().getProcessEngine().getIdentityService(),
-                        getComponent().getProcessEngine().getHistoryService(),
-                        getComponent().getProcessEngine().getRuntimeService(), this.logger));
+                        component.getProcessEngine().getTaskService(),
+                        component.getProcessEngine().getIdentityService(),
+                        component.getProcessEngine().getHistoryService(),
+                        component.getProcessEngine().getRuntimeService(), this.logger));
             } else if (annotatedOperation instanceof IntermediateMessageCatchEventAnnotatedOperation) {
                 operations.add(new IntermediateMessageCatchEventOperation(
                         (IntermediateMessageCatchEventAnnotatedOperation) annotatedOperation,
-                        getComponent().getProcessEngine().getRuntimeService(),
-                        getComponent().getProcessEngine().getHistoryService(), this.logger));
+                        component.getProcessEngine().getRuntimeService(),
+                        component.getProcessEngine().getHistoryService(), this.logger));
             } else {
                 // This case is a bug case, as the annotated operation is known by the parser, it must be supported
                 // here.

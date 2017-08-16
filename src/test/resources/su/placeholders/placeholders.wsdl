@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions
+   name="placeholders"
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/placeholders"
+   
+   xmlns:tns="http://petals.ow2.org/se-flowable/unit-test/placeholders"
+   
+   xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/se-flowable/unit-test/placeholders"
+         elementFormDefault="qualified">
+
+         <xsd:complexType name="TStart">
+            <xsd:sequence>
+               <xsd:element name="customer" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               <xsd:element name="address" type="xsd:string" minOccurs="1" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+         <xsd:element name="start">
+            <xsd:complexType>
+               <xsd:complexContent>
+                  <xsd:extension base="tns:TStart" />
+               </xsd:complexContent>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="start-response">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="case-file-number" minOccurs="1" maxOccurs="1" type="xsd:string" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="unlock">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="unlocker" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="unlockAck">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="ack" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="alreadyUnlocked">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="instanceUnknown">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:message name="start">
+      <wsdl:part name="parameters" element="tns:start" />
+   </wsdl:message>
+   <wsdl:message name="start-response">
+      <wsdl:part name="parameters" element="tns:start-response" />
+   </wsdl:message>
+   <wsdl:message name="unlock">
+      <wsdl:part name="parameters" element="tns:unlock" />
+   </wsdl:message>
+   <wsdl:message name="unlockAck">
+      <wsdl:part name="parameters" element="tns:unlockAck" />
+   </wsdl:message>
+   <wsdl:message name="alreadyUnlocked">
+      <wsdl:part name="fault" element="tns:alreadyUnlocked" />
+   </wsdl:message>
+   <wsdl:message name="instanceUnknown">
+      <wsdl:part name="fault" element="tns:instanceUnknown" />
+   </wsdl:message>
+
+   <wsdl:portType name="placeholders">
+      <wsdl:operation name="start">
+         <wsdl:input message="tns:start" />
+         <wsdl:output message="tns:start-response" />
+      </wsdl:operation>
+      <wsdl:operation name="unlock">
+         <wsdl:input message="tns:unlock" />
+         <wsdl:output message="tns:unlockAck" />
+         <wsdl:fault message="tns:alreadyUnlocked" name="alreadyUnlocked" />
+         <wsdl:fault message="tns:instanceUnknown" name="instanceUnknown" />
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="placeholdersBinding" type="tns:placeholders">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="start">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/placeholders/start" />
+         <bpmn:operation processDefinitionId="placeholders" action="startEvent" none-start-event-id="startevent1" />
+         <bpmn:userId>/*[local-name()='start']/*[local-name()='customer']</bpmn:userId>
+         <bpmn:output>startResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="unlock">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/placeholders/unlock" />
+         <bpmn:operation processDefinitionId="placeholders" action="userTask" user-task-id="userTask1" />
+         <bpmn:processInstanceId>/*[local-name()='unlock']/*[local-name()='process-instance-id']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='unlock']/*[local-name()='unlocker']</bpmn:userId>
+         <bpmn:output>unlockAckResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="instanceUnknown">
+            <bpmn:fault name="ProcessInstanceNotFoundException">instanceUnknown.xsl</bpmn:fault>
+            <soap:fault name="instanceUnknown" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="alreadyUnlocked">
+            <bpmn:fault name="TaskCompletedException">alreadyUnlocked.xsl</bpmn:fault>
+            <soap:fault name="alreadyUnlocked" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="placeholders-service">
+      <wsdl:port name="edpPlaceholders" binding="tns:placeholdersBinding">
+         <soap:address location="http://localhost:9003/placeholders" />
+      </wsdl:port>
+   </wsdl:service>
+
+</wsdl:definitions>

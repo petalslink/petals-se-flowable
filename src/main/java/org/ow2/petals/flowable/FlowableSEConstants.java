@@ -362,6 +362,11 @@ public final class FlowableSEConstants {
          */
         public static final String VAR_PETALS_CORRELATED_FLOW_STEP_ID = "petals.correlated.flow.step.id";
 
+        /**
+         * Prefix of the name of the process variable used to store the Petals placeholders.
+         */
+        public static final String VAR_PETALS_PLACEHOLDERS = "petalsPlaceholders";
+
         private Flowable() {
             // NOP: Utility class => No constructor
         }

@@ -21,9 +21,12 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CO
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
@@ -75,6 +78,11 @@ public abstract class StartEventOperation extends FlowableOperation {
     private final SimpleUUIDGenerator simpleUUIDGenerator;
 
     /**
+     * Placeholders of the component to configure the BPMN definition
+     */
+    private final Map<String, String> processPlaceholders;
+
+    /**
      * @param annotatedOperation
      *            Annotations of the operation to create
      * @param identityService
@@ -85,17 +93,23 @@ public abstract class StartEventOperation extends FlowableOperation {
      *            The history service of the BPMN engine
      * @param simpleUUIDGenerator
      *            A UUID generator
+     * @param componentPlaceholders
+     *            Placeholders defined at component level
      * @param logger
      */
     public StartEventOperation(final StartEventAnnotatedOperation annotatedOperation,
-            final IdentityService identityService,
-            final RuntimeService runtimeService, final HistoryService historyService,
-            final SimpleUUIDGenerator simpleUUIDGenerator, final Logger logger) {
+            final IdentityService identityService, final RuntimeService runtimeService,
+            final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
+            final Properties componentPlaceholders, final Logger logger) {
         super(annotatedOperation, annotatedOperation.getOutputTemplate(), logger);
         this.identityService = identityService;
         this.runtimeService = runtimeService;
         this.historyService = historyService;
         this.simpleUUIDGenerator = simpleUUIDGenerator;
+        this.processPlaceholders = new HashMap<>(componentPlaceholders.size());
+        for (final Entry<Object, Object> placeholder : componentPlaceholders.entrySet()) {
+            this.processPlaceholders.put((String) placeholder.getKey(), (String) placeholder.getValue());
+        }
     }
 
     @Override
@@ -106,7 +120,7 @@ public abstract class StartEventOperation extends FlowableOperation {
     @Override
     protected void doExecute(final Document incomingPayload, final String bpmnUserId,
             final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
-                    throws OperationProcessingException {
+            throws OperationProcessingException {
 
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)
 
@@ -118,6 +132,9 @@ public abstract class StartEventOperation extends FlowableOperation {
         final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
         processVars.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         processVars.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
+
+        // We add all placeholders as a map process variable
+        processVars.put(VAR_PETALS_PLACEHOLDERS, this.processPlaceholders);
 
         final String bpmnProcessIdValue;
         try {
@@ -149,9 +166,10 @@ public abstract class StartEventOperation extends FlowableOperation {
                     .includeProcessVariables().singleResult();
             if (archivedProcessInstance == null) {
                 // This exception should not occur
-                throw new OperationProcessingException(this.wsdlOperation, String.format(
-                        "The just created process instance '%s' is not found for the process definition '%s'.",
-                        bpmnProcessIdValue, this.deployedProcessDefinitionId));
+                throw new OperationProcessingException(this.wsdlOperation,
+                        String.format(
+                                "The just created process instance '%s' is not found for the process definition '%s'.",
+                                bpmnProcessIdValue, this.deployedProcessDefinitionId));
             } else {
                 processVariables = archivedProcessInstance.getProcessVariables();
             }
@@ -159,16 +177,27 @@ public abstract class StartEventOperation extends FlowableOperation {
             processVariables = retrievedProcessInstance.getProcessVariables();
         }
         for (final Entry<String, Object> processVariable : processVariables.entrySet()) {
-            outputNamedValues.put(new QName(FlowableOperation.SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS,
-                    processVariable.getKey()), XslUtils.convertBpmnVariableValueToXslParam(processVariable.getValue()));
+            outputNamedValues.put(
+                    new QName(FlowableOperation.SCHEMA_OUTPUT_XSLT_PROCESS_INSTANCE_PARAMS, processVariable.getKey()),
+                    XslUtils.convertBpmnVariableValueToXslParam(processVariable.getValue()));
 
         }
         outputNamedValues.put(new QName(FlowableOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
                 SCHEMA_OUTPUT_XSLT_PARAM_PROCESS_INSTANCE_ID), bpmnProcessIdValue);
-        outputNamedValues.put(new QName(FlowableOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS,
-                SCHEMA_OUTPUT_XSLT_PARAM_USER_ID), bpmnUserId == null ? "" : bpmnUserId);
+        outputNamedValues.put(
+                new QName(FlowableOperation.SCHEMA_OUTPUT_XSLT_SPECIAL_PARAMS, SCHEMA_OUTPUT_XSLT_PARAM_USER_ID),
+                bpmnUserId == null ? "" : bpmnUserId);
     }
 
+    /**
+     * Create the process instance
+     * 
+     * @param processVars
+     *            Variable to set at process instance level
+     * @return The process instance created
+     * @throws OperationProcessingException
+     *             An error occurs during instance creation
+     */
     protected abstract ProcessInstance createProcessInstance(final Map<String, Object> processVars)
             throws OperationProcessingException;
 

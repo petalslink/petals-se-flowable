@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions
+   name="archivageService"
+   
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/placeholders/archivageService"
+   xmlns:tns="http://petals.ow2.org/se-flowable/unit-test/placeholders/archivageService"
+   
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" >
+
+<wsdl:types>
+	<xsd:schema targetNamespace="http://petals.ow2.org/se-flowable/unit-test/placeholders/archivageService" 
+	     		elementFormDefault="qualified" >
+    	<xsd:element name="archiver">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+               <xsd:element name="item2" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
+      
+      <xsd:element name="archiverResponse">
+         <xsd:complexType>
+            <xsd:sequence>
+               <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+               <xsd:element name="item2" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:element>
+
+ 	</xsd:schema>
+</wsdl:types>
+
+<wsdl:message name="archiverRequest">
+   <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+	<wsdl:part name="parameters" element="tns:archiver" />
+</wsdl:message>
+<wsdl:message name="archiverResponse">
+    <wsdl:part name="parameters" element="tns:archiverResponse" />
+</wsdl:message>
+
+<wsdl:portType name="archiver">
+	<wsdl:operation name="archiver">
+    	<wsdl:input name="archiverRequest" message="tns:archiverRequest" />
+     	<wsdl:output name="archiverResponse" message="tns:archiverResponse" />
+   </wsdl:operation>
+</wsdl:portType>
+
+<wsdl:binding name="archiverSoapBinding" type="tns:archiver" >
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="archiver">
+      	<soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/call-activity/archivageService/archiver" />
+         <wsdl:input name="archiverRequest">
+        	   <soap:body use="literal" />
+      	</wsdl:input>
+         <wsdl:output name="archiverResponse">
+        	   <soap:body use="literal" />
+      	</wsdl:output>
+	</wsdl:operation>
+</wsdl:binding>
+<wsdl:binding name="archiverXmlBinding" type="tns:archiver" 
+    xmlns:xmlformat="http://cxf.apache.org/bindings/xformat" >
+    <xmlformat:binding />
+    <wsdl:operation name="archiver">
+      	<wsdl:input name="archiverRequest"/>
+      	<wsdl:output name="archiverResponse"/>
+	</wsdl:operation>
+</wsdl:binding>
+
+<wsdl:service name="archiverService">
+   <!-- TODO: We should use an XML binding instead of SOAP binding to avoid to rework SOAP envelop on requests/replies
+              exchanged between Flowable and Petals -->
+   <wsdl:port name="archiveEndpointName" binding="tns:archiverSoapBinding">
+      <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
+		<soap:address location="petals:///{http://petals.ow2.org/se-flowable/unit-test/call-activity/archivageService}archiver" />
+	</wsdl:port>
+</wsdl:service>
+
+</wsdl:definitions>

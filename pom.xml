@@ -361,6 +361,8 @@
                         <include>call-activity/archivageService.wsdl</include>
                         <include>call-activity/coreService.wsdl</include>
                         <include>intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
+                        <include>placeholders/placeholders.wsdl</include>
+                        <include>placeholders/archivageService.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
                   </configuration>

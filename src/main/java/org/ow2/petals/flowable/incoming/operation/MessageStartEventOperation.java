@@ -18,6 +18,7 @@
 package org.ow2.petals.flowable.incoming.operation;
 
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.flowable.engine.HistoryService;
@@ -58,12 +59,16 @@ public class MessageStartEventOperation extends StartEventOperation {
      *            The history service of the BPMN engine
      * @param simpleUUIDGenerator
      *            A UUID generator
+     * @param placeholders
+     *            Placeholders defined at component level
      * @param logger
      */
     public MessageStartEventOperation(final MessageStartEventAnnotatedOperation annotatedOperation,
             final IdentityService identityService, final RuntimeService runtimeService,
-            final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator, final Logger logger) {
-        super(annotatedOperation, identityService, runtimeService, historyService, simpleUUIDGenerator, logger);
+            final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
+            final Properties placeholders, final Logger logger) {
+        super(annotatedOperation, identityService, runtimeService, historyService, simpleUUIDGenerator, placeholders,
+                logger);
         this.startEventMessageName = annotatedOperation.getStartEventMessageName();
         this.tenantId = annotatedOperation.getTenantId();
     }

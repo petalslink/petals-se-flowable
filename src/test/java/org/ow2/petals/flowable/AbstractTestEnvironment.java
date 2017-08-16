@@ -306,6 +306,24 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      */
     protected void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
             final String candidateUser) throws InterruptedException {
+        this.waitUserTaskAssignment(processInstanceId, taskDefinitionKey, candidateUser, 60);
+    }
+
+    /**
+     * Wait that a user task of a process instance is assignated to a candidate user.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its assignment.
+     * @param taskDefinitionKey
+     *            The user task identifier in the process definition
+     * @param candidateUser
+     *            The candidate user of the user task
+     * @param duration
+     *            Waiting time before to declare the user task assignment as failed
+     */
+    protected void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
+            final String candidateUser, final int duration) throws InterruptedException {
+
         final CountDownLatch lock = new CountDownLatch(1);
         final Thread waitingThread = new Thread(new Runnable() {
             @Override
@@ -330,10 +348,10 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             }
         });
         waitingThread.start();
-        if (!lock.await(60, TimeUnit.SECONDS)) {
+        if (!lock.await(duration, TimeUnit.SECONDS)) {
             throw new AssertionError(
-                    String.format("User task '%s' of process instance '%s' not assigned in the waiting time.",
-                            taskDefinitionKey, processInstanceId));
+                    String.format("User task '%s' of process instance '%s' not assigned in the waiting time (%ds).",
+                            taskDefinitionKey, processInstanceId, duration));
         }
     }
 
