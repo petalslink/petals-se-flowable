@@ -134,7 +134,7 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
             throw this.investigateMissingExecution(processInstanceId);
         } else if (executionList.size() > 1) {
             throw new OperationProcessingException(this.wsdlOperation, String.format(
-                    "More than one itermediate message catch event match the message '%s'.", this.messageEventName));
+                    "More than one intermediate message catch event match the message '%s'.", this.messageEventName));
         }
         final String executionId = executionList.get(0).getId();
 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:flowable="http://flowable.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath"
+   
+   xmlns:archivage="http://petals.ow2.org/se-flowable/unit-test/in-only/archivageService" 
+   xmlns:process="http://petals.ow2.org/se-flowable/unit-test/in-only"
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/in-only">
+
+   <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
+   <import location="classpath:su/in-only/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/in-only/archivageService"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <interface name="Archive Service" implementationRef="archivage:archiver">
+      <operation id="archiveOperation" name="Archive Operation" implementationRef="archivage:archiver">
+         <inMessageRef>process:archiverRequestMessage</inMessageRef>
+      </operation>
+   </interface>
+
+   <message id="archiverRequestMessage" itemRef="process:archiverRequestItem" />
+
+   <itemDefinition id="archiverRequestItem" structureRef="archivage:archiver" />
+   
+   <process id="placeholders" name="Process using placeholders" isExecutable="true">
+      <startEvent id="startevent1" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow11" sourceRef="startevent1" targetRef="servicetask1" />
+      <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveAttachment1" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachment1</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachment1</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachment1.item}</to>
+            </assignment>
+            <assignment>
+               <from>${empty execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1 ? "default-value-1" : execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachment1.item2}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow12" sourceRef="servicetask1" targetRef="endevent1" />
+      <endEvent id="endevent1" name="End" />
+   </process>
+</definitions>

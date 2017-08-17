@@ -44,6 +44,7 @@ import org.apache.cxf.message.MessageImpl;
 import org.apache.cxf.transport.AbstractConduit;
 import org.apache.cxf.ws.addressing.EndpointReferenceType;
 import org.flowable.engine.impl.context.Context;
+import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.listener.AbstractListener;
@@ -125,6 +126,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
             } catch (final TransformerException e) {
                 // TODO: The error should be pushed into CXF exchange
                 LOG.log(Level.WARNING, "An error occurs", e);
+                cxfExchange.setInMessage(msg);
             }
         } else if (asyncExchange.isErrorStatus()) {
             // TODO: The error is pushed into CXF exchange as a standard fault
@@ -153,6 +155,26 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Error received as common soap fault: " + ebaos.toString());
+            }
+
+            msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());
+            cxfExchange.setInMessage(msg);
+        } else if (asyncExchange.isDoneStatus()
+                && (MEPPatternConstants.ROBUST_IN_ONLY.equals(asyncExchange.getPattern())
+                        || MEPPatternConstants.IN_ONLY.equals(asyncExchange.getPattern()))) {
+
+            // TODO: Should be optimized using directly CXF API to avoid the DOM tree hack
+            final Document xmlPayload = DocumentBuilders.newDocument();
+            final Element envelope = xmlPayload.createElementNS("http://schemas.xmlsoap.org/soap/envelope/",
+                    "Envelope");
+            final Element body = xmlPayload.createElementNS("http://schemas.xmlsoap.org/soap/envelope/", "Body");
+            xmlPayload.appendChild(envelope).appendChild(body);
+
+            final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
+            DOMHelper.prettyPrint(xmlPayload, ebaos);
+
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("Status DONE received and transformed into: " + ebaos.toString());
             }
 
             msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());

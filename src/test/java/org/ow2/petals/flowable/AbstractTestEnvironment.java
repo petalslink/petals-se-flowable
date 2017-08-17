@@ -125,7 +125,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     }
 
     /**
-     * Assertion about the creation of a process instance. The process instance is not finished.
+     * Assertion about the creation of a process instance. The process instance is finished.
      * 
      * @param processInstanceId
      *            The process instance identifier
