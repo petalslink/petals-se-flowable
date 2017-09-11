@@ -16,37 +16,68 @@
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.
 -->
-<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://petals.ow2.org/se-flowable/unit-test/call-activity/level1">
-  <process id="processLevel1" name="Process level 1" isExecutable="true">
-    <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="callactivity1" />
-    <startEvent id="startevent1" name="Start" activiti:initiator="customer" >
+<definitions
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/call-activity/level1"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath">
+   
+   <process id="processLevel1" name="Process level 1" isExecutable="true">
+      <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="callactivity1" />
+      <startEvent id="startevent1" name="Start" activiti:initiator="customer">
          <extensionElements>
             <activiti:formProperty id="address" name="Customer adress" type="string" required="true" />
          </extensionElements>
       </startEvent>
-    <callActivity id="callactivity1" name="Call activity" calledElement="processLevel2"></callActivity>
-    <sequenceFlow id="flow2" sourceRef="callactivity1" targetRef="endevent1"/>
-    <endEvent id="endevent1" name="End" />
-  </process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_processLevel1">
-    <bpmndi:BPMNPlane bpmnElement="processLevel1" id="BPMNPlane_processLevel1">
-      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="220.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
-        <omgdc:Bounds height="55.0" width="105.0" x="180.0" y="210.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="370.0" y="220.0"></omgdc:Bounds>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
-        <omgdi:waypoint x="95.0" y="237.0"></omgdi:waypoint>
-        <omgdi:waypoint x="180.0" y="237.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
-        <omgdi:waypoint x="285.0" y="237.0"></omgdi:waypoint>
-        <omgdi:waypoint x="370.0" y="237.0"></omgdi:waypoint>
-      </bpmndi:BPMNEdge>
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
+      <callActivity id="callactivity1" name="Call activity" calledElement="processLevel2"></callActivity>
+      <sequenceFlow id="flow2" sourceRef="callactivity1" targetRef="endSucceeded" />
+      <endEvent id="endSucceeded" name="Completed Succesfully" />
+
+      <boundaryEvent id="boundaryerror1" name="Error" attachedToRef="callactivity1">
+         <errorEventDefinition errorRef="UNKNOWN_DOCUMENT"></errorEventDefinition>
+      </boundaryEvent>
+      <sequenceFlow id="flow3" sourceRef="boundaryerror1" targetRef="endWithError" />
+      <endEvent id="endWithError" name="Completed with error" />
+   </process>
+
+   <bpmndi:BPMNDiagram id="BPMNDiagram_processLevel1">
+      <bpmndi:BPMNPlane bpmnElement="processLevel1" id="BPMNPlane_processLevel1">
+         <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="220.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
+            <omgdc:Bounds height="55.0" width="105.0" x="180.0" y="210.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="boundaryerror1" id="BPMNShape_boundaryerror1">
+            <omgdc:Bounds height="30.0" width="30.0" x="230.0" y="250.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endSucceeded" id="BPMNShape_endSucceeded">
+            <omgdc:Bounds height="35.0" width="35.0" x="370.0" y="220.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endWithError" id="BPMNShape_endWithError">
+            <omgdc:Bounds height="35.0" width="35.0" x="370.0" y="300.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+            <omgdi:waypoint x="95.0" y="237.0"></omgdi:waypoint>
+            <omgdi:waypoint x="180.0" y="237.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+            <omgdi:waypoint x="285.0" y="237.0"></omgdi:waypoint>
+            <omgdi:waypoint x="370.0" y="237.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+            <omgdi:waypoint x="245.0" y="280.0"></omgdi:waypoint>
+            <omgdi:waypoint x="244.0" y="317.0"></omgdi:waypoint>
+            <omgdi:waypoint x="370.0" y="317.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+      </bpmndi:BPMNPlane>
+   </bpmndi:BPMNDiagram>
 </definitions>

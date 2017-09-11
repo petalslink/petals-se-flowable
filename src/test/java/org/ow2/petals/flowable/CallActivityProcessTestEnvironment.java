@@ -50,6 +50,7 @@ import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstancesResponse;
 import org.ow2.petals.se_flowable.unit_test.call_activity.archivageservice.Archiver;
 import org.ow2.petals.se_flowable.unit_test.call_activity.archivageservice.ArchiverResponse;
+import org.ow2.petals.se_flowable.unit_test.call_activity.archivageservice.UnknownDocument;
 import org.ow2.petals.se_flowable.unit_test.call_activity.coreservice.Execute;
 import org.ow2.petals.se_flowable.unit_test.call_activity.coreservice.ExecuteResponse;
 import org.ow2.petals.se_flowable.unit_test.call_activity.level1.Start;
@@ -171,8 +172,7 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                     serviceConfiguration.addResource(bpmnUrl_1);
 
                     serviceConfiguration.setServicesSectionParameter(
-                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"),
-                            "Process-Level-1.bpmn");
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"), "Process-Level-1.bpmn");
                     serviceConfiguration
                             .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version1"), "1");
 
@@ -182,8 +182,7 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                     serviceConfiguration.addResource(bpmnUrl_2);
 
                     serviceConfiguration.setServicesSectionParameter(
-                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"),
-                            "Process-Level-2.bpmn");
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"), "Process-Level-2.bpmn");
                     serviceConfiguration
                             .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version2"), "1");
 
@@ -246,11 +245,11 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
 
     static {
         try {
-            final JAXBContext context = JAXBContext.newInstance(Archiver.class, ArchiverResponse.class, Start.class,
-                    StartResponse.class, Unlock.class, UnlockAck.class, Execute.class, ExecuteResponse.class,
-                    SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
-                    ActivateProcessInstances.class, ActivateProcessInstancesResponse.class, GetTasks.class,
-                    GetTasksResponse.class);
+            final JAXBContext context = JAXBContext.newInstance(Archiver.class, ArchiverResponse.class,
+                    UnknownDocument.class, Start.class, StartResponse.class, Unlock.class, UnlockAck.class,
+                    Execute.class, ExecuteResponse.class, SuspendProcessInstances.class,
+                    SuspendProcessInstancesResponse.class, ActivateProcessInstances.class,
+                    ActivateProcessInstancesResponse.class, GetTasks.class, GetTasksResponse.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

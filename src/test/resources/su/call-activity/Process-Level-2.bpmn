@@ -81,24 +81,38 @@
       <userTask id="usertask1" name="User Task" activiti:candidateUsers="kermit"/>
       <sequenceFlow id="flow4" sourceRef="usertask1" targetRef="endevent1"/>
       <endEvent id="endevent1" name="End"/>
+      
+      <boundaryEvent id="boundaryerror1" name="Error" attachedToRef="servicetask1">
+         <errorEventDefinition errorRef="org.ow2.petals.se_flowable.unit_test.call_activity.archivageservice.UnknownDocument_Exception"></errorEventDefinition>
+      </boundaryEvent>
+      <sequenceFlow id="flow5" sourceRef="boundaryerror1" targetRef="errorendevent1" />
+      <endEvent id="errorendevent1" name="ErrorEnd">
+         <errorEventDefinition errorRef="UNKNOWN_DOCUMENT"/>
+      </endEvent>
    </process>
    
-   <bpmndi:BPMNDiagram id="BPMNDiagram_processLevel3">
-      <bpmndi:BPMNPlane bpmnElement="processLevel3" id="BPMNPlane_processLevel3">
+   <bpmndi:BPMNDiagram id="BPMNDiagram_processLevel2">
+      <bpmndi:BPMNPlane bpmnElement="processLevel2" id="BPMNPlane_processLevel2">
          <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
             <omgdc:Bounds height="35.0" width="35.0" x="80.0" y="200.0"></omgdc:Bounds>
          </bpmndi:BPMNShape>
-         <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
-            <omgdc:Bounds height="35.0" width="35.0" x="680.0" y="200.0"></omgdc:Bounds>
-         </bpmndi:BPMNShape>
          <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
             <omgdc:Bounds height="55.0" width="105.0" x="180.0" y="190.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="boundaryerror1" id="BPMNShape_boundaryerror1">
+            <omgdc:Bounds height="30.0" width="30.0" x="230.0" y="234.0"></omgdc:Bounds>
          </bpmndi:BPMNShape>
          <bpmndi:BPMNShape bpmnElement="callactivity1" id="BPMNShape_callactivity1">
             <omgdc:Bounds height="55.0" width="105.0" x="370.0" y="190.0"></omgdc:Bounds>
          </bpmndi:BPMNShape>
          <bpmndi:BPMNShape bpmnElement="usertask1" id="BPMNShape_usertask1">
             <omgdc:Bounds height="55.0" width="105.0" x="526.0" y="190.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="680.0" y="200.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="errorendevent1" id="BPMNShape_errorendevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="680.0" y="280.0"></omgdc:Bounds>
          </bpmndi:BPMNShape>
          <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
             <omgdi:waypoint x="115.0" y="217.0"></omgdi:waypoint>
@@ -107,6 +121,11 @@
          <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
             <omgdi:waypoint x="285.0" y="217.0"></omgdi:waypoint>
             <omgdi:waypoint x="370.0" y="217.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+            <omgdi:waypoint x="245.0" y="264.0"></omgdi:waypoint>
+            <omgdi:waypoint x="244.0" y="297.0"></omgdi:waypoint>
+            <omgdi:waypoint x="680.0" y="297.0"></omgdi:waypoint>
          </bpmndi:BPMNEdge>
          <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
             <omgdi:waypoint x="475.0" y="217.0"></omgdi:waypoint>
