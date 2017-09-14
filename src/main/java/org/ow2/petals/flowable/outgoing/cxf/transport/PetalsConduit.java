@@ -41,7 +41,6 @@ import org.apache.cxf.ws.addressing.EndpointReferenceType;
 import org.flowable.engine.impl.context.Context;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.commons.log.FlowAttributes;
-import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.component.framework.util.SourceUtil;
 import org.w3c.dom.Document;
@@ -78,16 +77,9 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
     @Override
     public void prepare(final Message message) throws IOException {
-
-        try {
-            final NormalizedMessageOutputStream out = new NormalizedMessageOutputStream(this.sender,
-                    message.getExchange(), this.asyncCallback, flowAttributes.get());
-            message.setContent(OutputStream.class, out);
-        } catch (final MessagingException e) {
-            throw new IOException(e);
-        } catch (final PEtALSCDKException e) {
-            throw new IOException(e);
-        }
+        final NormalizedMessageOutputStream out = new NormalizedMessageOutputStream(this.sender, message.getExchange(),
+                this.asyncCallback, flowAttributes.get());
+        message.setContent(OutputStream.class, out);
     }
 
     @Override

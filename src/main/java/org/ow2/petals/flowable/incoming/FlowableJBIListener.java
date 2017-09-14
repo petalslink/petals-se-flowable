@@ -123,7 +123,7 @@ public class FlowableJBIListener extends AbstractJBIListener {
                             logger.fine("interfaceName = " + interfaceName);
                             logger.fine("Service       = " + service);
                             logger.fine("EndpointName  = " + eptName);
-                            logger.fine("OperationName = " + operation.toString());
+                            logger.fine("OperationName = " + operation);
                             logger.fine("Pattern " + exchange.getPattern());
                         }
                         // SU-based service ('service mode')

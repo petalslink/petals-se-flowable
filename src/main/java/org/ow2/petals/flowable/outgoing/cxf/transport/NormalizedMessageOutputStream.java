@@ -35,7 +35,6 @@ import org.apache.cxf.service.model.OperationInfo;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
-import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.listener.AbstractListener;
@@ -66,8 +65,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
     private final FlowAttributes flowAttributes;
 
     public NormalizedMessageOutputStream(final AbstractListener sender, final Exchange cxfExchange,
-            final AsyncCallback asyncCallback, final FlowAttributes flowAttributes) throws MessagingException,
-            PEtALSCDKException {
+            final AsyncCallback asyncCallback, final FlowAttributes flowAttributes) {
         this.sender = sender;
         this.cxfExchange = cxfExchange;
         this.asyncCallback = asyncCallback;
