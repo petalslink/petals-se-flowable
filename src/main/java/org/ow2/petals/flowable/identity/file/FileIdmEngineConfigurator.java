@@ -121,17 +121,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
 
         try {
             if (this.configurationFile != null) {
-                final Properties props = new Properties();
-                final Reader cfgFileReader = new FileReader(this.configurationFile);
-                try {
-                    props.load(cfgFileReader);
-                } finally {
-                    try {
-                        cfgFileReader.close();
-                    } catch (final IOException e) {
-                        // NOP: We discard exception on close
-                    }
-                }
+                final Properties props = loadFileAsProperties(this.configurationFile);
 
                 final String usersFileName = props.getProperty(PROP_USERS_FILE_NAME);
                 if (usersFileName == null || usersFileName.trim().isEmpty()) {
@@ -153,6 +143,24 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         } catch (final IOException e) {
             throw new IdentityServiceInitException(e);
         }
+    }
+
+    private static Properties loadFileAsProperties(final File fileToLoad) throws IOException {
+
+        final Properties props = new Properties();
+        final Reader fileReader = new FileReader(fileToLoad);
+        try {
+            props.load(fileReader);
+        } finally {
+            try {
+                fileReader.close();
+            } catch (final IOException e) {
+                // NOP: We discard exception on close
+            }
+        }
+
+        return props;
+
     }
 
     /**

@@ -30,10 +30,12 @@ public abstract class AbstractProcessEngineConfigurator
 
     protected Logger logger;
 
+    @Override
     public void setConfigurationFile(final File configurationFile) {
         this.configurationFile = configurationFile;
     }
 
+    @Override
     public void setLogger(final Logger logger) {
         this.logger = logger;
     }

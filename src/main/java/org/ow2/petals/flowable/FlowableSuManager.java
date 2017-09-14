@@ -113,7 +113,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain a 'services' section.");
         }
         
-        String tenantId = this.extractTenantId(jbiDescriptor.getServices());
+        String tenantId = extractTenantId(jbiDescriptor.getServices());
         if (tenantId == null) {
             // TODO: Improve the default value declaration
             tenantId = "myTenant"; // default value
@@ -185,7 +185,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      *            Extra parameters of the section 'services'
      * @return the tenant id or {@code null} if not found.
      */
-    private String extractTenantId(final Services services) {
+    private static String extractTenantId(final Services services) {
         assert services != null;
         
         final List<Element> extensions = services.getAnyOrAny();
@@ -439,44 +439,54 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
         final List<FlowableOperation> operations = new ArrayList<>(annotatedOperations.size());
         for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
 
-            final QName wsdlOperation = annotatedOperation.getWsdlOperation();
-            this.logger.fine("Processing WSDL annotated operation: " + wsdlOperation);
-
-            final FlowableSE component = this.getComponent();
-
             // create the right FlowableOperation according to the bpmnActionType
-            if (annotatedOperation instanceof NoneStartEventAnnotatedOperation) {
-                operations.add(new NoneStartEventOperation((NoneStartEventAnnotatedOperation) annotatedOperation,
-                        component.getProcessEngine().getIdentityService(),
-                        component.getProcessEngine().getRuntimeService(),
-                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
-                        component.getPlaceHolders(), this.logger));
-            } else if (annotatedOperation instanceof MessageStartEventAnnotatedOperation) {
-                operations.add(new MessageStartEventOperation((MessageStartEventAnnotatedOperation) annotatedOperation,
-                        component.getProcessEngine().getIdentityService(),
-                        component.getProcessEngine().getRuntimeService(),
-                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
-                        component.getPlaceHolders(), this.logger));
-            } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
-                operations.add(new CompleteUserTaskOperation((CompleteUserTaskAnnotatedOperation) annotatedOperation,
-                        component.getProcessEngine().getTaskService(),
-                        component.getProcessEngine().getIdentityService(),
-                        component.getProcessEngine().getHistoryService(),
-                        component.getProcessEngine().getRuntimeService(), this.logger));
-            } else if (annotatedOperation instanceof IntermediateMessageCatchEventAnnotatedOperation) {
-                operations.add(new IntermediateMessageCatchEventOperation(
-                        (IntermediateMessageCatchEventAnnotatedOperation) annotatedOperation,
-                        component.getProcessEngine().getRuntimeService(),
-                        component.getProcessEngine().getHistoryService(), this.logger));
-            } else {
-                // This case is a bug case, as the annotated operation is known by the parser, it must be supported
-                // here.
-                throw new ProcessDefinitionDeclarationException(
-                        new UnsupportedActionException(wsdlOperation, annotatedOperation.getClass().getSimpleName()));
-            }
+            operations.add(this.createProcessingOperation(annotatedOperation));
         }
 
         return operations;
+    }
+
+    /**
+     * Create the {@link FlowableOperation} according to the {@link AnnotatedOperation}.
+     * 
+     * @param annotatedOperation
+     * @return
+     * @throws ProcessDefinitionDeclarationException
+     */
+    private FlowableOperation createProcessingOperation(final AnnotatedOperation annotatedOperation)
+            throws ProcessDefinitionDeclarationException {
+
+        final QName wsdlOperation = annotatedOperation.getWsdlOperation();
+        this.logger.fine("Processing WSDL annotated operation: " + wsdlOperation);
+
+        final FlowableSE component = this.getComponent();
+        if (annotatedOperation instanceof NoneStartEventAnnotatedOperation) {
+            return new NoneStartEventOperation((NoneStartEventAnnotatedOperation) annotatedOperation,
+                    component.getProcessEngine().getIdentityService(), component.getProcessEngine().getRuntimeService(),
+                    component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
+                    component.getPlaceHolders(), this.logger);
+        } else if (annotatedOperation instanceof MessageStartEventAnnotatedOperation) {
+            return new MessageStartEventOperation((MessageStartEventAnnotatedOperation) annotatedOperation,
+                    component.getProcessEngine().getIdentityService(), component.getProcessEngine().getRuntimeService(),
+                    component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
+                    component.getPlaceHolders(), this.logger);
+        } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
+            return new CompleteUserTaskOperation((CompleteUserTaskAnnotatedOperation) annotatedOperation,
+                    component.getProcessEngine().getTaskService(), component.getProcessEngine().getIdentityService(),
+                    component.getProcessEngine().getHistoryService(), component.getProcessEngine().getRuntimeService(),
+                    this.logger);
+        } else if (annotatedOperation instanceof IntermediateMessageCatchEventAnnotatedOperation) {
+            return new IntermediateMessageCatchEventOperation(
+                    (IntermediateMessageCatchEventAnnotatedOperation) annotatedOperation,
+                    component.getProcessEngine().getRuntimeService(), component.getProcessEngine().getHistoryService(),
+                    this.logger);
+        } else {
+            // This case is a bug case, as the annotated operation is known by the parser, it must be supported
+            // here.
+            throw new ProcessDefinitionDeclarationException(
+                    new UnsupportedActionException(wsdlOperation, annotatedOperation.getClass().getSimpleName()));
+        }
+
     }
 
     @Override
