@@ -224,6 +224,19 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      *            The process instance identifier of the process instance to wait its end.
      */
     protected void waitEndOfProcessInstance(final String processInstanceId) throws InterruptedException {
+        waitEndOfProcessInstance(processInstanceId, 60);
+    }
+
+    /**
+     * Wait that a process instance ends.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the process instance to wait its end.
+     * @param duration
+     *            Duration, in seconds, before to declare the process instance as not ended
+     */
+    protected void waitEndOfProcessInstance(final String processInstanceId, final long duration)
+            throws InterruptedException {
         final CountDownLatch lock = new CountDownLatch(1);
         final Thread waitingThread = new Thread(new Runnable() {
             @Override
@@ -247,9 +260,10 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             }
         });
         waitingThread.start();
-        if (!lock.await(60, TimeUnit.SECONDS)) {
+        if (!lock.await(duration, TimeUnit.SECONDS)) {
             throw new AssertionError(
-                    String.format("Process instance '%s' not finished in the waiting time.", processInstanceId));
+                    String.format("Process instance '%s' not finished in the waiting time ('%ds').", processInstanceId,
+                            duration));
         }
     }
 

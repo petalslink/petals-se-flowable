@@ -713,7 +713,7 @@ public class FlowableSE extends AbstractServiceEngine {
     }
 
     /**
-     * COnfigure the asynchronous executor
+     * Configure the asynchronous executor
      */
     private void configureAsyncExecutor() {
         if (this.flowableAsyncExecutor != null) {

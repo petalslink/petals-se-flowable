@@ -31,6 +31,7 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.ManagementService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
@@ -362,6 +363,13 @@ public class FlowableClient extends ExternalResource {
      */
     public ManagementService getManagementService() {
         return this.flowableClientEngine.getManagementService();
+    }
+
+    /**
+     * @return The {@link RepositoryService} of the Flowable engine
+     */
+    public RepositoryService getRepositoryService() {
+        return this.flowableClientEngine.getRepositoryService();
     }
 
     /**
