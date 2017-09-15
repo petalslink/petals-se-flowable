@@ -13,7 +13,8 @@
  You should have received a copy of the New BSD License (3-clause license)
  along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
  for the New BSD License (3-clause license).
---><con:soapui-project activeEnvironment="Default" name="Petals Trunk - IT - SE Flowable - Service invocation" resourceRoot="" soapui-version="5.3.0" abortOnError="false" runType="SEQUENTIAL" id="9b8744d7-5a0c-4939-bca7-b4c395894267" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
+-->
+<con:soapui-project activeEnvironment="Default" name="Petals Trunk - IT - SE Flowable - Service invocation" resourceRoot="" soapui-version="5.3.0" abortOnError="false" runType="SEQUENTIAL" id="9b8744d7-5a0c-4939-bca7-b4c395894267" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.actions.iface.tools.soapui.LoadTestRunnerAction@values-local"><![CDATA[<xml-fragment xmlns:con="http://eviware.com/soapui/config">
   <con:entry key="Environment" value="Default"/>
   <con:entry key="Global Properties" value=""/>
   <con:entry key="TestSuite" value="&lt;all>"/>
