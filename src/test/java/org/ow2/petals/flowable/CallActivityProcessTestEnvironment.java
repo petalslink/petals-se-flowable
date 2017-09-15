@@ -113,6 +113,14 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
             // A async job executor is required to process service task
             .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
+            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                    FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME), "1000")
+            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                    FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME), "1000")
+            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                    FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME), "1")
+            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                    FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME), "1")
             .registerServiceToDeploy(CALL_ACTIVITY_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {

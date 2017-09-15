@@ -19,6 +19,8 @@ package org.ow2.petals.flowable;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE;
@@ -260,129 +262,12 @@ public class FlowableSE extends AbstractServiceEngine {
         this.getLogger().fine("Start FlowableSE.doInit()");
 
         try {
-            // JDBC Driver
-            final String jdbcDriver = FlowableParameterReader
-                    .getJdbcDriver(this.getComponentExtensions().get(JDBC_DRIVER), this.getLogger());
+            final ProcessEngineConfiguration pec = ProcessEngineConfiguration
+                    .createStandaloneProcessEngineConfiguration();
 
-            // JDBC URL
-            final String jdbcUrlConfigured = this.getComponentExtensions().get(JDBC_URL);
-            final String jdbcUrl;
-            if (jdbcUrlConfigured == null || jdbcUrlConfigured.trim().isEmpty()) {
-                // JDBC URL not set or empty ---> Default value:
-                // $PETALS_HOME/data/repository/components/<se-bpmn>/h2-flowable.db
-                this.getLogger().info("No JDBC URL configured for database. Default value used.");
-                final File databaseFile = new File(this.getContext().getWorkspaceRoot(),
-                        DEFAULT_JDBC_URL_DATABASE_FILENAME);
-                try {
-                    jdbcUrl = String.format("jdbc:h2:%s", databaseFile.toURI().toURL().toExternalForm());
-                } catch (final MalformedURLException e) {
-                    // This exception should not occur. It's a bug
-                    throw new JBIException("The defaul JDBC URL is invalid !!", e);
-                }
-            } else {
-                jdbcUrl = jdbcUrlConfigured;
-            }
-
-            final String jdbcUsername = this.getComponentExtensions().get(JDBC_USERNAME);
-            final String jdbcPassword = this.getComponentExtensions().get(JDBC_PASSWORD);
-
-            final String jdbcMaxActiveConnectionsConfigured = this.getComponentExtensions()
-                    .get(JDBC_MAX_ACTIVE_CONNECTIONS);
-            int jdbcMaxActiveConnections;
-            if (jdbcMaxActiveConnectionsConfigured == null || jdbcMaxActiveConnectionsConfigured.trim().isEmpty()) {
-                this.getLogger().info("No JDBC Max Active Connections configured for database. Default value used.");
-                jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
-            } else {
-                try {
-                    jdbcMaxActiveConnections = Integer.parseInt(jdbcMaxActiveConnectionsConfigured);
-                } catch (final NumberFormatException e) {
-                    this.getLogger().warning(
-                            "Invalid value for the number of JDBC Max Active Connections. Default value used.");
-                    jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
-                }
-            }
-
-            final String jdbcMaxIdleConnectionsConfigured = this.getComponentExtensions()
-                    .get(JDBC_MAX_IDLE_CONNECTIONS);
-            int jdbcMaxIdleConnections;
-            if (jdbcMaxIdleConnectionsConfigured == null || jdbcMaxIdleConnectionsConfigured.trim().isEmpty()) {
-                this.getLogger().info("No JDBC Max Idle Connections configured for database. Default value used.");
-                jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
-            } else {
-                try {
-                    jdbcMaxIdleConnections = Integer.parseInt(jdbcMaxIdleConnectionsConfigured);
-                } catch (final NumberFormatException e) {
-                    this.getLogger()
-                            .warning("Invalid value for the number of JDBC Max Idle Connections. Default value used.");
-                    jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
-                }
-            }
-
-            final String jdbcMaxCheckoutTimeConfigured = this.getComponentExtensions().get(JDBC_MAX_CHECKOUT_TIME);
-            int jdbcMaxCheckoutTime;
-            if (jdbcMaxCheckoutTimeConfigured == null || jdbcMaxCheckoutTimeConfigured.trim().isEmpty()) {
-                this.getLogger().info("No JDBC Max Checkout Time configured for database. Default value used.");
-                jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
-            } else {
-                try {
-                    jdbcMaxCheckoutTime = Integer.parseInt(jdbcMaxCheckoutTimeConfigured);
-                } catch (final NumberFormatException e) {
-                    this.getLogger()
-                            .warning("Invalid value for the number of JDBC Max Checkout Time. Default value used.");
-                    jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
-                }
-            }
-
-            final String jdbcMaxWaitTimeConfigured = this.getComponentExtensions().get(JDBC_MAX_WAIT_TIME);
-            int jdbcMaxWaitTime;
-            if (jdbcMaxWaitTimeConfigured == null || jdbcMaxWaitTimeConfigured.trim().isEmpty()) {
-                this.getLogger().info("No JDBC Max Wait Time configured for database. Default value used.");
-                jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
-            } else {
-                try {
-                    jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeConfigured);
-                } catch (final NumberFormatException e) {
-                    this.getLogger().warning("Invalid value for the number of JDBC Max Wait Time. Default value used.");
-                    jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
-                }
-            }
-
-            /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
-            final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
-
-            /* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
-            /*
-             * TODO Test the Database Schema Version What about databaseSchemaUpdate values "true" and "create-drop"
-             */
-            final String databaseSchemaUpdateConfigured = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
-            final String databaseSchemaUpdate;
-            if (databaseSchemaUpdateConfigured == null || databaseSchemaUpdateConfigured.trim().isEmpty()) {
-                this.getLogger().info("No schema update processing configured for database. Default value used.");
-                databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
-            } else if (databaseSchemaUpdateConfigured.trim().equals("false")
-                    || databaseSchemaUpdateConfigured.trim().equals("true")
-                    || databaseSchemaUpdateConfigured.trim().equals("create-drop")) {
-                databaseSchemaUpdate = databaseSchemaUpdateConfigured.trim();
-            } else {
-                this.getLogger().info("Invalid value '" + databaseSchemaUpdateConfigured
-                        + "' configured for the schema update processing. Default value used.");
-                databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
-            }
-
-            /* TODO Test Flowable database connection configuration */
-            /* TODO Set the non set value with default value */
-
-            this.getLogger().config("DB configuration:");
-            this.getLogger().config("   - " + JDBC_DRIVER + " = " + jdbcDriver);
-            this.getLogger().config("   - " + JDBC_URL + " = " + jdbcUrl);
-            this.getLogger().config("   - " + JDBC_USERNAME + " = " + jdbcUsername);
-            this.getLogger().config("   - " + JDBC_PASSWORD + " = " + jdbcPassword);
-            this.getLogger().config("   - " + JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);
-            this.getLogger().config("   - " + JDBC_MAX_IDLE_CONNECTIONS + " = " + jdbcMaxIdleConnections);
-            this.getLogger().config("   - " + JDBC_MAX_CHECKOUT_TIME + " = " + jdbcMaxCheckoutTime);
-            this.getLogger().config("   - " + JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
-            this.getLogger().config("   - " + DATABASE_TYPE + " = " + databaseType);
-            this.getLogger().config("   - " + DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
+            this.configureFlowableEngineDatabase(pec);
+            this.configureFlowableEngineOtherParams(pec);
+            this.configureFlowableIdmEngine(pec);
 
             // Caution:
             // - only the value "false", ignoring case and spaces will disable the job executor,
@@ -401,56 +286,6 @@ public class FlowableSE extends AbstractServiceEngine {
                                 : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
             }
 
-            // Caution:
-            // - only the value "false", ignoring case and spaces will disable the BPMN validation,
-            // - only the value "true", ignoring case and spaces will enable the BPMN validation,
-            // - otherwise, the default value is used.
-            final String enableFlowableBpmnValidationConfigured = this.getComponentExtensions()
-                    .get(ENGINE_ENABLE_BPMN_VALIDATION);
-            final boolean enableFlowableBpmnValidation;
-            if (enableFlowableBpmnValidationConfigured == null
-                    || enableFlowableBpmnValidationConfigured.trim().isEmpty()) {
-                this.getLogger().info(
-                        "The activation of the BPMN validation during process deployments is not configured. Default value used.");
-                enableFlowableBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
-            } else {
-                enableFlowableBpmnValidation = enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("false")
-                        ? false
-                        : (enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
-                                : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
-            }
-
-            ((FlowableSuManager) getServiceUnitManager()).setEnableFlowableBpmnValidation(enableFlowableBpmnValidation);
-
-            final Class<?> idmEngineConfiguratorClass = FlowableParameterReader.getIdmEngineConfiguratorClassName(
-                    this.getComponentExtensions().get(IDM_ENGINE_CONFIGURATOR_CLASS_NAME), this.getLogger());
-
-            final File idmEngineConfiguratorCfgFile = FlowableParameterReader.getEngineIdentityServiceConfigurationFile(
-                    this.getComponentExtensions().get(IDM_ENGINE_CONFIGURATOR_CFG_FILE), this.getLogger());
-
-            this.getLogger().config("Flowable engine configuration:");
-            this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableFlowableJobExecutor);
-            this.getLogger().config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + enableFlowableBpmnValidation);
-            this.getLogger()
-                    .config("   - " + IDM_ENGINE_CONFIGURATOR_CLASS_NAME + " = " + idmEngineConfiguratorClass.getName());
-            this.getLogger().config("   - " + IDM_ENGINE_CONFIGURATOR_CFG_FILE + " = "
-                    + (idmEngineConfiguratorCfgFile == null ? "<null>" : idmEngineConfiguratorCfgFile.getAbsolutePath()));
-
-            /* Create an Flowable ProcessEngine with database configuration */
-            final ProcessEngineConfiguration pec = ProcessEngineConfiguration
-                    .createStandaloneProcessEngineConfiguration();
-            pec.setJdbcDriver(jdbcDriver);
-            pec.setJdbcUrl(jdbcUrl);
-            pec.setJdbcUsername(jdbcUsername).setJdbcPassword(jdbcPassword);
-            pec.setJdbcMaxActiveConnections(jdbcMaxActiveConnections);
-            pec.setJdbcMaxIdleConnections(jdbcMaxIdleConnections);
-            pec.setJdbcMaxCheckoutTime(jdbcMaxCheckoutTime);
-            pec.setJdbcMaxWaitTime(jdbcMaxWaitTime);
-            if (databaseType != null && !databaseType.trim().isEmpty()) {
-                pec.setDatabaseType(databaseType);
-            }
-            pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
-
             // We register the Petals transport into Apache CXF
             this.registerCxfPetalsTransport();
 
@@ -460,9 +295,6 @@ public class FlowableSE extends AbstractServiceEngine {
             // right activation status will be set in Flowable engine configuration once the Flowable engine will be
             // started.
             pec.setAsyncExecutorActivate(false);
-
-            // Override the default configuration of the identity service.
-            this.registerIdentityService(pec, idmEngineConfiguratorClass, idmEngineConfiguratorCfgFile);
 
             // Add post BPMN parse handlers
             this.addPostBpmnParseHandlers(pec);
@@ -496,6 +328,196 @@ public class FlowableSE extends AbstractServiceEngine {
         } finally {
             this.getLogger().fine("End FlowableSE.doInit()");
         }
+    }
+
+    private void configureFlowableIdmEngine(final ProcessEngineConfiguration pec) throws JBIException {
+
+        final Class<?> idmEngineConfiguratorClass = FlowableParameterReader.getIdmEngineConfiguratorClassName(
+                this.getComponentExtensions().get(IDM_ENGINE_CONFIGURATOR_CLASS_NAME), this.getLogger());
+
+        final File idmEngineConfiguratorCfgFile = FlowableParameterReader.getEngineIdentityServiceConfigurationFile(
+                this.getComponentExtensions().get(IDM_ENGINE_CONFIGURATOR_CFG_FILE), this.getLogger());
+
+        this.getLogger().config("Flowable IDM engine configuration:");
+        this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableFlowableJobExecutor);
+        this.getLogger()
+                .config("   - " + IDM_ENGINE_CONFIGURATOR_CLASS_NAME + " = " + idmEngineConfiguratorClass.getName());
+        this.getLogger().config("   - " + IDM_ENGINE_CONFIGURATOR_CFG_FILE + " = "
+                + (idmEngineConfiguratorCfgFile == null ? "<null>" : idmEngineConfiguratorCfgFile.getAbsolutePath()));
+
+        // Override the default configuration of the identity service.
+        this.registerIdentityService(pec, idmEngineConfiguratorClass, idmEngineConfiguratorCfgFile);
+    }
+
+    private void configureFlowableEngineOtherParams(final ProcessEngineConfiguration pec) {
+
+        // Caution:
+        // - only the value "false", ignoring case and spaces will disable the BPMN validation,
+        // - only the value "true", ignoring case and spaces will enable the BPMN validation,
+        // - otherwise, the default value is used.
+        final String enableFlowableBpmnValidationConfigured = this.getComponentExtensions()
+                .get(ENGINE_ENABLE_BPMN_VALIDATION);
+        final boolean enableFlowableBpmnValidation;
+        if (enableFlowableBpmnValidationConfigured == null || enableFlowableBpmnValidationConfigured.trim().isEmpty()) {
+            this.getLogger().info(
+                    "The activation of the BPMN validation during process deployments is not configured. Default value used.");
+            enableFlowableBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
+        } else {
+            enableFlowableBpmnValidation = enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("false")
+                    ? false
+                    : (enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
+                            : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
+        }
+
+        final int defaultFailedJobWaitTime = this.getDefaultFailedJobWaitTime();
+        final int asyncFailedJobWaitTime = this.getAsyncFailedJobWaitTime();
+
+        this.getLogger().config("Flowable Engine other params configuration:");
+        this.getLogger().config("   - " + ENGINE_ENABLE_BPMN_VALIDATION + " = " + enableFlowableBpmnValidation);
+        this.getLogger().config("   - " + ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME + " = " + defaultFailedJobWaitTime);
+        this.getLogger().config("   - " + ENGINE_ASYNC_FAILED_JOB_WAIT_TIME + " = " + asyncFailedJobWaitTime);
+
+        ((FlowableSuManager) getServiceUnitManager()).setEnableFlowableBpmnValidation(enableFlowableBpmnValidation);
+        pec.setAsyncFailedJobWaitTime(asyncFailedJobWaitTime);
+        pec.setDefaultFailedJobWaitTime(defaultFailedJobWaitTime);
+
+    }
+
+    private void configureFlowableEngineDatabase(final ProcessEngineConfiguration pec) throws JBIException {
+        // JDBC Driver
+        final String jdbcDriver = FlowableParameterReader.getJdbcDriver(this.getComponentExtensions().get(JDBC_DRIVER),
+                this.getLogger());
+
+        // JDBC URL
+        final String jdbcUrlConfigured = this.getComponentExtensions().get(JDBC_URL);
+        final String jdbcUrl;
+        if (jdbcUrlConfigured == null || jdbcUrlConfigured.trim().isEmpty()) {
+            // JDBC URL not set or empty ---> Default value:
+            // $PETALS_HOME/data/repository/components/<se-bpmn>/h2-flowable.db
+            this.getLogger().info("No JDBC URL configured for database. Default value used.");
+            final File databaseFile = new File(this.getContext().getWorkspaceRoot(),
+                    DEFAULT_JDBC_URL_DATABASE_FILENAME);
+            try {
+                jdbcUrl = String.format("jdbc:h2:%s", databaseFile.toURI().toURL().toExternalForm());
+            } catch (final MalformedURLException e) {
+                // This exception should not occur. It's a bug
+                throw new JBIException("The defaul JDBC URL is invalid !!", e);
+            }
+        } else {
+            jdbcUrl = jdbcUrlConfigured;
+        }
+
+        final String jdbcUsername = this.getComponentExtensions().get(JDBC_USERNAME);
+        final String jdbcPassword = this.getComponentExtensions().get(JDBC_PASSWORD);
+
+        final String jdbcMaxActiveConnectionsConfigured = this.getComponentExtensions()
+                .get(JDBC_MAX_ACTIVE_CONNECTIONS);
+        int jdbcMaxActiveConnections;
+        if (jdbcMaxActiveConnectionsConfigured == null || jdbcMaxActiveConnectionsConfigured.trim().isEmpty()) {
+            this.getLogger().info("No JDBC Max Active Connections configured for database. Default value used.");
+            jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+        } else {
+            try {
+                jdbcMaxActiveConnections = Integer.parseInt(jdbcMaxActiveConnectionsConfigured);
+            } catch (final NumberFormatException e) {
+                this.getLogger()
+                        .warning("Invalid value for the number of JDBC Max Active Connections. Default value used.");
+                jdbcMaxActiveConnections = DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
+            }
+        }
+
+        final String jdbcMaxIdleConnectionsConfigured = this.getComponentExtensions().get(JDBC_MAX_IDLE_CONNECTIONS);
+        int jdbcMaxIdleConnections;
+        if (jdbcMaxIdleConnectionsConfigured == null || jdbcMaxIdleConnectionsConfigured.trim().isEmpty()) {
+            this.getLogger().info("No JDBC Max Idle Connections configured for database. Default value used.");
+            jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+        } else {
+            try {
+                jdbcMaxIdleConnections = Integer.parseInt(jdbcMaxIdleConnectionsConfigured);
+            } catch (final NumberFormatException e) {
+                this.getLogger()
+                        .warning("Invalid value for the number of JDBC Max Idle Connections. Default value used.");
+                jdbcMaxIdleConnections = DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
+            }
+        }
+
+        final String jdbcMaxCheckoutTimeConfigured = this.getComponentExtensions().get(JDBC_MAX_CHECKOUT_TIME);
+        int jdbcMaxCheckoutTime;
+        if (jdbcMaxCheckoutTimeConfigured == null || jdbcMaxCheckoutTimeConfigured.trim().isEmpty()) {
+            this.getLogger().info("No JDBC Max Checkout Time configured for database. Default value used.");
+            jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+        } else {
+            try {
+                jdbcMaxCheckoutTime = Integer.parseInt(jdbcMaxCheckoutTimeConfigured);
+            } catch (final NumberFormatException e) {
+                this.getLogger().warning("Invalid value for the number of JDBC Max Checkout Time. Default value used.");
+                jdbcMaxCheckoutTime = DEFAULT_JDBC_MAX_CHECKOUT_TIME;
+            }
+        }
+
+        final String jdbcMaxWaitTimeConfigured = this.getComponentExtensions().get(JDBC_MAX_WAIT_TIME);
+        int jdbcMaxWaitTime;
+        if (jdbcMaxWaitTimeConfigured == null || jdbcMaxWaitTimeConfigured.trim().isEmpty()) {
+            this.getLogger().info("No JDBC Max Wait Time configured for database. Default value used.");
+            jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
+        } else {
+            try {
+                jdbcMaxWaitTime = Integer.parseInt(jdbcMaxWaitTimeConfigured);
+            } catch (final NumberFormatException e) {
+                this.getLogger().warning("Invalid value for the number of JDBC Max Wait Time. Default value used.");
+                jdbcMaxWaitTime = DEFAULT_JDBC_MAX_WAIT_TIME;
+            }
+        }
+
+        /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
+        final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
+
+        /* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
+        /*
+         * TODO Test the Database Schema Version What about databaseSchemaUpdate values "true" and "create-drop"
+         */
+        final String databaseSchemaUpdateConfigured = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
+        final String databaseSchemaUpdate;
+        if (databaseSchemaUpdateConfigured == null || databaseSchemaUpdateConfigured.trim().isEmpty()) {
+            this.getLogger().info("No schema update processing configured for database. Default value used.");
+            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
+        } else if (databaseSchemaUpdateConfigured.trim().equals("false")
+                || databaseSchemaUpdateConfigured.trim().equals("true")
+                || databaseSchemaUpdateConfigured.trim().equals("create-drop")) {
+            databaseSchemaUpdate = databaseSchemaUpdateConfigured.trim();
+        } else {
+            this.getLogger().info("Invalid value '" + databaseSchemaUpdateConfigured
+                    + "' configured for the schema update processing. Default value used.");
+            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
+        }
+
+        /* TODO Test Flowable database connection configuration */
+        /* TODO Set the non set value with default value */
+
+        this.getLogger().config("Flowable Engine database configuration:");
+        this.getLogger().config("   - " + JDBC_DRIVER + " = " + jdbcDriver);
+        this.getLogger().config("   - " + JDBC_URL + " = " + jdbcUrl);
+        this.getLogger().config("   - " + JDBC_USERNAME + " = " + jdbcUsername);
+        this.getLogger().config("   - " + JDBC_PASSWORD + " = " + jdbcPassword);
+        this.getLogger().config("   - " + JDBC_MAX_ACTIVE_CONNECTIONS + " = " + jdbcMaxActiveConnections);
+        this.getLogger().config("   - " + JDBC_MAX_IDLE_CONNECTIONS + " = " + jdbcMaxIdleConnections);
+        this.getLogger().config("   - " + JDBC_MAX_CHECKOUT_TIME + " = " + jdbcMaxCheckoutTime);
+        this.getLogger().config("   - " + JDBC_MAX_WAIT_TIME + " = " + jdbcMaxWaitTime);
+        this.getLogger().config("   - " + DATABASE_TYPE + " = " + databaseType);
+        this.getLogger().config("   - " + DATABASE_SCHEMA_UPDATE + " = " + databaseSchemaUpdate);
+
+        pec.setJdbcDriver(jdbcDriver);
+        pec.setJdbcUrl(jdbcUrl);
+        pec.setJdbcUsername(jdbcUsername).setJdbcPassword(jdbcPassword);
+        pec.setJdbcMaxActiveConnections(jdbcMaxActiveConnections);
+        pec.setJdbcMaxIdleConnections(jdbcMaxIdleConnections);
+        pec.setJdbcMaxCheckoutTime(jdbcMaxCheckoutTime);
+        pec.setJdbcMaxWaitTime(jdbcMaxWaitTime);
+        if (databaseType != null && !databaseType.trim().isEmpty()) {
+            pec.setDatabaseType(databaseType);
+        }
+        pec.setDatabaseSchemaUpdate(databaseSchemaUpdate);
+
     }
 
     /**
@@ -901,6 +923,22 @@ public class FlowableSE extends AbstractServiceEngine {
             throws MultipleProbesFactoriesFoundException, NoProbesFactoryFoundException {
 
         return new Monitoring(this.getProbesTimer(), this.getResponseTimeProbeSamplePeriod());
+    }
+
+    /**
+     * @return The async failed job wait time of the Flowable engine.
+     */
+    private int getAsyncFailedJobWaitTime() {
+        return this.getParameterAsPositiveInteger(ENGINE_ASYNC_FAILED_JOB_WAIT_TIME,
+                FlowableSEConstants.DEFAULT_ASYNC_FAILED_JOB_WAIT_TIME);
+    }
+
+    /**
+     * @return The default failed job wait time of the Flowable engine.
+     */
+    private int getDefaultFailedJobWaitTime() {
+        return this.getParameterAsPositiveInteger(ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME,
+                FlowableSEConstants.DEFAULT_DEFAULT_FAILED_JOB_WAIT_TIME);
     }
 
     /**

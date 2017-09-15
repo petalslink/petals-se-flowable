@@ -86,6 +86,8 @@
                   <xs:element ref="petals-se-flowable:engine-job-executor-async-job-lock-time" maxOccurs="1"
                      minOccurs="0" />
                   <xs:element ref="petals-se-flowable:engine-enable-bpmn-validation" maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-flowable:engine-default-failed-job-wait-time" maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-flowable:engine-async-failed-job-wait-time" maxOccurs="1" minOccurs="0" />
                   <!-- the Flowable identity service parameters -->
                   <xs:element ref="petals-se-flowable:idm-engine-configurator-class-name" maxOccurs="1"
                      minOccurs="0" />

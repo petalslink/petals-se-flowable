@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ASYNC_FAILED_JOB_WAIT_TIME;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_DEFAULT_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME;
@@ -29,6 +31,8 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXE
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME;
@@ -100,6 +104,10 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
 
     public static final String ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION = "engineEnableBpmnValidation";
 
+    public static final String ATTR_NAME_ENGINE_ASYNC_FAILED_JOB_WAITTIME = "engineAsyncFailedJobWaitTime";
+
+    public static final String ATTR_NAME_ENGINE_DEFAULT_FAILED_JOB_WAITTIME = "engineDefaultFailedJobWaitTime";
+
     public static final String ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME = "idmEngineConfiguratorClassName";
 
     public static final String ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE = "idmEngineConfiguratorConfigFile";
@@ -145,6 +153,8 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_DATABASE_TYPE);
             attributes.add(ATTR_NAME_DATABASE_SCHEMA_UPDATE);
             attributes.add(ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION);
+            attributes.add(ATTR_NAME_ENGINE_ASYNC_FAILED_JOB_WAITTIME);
+            attributes.add(ATTR_NAME_ENGINE_DEFAULT_FAILED_JOB_WAITTIME);
             attributes.add(ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
             attributes.add(ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE);
 
@@ -691,6 +701,44 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
     public void setEngineEnableBpmnValidation(final String value) {
         // TODO: Add a check about valid values
         this.setParam(ENGINE_ENABLE_BPMN_VALIDATION, value);
+    }
+
+    /**
+     * Get the default failed job wait time
+     * 
+     * @return the default failed job wait time
+     */
+    public int getEngineDefaultFailedJobWaitTime() {
+        return this.getParamAsInteger(ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME, DEFAULT_DEFAULT_FAILED_JOB_WAIT_TIME);
+    }
+
+    /**
+     * Set the default failed job wait time
+     * 
+     * @param value
+     *            the default failed job wait time
+     */
+    public void setEngineDefaultFailedJobWaitTime(final int value) {
+        this.setParam(ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME, Integer.toString(value));
+    }
+
+    /**
+     * Get the async failed job wait time
+     * 
+     * @return the async failed job wait time
+     */
+    public int getEngineAsyncFailedJobWaitTime() {
+        return this.getParamAsInteger(ENGINE_ASYNC_FAILED_JOB_WAIT_TIME, DEFAULT_ASYNC_FAILED_JOB_WAIT_TIME);
+    }
+
+    /**
+     * Set the async failed job wait time
+     * 
+     * @param value
+     *            the async failed job wait time
+     */
+    public void setEngineAsyncFailedJobWaitTime(final int value) {
+        this.setParam(ENGINE_ASYNC_FAILED_JOB_WAIT_TIME, Integer.toString(value));
     }
 
     /**

@@ -71,6 +71,8 @@
       <petals-se-flowable:engine-job-executor-timer-lock-time />
       <petals-se-flowable:engine-job-executor-async-job-lock-time />
       <petals-se-flowable:engine-enable-bpmn-validation />
+      <petals-se-flowable:engine-default-failed-job-wait-time />
+      <petals-se-flowable:engine-async-failed-job-wait-time />
       <petals-se-flowable:idm-engine-configurator-class-name />
       <petals-se-flowable:idm-engine-configurator-config-file />
 

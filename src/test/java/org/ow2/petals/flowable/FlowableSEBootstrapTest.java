@@ -152,6 +152,12 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         final Element eltEnableEngineBpmnValidation = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
                 FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         params.add(eltEnableEngineBpmnValidation);
+        final Element eltDefaultFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME);
+        params.add(eltDefaultFailedJobWaitTime);
+        final Element eltAsyncFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME);
+        params.add(eltAsyncFailedJobWaitTime);
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
                 FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
         params.add(eltEngineIdentityServiceClassName);
@@ -267,6 +273,14 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         eltEnableEngineBpmnValidation.setTextContent(" ");
         params.add(eltEnableEngineBpmnValidation);
+        final Element eltDefaultFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME);
+        eltDefaultFailedJobWaitTime.setTextContent(" ");
+        params.add(eltDefaultFailedJobWaitTime);
+        final Element eltAsyncFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME);
+        eltAsyncFailedJobWaitTime.setTextContent(" ");
+        params.add(eltAsyncFailedJobWaitTime);
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
                 FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
         eltEngineIdentityServiceClassName.setTextContent(" ");
@@ -368,6 +382,14 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION);
         eltEnableEngineBpmnValidation.setTextContent("invalid-value");
         params.add(eltEnableEngineBpmnValidation);
+        final Element eltDefaultFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME);
+        eltDefaultFailedJobWaitTime.setTextContent("invalid-value");
+        params.add(eltDefaultFailedJobWaitTime);
+        final Element eltAsyncFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME);
+        eltAsyncFailedJobWaitTime.setTextContent("invalid-value");
+        params.add(eltAsyncFailedJobWaitTime);
         final Element eltEngineIdentityServiceClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
                 FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
         eltEngineIdentityServiceClassName.setTextContent("invalid-value");
@@ -530,6 +552,18 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEnableEngineBpmnValidation.setTextContent(engineEnableBpmnValidation);
         params.add(eltEnableEngineBpmnValidation);
 
+        final Element eltDefaultFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME);
+        final int defaultFailedJobWaitTime = 5;
+        eltDefaultFailedJobWaitTime.setTextContent(String.valueOf(defaultFailedJobWaitTime));
+        params.add(eltDefaultFailedJobWaitTime);
+
+        final Element eltAsyncFailedJobWaitTime = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME);
+        final int asyncFailedJobWaitTime = 15;
+        eltAsyncFailedJobWaitTime.setTextContent(String.valueOf(asyncFailedJobWaitTime));
+        params.add(eltAsyncFailedJobWaitTime);
+
         final Element eltIdmEngineConfiguratorClassName = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
                 FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
         final String idmEngineConfiguratorClassName = IdmEngineConfiguratorMock.class.getName();
@@ -566,6 +600,10 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_DATABASE_SCHEMA_UPDATE));
         assertEquals(engineEnableBpmnValidation, this.jmxClient
                 .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION));
+        assertEquals(defaultFailedJobWaitTime, this.jmxClient
+                .getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_DEFAULT_FAILED_JOB_WAITTIME));
+        assertEquals(asyncFailedJobWaitTime, this.jmxClient
+                .getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_ASYNC_FAILED_JOB_WAITTIME));
         assertEquals(idmEngineConfiguratorClassName, this.jmxClient
                 .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME));
         assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE, this.jmxClient
@@ -630,6 +668,10 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_DATABASE_SCHEMA_UPDATE));
         assertEquals(String.valueOf(FlowableSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION), this.jmxClient
                 .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION));
+        assertEquals(FlowableSEConstants.DEFAULT_DEFAULT_FAILED_JOB_WAIT_TIME, this.jmxClient
+                .getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_DEFAULT_FAILED_JOB_WAITTIME));
+        assertEquals(FlowableSEConstants.DEFAULT_ASYNC_FAILED_JOB_WAIT_TIME, this.jmxClient
+                .getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_ASYNC_FAILED_JOB_WAITTIME));
         assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, this.jmxClient
                 .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME));
         assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE, this.jmxClient
@@ -944,6 +986,12 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             final boolean engineEnableBpmnValidation = true;
             this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_ENABLE_BPMN_VALIDATION,
                     String.valueOf(engineEnableBpmnValidation));
+            final int defaultFailedJobWaitTime = 15;
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_DEFAULT_FAILED_JOB_WAITTIME,
+                    Integer.valueOf(defaultFailedJobWaitTime));
+            final int asyncFailedJobWaitTime = 5;
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_ASYNC_FAILED_JOB_WAITTIME,
+                    Integer.valueOf(asyncFailedJobWaitTime));
 
             final String idmEngineConfiguratorClass = FileIdmEngineConfigurator.class.getName();
             this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
@@ -994,6 +1042,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                     ReflectionHelper.getFieldValue(FlowableSuManager.class,
                             (FlowableSuManager) flowableComponent.getServiceUnitManager(),
                             "enableFlowableBpmnValidation", false));
+            assertEquals(defaultFailedJobWaitTime, pec.getDefaultFailedJobWaitTime());
+            assertEquals(asyncFailedJobWaitTime, pec.getAsyncFailedJobWaitTime());
 
         } finally {
             componentUnderTest.delete();

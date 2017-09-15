@@ -309,6 +309,26 @@ public final class FlowableSEConstants {
     public static final boolean DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION = true;
 
     /**
+     * Tag name of the component JBI descriptor about the default failed job wait time in seconds.
+     */
+    public static final String ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME = "engine-default-failed-job-wait-time";
+
+    /**
+     * Default value of {@link #ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME}.
+     */
+    public static final int DEFAULT_DEFAULT_FAILED_JOB_WAIT_TIME = 10;
+
+    /**
+     * Tag name of the component JBI descriptor about the async failed job wait time in seconds.
+     */
+    public static final String ENGINE_ASYNC_FAILED_JOB_WAIT_TIME = "engine-async-failed-job-wait-time";
+
+    /**
+     * Default value of {@link #ENGINE_ASYNC_FAILED_JOB_WAIT_TIME}.
+     */
+    public static final int DEFAULT_ASYNC_FAILED_JOB_WAIT_TIME = 10;
+
+    /**
      * Tag name of the component JBI descriptor about the class name of the IDM engine configurator to use.
      */
     public static final String IDM_ENGINE_CONFIGURATOR_CLASS_NAME = "idm-engine-configurator-class-name";

@@ -119,7 +119,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             tenantId = "myTenant"; // default value
         }
 
-        String categoryId = this.extractCategoryId(jbiDescriptor.getServices());
+        String categoryId = extractCategoryId(jbiDescriptor.getServices());
         if (categoryId == null) {
             // TODO: Improve the default value declaration
             categoryId = "myCategory"; // default value
@@ -208,7 +208,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      *            Extra parameters of the section 'services'
      * @return the category id or {@code null} if not found.
      */
-    private String extractCategoryId(final Services services) {
+    private static String extractCategoryId(final Services services) {
         assert services != null;
 
         final List<Element> extensions = services.getAnyOrAny();
