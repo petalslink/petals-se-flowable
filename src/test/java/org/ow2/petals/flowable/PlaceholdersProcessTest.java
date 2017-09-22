@@ -131,8 +131,8 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
             }, ExchangeStatus.DONE);
         }
 
-        assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
-        waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        this.assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        this.waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
 
         // -----------------------------------------------------------------------------------------------------
         // Complete the 1st user task:
@@ -193,7 +193,7 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
             }, ExchangeStatus.DONE);
         }
 
-        waitEndOfProcessInstance(processInstance.toString());
+        this.waitEndOfProcessInstance(processInstance.toString());
 
     }
 }

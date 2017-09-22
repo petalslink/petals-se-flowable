@@ -106,7 +106,7 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
             }
         }, ExchangeStatus.DONE);
 
-        waitEndOfProcessInstance(processInstanceId.toString());
+        this.waitEndOfProcessInstance(processInstanceId.toString());
 
     }
 }

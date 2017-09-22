@@ -115,7 +115,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         this.waitEndOfProcessInstance(caseFileNumber.toString());
 
         // Assertions about state of process instance at Flowable Level
-        assertProcessInstanceFinished(caseFileNumber.toString());
+        this.assertProcessInstanceFinished(caseFileNumber.toString());
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -193,7 +193,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         this.waitEndOfProcessInstance(response_1.getCaseFileNumber());
 
         // Assertions about state of process instance at Flowable Level
-        assertProcessInstanceFinished(response_1.getCaseFileNumber());
+        this.assertProcessInstanceFinished(response_1.getCaseFileNumber());
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);

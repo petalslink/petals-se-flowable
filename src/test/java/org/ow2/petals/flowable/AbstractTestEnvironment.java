@@ -21,26 +21,16 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-import org.flowable.engine.history.HistoricActivityInstanceQuery;
-import org.flowable.engine.history.HistoricProcessInstance;
-import org.flowable.engine.history.HistoricProcessInstanceQuery;
-import org.flowable.engine.history.HistoricTaskInstance;
-import org.flowable.engine.history.HistoricTaskInstanceQuery;
-import org.flowable.engine.runtime.DeadLetterJobQuery;
-import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
-import org.flowable.engine.task.Task;
-import org.flowable.engine.task.TaskQuery;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
 import org.ow2.petals.flowable.junit.FlowableClient;
+import org.ow2.petals.flowable.utils.test.Await;
 import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
 
 /**
@@ -91,26 +81,6 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     }
 
     /**
-     * Assertion about the pending state of a process instance. The process instance is not finished.
-     * 
-     * @param processInstanceId
-     *            The process instance identifier
-     * @param processDefinitionKey
-     *            The process definition key
-     */
-    protected void assertProcessInstancePending(final String processInstanceId, final String processDefinitionKey) {
-
-        final ProcessInstanceQuery processInstQuery = this.flowableClient.getRuntimeService()
-                .createProcessInstanceQuery();
-        final ProcessInstance processInstance = processInstQuery.processInstanceId(processInstanceId).singleResult();
-        assertNotNull(processInstance);
-        assertEquals(processInstanceId, processInstance.getProcessInstanceId());
-        assertEquals(processDefinitionKey, processInstance.getProcessDefinitionKey());
-        assertFalse(processInstance.isEnded());
-        assertFalse(processInstance.isSuspended());
-    }
-
-    /**
      * @param processDefinitionKey
      *            The process definition identifier
      * @return The number of process instances that are not finished and associated to the given process definition
@@ -125,7 +95,21 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     }
 
     /**
-     * Assertion about the creation of a process instance. The process instance is finished.
+     * Assertion to check that a process instance is running. The process instance is not finished.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier
+     * @param processDefinitionKey
+     *            The process definition key
+     */
+    protected void assertProcessInstancePending(final String processInstanceId, final String processDefinitionKey) {
+
+        org.ow2.petals.flowable.utils.test.Assert.assertProcessInstancePending(processInstanceId, processDefinitionKey,
+                this.flowableClient.getRuntimeService());
+    }
+
+    /**
+     * Assertion to check that a process instance is finished.
      * 
      * @param processInstanceId
      *            The process instance identifier
@@ -134,15 +118,12 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      */
     protected void assertProcessInstanceFinished(final String processInstanceId) {
 
-        final HistoricProcessInstanceQuery query = this.flowableClient.getHistoryService()
-                .createHistoricProcessInstanceQuery();
-        final HistoricProcessInstance processInstance = query.processInstanceId(processInstanceId).finished()
-                .singleResult();
-        assertNotNull(processInstance);
+        org.ow2.petals.flowable.utils.test.Assert.assertProcessInstanceFinished(processInstanceId,
+                this.flowableClient.getHistoryService());
     }
 
     /**
-     * Assertion about the current user task.
+     * Assertion to check that a user task can be completed by a given user.
      * 
      * @param processInstanceId
      *            The process instance identifier
@@ -154,15 +135,12 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     protected void assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
             final String user) {
 
-        final TaskQuery taskQuery = this.flowableClient.getTaskService().createTaskQuery();
-        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskCandidateUser(user).singleResult();
-        assertNotNull(nextTask);
-        assertEquals(processInstanceId, nextTask.getProcessInstanceId());
-        assertEquals(taskDefinitionKey, nextTask.getTaskDefinitionKey());
+        org.ow2.petals.flowable.utils.test.Assert.assertCurrentUserTask(processInstanceId, taskDefinitionKey, user,
+                this.flowableClient.getTaskService());
     }
 
     /**
-     * Assertion about a user task completed.
+     * Assertion to check that a user task was completed by the given user.
      * 
      * @param processInstanceId
      *            The process instance identifier
@@ -174,101 +152,51 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     protected void assertUserTaskEnded(final String processInstanceId, final String taskDefinitionKey,
             final String user) {
 
-        final HistoricTaskInstanceQuery taskQuery = this.flowableClient.getHistoryService()
-                .createHistoricTaskInstanceQuery();
-        final HistoricTaskInstance nextTask = taskQuery.processInstanceId(processInstanceId)
-                .taskDefinitionKey(taskDefinitionKey).singleResult();
-        assertNotNull(nextTask);
-        assertEquals(user, nextTask.getAssignee());
+        org.ow2.petals.flowable.utils.test.Assert.assertUserTaskEnded(processInstanceId, taskDefinitionKey, user,
+                this.flowableClient.getHistoryService());
     }
 
     /**
-     * Wait that a process instance is put as dead letter job.
+     * Wait that a process instance is put as dead letter job. If the waiting time is upper than 60s, an
+     * {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the process instance to wait its placement as dead letter job.
+     * @param duration
+     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */
     protected void waitProcessInstanceAsDeadLetterJob(final String processInstanceId) throws InterruptedException {
-        final CountDownLatch lock = new CountDownLatch(1);
-        final Thread waitingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                boolean run = true;
-                try {
-                    while (run) {
-                        Thread.sleep(250);
-                        final DeadLetterJobQuery deadLetterJobQuery = AbstractTestEnvironment.this.flowableClient
-                                .getManagementService().createDeadLetterJobQuery().processInstanceId(processInstanceId);
-                        if (deadLetterJobQuery.singleResult() != null) {
-                            // the process instance is put as dead letter job
-                            run = false;
-                            lock.countDown();
-                        }
-                    }
-                } catch (final InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        waitingThread.start();
-        if (!lock.await(60, TimeUnit.SECONDS)) {
-            throw new AssertionError(
-                    String.format("Process instance '%s' not put as dead letter job.", processInstanceId));
-        }
+        Await.waitProcessInstanceAsDeadLetterJob(processInstanceId, this.flowableClient.getManagementService(), 60);
     }
 
     /**
-     * Wait that a process instance ends.
+     * Wait that a process instance ends successfully. If the waiting time is upper than 60s, an {@link AssertionError}
+     * is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the process instance to wait its end.
      */
     protected void waitEndOfProcessInstance(final String processInstanceId) throws InterruptedException {
-        waitEndOfProcessInstance(processInstanceId, 60);
+        this.waitEndOfProcessInstance(processInstanceId, 60);
     }
 
     /**
-     * Wait that a process instance ends.
+     * Wait that a process instance ends successfully. If the waiting time is upper than the given one, an
+     * {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
-     *            The process instance identifier of the process instance to wait its end.
+     *            The process instance identifier of the process instance to wait its succeeded end.
      * @param duration
-     *            Duration, in seconds, before to declare the process instance as not ended
+     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */
-    protected void waitEndOfProcessInstance(final String processInstanceId, final long duration)
+    protected void waitEndOfProcessInstance(final String processInstanceId, final int duration)
             throws InterruptedException {
-        final CountDownLatch lock = new CountDownLatch(1);
-        final Thread waitingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                boolean run = true;
-                try {
-                    while (run) {
-                        Thread.sleep(250);
-                        final HistoricProcessInstanceQuery histProcInstQuery = AbstractTestEnvironment.this.flowableClient
-                                .getHistoryService().createHistoricProcessInstanceQuery()
-                                .processInstanceId(processInstanceId).finished();
-                        if (histProcInstQuery.singleResult() != null) {
-                            // the process instance is finished
-                            run = false;
-                            lock.countDown();
-                        }
-                    }
-                } catch (final InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        waitingThread.start();
-        if (!lock.await(duration, TimeUnit.SECONDS)) {
-            throw new AssertionError(
-                    String.format("Process instance '%s' not finished in the waiting time ('%ds').", processInstanceId,
-                            duration));
-        }
+        Await.waitEndOfProcessInstance(processInstanceId, this.flowableClient.getHistoryService(), duration);
     }
 
     /**
-     * Wait that a service task of a process instance ends.
+     * Wait that a service task of a process instance ends. If the waiting time is upper than 60s, an
+     * {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its end.
@@ -277,39 +205,13 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      */
     protected void waitEndOfServiceTask(final String processInstanceId, final String serviceTaskDefinitionKey)
             throws InterruptedException {
-        final CountDownLatch lock = new CountDownLatch(1);
-        final Thread waitingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                boolean run = true;
-                try {
-                    while (run) {
-                        Thread.sleep(250);
-                        // Caution: service tasks are stored in activity historic, not in task historic.
-                        final HistoricActivityInstanceQuery histSvcTaskQuery = AbstractTestEnvironment.this.flowableClient
-                                .getHistoryService().createHistoricActivityInstanceQuery()
-                                .processInstanceId(processInstanceId).activityId(serviceTaskDefinitionKey).finished();
-                        if (histSvcTaskQuery.singleResult() != null) {
-                            // the process instance is finished
-                            run = false;
-                            lock.countDown();
-                        }
-                    }
-                } catch (final InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        waitingThread.start();
-        if (!lock.await(60, TimeUnit.SECONDS)) {
-            throw new AssertionError(
-                    String.format("Service task '%s' of process instance '%s' not ended in the waiting time.",
-                            serviceTaskDefinitionKey, processInstanceId));
-        }
+        Await.waitEndOfServiceTask(processInstanceId, serviceTaskDefinitionKey, this.flowableClient.getHistoryService(),
+                60);
     }
 
     /**
-     * Wait that a user task of a process instance is assignated to a candidate user.
+     * Wait that a user task of a process instance is assigned to a candidate user. If the waiting time is upper than
+     * 60s, an {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
@@ -324,7 +226,8 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     }
 
     /**
-     * Wait that a user task of a process instance is assignated to a candidate user.
+     * Wait that a user task of a process instance is assigned to a candidate user. If the waiting time is upper than
+     * the given one, an {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
@@ -333,44 +236,18 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      * @param candidateUser
      *            The candidate user of the user task
      * @param duration
-     *            Waiting time before to declare the user task assignment as failed
+     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */
     protected void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
             final String candidateUser, final int duration) throws InterruptedException {
 
-        final CountDownLatch lock = new CountDownLatch(1);
-        final Thread waitingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                boolean run = true;
-                try {
-                    while (run) {
-                        Thread.sleep(250);
-
-                        final TaskQuery taskQuery = AbstractTestEnvironment.this.flowableClient.getTaskService()
-                                .createTaskQuery().processInstanceId(processInstanceId)
-                                .taskDefinitionKey(taskDefinitionKey).taskCandidateUser(candidateUser);
-                        if (taskQuery.singleResult() != null) {
-                            // the process instance is finished
-                            run = false;
-                            lock.countDown();
-                        }
-                    }
-                } catch (final InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        waitingThread.start();
-        if (!lock.await(duration, TimeUnit.SECONDS)) {
-            throw new AssertionError(
-                    String.format("User task '%s' of process instance '%s' not assigned in the waiting time (%ds).",
-                            taskDefinitionKey, processInstanceId, duration));
-        }
+        Await.waitUserTaskAssignment(processInstanceId, taskDefinitionKey, candidateUser,
+                this.flowableClient.getTaskService(), duration);
     }
 
     /**
-     * Wait that an intermediate catch message event is ready to receive message.
+     * Wait that an intermediate catch message event is ready to receive message. If the waiting time is upper than 60s,
+     * an {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
@@ -379,35 +256,8 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      */
     protected void waitIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName)
             throws InterruptedException {
-        final CountDownLatch lock = new CountDownLatch(1);
-        final Thread waitingThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                boolean run = true;
-                try {
-                    while (run) {
-                        Thread.sleep(250);
-
-                        final ExecutionQuery execution = AbstractTestEnvironment.this.flowableClient.getRuntimeService()
-                                .createExecutionQuery().processInstanceId(processInstanceId)
-                                .messageEventSubscriptionName(messageEventName);
-                        if (execution.singleResult() != null) {
-                            // the intermediate catch message event is ready to receive message.
-                            run = false;
-                            lock.countDown();
-                        }
-                    }
-                } catch (final InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        waitingThread.start();
-        if (!lock.await(60, TimeUnit.SECONDS)) {
-            throw new AssertionError(String.format(
-                    "Intermediate catch message event of process instance '%s' not ready to receive message '%s' in the waiting time.",
-                    processInstanceId, messageEventName));
-        }
+        Await.waitIntermediateCatchMessageEvent(processInstanceId, messageEventName,
+                this.flowableClient.getRuntimeService(), 60);
     }
 
 }

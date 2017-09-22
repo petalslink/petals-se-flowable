@@ -71,7 +71,7 @@ public class StartStopTest extends StartStopTestEnvironment {
         // Wait a potential async executor run: timer duration + 5s. Note: the Async executor is set to be run each 1s
         Thread.sleep(TIMER_DURATION_MS + 5000);
 
-        assertProcessInstancePending(procInst1.getId(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertProcessInstancePending(procInst1.getId(), BPMN_PROCESS_DEFINITION_KEY);
 
         /*-----------------------------------------------------------------------------------------------------------------------
          * When starting the SE Flowable, the async executor is started and the process instance will be automatically completed
@@ -79,7 +79,7 @@ public class StartStopTest extends StartStopTestEnvironment {
         COMPONENT_UNDER_TEST.start();
         assertTrue(COMPONENT_UNDER_TEST.isStarted());
 
-        waitEndOfProcessInstance(procInst1.getId());
+        this.waitEndOfProcessInstance(procInst1.getId());
 
         /*----------------------------------------------------------------------------------------------
          * Start a new process instance for which the SE FLowable will be stopped during its execution
@@ -116,7 +116,7 @@ public class StartStopTest extends StartStopTestEnvironment {
         COMPONENT_UNDER_TEST.start();
         assertTrue(COMPONENT_UNDER_TEST.isStarted());
 
-        waitEndOfProcessInstance(procInst2.toString());
+        this.waitEndOfProcessInstance(procInst2.toString());
 
     }
 }

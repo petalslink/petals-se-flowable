@@ -142,12 +142,12 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
             assertEquals(ExchangeStatus.DONE, coreServiceStatusMsg.getStatus());
         }
 
-        assertProcessInstancePending(callActivityId_level1.toString(), "processLevel1");
-        assertProcessInstancePending(callActivityId_level2.toString(), "processLevel2");
+        this.assertProcessInstancePending(callActivityId_level1.toString(), "processLevel1");
+        this.assertProcessInstancePending(callActivityId_level2.toString(), "processLevel2");
         // TODO: Investigate why the process instance level 3 is not finished here. Perhaps not yet in historic part
         // assertProcessInstanceFinished(callActivityId_level3);
-        waitUserTaskAssignment(callActivityId_level2.toString(), "usertask1", BPMN_USER);
-        assertCurrentUserTask(callActivityId_level2.toString(), "usertask1", BPMN_USER);
+        this.waitUserTaskAssignment(callActivityId_level2.toString(), "usertask1", BPMN_USER);
+        this.assertCurrentUserTask(callActivityId_level2.toString(), "usertask1", BPMN_USER);
 
         // Retrieve the user task basket using integration service
         {
@@ -199,7 +199,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         this.waitEndOfProcessInstance(callActivityId_level1.toString());
 
         // Assertions about state of process instance at Flowable Level
-        assertProcessInstanceFinished(callActivityId_level1.toString());
+        this.assertProcessInstanceFinished(callActivityId_level1.toString());
 
         // Check MONIT traces
         final List<LogRecord> allMonitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);

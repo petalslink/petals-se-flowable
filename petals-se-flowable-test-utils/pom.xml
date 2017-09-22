@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2016-2017 Linagora
+ Copyright (c) 2017 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -26,12 +26,11 @@
       <version>1.0.3-SNAPSHOT</version>
    </parent>
 
-   <name>Petals ESB - Components - SE Flowabl - JUnit framework</name>
-   <artifactId>petals-se-flowable-junit</artifactId>
+   <name>Petals ESB - Components - SE Flowabl - Utilities for test</name>
+   <artifactId>petals-se-flowable-test-utils</artifactId>
    <groupId>org.ow2.petals</groupId>
    <version>1.0.0-SNAPSHOT</version>
    <packaging>jar</packaging>
-   <description>JUnit framework for service unit of the BPMN Service Engine based on Flowable</description>
 
    <properties>
       <flowable.version>6.0.1</flowable.version>
@@ -39,57 +38,26 @@
       <!--flowable.version>6.0.1-PETALS-0-SNAPSHOT</flowable.version-->
       <!--flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
    </properties>
-
-   <dependencyManagement>
-      <!-- Align dependencies with those of Flowable -->
-      <dependencies>
-         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
-         </dependency>
-         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-xjc</artifactId>
-            <version>2.2.11</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
    
    <dependencies>
       <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-se-flowable</artifactId>
-         <version>1.0.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-core</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-api</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-cdk-jbidescriptor</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-jbi-descriptor</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.easywsdl</groupId>
-         <artifactId>easywsdl-wsdl</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-      </dependency>
-      <dependency>
          <groupId>${flowable.groupId}</groupId>
-         <artifactId>flowable-bpmn-model</artifactId>
+         <artifactId>flowable-engine-common-api</artifactId>
          <version>${flowable.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>commons-logging</groupId>
+               <artifactId>commons-logging</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -115,15 +83,10 @@
          <groupId>org.slf4j</groupId>
          <artifactId>log4j-over-slf4j</artifactId>
       </dependency>
+      
       <dependency>
-         <groupId>org.ow2.petals</groupId>
-         <artifactId>petals-se-flowable-test-utils</artifactId>
-         <version>1.0.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-         <groupId>org.xmlunit</groupId>
-         <artifactId>xmlunit-core</artifactId>
-         <version>2.3.0</version>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
       </dependency>
    </dependencies>
 

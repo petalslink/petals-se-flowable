@@ -98,8 +98,8 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             processInstance.append(response.getCaseFileNumber());
         }
 
-        assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
-        waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        this.assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        this.waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when not expected by the BPMN engine
@@ -137,14 +137,14 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             assertEquals("myMessageName", responseBean.getEventName());
         }
 
-        assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
-        waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        this.assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        this.waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
 
         // Complete the user task
         IN_MEMORY_LOG_HANDLER.clear();
         this.flowableClient.completeUserTask(processInstance.toString(), USER_TASK_1, BPMN_USER);
-        assertUserTaskEnded(processInstance.toString(), USER_TASK_1, BPMN_USER);
-        waitIntermediateCatchMessageEvent(processInstance.toString(), "myMessageName");
+        this.assertUserTaskEnded(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        this.waitIntermediateCatchMessageEvent(processInstance.toString(), "myMessageName");
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when expected by the BPMN engine
@@ -161,8 +161,8 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             assertEquals(ExchangeStatus.DONE, response.getStatus());
         }
 
-        assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
-        waitUserTaskAssignment(processInstance.toString(), USER_TASK_2, BPMN_USER);
+        this.assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        this.waitUserTaskAssignment(processInstance.toString(), USER_TASK_2, BPMN_USER);
 
         // Check MONIT traces. Caution:
         // - as the user task is completed by the Flowable client, no MONIT trace is generated
@@ -228,13 +228,13 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
 
         // Complete the 2nd user task
         this.flowableClient.completeUserTask(processInstance.toString(), USER_TASK_2, BPMN_USER);
-        assertUserTaskEnded(processInstance.toString(), USER_TASK_2, BPMN_USER);
+        this.assertUserTaskEnded(processInstance.toString(), USER_TASK_2, BPMN_USER);
 
         // Wait the end of the process instance
-        waitEndOfProcessInstance(processInstance.toString());
+        this.waitEndOfProcessInstance(processInstance.toString());
 
         // Assertions about state of process instance at Flowable Level
-        assertProcessInstanceFinished(processInstance.toString());
+        this.assertProcessInstanceFinished(processInstance.toString());
 
     }
 }

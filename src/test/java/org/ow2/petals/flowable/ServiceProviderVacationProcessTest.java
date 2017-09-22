@@ -278,8 +278,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         }
 
         // Assertions about states of user task and process instance at Flowable Level
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Check MONIT traces
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
@@ -496,8 +496,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, true);
 
         // Assertions about states of user task and process instance at Flowable Level
-        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
-        assertProcessInstanceFinished(response_1.getNumeroDde());
+        this.assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstanceFinished(response_1.getNumeroDde());
 
         // --------------------------------------------------------
         // ---- Try to complete AGAIN the first user task
@@ -691,8 +691,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -721,8 +721,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
@@ -791,8 +791,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -821,8 +821,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
@@ -892,8 +892,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -921,8 +921,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
@@ -991,8 +991,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Assert that the process instance is created
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Create the 2nd valid request
         final Validation request_2 = new Validation();
@@ -1021,8 +1021,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertNull("XML payload in response", responseMsg_2.getOut());
 
         // Assert that the process instance and current user task
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
     }
 
     /**
@@ -1155,8 +1155,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 OPERATION_DEMANDERCONGES, monitLogs_1.get(0)), monitLogs_1.get(3));
 
         // Check Flowable engine against the process instance creation
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // ------------------------------------------------------------------
         // ---- Complete the first user task (validate the vacation request)
@@ -1198,8 +1198,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
 
         // Check Flowable engine against the current user task
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
 
         // --------------------------------------------------------
         // ---- Try to complete AGAIN the first user task
@@ -1237,8 +1237,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
 
         // Check Flowable engine against the current user task
-        assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
-        assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
+        this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
+        this.assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_2ND_USER_TASK_KEY, BPMN_USER_DEMANDEUR);
     }
 
     /**
