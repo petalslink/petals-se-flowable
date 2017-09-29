@@ -72,6 +72,52 @@
             <artifactId>jaxb-xjc</artifactId>
             <version>2.2.11</version>
          </dependency>
+         <dependency>
+            <!-- Align flowable-rest dependency with the one of CDK -->
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+         </dependency>
+         <dependency>
+            <!-- Align flowable-rest dependency with the one of Flowable's Jackson -->
+            <groupId>com.fasterxml.jackson</groupId>
+            <artifactId>jackson-bom</artifactId>
+            <version>2.8.10</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
+         <dependency>
+            <!-- Align flowable-rest dependency with the one of Flowable's Jackson
+                 jackson-annotations is set to 2.8.0 in the bom but some dependencies
+                 are using the full version -->
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.8.10</version>
+         </dependency>
+         <dependency>
+            <!-- Enforce the use of jetty 9.2.x (latest version supporting Java 7) -->
+            <groupId>cz.jirutka.maven</groupId>
+            <artifactId>jetty-bom</artifactId>
+            <version>9.2.20.v20161216</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
+         <dependency>
+            <!-- Align spring dependencies with the ones of Flowable -->
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-framework-bom</artifactId>
+            <version>4.2.9.RELEASE</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
+         <dependency>
+            <!-- Align spring dependencies with the ones of Flowable -->
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-bom</artifactId>
+            <version>4.0.4.RELEASE</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
@@ -257,8 +303,6 @@
          <artifactId>cxf-core</artifactId>
          <version>3.1.6</version>
       </dependency>
-      
-      
       <dependency>
          <!-- flowable-ldap add support of LDAP integration -->
          <groupId>${flowable.groupId}</groupId>
@@ -270,6 +314,67 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-ldap-configurator</artifactId>
          <version>${flowable.version}</version>
+      </dependency>
+
+      <!-- Flowable REST API dependencies -->
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-rest</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-common-rest</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-server</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-servlet</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>javax.servlet</groupId>
+         <artifactId>javax.servlet-api</artifactId>
+         <version>3.1.0</version>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-web</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>commons-logging</groupId>
+               <artifactId>commons-logging</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-webmvc</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-context</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-beans</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework.security</groupId>
+         <artifactId>spring-security-core</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework.security</groupId>
+         <artifactId>spring-security-config</artifactId>
       </dependency>
 
       <dependency>
@@ -308,6 +413,29 @@
          <version>0.5.2</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>javax.ws.rs</groupId>
+         <artifactId>javax.ws.rs-api</artifactId>
+         <version>2.0.1</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.glassfish.jersey.core</groupId>
+         <artifactId>jersey-client</artifactId>
+         <version>2.25.1</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.glassfish.jersey.media</groupId>
+         <artifactId>jersey-media-json-jackson</artifactId>
+         <version>2.25.1</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.hamcrest</groupId>
+         <artifactId>hamcrest-core</artifactId>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <build>
@@ -322,6 +450,7 @@
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
                         <usedDependency>${flowable.groupId}:flowable-cxf</usedDependency>
+                        <usedDependency>org.glassfish.jersey.media:jersey-media-json-jackson</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>
@@ -374,6 +503,32 @@
                         <include>start-stop/start-stop.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>enforce-no-duplicate-classes</id>
+                  <configuration>
+                     <!-- these conflicts, but they are only used (and needed!) during tests! -->
+                     <ignoredDependencies>
+                        <ignoredDependency>
+                           <!-- conflicts with flowable/spring aopalliance package -->
+                           <groupId>org.glassfish.hk2.external</groupId>
+                           <artifactId>aopalliance-repackaged</artifactId>
+                           <scope>test</scope>
+                        </ignoredDependency>
+                        <ignoredDependency>
+                           <!-- conflicts with flowable jsr250-api package -->
+                           <groupId>javax.annotation</groupId>
+                           <artifactId>javax.annotation-api</artifactId>
+                           <scope>test</scope>
+                        </ignoredDependency>
+                     </ignoredDependencies>
                   </configuration>
                </execution>
             </executions>

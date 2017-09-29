@@ -55,8 +55,10 @@ import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.I
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_PORT_TYPE_NAME;
 
 import java.io.File;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -68,12 +70,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.ConduitInitiatorManager;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
+import org.eclipse.jetty.security.IdentityService;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
@@ -86,6 +94,7 @@ import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.parse.BpmnParseHandler;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
+import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
 import org.ow2.petals.component.framework.listener.AbstractListener;
 import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
@@ -114,8 +123,14 @@ import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializ
 import org.ow2.petals.flowable.monitoring.Monitoring;
 import org.ow2.petals.flowable.outgoing.PetalsSender;
 import org.ow2.petals.flowable.outgoing.cxf.transport.PetalsCxfTransportFactory;
+import org.ow2.petals.flowable.rest.FlowableProcessApiConfiguration;
+import org.ow2.petals.flowable.rest.config.SecurityConfiguration;
 import org.ow2.petals.probes.api.exceptions.MultipleProbesFactoriesFoundException;
 import org.ow2.petals.probes.api.exceptions.NoProbesFactoryFoundException;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.filter.DelegatingFilterProxy;
+import org.springframework.web.servlet.DispatcherServlet;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
@@ -130,6 +145,8 @@ public class FlowableSE extends AbstractServiceEngine {
      * The Flowable BPMN Engine.
      */
     private ProcessEngine flowableEngine;
+
+    private Server restServer;
 
     /**
      * A map used to get the Flowable Operation associated with (end-point Name + Operation)
@@ -323,11 +340,56 @@ public class FlowableSE extends AbstractServiceEngine {
 
             this.registersIntegrationOperations();
 
-        } catch (final FlowableException e) {
+            if (this.getRestApiEnable()) {
+                this.createRestApi();
+            } else {
+                this.getLogger().config("Flowable REST API configuration: disabled");
+            }
+        } catch (final Exception e) {
             throw new JBIException("An error occurred while creating the Flowable BPMN Engine.", e);
         } finally {
             this.getLogger().fine("End FlowableSE.doInit()");
         }
+    }
+
+    private void createRestApi() throws Exception {
+        // contains the singleton, it needs to be a parent of the application context to work...
+        final AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
+        rootContext.refresh();
+        rootContext.getBeanFactory().registerSingleton(
+                FlowableProcessApiConfiguration.FLOWABLE_REST_PROCESS_ENGINE_QUALIFIER, this.flowableEngine);
+        rootContext.getBeanFactory().registerSingleton(SecurityConfiguration.FLOWABLE_REST_API_ACCESS_GROUP_QUALIFIER,
+                getRestApiAccessGroup());
+
+        final AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
+        applicationContext.setParent(rootContext);
+
+        final ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/flowable-rest-api");
+        final ServletHolder servletHolder = new ServletHolder(new DispatcherServlet(applicationContext));
+        servletHolder.setAsyncSupported(true);
+        context.addServlet(servletHolder, "/*");
+
+        this.getLogger().config("Flowable REST API configuration: enabled");
+        this.getLogger().config("   - address: " + this.getRestApiAddress());
+        this.getLogger().config("   - port. " + this.getRestApiPort());
+        this.getLogger().config("   - access group: " + this.getRestApiAccessGroup());
+
+        final FilterRegistration.Dynamic security = context.getServletContext().addFilter("springSecurityFilterChain",
+                new DelegatingFilterProxy());
+        security.addMappingForUrlPatterns(
+                EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.ASYNC), false, "/*");
+        security.setAsyncSupported(true);
+        context.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE,
+                applicationContext);
+
+        applicationContext.setServletContext(context.getServletContext());
+        applicationContext.register(FlowableProcessApiConfiguration.class);
+        applicationContext.refresh();
+
+        this.restServer = new Server(new InetSocketAddress(this.getRestApiAddress(), this.getRestApiPort()));
+        restServer.setHandler(context);
+        restServer.start();
     }
 
     private void configureFlowableIdmEngine(final ProcessEngineConfiguration pec) throws JBIException {
@@ -893,12 +955,25 @@ public class FlowableSE extends AbstractServiceEngine {
         this.getLogger().fine("Start FlowableSE.doShutdown()");
 
         try {
-            if (this.flowableEngine != null) {
-                this.flowableEngine.close();
+            final PEtALSCDKException exception = new PEtALSCDKException("Error stopping the component");
+
+            try {
+                if (this.restServer != null) {
+                    this.restServer.stop();
+                }
+            } catch (final Exception e) {
+                exception.addSuppressed(e);
             }
 
-        } catch (final FlowableException e) {
-            throw new JBIException("An error occurred while shutdowning the Flowable BPMN Engine.", e);
+            try {
+                if (this.flowableEngine != null) {
+                    this.flowableEngine.close();
+                }
+            } catch (final Exception e) {
+                exception.addSuppressed(e);
+            }
+
+            exception.throwIfNeeded();
         } finally {
             this.getLogger().fine("End FlowableSE.doShutdown()");
         }
@@ -1035,5 +1110,25 @@ public class FlowableSE extends AbstractServiceEngine {
     private int getAsyncJobExecutorAsyncJobLockTime() {
         return this.getParameterAsPositiveInteger(FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME,
                 FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+    }
+
+    private int getRestApiPort() {
+        return this.getParameterAsInteger(FlowableSEConstants.ENGINE_REST_API_PORT, 
+                FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT);
+    }
+
+    private String getRestApiAccessGroup() {
+        return this.getParameterAsNotEmptyTrimmedString(FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP,
+                FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_GROUP);
+    }
+
+    private boolean getRestApiEnable() {
+        return this.getParameterAsBoolean(FlowableSEConstants.ENGINE_REST_API_ENABLE,
+                FlowableSEConstants.DEFAULT_ENGINE_REST_API_ENABLE);
+    }
+
+    private String getRestApiAddress() {
+        return this.getParameterAsNotEmptyTrimmedString(FlowableSEConstants.ENGINE_REST_API_ADDRESS,
+                FlowableSEConstants.DEFAULT_ENGINE_REST_API_ADDRESS);
     }
 }

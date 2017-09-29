@@ -349,6 +349,46 @@ public final class FlowableSEConstants {
     public static final File DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE = null;
 
     /**
+     * Tag name of the value enbabling the Flowable REST API
+     */
+    public static final String ENGINE_REST_API_ENABLE = "engine-rest-api-enable";
+
+    /**
+     * Tag name of the group of users who are allowed to use the Flowable REST API
+     */
+    public static final String ENGINE_REST_API_ACCESS_GROUP = "engine-rest-api-access-group";
+
+    /**
+     * Tag name of the port number to access to the Flowable REST API
+     */
+    public static final String ENGINE_REST_API_PORT = "engine-rest-api-port";
+
+    /**
+     * Tag name of the Flowable REST API server address
+     */
+    public static final String ENGINE_REST_API_ADDRESS = "engine-rest-api-address";
+
+    /**
+     * Default value of {@link #DEFAULT_ENGINE_REST_API_PORT}.
+     */
+    public static final int DEFAULT_ENGINE_REST_API_PORT = 8089;
+
+    /**
+     * Default value of {@link #ENGINE_REST_API_ENABLE}
+     */
+    public static final boolean DEFAULT_ENGINE_REST_API_ENABLE = true;
+
+    /**
+     * Default value of {@link #ENGINE_REST_API_ACCESS_GROUP}
+     */
+    public static final String DEFAULT_ENGINE_REST_API_ACCESS_GROUP = "api-admin";
+
+    /**
+     * Default value of {@link #ENGINE_REST_API_ADDRESS}
+     */
+    public static final String DEFAULT_ENGINE_REST_API_ADDRESS = "0.0.0.0";
+
+    /**
      * Constants relatives to the Flowable components
      */
     public static class Flowable {
