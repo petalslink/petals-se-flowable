@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.flowable.junit;
 
+import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
 import org.ow2.petals.flowable.utils.test.Assert;
 import org.ow2.petals.flowable.utils.test.Await;
@@ -103,6 +104,38 @@ public class PetalsFlowableRule extends FlowableRule {
     public void waitEndOfProcessInstance(final String processInstanceId, final int duration)
             throws InterruptedException {
         Await.waitEndOfProcessInstance(processInstanceId, this.getHistoryService(), duration);
+    }
+
+    /**
+     * Wait that a sub-process instance is instantiated. If the waiting time is upper than 60s, an
+     * {@link AssertionError} is thrown.
+     * 
+     * @param superProcessInstanceId
+     *            The identifier of the process instance that launches the expected sub-process.
+     * @param subProcessDefinitionKey
+     *            The definition key of the expected sub-process instance.
+     */
+    public ProcessInstance waitEndOfProcessInstance(final String superProcessInstanceId,
+            final String subProcessDefinitionKey) throws InterruptedException {
+        return Await.waitSubProcessus(superProcessInstanceId, subProcessDefinitionKey, this.getRuntimeService(), 60);
+    }
+
+    /**
+     * Wait that a sub-process instance is instantiated. If the waiting time is upper than the given one, an
+     * {@link AssertionError} is thrown.
+     * 
+     * @param superProcessInstanceId
+     *            The identifier of the process instance that launches the expected sub-process.
+     * @param subProcessDefinitionKey
+     *            The definition key of the expected sub-process instance.
+     * @param duration
+     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
+     */
+    public ProcessInstance waitSubProcessus(final String superProcessInstanceId, final String subProcessDefinitionKey,
+            final int duration) throws InterruptedException {
+
+        return Await.waitSubProcessus(superProcessInstanceId, subProcessDefinitionKey, this.getRuntimeService(),
+                duration);
     }
 
     /**
