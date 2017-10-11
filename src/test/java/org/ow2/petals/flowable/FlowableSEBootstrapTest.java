@@ -165,6 +165,19 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE);
         params.add(eltEngineIdentityServiceCfgFile);
 
+        final Element eltEngineRestApiEnable = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ENABLE);
+        params.add(eltEngineRestApiEnable);
+        final Element eltEngineRestApiAddress = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ADDRESS);
+        params.add(eltEngineRestApiAddress);
+        final Element eltEngineRestApiPort = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_PORT);
+        params.add(eltEngineRestApiPort);
+        final Element eltEngineRestApiAccessGroup = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP);
+        params.add(eltEngineRestApiAccessGroup);
+
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
 
@@ -290,6 +303,15 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEngineIdentityServiceCfgFile.setTextContent(" ");
         params.add(eltEngineIdentityServiceCfgFile);
 
+        final Element eltEngineRestApiEnable = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ENABLE);
+        eltEngineRestApiEnable.setTextContent(" ");
+        params.add(eltEngineRestApiEnable);
+        final Element eltEngineRestApiPort = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_PORT);
+        eltEngineRestApiPort.setTextContent(" ");
+        params.add(eltEngineRestApiPort);
+
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
 
@@ -398,6 +420,15 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE);
         eltEngineIdentityServiceCfgFile.setTextContent("invalid-value");
         params.add(eltEngineIdentityServiceCfgFile);
+
+        final Element eltEngineRestApiEnable = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ENABLE);
+        eltEngineRestApiEnable.setTextContent("invalid-value");
+        params.add(eltEngineRestApiEnable);
+        final Element eltEngineRestApiPort = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_PORT);
+        eltEngineRestApiPort.setTextContent("invalid-value");
+        params.add(eltEngineRestApiPort);
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
@@ -576,6 +607,30 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltIdmEngineConfiguratorCfgFile.setTextContent(idmEngineConfiguratorCfgFile);
         params.add(eltIdmEngineConfiguratorCfgFile);
 
+        final Element eltEngineRestApiEnable = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ENABLE);
+        final boolean engineRestApiEnable = false;
+        eltEngineRestApiEnable.setTextContent(Boolean.toString(engineRestApiEnable));
+        params.add(eltEngineRestApiEnable);
+
+        final Element eltEngineRestApiAddress = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ADDRESS);
+        final String engineRestApiAddress = "localhost";
+        eltEngineRestApiAddress.setTextContent(engineRestApiAddress);
+        params.add(eltEngineRestApiAddress);
+
+        final Element eltEngineRestApiPort = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_PORT);
+        final int engineRestApiPort = 12345;
+        eltEngineRestApiPort.setTextContent(Integer.toString(engineRestApiPort));
+        params.add(eltEngineRestApiPort);
+
+        final Element eltEngineRestApiAccessGroup = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
+                FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP);
+        final String engineRestApiAccessGroup = "test-group";
+        eltEngineRestApiAccessGroup.setTextContent(engineRestApiAccessGroup);
+        params.add(eltEngineRestApiAccessGroup);
+
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
 
@@ -618,6 +673,14 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 .getBootstrapAttributeAsLong(FlowableSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_KEEPALIVETIME));
         assertEquals(jobExecutorQueueSize,
                 this.jmxClient.getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_QUEUESIZE));
+        assertEquals(engineRestApiEnable,
+                this.jmxClient.getBootstrapAttributeAsBoolean(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ENABLE));
+        assertEquals(engineRestApiAddress,
+                this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ADDRESS));
+        assertEquals(engineRestApiPort,
+                this.jmxClient.getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_PORT));
+        assertEquals(engineRestApiAccessGroup, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP));
 
         // TODO: What to do with this config parameter not available at Mbean level ?
         // assertEquals(jobExecutorMaxTimerJobsPerAcquisition,
@@ -700,6 +763,14 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 .getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME));
         assertEquals(FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME, this.jmxClient
                 .getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME));
+        assertEquals(FlowableSEConstants.DEFAULT_ENGINE_REST_API_ENABLE,
+                this.jmxClient.getBootstrapAttributeAsBoolean(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ENABLE));
+        assertEquals(FlowableSEConstants.DEFAULT_ENGINE_REST_API_ADDRESS,
+                this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ADDRESS));
+        assertEquals(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT,
+                this.jmxClient.getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_PORT));
+        assertEquals(FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_GROUP, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP));
     }
 
     /**
@@ -897,6 +968,17 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
         this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE,
                 absFile.getAbsolutePath());
+    }
+
+    /**
+     * Check to set an invalid tcp port for the REST API (max is 65535)
+     */
+    @Test(expected = InvalidAttributeValueException.class)
+    public void setEngineRestApiPort_InvalidPort() throws Exception {
+
+        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+
+        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_PORT, 66666);
     }
 
     /**

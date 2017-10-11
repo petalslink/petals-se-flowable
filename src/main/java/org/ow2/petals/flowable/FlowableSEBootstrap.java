@@ -31,6 +31,10 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXE
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_GROUP;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ADDRESS;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ENABLE;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ENABLE_BPMN_VALIDATION;
@@ -45,6 +49,10 @@ import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_MA
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_ADDRESS;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_ENABLE;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_PORT;
 import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
@@ -135,6 +143,14 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
 
     public static final String ATTR_NAME_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME = "engineJobExecutorAsyncJobLockTime";
 
+    public static final String ATTR_NAME_ENGINE_REST_API_ENABLE = "engineRestApiEnable";
+
+    public static final String ATTR_NAME_ENGINE_REST_API_ADDRESS = "engineRestApiAddress";
+
+    public static final String ATTR_NAME_ENGINE_REST_API_PORT = "engineRestApiPort";
+
+    public static final String ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP = "engineRestApiAccessGroup";
+
     @Override
     public Collection<String> getMBeanAttributesNames() {
         this.getLogger().fine("Start FlowableSEBootstrap.getAttributeList()");
@@ -170,6 +186,12 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME);
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME);
             attributes.add(ATTR_NAME_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME);
+
+            // Parameters of the Floable REST API
+            attributes.add(ATTR_NAME_ENGINE_REST_API_ENABLE);
+            attributes.add(ATTR_NAME_ENGINE_REST_API_ADDRESS);
+            attributes.add(ATTR_NAME_ENGINE_REST_API_PORT);
+            attributes.add(ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP);
 
             return attributes;
         } finally {
@@ -818,4 +840,54 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
 
     }
 
+    public boolean getEngineRestApiEnable() {
+
+        // Caution:
+        // - only the value "false", ignoring case and spaces will disable the rest api,
+        // - only the value "true", ignoring case and spaces will enable the rest api,
+        // - otherwise, the default value is used.
+        final boolean engineRestApiEnable;
+        final String configuredEngineRestApiEnable = this.getParam(ENGINE_REST_API_ENABLE);
+        if (configuredEngineRestApiEnable == null || configuredEngineRestApiEnable.trim().isEmpty()) {
+            this.getLogger().info("The activation of the Flowable job executor is not configured. Default value used.");
+            engineRestApiEnable = DEFAULT_ENGINE_REST_API_ENABLE;
+        } else {
+            engineRestApiEnable = configuredEngineRestApiEnable.trim().equalsIgnoreCase("false") ? false
+                    : (configuredEngineRestApiEnable.trim().equalsIgnoreCase("true") ? true
+                            : DEFAULT_ENGINE_REST_API_ENABLE);
+        }
+        return engineRestApiEnable;
+    }
+
+    public void setEngineRestApiEnable(final boolean value) {
+        this.setParam(ENGINE_REST_API_ENABLE, Boolean.toString(value));
+    }
+
+    public String getEngineRestApiAddress() {
+        return this.getParamAsString(ENGINE_REST_API_ADDRESS, DEFAULT_ENGINE_REST_API_ADDRESS);
+    }
+
+    public void setEngineRestApiAddress(final String value) {
+        this.setParam(ENGINE_REST_API_ADDRESS, value);
+    }
+
+    public int getEngineRestApiPort() {
+        return this.getParamAsInteger(ENGINE_REST_API_PORT, DEFAULT_ENGINE_REST_API_PORT);
+    }
+
+    public void setEngineRestApiPort(final int value) throws InvalidAttributeValueException {
+        if (value <= 0 || value > 65535) {
+            throw new InvalidAttributeValueException(
+                    "The value for the parameter " + ENGINE_REST_API_PORT + " is not a valid TCP port");
+        }
+        this.setParamAsPositiveInteger(ENGINE_REST_API_PORT, value);
+    }
+
+    public String getEngineRestApiAccessGroup() {
+        return this.getParamAsString(ENGINE_REST_API_ACCESS_GROUP, DEFAULT_ENGINE_REST_API_ACCESS_GROUP);
+    }
+
+    public void setEngineRestApiAccessGroup(final String value) {
+        this.setParam(ENGINE_REST_API_ACCESS_GROUP, value);
+    }
 }

@@ -3,3 +3,4 @@ target/
 .checkstyle
 .classpath
 .project
+work/

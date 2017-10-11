@@ -332,6 +332,38 @@
          <xs:documentation xml:lang="fr">Temps d'attente par défaut entre deux essais d'un job asynchrone en erreur, en secondes</xs:documentation>
       </xs:annotation>
    </xs:element>
+   
+    <xs:element name="engine-rest-api-enable" type="petalsCDK:settableboolean" default="true">
+      <xs:annotation>
+         <xs:documentation>Enable/Disable the Flowable SE REST API </xs:documentation>
+         <xs:documentation xml:lang="fr">Active/Désactive l'API REST du Flowable SE 
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+   
+   <xs:element name="engine-rest-api-access-group" type="petalsCDK:settablestring" default="admin">
+      <xs:annotation>
+         <xs:documentation>Define the user group who can use the Flowable SE REST API </xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le groupe d'utilisateurs qui peuvent utiliser l'API REST du Flowable SE
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+   
+      <xs:element name="engine-rest-api-address" type="petalsCDK:settablestring" default="0.0.0.0">
+      <xs:annotation>
+         <xs:documentation>Define the address to access to Flowable SE REST API</xs:documentation>
+         <xs:documentation xml:lang="fr">Défini l'adresse à laquelle on peut accéder à l'API REST du Flowable SE 
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
+   
+         <xs:element name="engine-rest-api-port" type="petalsCDK:settableint" default="8089">
+      <xs:annotation>
+         <xs:documentation>Define the port number to access to Flowable SE REST API </xs:documentation>
+         <xs:documentation xml:lang="fr">Défini le numéro de port sur lequel l'API REST du Flowable SE écoute
+         </xs:documentation>
+      </xs:annotation>
+   </xs:element>
 
    <xs:element name="idm-engine-configurator-class-name" type="petalsCDK:settablestring" default="true">
       <xs:annotation>

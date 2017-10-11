@@ -93,6 +93,10 @@
                      minOccurs="0" />
                   <xs:element ref="petals-se-flowable:idm-engine-configurator-config-file" maxOccurs="1"
                      minOccurs="0" />
+                  <xs:element ref="petals-se-flowable:engine-rest-api-enable" maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-flowable:engine-rest-api-access-group" maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-flowable:engine-rest-api-address" maxOccurs="1" minOccurs="0" />
+                  <xs:element ref="petals-se-flowable:engine-rest-api-port" maxOccurs="1" minOccurs="0" />
                </xs:sequence>
             </xs:extension>
          </xs:complexContent>
