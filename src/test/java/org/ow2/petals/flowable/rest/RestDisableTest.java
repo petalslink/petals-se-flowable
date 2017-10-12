@@ -59,6 +59,6 @@ public class RestDisableTest extends AbstractRestTestEnvironment {
         expected.expect(ProcessingException.class);
         expected.expectCause(IsInstanceOf.<ConnectException> instanceOf(ConnectException.class));
 
-        deployments("api-user", "user-api-password").get();
+        deployments("rest-api-user", "user-api-rest-password").get();
     }
 }

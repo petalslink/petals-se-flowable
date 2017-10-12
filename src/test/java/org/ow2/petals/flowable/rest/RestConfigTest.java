@@ -76,7 +76,7 @@ public class RestConfigTest extends AbstractRestTestEnvironment {
      */
     @Test
     public void getOnApiIncorrectLogin() {
-        final Response response = deployments("api-user", "user-api-password", CUSTOMIZED_PORT).get();
+        final Response response = deployments("rest-api-user", "user-api-rest-password", CUSTOMIZED_PORT).get();
 
         assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
     }
@@ -89,6 +89,6 @@ public class RestConfigTest extends AbstractRestTestEnvironment {
         expected.expect(ProcessingException.class);
         expected.expectCause(IsInstanceOf.<ConnectException> instanceOf(ConnectException.class));
 
-        deployments("api-user", "user-api-password").get();
+        deployments("rest-api-user", "user-api-rest-password").get();
     }
 }

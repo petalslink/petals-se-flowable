@@ -108,7 +108,7 @@ public class RestApiTest extends AbstractRestTestEnvironment {
      */
     @Test
     public void getOnApiBadLogin() {
-        final Response response = deployments("api-user", "lololol").get();
+        final Response response = deployments("rest-api-user", "lololol").get();
 
         assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
@@ -130,7 +130,7 @@ public class RestApiTest extends AbstractRestTestEnvironment {
      */
     @Test
     public void getOnApiCorrectLogin() {
-        final Response response = deployments("api-user", "user-api-password").get();
+        final Response response = deployments("rest-api-user", "user-api-rest-password").get();
 
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
     }
@@ -142,7 +142,7 @@ public class RestApiTest extends AbstractRestTestEnvironment {
      */
     @Test
     public void hasDeployments() {
-        final JsonNode response = deployments("api-user", "user-api-password").get(JsonNode.class);
+        final JsonNode response = deployments("rest-api-user", "user-api-rest-password").get(JsonNode.class);
 
         final JsonNode jsonNode = response.get("data");
         assertTrue(jsonNode.isArray());

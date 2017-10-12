@@ -381,7 +381,7 @@ public final class FlowableSEConstants {
     /**
      * Default value of {@link #ENGINE_REST_API_ACCESS_GROUP}
      */
-    public static final String DEFAULT_ENGINE_REST_API_ACCESS_GROUP = "api-admin";
+    public static final String DEFAULT_ENGINE_REST_API_ACCESS_GROUP = "rest-api-users";
 
     /**
      * Default value of {@link #ENGINE_REST_API_ADDRESS}
