@@ -32,33 +32,9 @@
    <description>su-flowable-vacationService-provide description.</description>
 
    <properties>
-      <maven-enforcer-plugin.rules.upperBound>false</maven-enforcer-plugin.rules.upperBound>
-      <flowable.version>6.0.1</flowable.version>
       <flowable.groupId>org.flowable</flowable.groupId>
-      <!--flowable.version>6.0.1-PETALS-0-SNAPSHOT</flowable.version-->
       <!--flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
    </properties>
-
-   <dependencyManagement>
-      <!-- Align dependencies with those of Flowable -->
-      <dependencies>
-         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
-         </dependency>
-         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-xjc</artifactId>
-            <version>2.2.11</version>
-         </dependency>
-         <dependency>
-            <groupId>org.ow2.easycommons</groupId>
-            <artifactId>easycommons-util</artifactId>
-            <version>2.4.0-SNAPSHOT</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
 
    <dependencies>
       <dependency>
@@ -78,33 +54,16 @@
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
-         <version>${flowable.version}</version>
          <scope>test</scope>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
-         <version>${flowable.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-jdk14</artifactId>
-         <version>1.7.6</version>
          <scope>test</scope>
       </dependency>
       <dependency>

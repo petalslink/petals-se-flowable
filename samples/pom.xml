@@ -34,6 +34,26 @@
    <dependencyManagement>
       <dependencies>
          <dependency>
+            <!-- Align dependency with the one of Flowable -->
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+         <dependency>
+            <!-- Align dependency with the one of Flowable -->
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>2.2.11</version>
+         </dependency>
+         <dependency>
+            <!-- Align dependencies with those of Flowable -->
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-se-flowable</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
+         <dependency>
             <artifactId>petals-se-flowable</artifactId>
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>

@@ -23,7 +23,7 @@
    <parent>
       <artifactId>petals-cdkbased-components-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <relativePath>../cdk-based-parent/pom.xml</relativePath>
+      <relativePath />
       <version>1.0.3-SNAPSHOT</version>
    </parent>
 
@@ -118,6 +118,62 @@
             <scope>import</scope>
             <type>pom</type>
          </dependency>
+         <dependency>
+            <groupId>${flowable.groupId}</groupId>
+            <artifactId>flowable-engine-common</artifactId>
+            <version>${flowable.version}</version>
+            <exclusions>
+               <exclusion>
+                  <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                       so commons-logging must be excluded -->
+                  <groupId>commons-logging</groupId>
+                  <artifactId>commons-logging</artifactId>
+               </exclusion>
+               <exclusion>
+                  <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
+                       so commons-logging must be excluded -->
+                  <groupId>log4j</groupId>
+                  <artifactId>log4j</artifactId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+         <dependency>
+            <groupId>${flowable.groupId}</groupId>
+            <artifactId>flowable-engine</artifactId>
+            <version>${flowable.version}</version>
+            <exclusions>
+               <exclusion>
+                  <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                       so commons-logging must be excluded -->
+                  <groupId>commons-logging</groupId>
+                  <artifactId>commons-logging</artifactId>
+               </exclusion>
+               <exclusion>
+                  <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
+                       so commons-logging must be excluded -->
+                  <groupId>log4j</groupId>
+                  <artifactId>log4j</artifactId>
+               </exclusion>
+               <exclusion>
+                  <!-- We use javax.mail -->
+                  <artifactId>mail</artifactId>
+                  <groupId>javax.mail</groupId>
+               </exclusion>
+            </exclusions>
+         </dependency>
+         <dependency>
+            <!-- flowable-cxf add support of WSDL-based services to the Flowable engine to call Petals services -->
+            <groupId>${flowable.groupId}</groupId>
+            <artifactId>flowable-cxf</artifactId>
+            <version>${flowable.version}</version>
+            <exclusions>
+               <exclusion>
+                  <!-- Already included in Java 6 -->
+                  <groupId>xml-apis</groupId>
+                  <artifactId>xml-apis</artifactId>
+               </exclusion>
+            </exclusions>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
@@ -204,45 +260,10 @@
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine-common</artifactId>
-         <version>${flowable.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
-         <version>${flowable.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- We use javax.mail -->
-               <artifactId>mail</artifactId>
-               <groupId>javax.mail</groupId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.mybatis</groupId>
@@ -287,15 +308,7 @@
          <!-- flowable-cxf add support of WSDL-based services to the Flowable engine to call Petals services -->
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
-         <version>${flowable.version}</version>
          <scope>runtime</scope>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in Java 6 -->
-               <groupId>xml-apis</groupId>
-               <artifactId>xml-apis</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <!-- Dependency required by the Petals transporter -->

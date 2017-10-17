@@ -20,13 +20,13 @@
 
    <modelVersion>4.0.0</modelVersion>
    <parent>
-      <artifactId>petals-cdkbased-components-parent</artifactId>
+      <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <relativePath>../cdk-based-parent/pom.xml</relativePath>
-      <version>1.0.3-SNAPSHOT</version>
+      <relativePath />
+      <version>20.2.6-SNAPSHOT</version>
    </parent>
 
-   <name>Petals ESB - Components - SE Flowabl - JUnit framework</name>
+   <name>Petals ESB - Components - SE Flowable - JUnit framework</name>
    <artifactId>petals-se-flowable-junit</artifactId>
    <groupId>org.ow2.petals</groupId>
    <version>1.0.0-SNAPSHOT</version>
@@ -41,17 +41,26 @@
    </properties>
 
    <dependencyManagement>
-      <!-- Align dependencies with those of Flowable -->
       <dependencies>
          <dependency>
+            <!-- Align dependency with the one of Flowable -->
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
             <version>2.2.11</version>
          </dependency>
          <dependency>
+            <!-- Align dependency with the one of Flowable -->
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-xjc</artifactId>
             <version>2.2.11</version>
+         </dependency>
+         <dependency>
+            <!-- Align dependencies with those of Flowable -->
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-se-flowable</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>import</scope>
+            <type>pom</type>
          </dependency>
       </dependencies>
    </dependencyManagement>
