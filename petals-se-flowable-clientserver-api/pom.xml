@@ -22,7 +22,7 @@
    <parent>
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <relativePath>../../../../parent/pom.xml</relativePath>
+      <relativePath />
       <version>20.2.6-SNAPSHOT</version>
    </parent>
 

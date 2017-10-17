@@ -20,17 +20,16 @@
 
    <modelVersion>4.0.0</modelVersion>
    <parent>
-      <artifactId>petals-cdkbased-components-parent</artifactId>
+      <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
-      <relativePath>../cdk-based-parent/pom.xml</relativePath>
-      <version>1.0.3-SNAPSHOT</version>
+      <relativePath />
+      <version>20.2.6-SNAPSHOT</version>
    </parent>
 
-   <name>Petals ESB - Components - SE Flowabl - Utilities for test</name>
+   <name>Petals ESB - Components - SE Flowable - Utilities for test</name>
    <artifactId>petals-se-flowable-test-utils</artifactId>
    <groupId>org.ow2.petals</groupId>
    <version>1.0.0-SNAPSHOT</version>
-   <packaging>jar</packaging>
 
    <properties>
       <flowable.version>6.0.1</flowable.version>
@@ -39,51 +38,34 @@
       <!--flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
    </properties>
    
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <!-- Align dependencies with those of Flowable -->
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-se-flowable</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+   
    <dependencies>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine-common-api</artifactId>
          <version>${flowable.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
-         <version>${flowable.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <!-- We use 'log4j-over-slf4j' as SLF bridge -->
          <groupId>org.slf4j</groupId>
          <artifactId>log4j-over-slf4j</artifactId>
       </dependency>
-      
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>

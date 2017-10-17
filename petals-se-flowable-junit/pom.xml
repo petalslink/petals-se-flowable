@@ -103,21 +103,6 @@
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
-         <version>${flowable.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>log4j</groupId>
-               <artifactId>log4j</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <!-- We use 'log4j-over-slf4j' as SLF bridge -->
