@@ -32,8 +32,8 @@
    <description>su-flowable-vacationService-provide description.</description>
 
    <properties>
-      <flowable.groupId>org.flowable</flowable.groupId>
-      <!--flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
+      <!--flowable.groupId>org.flowable</flowable.groupId-->
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
 
    <dependencies>
