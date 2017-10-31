@@ -250,7 +250,7 @@
       <echo message="b-1) Checking that flow trees are correctly built" />
       <petals-monit-build-flow-trees refid="flows" id="flow-trees" />
       <echo message="b-2) Checking that we retrieve the expected number of flow trees" />
-      <petals-assert-flow-trees refid="flow-trees" assertsizeupperorequals="6" />
+      <petals-assert-flow-trees refid="flow-trees" assertsizeequals="6" />
       <echo message="b-3) Checking that we retrieve a flow associated to the Flowable process instance" />
       <petals-extract-flow-step-info refid="flows" row="0">
          <flowStepCriteria name="traceCode" value="provideFlowStepBegin" />
