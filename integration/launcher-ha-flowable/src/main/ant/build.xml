@@ -98,6 +98,7 @@
                              username="${container-1.username}"
                              password="${container-1.password}">
          <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${flowable-db.file}" />
+         <param name="engineRestApiEnable" value="false" />
       </jbi-install-component>
 
       <!-- Container #2 -->
@@ -107,6 +108,7 @@
                              username="${container-2.username}"
                              password="${container-2.password}">
          <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${flowable-db.file}" />
+         <param name="engineRestApiEnable" value="false" />
       </jbi-install-component>
 
 
