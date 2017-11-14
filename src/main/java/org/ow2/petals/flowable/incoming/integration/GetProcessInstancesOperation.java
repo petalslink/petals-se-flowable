@@ -123,6 +123,13 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
             processInstanceQuery.processInstanceId(processInstanceId);
         }
 
+        final Variables variables = incomingObject.getVariables();
+        if (variables != null && !variables.getVariable().isEmpty()) {
+            for (final Variable variable : variables.getVariable()) {
+                processInstanceQuery.variableValueEquals(variable.getName(), variable.getValue());
+            }
+        }
+
         processInstanceQuery.includeProcessVariables();
 
         final GetProcessInstancesResponse response = new GetProcessInstancesResponse();
@@ -185,6 +192,13 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
         final String processInstanceId = incomingObject.getProcessInstanceIdentifier();
         if (processInstanceId != null && !processInstanceId.isEmpty()) {
             processInstanceQuery.processInstanceId(processInstanceId);
+        }
+
+        final Variables variables = incomingObject.getVariables();
+        if (variables != null && !variables.getVariable().isEmpty()) {
+            for (final Variable variable : variables.getVariable()) {
+                processInstanceQuery.variableValueEquals(variable.getName(), variable.getValue());
+            }
         }
 
         processInstanceQuery.includeProcessVariables();

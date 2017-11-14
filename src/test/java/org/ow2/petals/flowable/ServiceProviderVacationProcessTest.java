@@ -67,6 +67,7 @@ import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstancesResponse;
 import org.ow2.petals.components.flowable.generic._1.Task;
 import org.ow2.petals.components.flowable.generic._1.Variable;
+import org.ow2.petals.components.flowable.generic._1.Variables;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
@@ -223,7 +224,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
                 now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
         requestBean_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
-        final String motivation = "hollidays";
+        final String motivation = "hollidays from validStartEventRequest";
         requestBean_1.setMotifDde(motivation);
 
         // Send the 1st valid request for start event 'request
@@ -313,6 +314,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         // Assertions about the process instance state through the SE Flowable
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, true);
+        this.tryToRetrieveProcessInstanceFromVariable("vacationMotivation", motivation, ProcessInstanceState.ACTIVE,
+                response_1.getNumeroDde(), processStartedBeginFlowLogData, true);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
@@ -335,6 +338,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, true);
+        this.tryToRetrieveProcessInstanceFromVariable("vacationMotivation", motivation, ProcessInstanceState.SUSPENDED,
+                response_1.getNumeroDde(), processStartedBeginFlowLogData, true);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, false);
 
@@ -353,6 +358,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.ACTIVE, processStartedBeginFlowLogData, true);
+        this.tryToRetrieveProcessInstanceFromVariable("vacationMotivation", motivation, ProcessInstanceState.ACTIVE,
+                response_1.getNumeroDde(), processStartedBeginFlowLogData, true);
 
         // ------------------------------------------------------------------
         // ---- Complete the first user task (validate the vacation request)
@@ -494,6 +501,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 ProcessInstanceState.SUSPENDED, processStartedBeginFlowLogData, false);
         this.tryToRetrieveProcessInstance(response_1.getNumeroDde(), startDate, motivation, numberOfDays,
                 ProcessInstanceState.FINISHED, processStartedBeginFlowLogData, true);
+        this.tryToRetrieveProcessInstanceFromVariable("vacationMotivation", motivation, ProcessInstanceState.FINISHED,
+                response_1.getNumeroDde(), processStartedBeginFlowLogData, true);
 
         // Assertions about states of user task and process instance at Flowable Level
         this.assertUserTaskEnded(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
@@ -527,6 +536,59 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg_3);
+    }
+
+    private final void tryToRetrieveProcessInstanceFromVariable(final String variableName, final String variableValue,
+            final ProcessInstanceState state, final String expectedProcessInstanceId,
+            final FlowLogData processStartedBeginFlowLogData, final boolean isRetrievedProcessInstanceExpected)
+            throws Exception {
+
+        // Try to retrieve the process instance using the integration service
+        final GetProcessInstances getProcessInstancesReq = new GetProcessInstances();
+        getProcessInstancesReq.setState(state);
+        getProcessInstancesReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+        final Variables variables = new Variables();
+        getProcessInstancesReq.setVariables(variables);
+        final Variable variable = new Variable();
+        variables.getVariable().add(variable);
+        variable.setName(variableName);
+        variable.setValue(variableValue);
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstancesReq));
+
+        {
+            final ResponseMessage getProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(request);
+            assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
+            final Object getProcessInstancesRespObj = UNMARSHALLER.unmarshal(getProcessInstancesRespMsg.getPayload());
+            assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+            final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
+            assertNotNull(getProcessInstancesResp.getProcessInstances());
+            assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
+            if (isRetrievedProcessInstanceExpected) {
+                assertEquals(1, getProcessInstancesResp.getProcessInstances().getProcessInstance().size());
+                final ProcessInstance processInstance = getProcessInstancesResp.getProcessInstances()
+                        .getProcessInstance().get(0);
+                assertEquals(BPMN_PROCESS_DEFINITION_KEY, processInstance.getProcessDefinitionIdentifier());
+                assertEquals(expectedProcessInstanceId, processInstance.getProcessInstanceIdentifier());
+            } else {
+                assertEquals(0, getProcessInstancesResp.getProcessInstances().getProcessInstance().size());
+            }
+
+            COMPONENT.sendDoneStatus(getProcessInstancesRespMsg);
+        }
+
+        // Check MONIT traces about the service integration invocation
+        final List<LogRecord> monitLogs_getProcessInstances = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(2, monitLogs_getProcessInstances.size());
+        final FlowLogData providerBegin_getProcessInstances = assertMonitProviderBeginLog(
+                ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
+                COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_PROCESSINSTANCES_SERVICE), ITG_OP_GETPROCESSINSTANCES,
+                monitLogs_getProcessInstances.get(0));
+        assertMonitProviderEndLog(providerBegin_getProcessInstances, monitLogs_getProcessInstances.get(1));
+        assertMonitFlowInstanceIdNotEquals(processStartedBeginFlowLogData, providerBegin_getProcessInstances);
     }
 
     /**
