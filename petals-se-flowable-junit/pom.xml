@@ -105,6 +105,11 @@
          <artifactId>flowable-engine</artifactId>
       </dependency>
       <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-engine-common-api</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
          <!-- We use 'log4j-over-slf4j' as SLF bridge -->
          <groupId>org.slf4j</groupId>
          <artifactId>log4j-over-slf4j</artifactId>

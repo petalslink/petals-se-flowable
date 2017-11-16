@@ -17,12 +17,66 @@
  */
 package org.ow2.petals.flowable.junit;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import org.flowable.engine.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
+import org.junit.runner.Description;
 import org.ow2.petals.flowable.utils.test.Assert;
 import org.ow2.petals.flowable.utils.test.Await;
 
 public class PetalsFlowableRule extends FlowableRule {
+
+    private static final Logger LOG = Logger.getLogger(PetalsFlowableRule.class.getName());
+
+    private final Map<String, String> placeholders;
+
+    private CallActivityStartedEventListener callActivityStartEventListener = null;
+
+    private ProcessInstanceStartedEventListener processInstanceStartedEventListener = null;
+
+    public PetalsFlowableRule() {
+        super();
+        this.placeholders = new HashMap<>();
+    }
+
+    public PetalsFlowableRule(final Map<String, String> placeholders) {
+        super();
+        this.placeholders = placeholders;
+    }
+
+    @Override
+    public void configureProcessEngine() {
+        super.configureProcessEngine();
+
+        this.callActivityStartEventListener = new CallActivityStartedEventListener(
+                this.getRuntimeService(), this.placeholders, LOG);
+        this.getRuntimeService().addEventListener(this.callActivityStartEventListener,
+                FlowableEngineEventType.PROCESS_STARTED);
+
+        this.processInstanceStartedEventListener = new ProcessInstanceStartedEventListener(this.getRuntimeService(),
+                this.placeholders, LOG);
+        this.getRuntimeService().addEventListener(this.processInstanceStartedEventListener,
+                FlowableEngineEventType.PROCESS_STARTED);
+    }
+
+    @Override
+    public void finished(final Description description) {
+        if (this.callActivityStartEventListener != null) {
+            this.getRuntimeService().removeEventListener(this.callActivityStartEventListener);
+            this.callActivityStartEventListener = null;
+        }
+
+        if (this.processInstanceStartedEventListener != null) {
+            this.getRuntimeService().removeEventListener(this.processInstanceStartedEventListener);
+            this.processInstanceStartedEventListener = null;
+        }
+
+        super.finished(description);
+    }
 
     /**
      * Assertion to check that a process instance is running. The process instance is not finished.
