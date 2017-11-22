@@ -177,6 +177,7 @@
          
          <xsd:simpleType name="ProcessInstanceState">
             <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="all" />
                <xsd:enumeration value="active" />
                <xsd:enumeration value="suspended" />
                <xsd:enumeration value="finished" />

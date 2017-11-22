@@ -92,9 +92,40 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
             return this.searchProcessInstances(incomingObject, ProcessInstanceState.ACTIVE);
         } else if (state == ProcessInstanceState.SUSPENDED) {
             return this.searchProcessInstances(incomingObject, ProcessInstanceState.SUSPENDED);
-        } else {
+        } else if (state == ProcessInstanceState.FINISHED) {
             assert state == ProcessInstanceState.FINISHED;
             return this.searchHistoricProcessInstances(incomingObject, ProcessInstanceState.FINISHED);
+        } else {
+            assert state == ProcessInstanceState.ALL;
+            final GetProcessInstancesResponse result = this.searchProcessInstances(incomingObject,
+                    ProcessInstanceState.ACTIVE);
+            final GetProcessInstancesResponse resultSuspended = this.searchProcessInstances(incomingObject,
+                    ProcessInstanceState.SUSPENDED);
+            final GetProcessInstancesResponse resultFinished = this.searchHistoricProcessInstances(incomingObject,
+                    ProcessInstanceState.FINISHED);
+
+            this.merge(resultSuspended, result);
+            this.merge(resultFinished, result);
+
+            return result;
+        }
+    }
+
+    private void merge(final GetProcessInstancesResponse from, final GetProcessInstancesResponse into) {
+
+        for (final org.ow2.petals.components.flowable.generic._1.ProcessInstance procInstToMerge : from
+                .getProcessInstances().getProcessInstance()) {
+            boolean procInstKnown = false;
+            for (final org.ow2.petals.components.flowable.generic._1.ProcessInstance procInst : into
+                    .getProcessInstances().getProcessInstance()) {
+                if (procInstToMerge.getProcessInstanceIdentifier().equals(procInst.getProcessInstanceIdentifier())) {
+                    procInstKnown = true;
+                    break;
+                }
+            }
+            if (!procInstKnown) {
+                into.getProcessInstances().getProcessInstance().add(procInstToMerge);
+            }
         }
     }
 
