@@ -177,7 +177,6 @@
          
          <xsd:simpleType name="ProcessInstanceState">
             <xsd:restriction base="xsd:string">
-               <xsd:enumeration value="all" />
                <xsd:enumeration value="active" />
                <xsd:enumeration value="suspended" />
                <xsd:enumeration value="finished" />
@@ -283,6 +282,7 @@
             </xsd:sequence>
             <xsd:attribute name="process-definition-identifier" type="xsd:string" use="required" />
             <xsd:attribute name="process-instance-identifier" type="xsd:string" use="required" />
+            <xsd:attribute name="state" type="flowable:ProcessInstanceState" use="required" />
          </xsd:complexType>
          <xsd:complexType name="Variables">
             <xsd:sequence>

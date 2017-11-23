@@ -22,6 +22,7 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_
 import java.io.File;
 import java.util.List;
 
+import org.apache.mina.util.AvailablePortFinder;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.junit.Before;
@@ -52,6 +53,9 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
     protected static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
+
+    protected static final int EMBEDDED_REST_API_HTTP_PORT = AvailablePortFinder
+            .getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT);
 
     @Rule
     public FlowableClient flowableClient = new FlowableClient(

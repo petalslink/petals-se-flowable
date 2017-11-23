@@ -86,28 +86,23 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
     @Override
     public GetProcessInstancesResponse doExecute(final GetProcessInstances incomingObject) throws Exception {
 
-        // By default, we search active process instance
         final ProcessInstanceState state = incomingObject.getState();
-        if (state == null || state == ProcessInstanceState.ACTIVE) {
-            return this.searchProcessInstances(incomingObject, ProcessInstanceState.ACTIVE);
-        } else if (state == ProcessInstanceState.SUSPENDED) {
-            return this.searchProcessInstances(incomingObject, ProcessInstanceState.SUSPENDED);
-        } else if (state == ProcessInstanceState.FINISHED) {
-            assert state == ProcessInstanceState.FINISHED;
-            return this.searchHistoricProcessInstances(incomingObject, ProcessInstanceState.FINISHED);
-        } else {
-            assert state == ProcessInstanceState.ALL;
-            final GetProcessInstancesResponse result = this.searchProcessInstances(incomingObject,
-                    ProcessInstanceState.ACTIVE);
-            final GetProcessInstancesResponse resultSuspended = this.searchProcessInstances(incomingObject,
-                    ProcessInstanceState.SUSPENDED);
+        if (state == null) {
+            // By default, we search all process instances independently of their state
+            final GetProcessInstancesResponse result = this.searchProcessInstances(incomingObject, null);
             final GetProcessInstancesResponse resultFinished = this.searchHistoricProcessInstances(incomingObject,
                     ProcessInstanceState.FINISHED);
 
-            this.merge(resultSuspended, result);
             this.merge(resultFinished, result);
 
             return result;
+        } else if (state == ProcessInstanceState.ACTIVE) {
+            return this.searchProcessInstances(incomingObject, ProcessInstanceState.ACTIVE);
+        } else if (state == ProcessInstanceState.SUSPENDED) {
+            return this.searchProcessInstances(incomingObject, ProcessInstanceState.SUSPENDED);
+        } else {
+            assert state == ProcessInstanceState.FINISHED;
+            return this.searchHistoricProcessInstances(incomingObject, ProcessInstanceState.FINISHED);
         }
     }
 
@@ -139,9 +134,11 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
 
         if (state == ProcessInstanceState.ACTIVE) {
             processInstanceQuery.active();
-        } else {
-            // state == ProcessInstanceState.SUSPENDED
+        } else if (state == ProcessInstanceState.SUSPENDED) {
             processInstanceQuery.suspended();
+        } else {
+            // we search all process instances independently of their state: ACTIVE and SUSPENDED
+            assert state == null;
         }
 
         final String processDefinitionId = incomingObject.getProcessDefinitionIdentifier();
@@ -169,8 +166,17 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
         final List<ProcessInstance> processInstances = processInstanceQuery.list();
         for (final ProcessInstance processInstance : processInstances) {
             final org.ow2.petals.components.flowable.generic._1.ProcessInstance responseProcessInstance = new org.ow2.petals.components.flowable.generic._1.ProcessInstance();
-            responseProcessInstance.setProcessInstanceIdentifier(processInstance.getProcessInstanceId());
             responseProcessInstances.getProcessInstance().add(responseProcessInstance);
+
+            responseProcessInstance.setProcessInstanceIdentifier(processInstance.getProcessInstanceId());
+
+            if (processInstance.isSuspended()) {
+                responseProcessInstance.setState(ProcessInstanceState.SUSPENDED);
+            } else if (processInstance.isEnded()) {
+                responseProcessInstance.setState(ProcessInstanceState.FINISHED);
+            } else {
+                responseProcessInstance.setState(ProcessInstanceState.ACTIVE);
+            }
 
             final ProcessDefinitionQuery processDefQuery = this.repositoryService.createProcessDefinitionQuery()
                     .processDefinitionId(processInstance.getProcessDefinitionId());
@@ -240,8 +246,10 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
         final List<HistoricProcessInstance> processInstances = processInstanceQuery.list();
         for (final HistoricProcessInstance processInstance : processInstances) {
             final org.ow2.petals.components.flowable.generic._1.ProcessInstance responseProcessInstance = new org.ow2.petals.components.flowable.generic._1.ProcessInstance();
-            responseProcessInstance.setProcessInstanceIdentifier(processInstance.getId());
             responseProcessInstances.getProcessInstance().add(responseProcessInstance);
+
+            responseProcessInstance.setProcessInstanceIdentifier(processInstance.getId());
+            responseProcessInstance.setState(ProcessInstanceState.FINISHED);
 
             final ProcessDefinitionQuery processDefQuery = this.repositoryService.createProcessDefinitionQuery()
                     .processDefinitionId(processInstance.getProcessDefinitionId());

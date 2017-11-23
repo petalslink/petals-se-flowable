@@ -44,8 +44,6 @@ import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
-import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotStartedException;
-import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringServiceException;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
@@ -97,7 +95,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
     @AfterClass
     public static void assertTechnicalMonitoringMetrics()
-            throws MonitoringProbeNotStartedException, MonitoringServiceException {
+            throws Exception {
         assertTrue(COMPONENT_UNDER_TEST.getComponentObject().getMonitoringBean() instanceof MonitoringMBean);
         final MonitoringMBean monitoringMbean = (MonitoringMBean) COMPONENT_UNDER_TEST.getComponentObject()
                 .getMonitoringBean();
@@ -139,6 +137,11 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
          */
         assertEquals(1, jiraInstances[3].longValue());
 
+        checkProcessInstancesByIntgService(null, 5, 0, 1);
+        checkProcessInstancesByIntgService(ProcessInstanceState.ACTIVE, 5, 0, 0);
+        checkProcessInstancesByIntgService(ProcessInstanceState.SUSPENDED, 0, 0, 0);
+        checkProcessInstancesByIntgService(ProcessInstanceState.FINISHED, 0, 0, 1);
+
         //
         // -- Assertions about monitoring of asynchronous job executor thread pool --
         //
@@ -166,6 +169,54 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertEquals(0, monitoringMbean.getDatabaseConnectionPoolActiveConnectionsCurrent());
         assertTrue(monitoringMbean.getDatabaseConnectionPoolIdleConnectionsMax() >= 1);
         assertNotEquals(0, monitoringMbean.getDatabaseConnectionPoolIdleConnectionsCurrent());
+    }
+
+    /**
+     * Retrieve process instances.
+     */
+    private static final void checkProcessInstancesByIntgService(final ProcessInstanceState state,
+            final int expectedActiveProcInstNb, final int expectedSuspendedProcInstNb,
+            final int expectedFinishedProcInstNb) throws Exception {
+
+        // Try to retrieve the process instance using the integration service
+        final GetProcessInstances getProcessInstancesReq = new GetProcessInstances();
+        if (state != null) {
+            getProcessInstancesReq.setState(state);
+        }
+        getProcessInstancesReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+
+        IN_MEMORY_LOG_HANDLER.clear();
+        final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstancesReq));
+
+        final ResponseMessage getProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(request);
+        assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
+        final Object getProcessInstancesRespObj = UNMARSHALLER.unmarshal(getProcessInstancesRespMsg.getPayload());
+        assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+        final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
+        assertNotNull(getProcessInstancesResp.getProcessInstances());
+        assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
+
+        int activeProcInstNb = 0;
+        int suspendedProcInstNb = 0;
+        int finishedProcInstNb = 0;
+        for (final ProcessInstance procInst : getProcessInstancesResp.getProcessInstances().getProcessInstance()) {
+            if (procInst.getState() == ProcessInstanceState.ACTIVE) {
+                activeProcInstNb++;
+            } else if (procInst.getState() == ProcessInstanceState.SUSPENDED) {
+                suspendedProcInstNb++;
+            } else {
+                assertEquals(ProcessInstanceState.FINISHED, procInst.getState());
+                finishedProcInstNb++;
+            }
+        }
+
+        assertEquals(expectedActiveProcInstNb, activeProcInstNb);
+        assertEquals(expectedSuspendedProcInstNb, suspendedProcInstNb);
+        assertEquals(expectedFinishedProcInstNb, finishedProcInstNb);
+
+        COMPONENT.sendDoneStatus(getProcessInstancesRespMsg);
     }
 
     /**

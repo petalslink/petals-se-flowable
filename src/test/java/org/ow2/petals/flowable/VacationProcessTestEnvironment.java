@@ -122,7 +122,7 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
 
     protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
-            // A async job executor is required to process service task
+            // An async job executor is required to process service task
             .setParameter(
                     new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
@@ -140,6 +140,9 @@ public abstract class VacationProcessTestEnvironment extends AbstractTestEnviron
                         }
 
                     })
+            .setParameter(
+                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
+                    Integer.toString(EMBEDDED_REST_API_HTTP_PORT))
             .registerServiceToDeploy(VACATION_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
