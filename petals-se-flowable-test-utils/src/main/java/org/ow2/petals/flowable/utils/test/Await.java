@@ -67,9 +67,14 @@ public class Await {
     public static void waitEndOfProcessInstance(final String processInstanceId, final HistoryService historyService,
             final int duration) throws InterruptedException {
 
-        final HistoricProcessInstanceQuery histProcInstQuery = historyService.createHistoricProcessInstanceQuery()
-                .processInstanceId(processInstanceId).finished();
-        if (Await.waitSingleResult(histProcInstQuery, duration) == null) {
+        if (Await.waitSingleResult(new QueryBuilder<HistoricProcessInstanceQuery>() {
+
+            @Override
+            public HistoricProcessInstanceQuery createQuery() {
+                return historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId)
+                        .finished();
+            }
+        }, duration) == null) {
             throw new AssertionError(String.format("Process instance '%s' not finished in the waiting time ('%ds').",
                     processInstanceId, duration));
         }
@@ -104,9 +109,14 @@ public class Await {
             final String subProcessDefinitionKey, final RuntimeService runtimeService, final int duration)
             throws InterruptedException {
 
-        final ProcessInstanceQuery procInstQuery = runtimeService.createProcessInstanceQuery()
-                .processDefinitionKey(subProcessDefinitionKey).superProcessInstanceId(superProcessInstanceId);
-        final ProcessInstance subProcInst = Await.waitSingleResult(procInstQuery, duration);
+        final ProcessInstance subProcInst = Await.waitSingleResult(new QueryBuilder<ProcessInstanceQuery>() {
+
+            @Override
+            public ProcessInstanceQuery createQuery() {
+                return runtimeService.createProcessInstanceQuery().processDefinitionKey(subProcessDefinitionKey)
+                        .superProcessInstanceId(superProcessInstanceId);
+            }
+        }, duration);
         if (subProcInst == null) {
             throw new AssertionError(String.format(
                     "Sub-process instance '%s' not found for process instance '%s' in the waiting time ('%ds').",
@@ -142,9 +152,13 @@ public class Await {
     public static void waitProcessInstanceAsDeadLetterJob(final String processInstanceId,
             final ManagementService managementService, final int duration) throws InterruptedException {
 
-        final DeadLetterJobQuery deadLetterJobQuery = managementService.createDeadLetterJobQuery()
-                .processInstanceId(processInstanceId);
-        if (Await.waitSingleResult(deadLetterJobQuery, duration) == null) {
+        if (Await.waitSingleResult(new QueryBuilder<DeadLetterJobQuery>() {
+
+            @Override
+            public DeadLetterJobQuery createQuery() {
+                return managementService.createDeadLetterJobQuery().processInstanceId(processInstanceId);
+            }
+        }, duration) == null) {
             throw new AssertionError(
                     String.format("Process instance '%s' not put as dead letter job in the waiting time ('%ds').",
                             processInstanceId, duration));
@@ -179,10 +193,15 @@ public class Await {
     public static void waitEndOfServiceTask(final String processInstanceId, final String serviceTaskDefinitionKey,
             final HistoryService historyService, final int duration) throws InterruptedException {
 
-        // Caution: service tasks are stored in activity historic, not in task historic.
-        final HistoricActivityInstanceQuery histSvcTaskQuery = historyService.createHistoricActivityInstanceQuery()
-                .processInstanceId(processInstanceId).activityId(serviceTaskDefinitionKey).finished();
-        if (Await.waitSingleResult(histSvcTaskQuery, duration) == null) {
+        if (Await.waitSingleResult(new QueryBuilder<HistoricActivityInstanceQuery>() {
+
+            @Override
+            public HistoricActivityInstanceQuery createQuery() {
+                // Caution: service tasks are stored in activity historic, not in task historic.
+                return historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId)
+                        .activityId(serviceTaskDefinitionKey).finished();
+            }
+        }, duration) == null) {
             throw new AssertionError(
                     String.format("Service task '%s' of process instance '%s' not ended in the waiting time ('%ds').",
                             serviceTaskDefinitionKey, processInstanceId, duration));
@@ -221,9 +240,14 @@ public class Await {
     public static void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
             final String candidateUser, final TaskService taskService, final int duration) throws InterruptedException {
 
-        final TaskQuery taskQuery = taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(taskDefinitionKey).taskCandidateUser(candidateUser);
-        if (Await.waitSingleResult(taskQuery, duration) == null) {
+        if (Await.waitSingleResult(new QueryBuilder<TaskQuery>() {
+
+            @Override
+            public TaskQuery createQuery() {
+                return taskService.createTaskQuery().processInstanceId(processInstanceId)
+                        .taskDefinitionKey(taskDefinitionKey).taskCandidateUser(candidateUser);
+            }
+        }, duration) == null) {
             throw new AssertionError(
                     String.format("User task '%s' of process instance '%s' not assigned in the waiting time ('%ds').",
                             taskDefinitionKey, processInstanceId, duration));
@@ -259,16 +283,26 @@ public class Await {
     public static void waitIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName,
             final RuntimeService runtimeService, final int duration) throws InterruptedException {
 
-        final ExecutionQuery executionQuery = runtimeService.createExecutionQuery().processInstanceId(processInstanceId)
-                .messageEventSubscriptionName(messageEventName);
-        if (Await.waitSingleResult(executionQuery, duration) == null) {
+        if (Await.waitSingleResult(new QueryBuilder<ExecutionQuery>() {
+
+            @Override
+            public ExecutionQuery createQuery() {
+                return runtimeService.createExecutionQuery().processInstanceId(processInstanceId)
+                        .messageEventSubscriptionName(messageEventName);
+            }
+        }, duration) == null) {
             throw new AssertionError(String.format(
                     "Intermediate catch message event of process instance '%s' not ready to receive message '%s' in the waiting time ('%ds').",
                     processInstanceId, messageEventName, duration));
         }
     }
 
-    private static <A, B extends Query> A waitSingleResult(final B query, final int duration)
+    private interface QueryBuilder<B extends Query> {
+
+        B createQuery();
+    }
+
+    private static <A, B extends Query> A waitSingleResult(final QueryBuilder<B> queryBuilder, final int duration)
             throws InterruptedException {
         final CountDownLatch lock = new CountDownLatch(1);
         final Holder<A> holder = new Holder<>();
@@ -279,6 +313,7 @@ public class Await {
                 try {
                     while (run) {
                         Thread.sleep(250);
+                        final B query = queryBuilder.createQuery();
                         final A result = (A) query.singleResult();
                         if (result != null) {
                             // the process instance is finished
