@@ -30,6 +30,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
+import org.apache.mina.util.AvailablePortFinder;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -88,6 +89,9 @@ public abstract class IntermediateMessageCatchEventProcessTestEnvironment extend
             // A async job executor is required to process service task
             .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
+            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
+                    String.valueOf(
+                            AvailablePortFinder.getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT)))
             .registerServiceToDeploy(INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {

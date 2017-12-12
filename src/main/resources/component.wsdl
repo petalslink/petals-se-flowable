@@ -147,10 +147,10 @@
          <xsd:element name="getProcessInstances">
             <xsd:complexType>
                <xsd:sequence>
-                  <xsd:element name="state" type="flowable:ProcessInstanceState" maxOccurs="1" minOccurs="0" default="active">
+                  <xsd:element name="state" type="flowable:ProcessInstanceState" maxOccurs="1" minOccurs="0">
                      <xsd:annotation>
                         <xsd:documentation>
-                           The state of process instances to select. Default value: 'active'.
+                           The state of process instances to select. If not set, all states are taken into consideration.
                         </xsd:documentation>
                      </xsd:annotation>
                   </xsd:element>

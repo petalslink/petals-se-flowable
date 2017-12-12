@@ -519,6 +519,10 @@
                         <include>placeholders/archivageService.wsdl</include>
                         <include>in-only/in-only.wsdl</include>
                         <include>in-only/archivageService.wsdl</include>
+                        <include>robust-in-only/robust-in-only.wsdl</include>
+                        <include>robust-in-only/archivageService.wsdl</include>
+                        <include>robustified-in-only/robustified-in-only.wsdl</include>
+                        <include>robustified-in-only/archivageService.wsdl</include>
                         <include>start-stop/start-stop.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>

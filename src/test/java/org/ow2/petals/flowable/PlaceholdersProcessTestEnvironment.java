@@ -27,6 +27,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
+import org.apache.mina.util.AvailablePortFinder;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -95,6 +96,9 @@ public abstract class PlaceholdersProcessTestEnvironment extends AbstractTestEnv
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
             .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
+            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
+                    String.valueOf(
+                            AvailablePortFinder.getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT)))
             .setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "properties-file"),
                     new ParameterGenerator() {
 

@@ -27,6 +27,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
+import org.apache.mina.util.AvailablePortFinder;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -35,9 +36,6 @@ import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguratio
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.se_flowable.unit_test.in_only.Start;
-import org.ow2.petals.se_flowable.unit_test.in_only.StartResponse;
-import org.ow2.petals.se_flowable.unit_test.in_only.archivageservice.Archiver;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
@@ -81,6 +79,9 @@ public abstract class ProcessWithInOnlyConsumerTestEnvironment extends AbstractT
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
             .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
+            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
+                    String.valueOf(
+                            AvailablePortFinder.getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT)))
             .registerServiceToDeploy(INONLY_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -106,6 +107,9 @@ public abstract class ProcessWithInOnlyConsumerTestEnvironment extends AbstractT
                     serviceConfiguration
                             .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
 
+                    // By default (according to process definition and WSDL), archiving service is invoke with MEP
+                    // 'InOnly'
+
                     return serviceConfiguration;
                 }
             }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE);
@@ -122,7 +126,9 @@ public abstract class ProcessWithInOnlyConsumerTestEnvironment extends AbstractT
 
     static {
         try {
-            final JAXBContext context = JAXBContext.newInstance(Start.class, StartResponse.class, Archiver.class);
+            final JAXBContext context = JAXBContext
+                    .newInstance(org.ow2.petals.se_flowable.unit_test.in_only.ObjectFactory.class,
+                            org.ow2.petals.se_flowable.unit_test.in_only.archivageservice.ObjectFactory.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

@@ -29,12 +29,12 @@
    typeLanguage="http://www.w3.org/2001/XMLSchema"
    expressionLanguage="http://www.w3.org/1999/XPath"
    
-   xmlns:archivage="http://petals.ow2.org/se-flowable/unit-test/in-only/archivageService" 
-   xmlns:process="http://petals.ow2.org/se-flowable/unit-test/in-only"
-   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/in-only">
+   xmlns:archivage="http://petals.ow2.org/se-flowable/unit-test/robust-in-only/archivageService" 
+   xmlns:process="http://petals.ow2.org/se-flowable/unit-test/robust-in-only"
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/robust-in-only">
 
    <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
-   <import location="classpath:su/in-only/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/in-only/archivageService"
+   <import location="classpath:su/robust-in-only/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/robust-in-only/archivageService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
 
    <interface name="Archive Service" implementationRef="archivage:archiver">
@@ -47,7 +47,7 @@
 
    <itemDefinition id="archiverRequestItem" structureRef="archivage:archiver" />
    
-   <process id="in-only" name="Process using service with MEP InOnly" isExecutable="true">
+   <process id="robust-in-only" name="Process using service with MEP RobustInOnly" isExecutable="true">
       <startEvent id="startevent1" name="Start" flowable:initiator="customer" />
       <sequenceFlow id="flow11" sourceRef="startevent1" targetRef="servicetask1" />
       <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"

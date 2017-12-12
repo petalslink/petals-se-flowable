@@ -78,7 +78,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
     @Override
     public void prepare(final Message message) throws IOException {
-        final NormalizedMessageOutputStream out = new NormalizedMessageOutputStream(this.sender, message.getExchange(),
+        final NormalizedMessageOutputStream out = new NormalizedMessageOutputStream(this.sender, message, this,
                 this.asyncCallback, flowAttributes.get());
         message.setContent(OutputStream.class, out);
     }
@@ -210,7 +210,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
         return xmlPayload;
     }
 
-    private static Document wrapAsSoapFault(final Fault jbiFault) throws PEtALSCDKException {
+    public static Document wrapAsSoapFault(final Fault jbiFault) throws PEtALSCDKException {
 
         final Document jbiFaultDoc = SourceUtil.createDocument(jbiFault.getContent(), false);
 

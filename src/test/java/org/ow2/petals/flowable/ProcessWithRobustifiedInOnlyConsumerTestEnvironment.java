@@ -31,13 +31,13 @@ import org.apache.mina.util.AvailablePortFinder;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
+import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.se_flowable.unit_test.start_stop.Start;
-import org.ow2.petals.se_flowable.unit_test.start_stop.StartResponse;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
@@ -47,70 +47,81 @@ import com.ebmwebsourcing.easycommons.lang.UncheckedException;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public abstract class StartStopTestEnvironment extends AbstractTestEnvironment {
+public abstract class ProcessWithRobustifiedInOnlyConsumerTestEnvironment extends AbstractTestEnvironment {
 
-    protected static final String START_STOP_SU = "start-stop";
+    protected static final String ROBUSTIFIED_INONLY_SU = "robustified-in-only";
 
-    private static final String START_STOP_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/start-stop";
+    private static final String ROBUSTIFIED_INONLY_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/robustified-in-only";
 
-    protected static final QName START_STOP_INTERFACE = new QName(START_STOP_NAMESPACE, "start-stop");
+    protected static final QName ROBUSTIFIED_INONLY_INTERFACE = new QName(ROBUSTIFIED_INONLY_NAMESPACE,
+            "robustified-in-only");
 
-    protected static final QName START_STOP_SERVICE = new QName(START_STOP_NAMESPACE, "start-stop-service");
+    protected static final QName ROBUSTIFIED_INONLY_SERVICE = new QName(ROBUSTIFIED_INONLY_NAMESPACE,
+            "robustified-in-only-service");
 
-    protected static final String START_STOP_ENDPOINT = "edpStartStop";
+    protected static final String ROBUSTIFIED_INONLY_ENDPOINT = "edpRobustifiedInOnly";
 
-    protected static final QName OPERATION_START = new QName(START_STOP_NAMESPACE, "start");
+    protected static final QName OPERATION_START = new QName(ROBUSTIFIED_INONLY_NAMESPACE, "start");
 
-    protected static final String BPMN_PROCESS_DEFINITION_KEY = "start-stop";
+    private static final String ARCHIVE_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/robustified-in-only/archivageService";
 
-    protected static int TIMER_DURATION_S = 10;
+    protected static final QName ARCHIVE_INTERFACE = new QName(ARCHIVE_NAMESPACE, "archiver");
 
-    protected static int TIMER_DURATION_MS = TIMER_DURATION_S * 1000;
+    protected static final QName ARCHIVE_SERVICE = new QName(ARCHIVE_NAMESPACE, "archiverService");
+
+    protected static final String ARCHIVE_ENDPOINT = "archiveEndpointName";
+
+    protected static final QName ARCHIVER_OPERATION = new QName(ARCHIVE_NAMESPACE, "archiver");
+
+    protected static final String BPMN_PROCESS_DEFINITION_KEY = "robustified-in-only";
 
     protected static String getFileIdmEngineConfiguratorCfgFile() {
         return null;
     }
 
-    // Don't start the component automatically
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest(true, false)
+    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
             .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
                     Boolean.TRUE.toString())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
-                    FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME), "1000")
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
-                    FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME), "1000")
             .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
                     String.valueOf(
                             AvailablePortFinder.getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT)))
-            .registerServiceToDeploy(START_STOP_SU, new ServiceConfigurationFactory() {
+            .registerServiceToDeploy(ROBUSTIFIED_INONLY_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/start-stop/start-stop.wsdl");
+                            .getResource("su/robustified-in-only/robustified-in-only.wsdl");
                     assertNotNull("WSDL not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                            START_STOP_INTERFACE, START_STOP_SERVICE, START_STOP_ENDPOINT, wsdlUrl);
+                            ROBUSTIFIED_INONLY_INTERFACE, ROBUSTIFIED_INONLY_SERVICE, ROBUSTIFIED_INONLY_ENDPOINT,
+                            wsdlUrl);
 
                     final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/start-stop/startResponse.xsl");
+                            .getResource("su/robustified-in-only/startResponse.xsl");
                     assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
                     serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/start-stop/start-stop.bpmn");
+                            .getResource("su/robustified-in-only/robustified-in-only.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
-                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "start-stop.bpmn");
+                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "robustified-in-only.bpmn");
                     serviceConfiguration
                             .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
 
+                    // We force the MEP to use to invoke archiving service with MEP 'RobustInOnly'
+                    final ConsumesServiceConfiguration serviceConsumerCfg = new ConsumesServiceConfiguration(
+                            ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
+                    serviceConsumerCfg.setMEP(MEPType.ROBUST_IN_ONLY);
+                    serviceConsumerCfg.setOperation(ARCHIVER_OPERATION);
+                    serviceConfiguration.addServiceConfigurationDependency(serviceConsumerCfg);
+
                     return serviceConfiguration;
                 }
-            });
+            }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE);
 
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
@@ -124,7 +135,9 @@ public abstract class StartStopTestEnvironment extends AbstractTestEnvironment {
 
     static {
         try {
-            final JAXBContext context = JAXBContext.newInstance(Start.class, StartResponse.class);
+            final JAXBContext context = JAXBContext
+                    .newInstance(org.ow2.petals.se_flowable.unit_test.robustified_in_only.ObjectFactory.class,
+                            org.ow2.petals.se_flowable.unit_test.robustified_in_only.archivageservice.ObjectFactory.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

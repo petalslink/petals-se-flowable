@@ -20,8 +20,10 @@ package org.ow2.petals.flowable.outgoing.cxf.transport;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.jbi.messaging.MessageExchange;
 import javax.jbi.messaging.MessagingException;
@@ -29,7 +31,10 @@ import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.dom.DOMSource;
 
+import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.message.Exchange;
+import org.apache.cxf.message.Message;
+import org.apache.cxf.message.MessageImpl;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.service.model.OperationInfo;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
@@ -44,6 +49,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
+import com.ebmwebsourcing.easycommons.xml.DOMHelper;
 import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
 
 /**
@@ -56,18 +63,23 @@ import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
 // org.apache.camel.converter.stream.CachedOutputStream to avoid memory problems
 public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
+    private static final Logger LOG = LogUtils.getL7dLogger(NormalizedMessageOutputStream.class);
+
     private final AbstractListener sender;
 
-    private final Exchange cxfExchange;
+    private final Message cxfMessage;
+
+    private final PetalsConduit conduit;
 
     private final AsyncCallback asyncCallback;
 
     private final FlowAttributes flowAttributes;
 
-    public NormalizedMessageOutputStream(final AbstractListener sender, final Exchange cxfExchange,
-            final AsyncCallback asyncCallback, final FlowAttributes flowAttributes) {
+    public NormalizedMessageOutputStream(final AbstractListener sender, final Message cxfMessage,
+            final PetalsConduit conduit, final AsyncCallback asyncCallback, final FlowAttributes flowAttributes) {
         this.sender = sender;
-        this.cxfExchange = cxfExchange;
+        this.cxfMessage = cxfMessage;
+        this.conduit = conduit;
         this.asyncCallback = asyncCallback;
         this.flowAttributes = flowAttributes;
     }
@@ -79,23 +91,24 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
         // needed so that logs are put in the right flow instance folder
         PetalsExecutionContext.putFlowAttributes(this.flowAttributes);
 
-        final EndpointInfo endpointInfo = this.cxfExchange.getEndpoint().getEndpointInfo();
+        final Exchange cxfExchange = this.cxfMessage.getExchange();
+
+        final EndpointInfo endpointInfo = cxfExchange.getEndpoint().getEndpointInfo();
         final QName interfaceName = endpointInfo.getInterface().getName();
         final QName serviceName = endpointInfo.getService().getName();
-        final OperationInfo operationInfo = this.cxfExchange.getBindingOperationInfo().getOperationInfo();
+        final OperationInfo operationInfo = cxfExchange.getBindingOperationInfo().getOperationInfo();
         final QName operationName = operationInfo.getName();
 
         try {
             Consumes consume = this.sender.getComponent().getServiceUnitManager().getConsumesFromDestination(null,
-                    serviceName, interfaceName);
+                    serviceName, interfaceName, operationName);
 
             final MEPPatternConstants mep = getMEP(operationInfo, consume);
-            
+
             if (consume == null) {
-                this.sender.getLogger().log(Level.WARNING,
-                        String.format(
-                                "No Consumes declared in the JBI descriptor for the request to send, using informations from the process: interface=%s, serviceName=%s, operation=%s, mep=%s",
-                                interfaceName, serviceName, operationName, mep));
+                this.sender.getLogger().log(Level.WARNING, String.format(
+                        "No Consumes declared in the JBI descriptor for the request to send, using informations from the process: interface=%s, serviceName=%s, operation=%s, mep=%s",
+                        interfaceName, serviceName, operationName, mep));
                 consume = new Consumes();
                 // TODO: Create a unit test where the interface name is missing
                 consume.setInterfaceName(interfaceName);
@@ -114,32 +127,22 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                                     + consume.getServiceName() + " vs " + serviceName
                                     + "), using Consumes information.");
                 }
-                if (consume.getOperation() != null) {
-                    this.sender.getLogger().log(Level.WARNING,
-                            "An operation is declared in the Consumes in the JBI descriptor for the request to send: IGNORED and using informations from the process: "
-                                    + operationName);
-                }
-                if (consume.getMep() != null) {
-                    this.sender.getLogger().log(Level.WARNING,
-                            "A MEP is declared in the Consumes in the JBI descriptor for the request to send: IGNORED and using informations from the process: "
-                                    + mep);
-                }
             }
 
             // TODO: Find a way to define the endpoint name to use: maybe the address could contain it in endpointInfo?
             // TODO: Create a unit test where the endpoint name is missing
             // TODO: Create a unit test where the operation name is missing
 
-            final org.ow2.petals.component.framework.api.message.Exchange exchange = this.sender
+            final org.ow2.petals.component.framework.api.message.Exchange jbiExchange = this.sender
                     .createConsumeExchange(consume, mep);
 
             // we always use the operation from the process (the JBI Consumes defines the service used, not the
             // operation)
-            exchange.setOperation(operationName);
+            jbiExchange.setOperation(operationName);
 
             // TODO: Add support for attachments
             // TODO: MUST be optimized generating directly an XML message by CXF or Flowable
-            // The buffer contains a SOAP message, we just remove the SOAP enveloppe
+            // The buffer contains a SOAP message, we just remove the SOAP envelope
             final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
             try {
                 if (this.sender.getLogger().isLoggable(Level.FINE)) {
@@ -150,7 +153,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                         "Body");
                 if (soapBodies.item(0).hasChildNodes()) {
                     final Node xmlPayload = soapBodies.item(0).getFirstChild();
-                    exchange.setInMessageContent(new DOMSource(xmlPayload));
+                    jbiExchange.setInMessageContent(new DOMSource(xmlPayload));
                 } else {
                     throw new IOException("Empty service task request");
                 }
@@ -160,11 +163,46 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                 DocumentBuilders.releaseDocumentBuilder(docBuilder);
             }
 
+            // Pattern RobustInOnly is not supported by WSDL 1.1 and it is considered as InOnly. So we must manage it
+            // here manually.
             // TODO: Set the TTL of the async context
             // TODO: Add MONIT trace (do not forget to log success, error and timeouts!)
-            this.sender.sendAsync(exchange, new PetalsFlowableAsyncContext(this.cxfExchange, this.asyncCallback));
-        } catch (final MessagingException e) {
-            throw new IOException(e);
+            if (cxfExchange.isOneWay() && mep == MEPPatternConstants.ROBUST_IN_ONLY) {
+                if (this.sender.sendSync(jbiExchange)) {
+                    if (jbiExchange.isErrorStatus()) {
+                        // An error was returned
+                        throw jbiExchange.getError();
+                    } else if (jbiExchange.isDoneStatus()) {
+                        // Status DONE returned
+                    } else {
+                        // A fault was returned
+                        final Message cxfInMessage = new MessageImpl();
+                        cxfInMessage.setExchange(cxfExchange);
+
+                        final Document faultReceived = PetalsConduit.wrapAsSoapFault(jbiExchange.getFault());
+
+                        final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
+                        DOMHelper.prettyPrint(faultReceived, ebaos);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Fault XML payload received: " + ebaos.toString());
+                        }
+                        cxfInMessage.setContent(InputStream.class, ebaos.toByteArrayInputStream());
+
+                        this.conduit.getMessageObserver().onMessage(cxfInMessage);
+                        jbiExchange.setDoneStatus();
+                        this.sender.send(jbiExchange);
+                    }
+                } else {
+                    // A timeout occurs
+                    throw new MessagingException("A timeout occurs invoking service.");
+                }
+            } else {
+                this.sender.sendAsync(jbiExchange, new PetalsFlowableAsyncContext(cxfExchange, this.asyncCallback));
+            }
+        } catch (final IOException e) {
+            throw e;
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
