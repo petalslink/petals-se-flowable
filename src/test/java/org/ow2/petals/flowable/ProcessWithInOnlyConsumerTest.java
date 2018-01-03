@@ -46,7 +46,7 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
 
     /**
      * <p>
-     * Check the service invocation with MEP InOnly
+     * Check the service invocation with MEP InOnly returning an acknowledge
      * </p>
      * <p>
      * Expected results:

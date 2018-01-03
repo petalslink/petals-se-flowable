@@ -35,7 +35,7 @@ public abstract class VacationRequest {
     @Min(0)
     private long dayNumber = 1;
 
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date startDate = new Date();
 
     /**

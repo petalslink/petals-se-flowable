@@ -23,7 +23,7 @@
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath />
-      <version>20.2.6-SNAPSHOT</version>
+      <version>20.2.6</version>
    </parent>
 
    <name>Petals ESB - Components - SE Flowable - Utilities for test</name>
@@ -34,22 +34,9 @@
    <properties>
       <!--flowable.version>6.0.1</flowable.version-->
       <!--flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.version>6.0.1-PETALS-0-SNAPSHOT</flowable.version>
+      <flowable.version>6.0.1-PETALS-0</flowable.version>
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
-   
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <!-- Align dependencies with those of Flowable -->
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-se-flowable</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>import</scope>
-            <type>pom</type>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
    
    <dependencies>
       <dependency>
@@ -60,6 +47,26 @@
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
+         <version>${flowable.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>commons-logging</groupId>
+               <artifactId>commons-logging</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- The SLF bridge 'log4j-over-slf4j' is used to redirect Log4J calls to SLF4J API,
+                    so commons-logging must be excluded -->
+               <groupId>log4j</groupId>
+               <artifactId>log4j</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- We use javax.mail -->
+               <artifactId>mail</artifactId>
+               <groupId>javax.mail</groupId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <!-- We use 'log4j-over-slf4j' as SLF bridge -->
