@@ -250,7 +250,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-clientserver-api</artifactId>
-         <version>1.0.0-SNAPSHOT</version>
+         <version>1.0.0</version>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -417,7 +417,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-test-utils</artifactId>
-         <version>1.0.0-SNAPSHOT</version>
+         <version>1.0.0</version>
          <scope>test</scope>
       </dependency>
       <dependency>
