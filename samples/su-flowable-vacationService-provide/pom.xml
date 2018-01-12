@@ -46,7 +46,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-junit</artifactId>
-         <version>1.0.0-SNAPSHOT</version>
+         <version>1.0.0</version>
          <scope>test</scope>
       </dependency>
       
