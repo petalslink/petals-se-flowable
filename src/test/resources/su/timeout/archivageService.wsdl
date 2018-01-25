@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017-2018 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions
+   name="archivageService"
+   
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService"
+   xmlns:tns="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService"
+   
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" >
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService"
+         elementFormDefault="qualified">
+         <xsd:element name="archiverDefaultSync">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="archiverShortSync">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="archiverLongSync">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="archiverDefaultAsync">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="archiverShortAsync">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         <xsd:element name="archiverLongAsync">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="archiverResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="item" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:message name="archiverDefaultSyncRequest">
+      <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+      <wsdl:part name="parameters" element="tns:archiverDefaultSync" />
+   </wsdl:message>
+   <wsdl:message name="archiverShortSyncRequest">
+      <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+      <wsdl:part name="parameters" element="tns:archiverShortSync" />
+   </wsdl:message>
+   <wsdl:message name="archiverLongSyncRequest">
+      <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+      <wsdl:part name="parameters" element="tns:archiverLongSync" />
+   </wsdl:message>
+   <wsdl:message name="archiverDefaultAsyncRequest">
+      <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+      <wsdl:part name="parameters" element="tns:archiverDefaultAsync" />
+   </wsdl:message>
+   <wsdl:message name="archiverShortAsyncRequest">
+      <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+      <wsdl:part name="parameters" element="tns:archiverShortAsync" />
+   </wsdl:message>
+   <wsdl:message name="archiverLongAsyncRequest">
+      <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+      <wsdl:part name="parameters" element="tns:archiverLongAsync" />
+   </wsdl:message>
+   <wsdl:message name="archiverResponse">
+      <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode-->
+      <wsdl:part name="parameters" element="tns:archiverResponse" />
+   </wsdl:message>
+
+   <wsdl:portType name="archiver">
+      <wsdl:operation name="archiverDefaultSync">
+         <wsdl:input name="archiverDefaultSyncRequest" message="tns:archiverDefaultSyncRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="archiverShortSync">
+         <wsdl:input name="archiverShortSyncRequest" message="tns:archiverShortSyncRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="archiverLongSync">
+         <wsdl:input name="archiverLongSyncRequest" message="tns:archiverLongSyncRequest" />
+      </wsdl:operation>
+      <wsdl:operation name="archiverDefaultAsync">
+         <wsdl:input name="archiverDefaultAsyncRequest" message="tns:archiverDefaultAsyncRequest" />
+         <wsdl:output name="archiverDefaultAsyncResponse" message="tns:archiverResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="archiverShortAsync">
+         <wsdl:input name="archiverShortAsyncRequest" message="tns:archiverShortAsyncRequest" />
+         <wsdl:output name="archiverShortAsyncResponse" message="tns:archiverResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="archiverLongAsync">
+         <wsdl:input name="archiverLongAsyncRequest" message="tns:archiverLongAsyncRequest" />
+         <wsdl:output name="archiverLongAsyncResponse" message="tns:archiverResponse" />
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="archiverSoapBinding" type="tns:archiver">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="archiverDefaultSync">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService/archiver-default-sync" />
+         <wsdl:input name="archiverDefaultSyncRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="archiverShortSync">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService/archiver-short-sync" />
+         <wsdl:input name="archiverShortSyncRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="archiverLongSync">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService/archiver-long-sync" />
+         <wsdl:input name="archiverLongSyncRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="archiverDefaultAsync">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService/archiver-default-async" />
+         <wsdl:input name="archiverDefaultAsyncRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output name="archiverDefaultAsyncResponse">
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="archiverShortAsync">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService/archiver-short-async" />
+         <wsdl:input name="archiverShortAsyncRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output name="archiverShortAsyncResponse">
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="archiverLongAsync">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService/archiver-long-async" />
+         <wsdl:input name="archiverLongAsyncRequest">
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output name="archiverLongAsyncResponse">
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="archiverService">
+      <!-- TODO: We should use an XML binding instead of SOAP binding to avoid to rework SOAP envelop on requests/replies
+                 exchanged between Flowable and Petals -->
+      <wsdl:port name="edpArchiver" binding="tns:archiverSoapBinding">
+         <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
+         <soap:address location="petals:///{http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService}archiver" />
+      </wsdl:port>
+   </wsdl:service>
+
+</wsdl:definitions>

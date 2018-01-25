@@ -224,6 +224,8 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-jbi-descriptor</artifactId>
+         <!-- This dependency is directly used by unit tests but it is also
+              a transitive dependency of CDK, so we can't use scope 'test' -->
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -523,6 +525,8 @@
                         <include>robustified-in-only/robustified-in-only.wsdl</include>
                         <include>robustified-in-only/archivageService.wsdl</include>
                         <include>start-stop/start-stop.wsdl</include>
+                        <include>timeout/timeout.wsdl</include>
+                        <include>timeout/archivageService.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
                   </configuration>

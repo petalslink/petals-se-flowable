@@ -177,14 +177,31 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
             }
         }
 
-        incomingObserver.onMessage(msg);
+        this.incomingObserver.onMessage(msg);
     }
 
     @Override
     public void onExpiredMessage(final org.ow2.petals.component.framework.api.message.Exchange asyncExchange,
-            Exchange cxfExchange) {
-        // NOP: As we had set the same timeout at CXF client level than the timeout at NMR level, we have nothing to do
-        // because the timeout at CXF client level has fired in the same time.
+            final Exchange cxfExchange) {
+
+        // A timeout occurs, the error is pushed into CXF exchange as a standard fault
+        final String errorMsg = String.format("A timeout occurs on exchange '%s'", asyncExchange.getExchangeId());
+        LOG.warning(errorMsg);
+
+        final Document xmlPayload = wrapAsSoapCommonFault(new Exception(errorMsg));
+
+        final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
+        DOMHelper.prettyPrint(xmlPayload, ebaos);
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Timeout received as common soap fault: " + ebaos.toString());
+        }
+
+        final MessageImpl msg = new MessageImpl();
+        msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());
+        cxfExchange.setInMessage(msg);
+        this.incomingObserver.onMessage(msg);
+
     }
 
     private static Document wrapAsSoapCommonFault(final Exception jbiError) {

@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017-2018 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:flowable="http://flowable.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath"
+   
+   xmlns:archivage="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService" 
+   xmlns:process="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service"
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service">
+
+   <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
+   <import location="classpath:su/timeout/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <interface name="Archive Service" implementationRef="archivage:archiver">
+      <operation id="archiveDefaultSyncOperation" name="Archive Default Sync Operation" implementationRef="archivage:archiverDefaultSync">
+         <inMessageRef>process:archiverDefaultSyncRequestMessage</inMessageRef>
+      </operation>
+      <operation id="archiveShortSyncOperation" name="Archive Short Sync Operation" implementationRef="archivage:archiverShortSync">
+         <inMessageRef>process:archiverShortSyncRequestMessage</inMessageRef>
+      </operation>
+      <operation id="archiveLongSyncOperation" name="Archive Long Sync Operation" implementationRef="archivage:archiverLongSync">
+         <inMessageRef>process:archiverLongSyncRequestMessage</inMessageRef>
+      </operation>
+      <operation id="archiveDefaultAsyncOperation" name="Archive Default Async Operation" implementationRef="archivage:archiverDefaultAsync">
+         <inMessageRef>process:archiverDefaultAsyncRequestMessage</inMessageRef>
+      </operation>
+      <operation id="archiveShortAsyncOperation" name="Archive Short Async Operation" implementationRef="archivage:archiverShortAsync">
+         <inMessageRef>process:archiverShortAsyncRequestMessage</inMessageRef>
+      </operation>
+      <operation id="archiveLongAsyncOperation" name="Archive Long Async Operation" implementationRef="archivage:archiverLongAsync">
+         <inMessageRef>process:archiverLongAsyncRequestMessage</inMessageRef>
+      </operation>
+   </interface>
+
+   <message id="archiverDefaultSyncRequestMessage" itemRef="process:archiverDefaultSyncRequestItem" />
+   <message id="archiverShortSyncRequestMessage" itemRef="process:archiverShortSyncRequestItem" />
+   <message id="archiverLongSyncRequestMessage" itemRef="process:archiverLongSyncRequestItem" />
+   <message id="archiverDefaultAsyncRequestMessage" itemRef="process:archiverDefaultAsyncRequestItem" />
+   <message id="archiverShortAsyncRequestMessage" itemRef="process:archiverShortAsyncRequestItem" />
+   <message id="archiverLongAsyncRequestMessage" itemRef="process:archiverLongAsyncRequestItem" />
+
+   <itemDefinition id="archiverDefaultSyncRequestItem" structureRef="archivage:archiverDefaultSync" />
+   <itemDefinition id="archiverShortSyncRequestItem" structureRef="archivage:archiverShortSync" />
+   <itemDefinition id="archiverLongSyncRequestItem" structureRef="archivage:archiverLongSync" />
+   <itemDefinition id="archiverDefaultAsyncRequestItem" structureRef="archivage:archiverDefaultAsync" />
+   <itemDefinition id="archiverShortAsyncRequestItem" structureRef="archivage:archiverShortAsync" />
+   <itemDefinition id="archiverLongAsyncRequestItem" structureRef="archivage:archiverLongAsync" />
+   
+   <process id="default-timeout-sync" name="Process using a default timeout to call the service provider synchronously" isExecutable="true">
+      <startEvent id="starteventdefault-sync" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow01" sourceRef="starteventdefault-sync" targetRef="timerintermediatecatcheventdefault-sync" />
+      <intermediateCatchEvent id="timerintermediatecatcheventdefault-sync" name="TimerCatchEvent">
+         <timerEventDefinition>
+            <timeDuration>PT5S</timeDuration>
+         </timerEventDefinition>
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow02" sourceRef="timerintermediatecatcheventdefault-sync" targetRef="servicetaskdefault-sync" />
+      <serviceTask id="servicetaskdefault-sync" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveDefaultSyncOperation">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT30S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverDefaultSyncRequestItem" id="dataInputOfServiceTaskArchiveAttachmentDefaultSync" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentDefaultSync</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentDefaultSync</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentDefaultSync.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow03" sourceRef="servicetaskdefault-sync" targetRef="endeventdefault-sync" />
+      <endEvent id="endeventdefault-sync" name="End" />
+   </process>
+   
+   <process id="short-timeout-sync" name="Process using a short timeout to call the service provider synchronously" isExecutable="true">
+      <startEvent id="starteventshort-sync" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow11" sourceRef="starteventshort-sync" targetRef="timerintermediatecatcheventshort-sync" />
+      <intermediateCatchEvent id="timerintermediatecatcheventshort-sync" name="TimerCatchEvent">
+         <timerEventDefinition>
+            <timeDuration>PT5S</timeDuration>
+         </timerEventDefinition>
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow12" sourceRef="timerintermediatecatcheventshort-sync" targetRef="servicetaskshort-sync" />
+      <serviceTask id="servicetaskshort-sync" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveShortSyncOperation">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT30S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverShortSyncRequestItem" id="dataInputOfServiceTaskArchiveAttachmentShortSync" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentShortSync</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentShortSync</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentShortSync.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow13" sourceRef="servicetaskshort-sync" targetRef="endeventshort-sync" />
+      <endEvent id="endeventshort-sync" name="End" />
+   </process>
+   
+   <process id="long-timeout-sync" name="Process using a long timeout to call the service provider synchronously" isExecutable="true">
+      <startEvent id="starteventlong-sync" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow21" sourceRef="starteventlong-sync" targetRef="timerintermediatecatcheventlong-sync" />
+      <intermediateCatchEvent id="timerintermediatecatcheventlong-sync" name="TimerCatchEvent">
+         <timerEventDefinition>
+            <timeDuration>PT5S</timeDuration>
+         </timerEventDefinition>
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow22" sourceRef="starteventlong-sync" targetRef="servicetasklong-sync" />
+      <serviceTask id="servicetasklong-sync" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveLongSyncOperation">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT30S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverLongSyncRequestItem" id="dataInputOfServiceTaskArchiveAttachmentLongSync" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentLongSync</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentLongSync</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentLongSync.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow23" sourceRef="servicetasklong-sync" targetRef="endeventlong-sync" />
+      <endEvent id="endeventlong-sync" name="End" />
+   </process>
+   
+   <process id="default-timeout-async" name="Process using a default timeout to call the service provider asynchronously" isExecutable="true">
+      <startEvent id="starteventdefault-async" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow31" sourceRef="starteventdefault-async" targetRef="timerintermediatecatcheventdefault-async" />
+      <intermediateCatchEvent id="timerintermediatecatcheventdefault-async" name="TimerCatchEvent">
+         <timerEventDefinition>
+            <timeDuration>PT5S</timeDuration>
+         </timerEventDefinition>
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow32" sourceRef="timerintermediatecatcheventdefault-async" targetRef="servicetaskdefault-async" />
+      <serviceTask id="servicetaskdefault-async" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveDefaultAsyncOperation">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT30S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverDefaultAsyncRequestItem" id="dataInputOfServiceTaskArchiveAttachmentDefaultAsync" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentDefaultAsync</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentDefaultAsync</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentDefaultAsync.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow33" sourceRef="servicetaskdefault-async" targetRef="endeventdefault-async" />
+      <endEvent id="endeventdefault-async" name="End" />
+   </process>
+   
+   <process id="short-timeout-async" name="Process using a short timeout to call the service provider asynchronously" isExecutable="true">
+      <startEvent id="starteventshort-async" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow41" sourceRef="starteventshort-async" targetRef="timerintermediatecatcheventshort-async" />
+      <intermediateCatchEvent id="timerintermediatecatcheventshort-async" name="TimerCatchEvent">
+         <timerEventDefinition>
+            <timeDuration>PT5S</timeDuration>
+         </timerEventDefinition>
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow42" sourceRef="timerintermediatecatcheventshort-async" targetRef="servicetaskshort-async" />
+      <serviceTask id="servicetaskshort-async" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveShortAsyncOperation">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT30S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverShortAsyncRequestItem" id="dataInputOfServiceTaskArchiveAttachmentShortAsync" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentShortAsync</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentShortAsync</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentShortAsync.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow43" sourceRef="servicetaskshort-async" targetRef="endeventshort-async" />
+      <endEvent id="endeventshort-async" name="End" />
+   </process>
+   
+   <process id="long-timeout-async" name="Process using a long timeout to call the service provider asynchronously" isExecutable="true">
+      <startEvent id="starteventlong-async" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow1" sourceRef="starteventlong-async" targetRef="timerintermediatecatcheventlong-async" />
+      <intermediateCatchEvent id="timerintermediatecatcheventlong-async" name="TimerCatchEvent">
+         <timerEventDefinition>
+            <timeDuration>PT5S</timeDuration>
+         </timerEventDefinition>
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow52" sourceRef="starteventlong-async" targetRef="servicetasklong-async" />
+      <serviceTask id="servicetasklong-async" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveLongAsyncOperation">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT30S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverLongAsyncRequestItem" id="dataInputOfServiceTaskArchiveAttachmentLongAsync" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentLongAsync</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentLongAsync</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentLongAsync.item}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow53" sourceRef="servicetasklong-async" targetRef="endeventlong-async" />
+      <endEvent id="endeventlong-async" name="End" />
+   </process>
+</definitions>

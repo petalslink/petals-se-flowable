@@ -989,8 +989,6 @@ public class FlowableSE extends AbstractServiceEngine {
         final PetalsCxfTransportFactory cxfPetalsTransport = new PetalsCxfTransportFactory();
         final ConduitInitiatorManager extension = bus.getExtension(ConduitInitiatorManager.class);
         extension.registerConduitInitiator(PetalsCxfTransportFactory.TRANSPORT_ID, cxfPetalsTransport);
-        // TODO: Set a timeout at CXF client level (it should be the same than the tiemout at NMR level)
-        // TODO: Add unit tests about timeout
     }
 
     @Override

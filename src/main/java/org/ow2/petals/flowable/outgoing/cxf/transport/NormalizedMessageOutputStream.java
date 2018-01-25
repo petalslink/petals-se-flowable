@@ -32,6 +32,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.transform.dom.DOMSource;
 
 import org.apache.cxf.common.logging.LogUtils;
+import org.apache.cxf.endpoint.ClientImpl;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
@@ -64,6 +65,11 @@ import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
 public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
     private static final Logger LOG = LogUtils.getL7dLogger(NormalizedMessageOutputStream.class);
+
+    /**
+     * Complementary part of the CXF timeout {@link ClientImpl#SYNC_TIMEOUT} for the internal processing
+     */
+    private static final long CXF_SYNC_TIMEOUT_INTERNAL_PART = 10000;
 
     private final AbstractListener sender;
 
@@ -107,7 +113,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
             if (consume == null) {
                 this.sender.getLogger().log(Level.WARNING, String.format(
-                        "No Consumes declared in the JBI descriptor for the request to send, using informations from the process: interface=%s, serviceName=%s, operation=%s, mep=%s",
+                        "No Consumes declared in the JBI descriptor for the request to send, using informations from the process and default timeout: interface=%s, serviceName=%s, operation=%s, mep=%s",
                         interfaceName, serviceName, operationName, mep));
                 consume = new Consumes();
                 // TODO: Create a unit test where the interface name is missing
@@ -140,6 +146,12 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             // operation)
             jbiExchange.setOperation(operationName);
 
+            // set timeout at CXF level must be upper than the timeout defined into SU JBI descriptor level)
+            if (consume.getTimeout() != null && consume.getTimeout() > 0) {
+                cxfExchange.getOutMessage().put(ClientImpl.SYNC_TIMEOUT,
+                        consume.getTimeout() + CXF_SYNC_TIMEOUT_INTERNAL_PART);
+            }
+
             // TODO: Add support for attachments
             // TODO: MUST be optimized generating directly an XML message by CXF or Flowable
             // The buffer contains a SOAP message, we just remove the SOAP envelope
@@ -165,8 +177,6 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
             // Pattern RobustInOnly is not supported by WSDL 1.1 and it is considered as InOnly. So we must manage it
             // here manually.
-            // TODO: Set the TTL of the async context
-            // TODO: Add MONIT trace (do not forget to log success, error and timeouts!)
             if (cxfExchange.isOneWay() && mep == MEPPatternConstants.ROBUST_IN_ONLY) {
                 if (this.sender.sendSync(jbiExchange)) {
                     if (jbiExchange.isErrorStatus()) {
