@@ -30,7 +30,7 @@
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-flowable.version>1.0.0-SNAPSHOT</petals-se-flowable.version>
+      <petals-se-flowable.version>1.0.1-SNAPSHOT</petals-se-flowable.version>
    </properties>
 
    <dependencyManagement>
