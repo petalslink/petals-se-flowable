@@ -38,6 +38,7 @@
       <!--flowable.groupId>org.flowable</flowable.groupId-->
       <flowable.version>6.0.1-PETALS-1-SNAPSHOT</flowable.version>
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <petals-se-flowable.version>1.0.1-SNAPSHOT</petals-se-flowable.version>
    </properties>
 
    <dependencyManagement>
@@ -58,7 +59,7 @@
             <!-- Align dependencies with those of Flowable -->
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-se-flowable</artifactId>
-            <version>1.0.0</version>
+            <version>${petals-se-flowable.version}</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
@@ -69,7 +70,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable</artifactId>
-         <version>1.0.0</version>
+         <version>${petals-se-flowable.version}</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -117,7 +118,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-test-utils</artifactId>
-         <version>1.0.0</version>
+         <version>1.0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.xmlunit</groupId>
