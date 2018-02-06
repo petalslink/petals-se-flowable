@@ -418,7 +418,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-test-utils</artifactId>
-         <version>1.0.0</version>
+         <version>1.0.1-SNAPSHOT</version>
          <scope>test</scope>
       </dependency>
       <dependency>
