@@ -19,8 +19,8 @@ package org.ow2.petals.flowable.event;
 
 import java.util.logging.Logger;
 
+import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
-import org.flowable.engine.delegate.event.FlowableEngineEventType;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 

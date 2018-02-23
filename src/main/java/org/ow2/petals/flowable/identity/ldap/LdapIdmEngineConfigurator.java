@@ -26,8 +26,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.flowable.engine.cfg.ProcessEngineConfigurator;
-import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.common.AbstractEngineConfiguration;
 import org.flowable.ldap.LDAPConfiguration;
 import org.flowable.ldap.LDAPConfigurator;
 import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
@@ -174,7 +173,7 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
     private Logger logger;
 
     @Override
-    public void configure(final ProcessEngineConfigurationImpl processEngineConfiguration) {
+    public void configure(final AbstractEngineConfiguration processEngineConfiguration) {
 
         assert logger != null;
         try {

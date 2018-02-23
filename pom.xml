@@ -51,9 +51,9 @@
    </developers>
 
    <properties>
-      <!--flowable.version>6.0.1</flowable.version-->
+      <!--flowable.version>6.2.1</flowable.version-->
       <!--flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.version>6.0.1-PETALS-1</flowable.version>
+      <flowable.version>6.2.1-PETALS-0-SNAPSHOT</flowable.version>
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
 
@@ -105,7 +105,7 @@
             <!-- Align spring dependencies with the ones of Flowable -->
             <groupId>org.springframework</groupId>
             <artifactId>spring-framework-bom</artifactId>
-            <version>4.2.9.RELEASE</version>
+            <version>4.3.9.RELEASE</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
@@ -113,7 +113,7 @@
             <!-- Align spring dependencies with the ones of Flowable -->
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-bom</artifactId>
-            <version>4.0.4.RELEASE</version>
+            <version>4.2.3.RELEASE</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
@@ -329,6 +329,31 @@
          <artifactId>flowable-ldap-configurator</artifactId>
          <version>${flowable.version}</version>
       </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-job-service-api</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-job-service</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-task-service-api</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-task-service</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-variable-service-api</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
 
       <!-- Flowable REST API dependencies -->
       <dependency>
@@ -340,6 +365,14 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-common-rest</artifactId>
          <version>${flowable.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We 
+                    choose arbitrarly spring-aop -->
+               <groupId>aopalliance</groupId>
+               <artifactId>aopalliance</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
@@ -361,14 +394,6 @@
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-web</artifactId>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
@@ -385,10 +410,26 @@
       <dependency>
          <groupId>org.springframework.security</groupId>
          <artifactId>spring-security-core</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We 
+                    choose arbitrarly spring-aop -->
+               <groupId>aopalliance</groupId>
+               <artifactId>aopalliance</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.springframework.security</groupId>
          <artifactId>spring-security-config</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We 
+                    choose arbitrarly spring-aop -->
+               <groupId>aopalliance</groupId>
+               <artifactId>aopalliance</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
 
       <dependency>

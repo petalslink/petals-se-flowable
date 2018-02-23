@@ -30,10 +30,11 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.MalformedObjectNameException;
 import javax.xml.parsers.DocumentBuilder;
 
+import org.flowable.engine.IdentityService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
-import org.flowable.engine.impl.asyncexecutor.AsyncExecutor;
-import org.flowable.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
+import org.flowable.job.service.impl.asyncexecutor.AsyncExecutor;
+import org.flowable.job.service.impl.asyncexecutor.DefaultAsyncJobExecutor;
 import org.h2.Driver;
 import org.junit.ClassRule;
 import org.junit.Rule;

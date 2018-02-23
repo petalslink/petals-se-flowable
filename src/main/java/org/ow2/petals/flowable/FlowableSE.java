@@ -88,10 +88,10 @@ import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.common.api.FlowableException;
-import org.flowable.engine.impl.asyncexecutor.AsyncExecutor;
-import org.flowable.engine.impl.asyncexecutor.DefaultAsyncJobExecutor;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.parse.BpmnParseHandler;
+import org.flowable.job.service.impl.asyncexecutor.AsyncExecutor;
+import org.flowable.job.service.impl.asyncexecutor.DefaultAsyncJobExecutor;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
@@ -681,7 +681,7 @@ public class FlowableSE extends AbstractServiceEngine {
                 ((ProcessEngineConfigurationImpl) pec).setDisableIdmEngine(false);
                 idmEngineConfigurator.setConfigurationFile(idmCfgFile);
                 idmEngineConfigurator.setLogger(this.getLogger());
-                ((ProcessEngineConfigurationImpl) pec).setIdmProcessEngineConfigurator(idmEngineConfigurator);
+                ((ProcessEngineConfigurationImpl) pec).setIdmEngineConfigurator(idmEngineConfigurator);
             } else {
                 this.getLogger().warning(
                         "The implementation of the process engine configuration is not the expected one ! Identity management engine not overriden !");

@@ -29,11 +29,11 @@ import org.flowable.engine.TaskService;
 import org.flowable.engine.common.api.query.Query;
 import org.flowable.engine.history.HistoricActivityInstanceQuery;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
-import org.flowable.engine.runtime.DeadLetterJobQuery;
 import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
-import org.flowable.engine.task.TaskQuery;;
+import org.flowable.job.api.DeadLetterJobQuery;
+import org.flowable.task.api.TaskQuery;;
 
 /**
  * Awaiting methods to manage Flowable process events

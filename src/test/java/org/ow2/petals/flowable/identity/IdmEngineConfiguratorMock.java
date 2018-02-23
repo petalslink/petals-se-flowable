@@ -17,14 +17,17 @@
  */
 package org.ow2.petals.flowable.identity;
 
-import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.common.AbstractEngineConfiguration;
+import org.flowable.engine.impl.util.EngineServiceUtil;
 
 public class IdmEngineConfiguratorMock extends AbstractProcessEngineConfigurator {
 
     @Override
-    public void configure(final ProcessEngineConfigurationImpl processEngineConfiguration) {
+    public void configure(final AbstractEngineConfiguration processEngineConfiguration) {
 
-        processEngineConfiguration.setIdmIdentityService(null);
+        super.configure(processEngineConfiguration);
+
+        EngineServiceUtil.getIdmEngineConfiguration(processEngineConfiguration).setIdmIdentityService(null);
     }
 
 }

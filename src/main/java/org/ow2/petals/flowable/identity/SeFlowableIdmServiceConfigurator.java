@@ -20,9 +20,9 @@ package org.ow2.petals.flowable.identity;
 import java.io.File;
 import java.util.logging.Logger;
 
-import org.flowable.engine.cfg.ProcessEngineConfigurator;
+import org.flowable.engine.common.EngineConfigurator;
 
-public interface SeFlowableIdmServiceConfigurator extends ProcessEngineConfigurator {
+public interface SeFlowableIdmServiceConfigurator extends EngineConfigurator {
 
     public void setConfigurationFile(final File configurationFile);
 

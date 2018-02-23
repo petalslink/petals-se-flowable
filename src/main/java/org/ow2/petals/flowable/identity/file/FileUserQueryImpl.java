@@ -21,10 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.flowable.engine.common.impl.Page;
+import org.flowable.engine.common.impl.interceptor.CommandContext;
 import org.flowable.idm.api.User;
 import org.flowable.idm.engine.impl.UserQueryImpl;
-import org.flowable.idm.engine.impl.interceptor.CommandContext;
 
 public class FileUserQueryImpl extends UserQueryImpl {
 
@@ -51,7 +50,7 @@ public class FileUserQueryImpl extends UserQueryImpl {
     }
 
     @Override
-    public List<User> executeList(final CommandContext commandContext, final Page page) {
+    public List<User> executeList(final CommandContext commandContext) {
         return executeQuery();
     }
 

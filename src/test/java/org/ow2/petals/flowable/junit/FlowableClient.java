@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.logging.Logger;
 
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.IdentityService;
 import org.flowable.engine.ManagementService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
@@ -35,7 +36,7 @@ import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.flowable.engine.task.Task;
+import org.flowable.task.api.Task;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
@@ -317,7 +318,7 @@ public class FlowableClient extends ExternalResource {
 
         ((ProcessEngineConfigurationImpl) pec).setDisableIdmEngine(false);
         this.idmEngineConfigurator.setLogger(LOG);
-        ((ProcessEngineConfigurationImpl) pec).setIdmProcessEngineConfigurator(this.idmEngineConfigurator);
+        ((ProcessEngineConfigurationImpl) pec).setIdmEngineConfigurator(this.idmEngineConfigurator);
 
         this.flowableClientEngine = pec.buildProcessEngine();
     }

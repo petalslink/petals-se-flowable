@@ -33,8 +33,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
-import org.flowable.engine.cfg.ProcessEngineConfigurator;
-import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.common.AbstractEngineConfiguration;
+import org.flowable.engine.impl.util.EngineServiceUtil;
 import org.flowable.idm.api.Group;
 import org.flowable.idm.api.User;
 import org.flowable.idm.engine.impl.persistence.entity.GroupEntityImpl;
@@ -86,7 +86,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
     private final Map<String, List<Group>> groupsByUser = new ConcurrentHashMap<>();
 
     @Override
-    public void configure(final ProcessEngineConfigurationImpl processEngineConfiguration) {
+    public void configure(final AbstractEngineConfiguration processEngineConfiguration) {
 
         try {
             this.loadFiles();
@@ -104,7 +104,9 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
                 }
             }
 
-            processEngineConfiguration
+            super.configure(processEngineConfiguration);
+
+            EngineServiceUtil.getIdmEngineConfiguration(processEngineConfiguration)
                     .setIdmIdentityService(new FileIdentityServiceImpl(this.users, this.groups, this.groupsByUser));
 
         } catch (final IdentityServiceInitException e) {

@@ -21,10 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.flowable.engine.common.impl.Page;
+import org.flowable.engine.common.impl.interceptor.CommandContext;
 import org.flowable.idm.api.Group;
 import org.flowable.idm.engine.impl.GroupQueryImpl;
-import org.flowable.idm.engine.impl.interceptor.CommandContext;
 
 public class FileGroupQueryImpl extends GroupQueryImpl {
 
@@ -45,7 +44,7 @@ public class FileGroupQueryImpl extends GroupQueryImpl {
     }
 
     @Override
-    public List<Group> executeList(final CommandContext commandContext, final Page page) {
+    public List<Group> executeList(final CommandContext commandContext) {
         return executeQuery();
     }
 

@@ -26,12 +26,12 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.flowable.engine.TaskService;
+import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.common.api.delegate.event.FlowableEntityEvent;
 import org.flowable.engine.common.api.delegate.event.FlowableEvent;
 import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
-import org.flowable.engine.delegate.event.FlowableEngineEventType;
-import org.flowable.engine.impl.persistence.entity.TaskEntity;
-import org.flowable.engine.impl.persistence.entity.VariableInstance;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
+import org.flowable.variable.api.persistence.entity.VariableInstance;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.monitoring.UserTaskFlowStepEndLogData;
 
