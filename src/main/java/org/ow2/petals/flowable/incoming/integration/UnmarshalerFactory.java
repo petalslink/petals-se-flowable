@@ -20,8 +20,9 @@ package org.ow2.petals.flowable.incoming.integration;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 
-import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 
 /**
  * The {@link PoolableObjectFactory} to create JAXB unmarshalers
@@ -29,7 +30,7 @@ import org.apache.commons.pool.PoolableObjectFactory;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class UnmarshalerFactory extends BasePoolableObjectFactory<Unmarshaller> {
+public class UnmarshalerFactory extends BasePooledObjectFactory<Unmarshaller> {
 
     private final JAXBContext jaxbContext;
 
@@ -38,7 +39,12 @@ public class UnmarshalerFactory extends BasePoolableObjectFactory<Unmarshaller> 
     }
 
     @Override
-    public Unmarshaller makeObject() throws Exception {
-        return jaxbContext.createUnmarshaller();
+    public Unmarshaller create() throws Exception {
+        return this.jaxbContext.createUnmarshaller();
+    }
+
+    @Override
+    public PooledObject<Unmarshaller> wrap(final Unmarshaller obj) {
+        return new DefaultPooledObject<>(obj);
     }
 }

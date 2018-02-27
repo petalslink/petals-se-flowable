@@ -20,8 +20,9 @@ package org.ow2.petals.flowable.incoming.integration;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
-import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.PoolableObjectFactory;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 
 /**
  * The {@link PoolableObjectFactory} to create JAXB marshalers
@@ -29,7 +30,7 @@ import org.apache.commons.pool.PoolableObjectFactory;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class MarshalerFactory extends BasePoolableObjectFactory<Marshaller> {
+public class MarshalerFactory extends BasePooledObjectFactory<Marshaller> {
 
     private final JAXBContext jaxbContext;
 
@@ -38,8 +39,13 @@ public class MarshalerFactory extends BasePoolableObjectFactory<Marshaller> {
     }
 
     @Override
-    public Marshaller makeObject() throws Exception {
-        return jaxbContext.createMarshaller();
+    public Marshaller create() throws Exception {
+        return this.jaxbContext.createMarshaller();
+    }
+
+    @Override
+    public PooledObject<Marshaller> wrap(final Marshaller obj) {
+        return new DefaultPooledObject<>(obj);
     }
 
 }
