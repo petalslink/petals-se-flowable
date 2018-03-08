@@ -20,7 +20,7 @@
    <parent>
       <artifactId>parent</artifactId>
       <groupId>org.ow2.petals.integration.tests</groupId>
-      <version>5.1.0-SNAPSHOT</version>
+      <version>5.2.0-SNAPSHOT</version>
       <relativePath />
    </parent>
 
@@ -30,7 +30,7 @@
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-flowable.version>1.0.1-SNAPSHOT</petals-se-flowable.version>
+      <petals-se-flowable.version>1.1.0-SNAPSHOT</petals-se-flowable.version>
    </properties>
 
    <dependencyManagement>

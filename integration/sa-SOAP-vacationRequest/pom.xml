@@ -19,7 +19,7 @@
   <parent>
     <artifactId>parent</artifactId>
     <groupId>org.ow2.petals.integration.tests</groupId>
-    <version>5.1.0-SNAPSHOT</version>
+    <version>5.2.0-SNAPSHOT</version>
     <relativePath />
   </parent>
   
@@ -32,7 +32,7 @@
   <properties>
     <!-- Skip dependency check for service assembly because it has Java no source code. -->
     <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
-    <se-flowable.samples.version>1.0.0-1.0.0-SNAPSHOT</se-flowable.samples.version>
+    <se-flowable.samples.version>1.1.0-1.0.0-SNAPSHOT</se-flowable.samples.version>
   </properties>
   
   <dependencies>
