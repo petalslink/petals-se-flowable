@@ -67,6 +67,8 @@ public abstract class MultistartProcessTestEnvironment extends AbstractTestEnvir
 
     protected static final String MULTISTART_SU = "multi-start-su";
 
+    protected static final String MULTISTART_SU_HOME = "su/multi-start/";
+
     private static final String MULTISTART_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/multi-start";
 
     protected static final QName MULTISTART_INTERFACE = new QName(MULTISTART_NAMESPACE, "multistart");
@@ -117,20 +119,35 @@ public abstract class MultistartProcessTestEnvironment extends AbstractTestEnvir
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/multi-start/multi-start.wsdl");
+                            .getResource(MULTISTART_SU_HOME + "multi-start.wsdl");
                     assertNotNull("WSDl not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             MULTISTART_INTERFACE, MULTISTART_SERVICE, MULTISTART_ENDPOINT, wsdlUrl);
 
                     final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/multi-start/startResponse.xsl");
+                            .getResource(MULTISTART_SU_HOME + "startResponse.xsl");
                     assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
                     serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/multi-start/multi-start.bpmn");
+                            .getResource(MULTISTART_SU_HOME + "multi-start.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
+
+                    final URL notifyServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(MULTISTART_SU_HOME + "notifyService.wsdl");
+                    assertNotNull("notifyService WSDL not found", notifyServiceWsdlUrl);
+                    serviceConfiguration.addResource(notifyServiceWsdlUrl);
+
+                    final URL coreServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(MULTISTART_SU_HOME + "coreService.wsdl");
+                    assertNotNull("coreService WSDL not found", coreServiceWsdlUrl);
+                    serviceConfiguration.addResource(coreServiceWsdlUrl);
+
+                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(MULTISTART_SU_HOME + "archivageService.wsdl");
+                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"),

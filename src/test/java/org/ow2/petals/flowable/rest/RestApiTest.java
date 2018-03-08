@@ -45,6 +45,8 @@ public class RestApiTest extends AbstractRestTestEnvironment {
 
     protected static final String INONLY_SU = "in-only";
 
+    protected static final String INONLY_SU_HOME = "su/in-only/";
+
     private static final String INONLY_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/in-only";
 
     protected static final QName INONLY_INTERFACE = new QName(INONLY_NAMESPACE, "in-only");
@@ -60,20 +62,25 @@ public class RestApiTest extends AbstractRestTestEnvironment {
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/in-only/in-only.wsdl");
+                            .getResource(INONLY_SU_HOME + "in-only.wsdl");
                     assertNotNull("WSDL not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             INONLY_INTERFACE, INONLY_SERVICE, INONLY_ENDPOINT, wsdlUrl);
 
                     final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/in-only/startResponse.xsl");
+                            .getResource(INONLY_SU_HOME + "startResponse.xsl");
                     assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
                     serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/in-only/in-only.bpmn");
+                            .getResource(INONLY_SU_HOME + "in-only.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
+
+                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(INONLY_SU_HOME + "archivageService.wsdl");
+                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "in-only.bpmn");

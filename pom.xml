@@ -309,7 +309,6 @@
          <!-- flowable-cxf add support of WSDL-based services to the Flowable engine to call Petals services -->
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
-         <scope>runtime</scope>
       </dependency>
       <dependency>
          <!-- Dependency required by the Petals transporter -->
@@ -510,7 +509,6 @@
                   <configuration>
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
-                        <usedDependency>${flowable.groupId}:flowable-cxf</usedDependency>
                         <usedDependency>org.glassfish.jersey.media:jersey-media-json-jackson</usedDependency>
                      </usedDependencies>
                   </configuration>

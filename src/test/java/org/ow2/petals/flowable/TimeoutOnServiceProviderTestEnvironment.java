@@ -51,6 +51,8 @@ public abstract class TimeoutOnServiceProviderTestEnvironment extends AbstractTe
 
     protected static final String TIMEOUT_SU = "timeout-on-service";
 
+    protected static final String TIMEOUT_SU_HOME = "su/timeout/";
+
     private static final String TIMEOUT_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/timeout-on-service";
 
     protected static final QName TIMEOUT_INTERFACE = new QName(TIMEOUT_NAMESPACE, "timeout");
@@ -118,20 +120,25 @@ public abstract class TimeoutOnServiceProviderTestEnvironment extends AbstractTe
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/timeout/timeout.wsdl");
+                            .getResource(TIMEOUT_SU_HOME + "timeout.wsdl");
                     assertNotNull("WSDL not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             TIMEOUT_INTERFACE, TIMEOUT_SERVICE, TIMEOUT_ENDPOINT, wsdlUrl);
 
                     final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/timeout/startResponse.xsl");
+                            .getResource(TIMEOUT_SU_HOME + "startResponse.xsl");
                     assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
                     serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/timeout/timeout.bpmn");
+                            .getResource(TIMEOUT_SU_HOME + "timeout.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
+
+                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(TIMEOUT_SU_HOME + "archivageService.wsdl");
+                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "timeout.bpmn");

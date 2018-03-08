@@ -21,7 +21,6 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.transform.Source;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
@@ -401,7 +400,6 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      */
     @Test
-    @Ignore("to do")
     public void long_timeout_expiration_async() throws Exception {
 
         final StringBuilder processInstanceId = new StringBuilder();
@@ -424,20 +422,26 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
                 assertEquals(ARCHIVE_ENDPOINT, this.msgExchange.getEndpoint().getEndpointName());
                 assertEquals(ARCHIVER_LONG_ASYNC_OPERATION, this.msgExchange.getOperation());
                 assertEquals(ExchangeStatus.ACTIVE, this.msgExchange.getStatus());
-                assertEquals(MEPPatternConstants.IN_OUT,
-                        MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
+                assertEquals(MEPPatternConstants.IN_OUT, MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof ArchiverShortAsync);
+                assertTrue(requestObj instanceof ArchiverLongAsync);
 
-                Thread.currentThread().sleep(Constants.Component.DEFAULT_SEND_TIMEOUT + 5000);
+                // Wait a long timeout (between CXF default timeout and long time out configured at SU level)
+                Thread.sleep((ARCHIVE_LONG_TIMEOUT - 60000) / 2 + 60000);
 
                 // Returns the reply of the service provider to the Flowable service task
-                return new StatusToConsumerMessage(requestMsg, ExchangeStatus.DONE);
+                final ArchiverResponse response = new ArchiverResponse();
+                response.setItem(((ArchiverLongAsync) requestObj).getItem());
+                return new ResponseToConsumerMessage(requestMsg, toByteArray(response));
             }
 
             @Override
-            public boolean statusExpected() {
-                return false;
+            public void handleStatus(final StatusMessage statusDoneMsg) throws Exception {
+                // Assert the status DONE on the message exchange
+                assertNotNull(statusDoneMsg);
+                // It's the same message exchange instance
+                assertSame(this.msgExchange, statusDoneMsg.getMessageExchange());
+                assertEquals(ExchangeStatus.DONE, statusDoneMsg.getMessageExchange().getStatus());
             }
         }, new MessageChecks() {
 
@@ -455,8 +459,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
             }
         }, ExchangeStatus.DONE);
 
-        this.waitEndOfProcessInstance(processInstanceId.toString());
-
+        this.waitEndOfProcessInstance(processInstanceId.toString(), ARCHIVE_LONG_TIMEOUT_S);
     }
 
     /**

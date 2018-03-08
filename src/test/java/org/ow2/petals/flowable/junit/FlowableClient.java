@@ -25,6 +25,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.flowable.engine.HistoryService;
@@ -35,7 +36,9 @@ import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.impl.bpmn.parser.factory.XMLImporterFactory;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.repository.Deployment;
 import org.flowable.task.api.Task;
 import org.junit.Rule;
 import org.junit.rules.ExternalResource;
@@ -140,8 +143,7 @@ public class FlowableClient extends ExternalResource {
     public FlowableClient(final SeFlowableIdmServiceConfigurator idmEngineConfigurator,
             final String idmEngineConfiguratorCfg) {
         this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:flowable-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME,
-                DEFAULT_JDBC_PWD,
-                idmEngineConfigurator, idmEngineConfiguratorCfg);
+                DEFAULT_JDBC_PWD, idmEngineConfigurator, idmEngineConfiguratorCfg);
     }
 
     /**
@@ -162,8 +164,8 @@ public class FlowableClient extends ExternalResource {
      */
     public FlowableClient(final SeFlowableIdmServiceConfigurator idmEngineConfigurator,
             final File idmEngineConfiguratorCfg) {
-        this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:ativiti-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME, DEFAULT_JDBC_PWD,
-                idmEngineConfigurator, idmEngineConfiguratorCfg);
+        this(DEFAULT_JDBC_DRIVER, "jdbc:h2:mem:flowable-test;DB_CLOSE_DELAY=-1", DEFAULT_JDBC_USERNAME,
+                DEFAULT_JDBC_PWD, idmEngineConfigurator, idmEngineConfiguratorCfg);
     }
 
     /**
@@ -310,6 +312,9 @@ public class FlowableClient extends ExternalResource {
         pec.setJdbcUsername(this.jdbcUsername).setJdbcPassword(this.jdbcPwd);
         pec.setDatabaseSchemaUpdate("true");
 
+        pec.setAsyncExecutorActivate(false);
+        pec.setAsyncExecutor(null);
+
         assertTrue(pec instanceof ProcessEngineConfigurationImpl);
 
         if (this.idmEngineConfiguratorCfg != null) {
@@ -373,6 +378,11 @@ public class FlowableClient extends ExternalResource {
         return this.flowableClientEngine.getRepositoryService();
     }
 
+    public void setXMLImporterFactory(final XMLImporterFactory xmlImporterFactory) {
+        ((ProcessEngineConfigurationImpl) this.flowableClientEngine.getProcessEngineConfiguration())
+                .setWsdlImporterFactory(xmlImporterFactory);
+    }
+
     /**
      * Complete a user task
      * 
@@ -398,6 +408,22 @@ public class FlowableClient extends ExternalResource {
             this.getTaskService().complete(userTask.getId());
         } finally {
             this.getIdentityService().setAuthenticatedUserId(null);
+        }
+    }
+
+    /**
+     * Purge Flowable database removing:
+     * <ul>
+     * <li>process instances,</li>
+     * <li>history process instances,</li>
+     * <li>process definitions,</li>
+     * <li>deployments.</li>
+     * </ul>
+     */
+    public void purge() {
+        final List<Deployment> deployments = this.getRepositoryService().createDeploymentQuery().list();
+        for (final Deployment deployment : deployments) {
+            this.getRepositoryService().deleteDeployment(deployment.getId(), true);
         }
     }
 

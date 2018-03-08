@@ -808,6 +808,11 @@ public class FlowableSuManagerTest extends AbstractTest {
                 assertNotNull("BPMN file not found", bpmnUrl);
                 serviceConfiguration.addResource(bpmnUrl);
 
+                final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(VACATION_SU_HOME + "archivageService.wsdl");
+                assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                serviceConfiguration.addResource(archivageServiceWsdlUrl);
+
                 // First process definition
                 serviceConfiguration.setServicesSectionParameter(
                         new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"),

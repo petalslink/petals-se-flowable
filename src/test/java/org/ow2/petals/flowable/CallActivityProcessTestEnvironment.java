@@ -70,6 +70,8 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
 
     protected static final String CALL_ACTIVITY_SU = "call-activity-su";
 
+    protected static final String CALL_ACTIVITY_SU_HOME = "su/call-activity/";
+
     protected static final String CALL_ACTIVITY_PROVIDER_SU = "call-activity-provider-su";
 
     private static final String CALL_ACTIVITY_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/call-activity/level1";
@@ -128,9 +130,14 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                     final ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
 
                     final URL bpmnUrl_3 = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/Process-Level-3.bpmn");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "Process-Level-3.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl_3);
                     serviceConfiguration.addResource(bpmnUrl_3);
+
+                    final URL coreServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(CALL_ACTIVITY_SU_HOME + "coreService.wsdl");
+                    assertNotNull("coreService WSDL not found", coreServiceWsdlUrl);
+                    serviceConfiguration.addResource(coreServiceWsdlUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "Process-Level-3.bpmn");
@@ -149,35 +156,40 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/call-activity.wsdl");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "call-activity.wsdl");
                     assertNotNull("WSDl not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             CALL_ACTIVITY_INTERFACE, CALL_ACTIVITY_SERVICE, CALL_ACTIVITY_ENDPOINT, wsdlUrl);
 
                     final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/startResponse.xsl");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "startResponse.xsl");
                     assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
                     serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL unlockResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/unlockAckResponse.xsl");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "unlockAckResponse.xsl");
                     assertNotNull("Output XSL 'unlockAckResponse.xsl' not found", unlockResponseXslUrl);
                     serviceConfiguration.addResource(unlockResponseXslUrl);
 
                     final URL alreadyUnlockedXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/alreadyUnlocked.xsl");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "alreadyUnlocked.xsl");
                     assertNotNull("Output XSL 'alreadyUnlocked.xsl' not found", alreadyUnlockedXslUrl);
                     serviceConfiguration.addResource(alreadyUnlockedXslUrl);
 
                     final URL instanceUnknownXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/instanceUnknown.xsl");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "instanceUnknown.xsl");
                     assertNotNull("Output XSL 'instanceUnknown.xsl' not found", instanceUnknownXslUrl);
                     serviceConfiguration.addResource(instanceUnknownXslUrl);
 
                     final URL bpmnUrl_1 = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/Process-Level-1.bpmn");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "Process-Level-1.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl_1);
                     serviceConfiguration.addResource(bpmnUrl_1);
+
+                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(CALL_ACTIVITY_SU_HOME + "archivageService.wsdl");
+                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"), "Process-Level-1.bpmn");
@@ -185,7 +197,7 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                             .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version1"), "1");
 
                     final URL bpmnUrl_2 = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/Process-Level-2.bpmn");
+                            .getResource(CALL_ACTIVITY_SU_HOME + "Process-Level-2.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl_2);
                     serviceConfiguration.addResource(bpmnUrl_2);
 
@@ -193,11 +205,6 @@ public abstract class CallActivityProcessTestEnvironment extends AbstractTestEnv
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"), "Process-Level-2.bpmn");
                     serviceConfiguration
                             .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version2"), "1");
-
-                    final URL bpmnUrl_3 = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/call-activity/Process-Level-3.bpmn");
-                    assertNotNull("BPMN file not found", bpmnUrl_3);
-                    serviceConfiguration.addResource(bpmnUrl_3);
 
                     // Consume service 'archiver'
                     final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(

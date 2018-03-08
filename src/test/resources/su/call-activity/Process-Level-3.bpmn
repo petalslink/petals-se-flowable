@@ -33,7 +33,7 @@
    xmlns:process="http://petals.ow2.org/se-flowable/unit-test/call-activity/level3"
    xmlns:core-svc="http://petals.ow2.org/se-flowable/unit-test/call-activity/coreService">
 
-   <import location="classpath:su/call-activity/coreService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/call-activity/coreService"
+   <import location="coreService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/call-activity/coreService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
 
    <interface name="Core Service" implementationRef="core-svc:core">

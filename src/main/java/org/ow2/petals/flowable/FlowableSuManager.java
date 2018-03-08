@@ -20,6 +20,7 @@ package org.ow2.petals.flowable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.logging.Level;
 import javax.xml.namespace.QName;
 
 import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.Process;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.repository.DeploymentBuilder;
@@ -58,6 +60,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnota
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.flowable.utils.BpmnReader;
+import org.ow2.petals.flowable.utils.InternalBPMNDefinitionURIBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -137,7 +140,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                     suDH.getName()));
 
             // Deploy processes from the BPMN models into the BPMN engine
-            this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, null, suDH.getInstallRoot());
+            this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, null, suDH);
 
         } else if (provides.size() > 1) {
             // Check that there is only one Provides section in the SU
@@ -159,7 +162,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                     suDH.getEndpointDescription(theOnlyOneProvide), bpmnModels, tenantId);
 
             // Deploy processes from the BPMN models into the BPMN engine
-            this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, operations, suDH.getInstallRoot());
+            this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, operations, suDH);
 
             // Enable processing operations
             final String edptName = theOnlyOneProvide.getEndpointName();
@@ -282,16 +285,13 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      * Notes:
      * <ul>
      * <li>the operations defined into the WSDL are updated about the deployed process instance identifier,</li>
-     * <li>a process definition is deployed if it is not already deployed,</li>
+     * <li>a process definition is deployed if it is not already deployed with the same version,</li>
      * <li>process deployment is characterized in Flowable Database by processName / tenantId / categoryId / version,
      * </li>
      * <li>tenantId allows to have several instance of the same process model in different contexts: different owner,
      * assignee, group ....</li>
      * <li>categoryId allows to manage process lifeCycle: Dev, PreProd, Prod ...</li>
-     * <li>version allows to manage several versions,</li>
-     * <li>he first time a process with a particular key is deployed, version 1 is assigned. For all subsequent
-     * deployments of process definitions with the same key, the version will be set 1 higher then the maximum currently
-     * deployed version.</li>
+     * <li>version allows to manage several versions.</li>
      * </ul>
      * </p>
      * 
@@ -303,11 +303,13 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      *            The category identifier of the embedded process. Not {@code null}.
      * @param operations
      *            The list of operations described into the WSDL
+     * @param suDH
+     *            Current service unit data handler
      * @throws PEtALSCDKException
      */
     private void deployBpmnModels(final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels,
             final String tenantId, final String categoryId, final List<FlowableOperation> operations,
-            final String suRootPath) throws PEtALSCDKException {
+            final ServiceUnitDataHandler suDH) throws PEtALSCDKException {
 
         assert tenantId != null;
         assert categoryId != null;
@@ -315,31 +317,91 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
         final Iterator<EmbeddedProcessDefinition> iterator = embeddedBpmnModels.values().iterator();
         while (iterator.hasNext()) {
             final EmbeddedProcessDefinition process = iterator.next();
+            
+            // Check that the BPMN definition is not already deployed. If it exists do not deploy it again.
+            // This allow to deploy the same SU (process.bpmn20.xml):
+            // - on several petals-se-flowable for high availability, ie. to create several service endpoints for the
+            // same process/tenantId/categoryId/version on
+            // different Petals ESB container,
+            // - to redeploy the SU after few modifications not about the process definition (example: timeout for
+            // service consumer, ...),
+            // - or to restart the Petals container (SUs are redeployed on Petals container start-up)
+            
+            // NOTE: A BPMN definition can contain several BPMN processes. So, checking that a BPMN definition is
+            // not already deployed is:
+            // - try to retrieve process definitions associated to the BPMN definition for the given version
+            // - if not process definition is found, we can deploy the BPMN definition
+            // - we compare retrieved process definition with the ones included into the BPMN definition file
+            // - if they are the same, the BPMN definition is not deployed,
+            // - if they are not the same (new process definitions exist into the BPMN definition file or few was
+            // removed), a warning is logged about the BPMN definition is not the same for the same version. The BPMN
+            // definition is not deployed.
 
-            // Check that the process is not already deployed. If it exists do not deploy it again then returns its
-            // ProcessDefinition.
-            // This allow to deploy the same SU (process.bpmn20.xml) on several petals-se-flowable for high
-            // availability, ie. to create several service endpoints for the same process/tenantId/categoryId/version on
-            // different Petals ESB container.
             final RepositoryService repositoryService = getComponent().getProcessEngine().getRepositoryService();
-            final List<ProcessDefinition> processDefinitionSearchList = repositoryService.createProcessDefinitionQuery()
-                    .processDefinitionResourceName(process.getProcessFileName()).processDefinitionCategory(categoryId)
+            
+            final List<ProcessDefinition> existingProcDefs = repositoryService.createProcessDefinitionQuery()
+                    .processDefinitionResourceName(InternalBPMNDefinitionURIBuilder
+                            .buildURI(suDH.getName(), process.getProcessFileName()).toASCIIString())
+                    // TODO: We should filter by category, but Flowable seems to not manage correctly this attribute. To
+                    // investigate where is the problem.
+                    // .processDefinitionCategory(categoryId)
                     .processDefinitionTenantId(tenantId).processDefinitionVersion(process.getVersion()).list();
+            
+            final boolean mustDeployBpmnDef;
+            final List<Process> currentProcDefs = new ArrayList<>(process.getModel().getProcesses());
+            if (currentProcDefs.isEmpty()) {
+                this.logger.warning(String.format(
+                        "No process definition exists in the BPMN definition file '%s'. BPMN definition file not deployed !",
+                        process.getProcessFileName()));
+                mustDeployBpmnDef = false;
+            } else {
+                if (existingProcDefs.isEmpty()) {
+                    // No process definition found associated to the BPMN file, we can deploy it
+                    mustDeployBpmnDef = true;
+                } else {
+                    // Process definitions found associated to the BPMN file, we does not deploy it
+                    mustDeployBpmnDef = false;
+
+                    final Iterator<Process> itCurrentProcDefs = currentProcDefs.iterator();
+                    // We duplicate 'existingProcDefs' because it is reused later and here we need to remove elements
+                    final List<ProcessDefinition> tmpExistingProcDefs = new ArrayList<>(existingProcDefs);
+                    final Iterator<ProcessDefinition> itTmpExistingProcDefs = tmpExistingProcDefs.iterator();
+                    while (itCurrentProcDefs.hasNext()) {
+                        while (itTmpExistingProcDefs.hasNext())
+                            if (itTmpExistingProcDefs.next().getKey().equals(itCurrentProcDefs.next().getId())) {
+                                itCurrentProcDefs.remove();
+                                itTmpExistingProcDefs.remove();
+                            }
+                    }
+                    if (currentProcDefs.isEmpty() && tmpExistingProcDefs.isEmpty()) {
+                        // BPMN definition already deployed contains the same process definitions than the one to deploy
+                        this.logger.info(String.format(
+                                "The BPMN definition file '%s' is already deployed for the version %d. BPMN definition file not deployed again !",
+                                process.getProcessFileName(), process.getVersion()));
+                    } else {
+                        this.logger.warning(String.format(
+                                "The BPMN definition file '%s' is already deployed for the version %d and it contains different process definitions than the one already deployed. BPMN definition file not deployed again !",
+                                process.getProcessFileName(), process.getVersion()));
+                    }
+                }
+
+            }
 
             final List<ProcessDefinition> processDefinitions;
-            if (processDefinitionSearchList == null || processDefinitionSearchList.isEmpty()) {
+            if (mustDeployBpmnDef) {
                 final DeploymentBuilder db = repositoryService.createDeployment();
 
                 // Characterize the deployment with processFileName / tenantId / categoryId
                 db.name("Process read from: " + process.getProcessFileName());
                 db.tenantId(tenantId);
                 db.category(categoryId);
-                // db.addBpmnModel(process.getProcessFileName(), process.getModel());
-                // TODO: To remove: deployment using file and parameter 'suRootPath'
-                final File processFile = new File(suRootPath, process.getProcessFileName());
+                // We localize the BPMN definition file using an URI of a internal format
+                final URI bpmnDefinitionInternalURI = InternalBPMNDefinitionURIBuilder.buildURI(suDH.getName(),
+                        process.getProcessFileName());
                 try {
-                    final FileInputStream bpmnInputFile = new FileInputStream(processFile);
-                    db.addInputStream(processFile.getAbsoluteFile().toURI().toString(), bpmnInputFile);
+                    final FileInputStream bpmnInputFile = new FileInputStream(
+                            new File(suDH.getInstallRoot(), process.getProcessFileName()));
+                    db.addInputStream(bpmnDefinitionInternalURI.toASCIIString(), bpmnInputFile);
                 } catch (final FileNotFoundException e) {
                     throw new PEtALSCDKException(e);
                 }
@@ -352,36 +414,28 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                 // TODO Manage the process suspension State be careful of multi SU deployement for the same
                 // process
 
-                // Do not use db.enableDuplicateFiltering(); with management of tenantId and CategoryId
+                // Do not use db.enableDuplicateFiltering() with management of tenantId and CategoryId
                 final Deployment deployment = db.deploy();
                 processDefinitions = repositoryService.createProcessDefinitionQuery().deploymentId(deployment.getId())
                         .list();
 
                 if (this.logger.isLoggable(Level.INFO)) {
-                    this.logger.info("The BPMN process " + process.getProcessFileName() + " version: "
-                            + process.getVersion() + " is succesfully deployed.");
+                    this.logger.info(String.format("The BPMN process '%s' version %d is succesfully deployed:",
+                            process.getProcessFileName(), process.getVersion()));
                 }
 
             } else {
+                processDefinitions = existingProcDefs;
+
                 if (this.logger.isLoggable(Level.INFO)) {
-                    this.logger.info("The BPMN process: " + process.getProcessFileName() + " version: "
-                            + process.getVersion() + " is already deployed");
+                    this.logger.info(String.format("The BPMN process '%s' version %d is already deployed:",
+                            process.getProcessFileName(), process.getVersion()));
                 }
-                // Set processDefinition
-                processDefinitions = processDefinitionSearchList;
             }
 
-            if (this.logger.isLoggable(Level.FINE)) {
-                this.logger.fine("Process definitions deployed:");
+            if (this.logger.isLoggable(Level.INFO)) {
                 for (final ProcessDefinition processDefinition : processDefinitions) {
-                    this.logger.fine("\t- Id            = " + processDefinition.getId());
-                    this.logger.fine("\t\t- Category      = " + processDefinition.getCategory());
-                    this.logger.fine("\t\t- Name          = " + processDefinition.getName());
-                    this.logger.fine("\t\t- Key           = " + processDefinition.getKey());
-                    this.logger.fine("\t\t- Version       = " + processDefinition.getVersion());
-                    this.logger.fine("\t\t- Deployemnt Id = " + processDefinition.getDeploymentId());
-                    this.logger.fine("\t\t- ResourceName  = " + processDefinition.getResourceName());
-                    this.logger.fine("\t\t- TenantId      = " + processDefinition.getTenantId());
+                    this.logProcessDefinition(processDefinition);
                 }
             }
 
@@ -396,6 +450,17 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                 }
             }
         }
+    }
+
+    private void logProcessDefinition(final ProcessDefinition processDefinition) {
+        this.logger.fine("\t- Id            = " + processDefinition.getId());
+        this.logger.fine("\t\t- Category      = " + processDefinition.getCategory());
+        this.logger.fine("\t\t- Name          = " + processDefinition.getName());
+        this.logger.fine("\t\t- Key           = " + processDefinition.getKey());
+        this.logger.fine("\t\t- Version       = " + processDefinition.getVersion());
+        this.logger.fine("\t\t- Deployemnt Id = " + processDefinition.getDeploymentId());
+        this.logger.fine("\t\t- ResourceName  = " + processDefinition.getResourceName());
+        this.logger.fine("\t\t- TenantId      = " + processDefinition.getTenantId());
     }
 
     /**

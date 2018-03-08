@@ -88,6 +88,7 @@ import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.common.api.FlowableException;
+import org.flowable.engine.impl.bpmn.parser.factory.XMLImporterFactory;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.parse.BpmnParseHandler;
 import org.flowable.job.service.impl.asyncexecutor.AsyncExecutor;
@@ -122,6 +123,7 @@ import org.ow2.petals.flowable.incoming.integration.SuspendProcessInstancesOpera
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.flowable.monitoring.Monitoring;
 import org.ow2.petals.flowable.outgoing.PetalsSender;
+import org.ow2.petals.flowable.outgoing.WSDLImporterForFlowableFactory;
 import org.ow2.petals.flowable.outgoing.cxf.transport.PetalsCxfTransportFactory;
 import org.ow2.petals.flowable.rest.FlowableProcessApiConfiguration;
 import org.ow2.petals.flowable.rest.config.SecurityConfiguration;
@@ -316,23 +318,41 @@ public class FlowableSE extends AbstractServiceEngine {
             // Add post BPMN parse handlers
             this.addPostBpmnParseHandlers(pec);
 
+            // Async executor configuration
+            this.configureAsyncExecutor(pec);
+
+            final ProcessEngineConfigurationImpl pecImpl;
+            if (pec instanceof ProcessEngineConfigurationImpl) {
+                pecImpl = (ProcessEngineConfigurationImpl) pec;
+
+                // We register our WSDL importer to be able to resolve import against a source system id based on our
+                // internal URI
+                final XMLImporterFactory wsdlImporterForFlowableFactory = new WSDLImporterForFlowableFactory(
+                        this.getServiceUnitManager());
+                pecImpl.setWsdlImporterFactory(wsdlImporterForFlowableFactory);
+            } else {
+                pecImpl = null;
+                this.getLogger().warning(
+                        "The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
+            }
+
+            // Create the Flowable engine
             this.flowableEngine = pec.buildProcessEngine();
-            pec.setAsyncExecutorActivate(this.enableFlowableJobExecutor);
+
+            // Configure async executor
             if (this.enableFlowableJobExecutor) {
                 this.flowableAsyncExecutor = pec.getAsyncExecutor();
-                this.configureAsyncExecutor();
             } else {
                 this.flowableAsyncExecutor = null;
             }
 
             // Caution: Configuration beans are initialized when building the process engine
-            if (pec instanceof ProcessEngineConfigurationImpl) {
+            if (pecImpl != null) {
                 // We add to the BPMN engine the bean in charge of sending Petals message exchange
                 final AbstractListener petalsSender = new PetalsSender(this);
-                ((ProcessEngineConfigurationImpl) pec).getBeans().put(PETALS_SENDER_COMP_NAME, petalsSender);
+                pecImpl.getBeans().put(PETALS_SENDER_COMP_NAME, petalsSender);
             } else {
-                this.getLogger().warning(
-                        "The implementation of the process engine configuration is not the expected one ! No Petals services can be invoked !");
+                this.getLogger().warning("Capability to invoke Petals services not activated !");
             }
 
             // Configure a part of the monitoring MBean. Another part is configured on component startup.
@@ -401,7 +421,6 @@ public class FlowableSE extends AbstractServiceEngine {
                 this.getComponentExtensions().get(IDM_ENGINE_CONFIGURATOR_CFG_FILE), this.getLogger());
 
         this.getLogger().config("Flowable IDM engine configuration:");
-        this.getLogger().config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableFlowableJobExecutor);
         this.getLogger()
                 .config("   - " + IDM_ENGINE_CONFIGURATOR_CLASS_NAME + " = " + idmEngineConfiguratorClass.getName());
         this.getLogger().config("   - " + IDM_ENGINE_CONFIGURATOR_CFG_FILE + " = "
@@ -627,7 +646,8 @@ public class FlowableSE extends AbstractServiceEngine {
                             this.flowableServices.put(
                                     new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
                                             ITG_OP_SEARCHUSERS),
-                                    new SearchUsersOperation(this.flowableEngine.getIdentityService(), this.getLogger()));
+                                    new SearchUsersOperation(this.flowableEngine.getIdentityService(),
+                                            this.getLogger()));
                         } else if (ITG_GROUP_PORT_TYPE_NAME.equals(integrationInterfaceName.getLocalPart())) {
                             this.flowableServices.put(
                                     new ServiceEndpointOperationKey(integrationServiceName, integrationEndpointName,
@@ -776,9 +796,9 @@ public class FlowableSE extends AbstractServiceEngine {
                         this.getLogger().warning("Flowable Job Executor already started !!");
                     } else {
                         this.flowableAsyncExecutor.start();
-                        this.configureMonitoringMBeanWithAsyncExecutorThreadPool();
-                        this.configureMonitoringMBeanWithDatabaseConnectionPool();
                     }
+                    this.configureMonitoringMBeanWithAsyncExecutorThreadPool();
+                    this.configureMonitoringMBeanWithDatabaseConnectionPool();
                 } else {
                     this.getLogger().warning("No Flowable Job Executor exists !!");
                 }
@@ -799,56 +819,60 @@ public class FlowableSE extends AbstractServiceEngine {
     /**
      * Configure the asynchronous executor
      */
-    private void configureAsyncExecutor() {
-        if (this.flowableAsyncExecutor != null) {
-            if (this.flowableAsyncExecutor instanceof DefaultAsyncJobExecutor) {
+    private void configureAsyncExecutor(final ProcessEngineConfiguration pec) {
 
-                final int corePoolSize = this.getAsyncJobExecutorCorePoolSize();
-                final int maxPoolSize = this.getAsyncJobExecutorMaxPoolSize();
-                final long keepAliveTime = this.getAsyncJobExecutorKeepAliveTime();
-                final int queueSize = this.getAsyncJobExecutorQueueSize();
-                final int maxTimerJobsPerAcquisition = this.getAsyncJobExecutorMaxTimerJobsPerAcquisition();
-                final int maxAsyncJobsDuePerAcquisition = this.getAsyncJobExecutorMaxAsyncJobsDuePerAcquisition();
-                final int asyncJobAcquireWaitTime = this.getAsyncJobExecutorAsyncJobAcquireWaitTime();
-                final int timerJobAcquireWaitTime = this.getAsyncJobExecutorTimerJobAcquireWaitTime();
-                final int timerLockTime = this.getAsyncJobExecutorTimerLockTime();
-                final int asyncJobLockTime = this.getAsyncJobExecutorAsyncJobLockTime();
+        final Logger logger = this.getLogger();
+        logger.config("Asynchronous job executor configuration:");
+        logger.config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableFlowableJobExecutor);
+        if (this.enableFlowableJobExecutor) {
 
-                final Logger logger = this.getLogger();
-                logger.config("Asynchronous job executor configuration:");
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE + " = " + corePoolSize);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE + " = " + maxPoolSize);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME + " = " + keepAliveTime);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE + " = " + queueSize);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION + " = "
-                        + maxTimerJobsPerAcquisition);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION + " = "
-                        + maxAsyncJobsDuePerAcquisition);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME + " = "
-                        + asyncJobAcquireWaitTime);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME + " = "
-                        + timerJobAcquireWaitTime);
-                logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME + " = " + timerLockTime);
-                logger.config(
-                        "   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME + " = " + asyncJobLockTime);
+            final int corePoolSize = this.getAsyncJobExecutorCorePoolSize();
+            final int maxPoolSize = this.getAsyncJobExecutorMaxPoolSize();
+            final long keepAliveTime = this.getAsyncJobExecutorKeepAliveTime();
+            final int queueSize = this.getAsyncJobExecutorQueueSize();
+            final int maxTimerJobsPerAcquisition = this.getAsyncJobExecutorMaxTimerJobsPerAcquisition();
+            final int maxAsyncJobsDuePerAcquisition = this.getAsyncJobExecutorMaxAsyncJobsDuePerAcquisition();
+            final int asyncJobAcquireWaitTime = this.getAsyncJobExecutorAsyncJobAcquireWaitTime();
+            final int timerJobAcquireWaitTime = this.getAsyncJobExecutorTimerJobAcquireWaitTime();
+            final int timerLockTime = this.getAsyncJobExecutorTimerLockTime();
+            final int asyncJobLockTime = this.getAsyncJobExecutorAsyncJobLockTime();
 
-                final DefaultAsyncJobExecutor defaultAsyncJobExecutor = (DefaultAsyncJobExecutor) this.flowableAsyncExecutor;
-                defaultAsyncJobExecutor.setCorePoolSize(corePoolSize);
-                defaultAsyncJobExecutor.setMaxPoolSize(maxPoolSize);
-                defaultAsyncJobExecutor.setKeepAliveTime(keepAliveTime);
-                defaultAsyncJobExecutor.setQueueSize(queueSize);
-                defaultAsyncJobExecutor.setMaxTimerJobsPerAcquisition(maxTimerJobsPerAcquisition);
-                defaultAsyncJobExecutor.setMaxAsyncJobsDuePerAcquisition(maxAsyncJobsDuePerAcquisition);
-                defaultAsyncJobExecutor.setDefaultAsyncJobAcquireWaitTimeInMillis(asyncJobAcquireWaitTime);
-                defaultAsyncJobExecutor.setDefaultTimerJobAcquireWaitTimeInMillis(timerJobAcquireWaitTime);
-                defaultAsyncJobExecutor.setTimerLockTimeInMillis(timerLockTime);
-                defaultAsyncJobExecutor.setAsyncJobLockTimeInMillis(asyncJobLockTime);
-            } else {
-                this.getLogger().warning(
-                        "The implementation of the asynchronous job executor is not the expected one, so no configuration is needed !");
-            }
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE + " = " + corePoolSize);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE + " = " + maxPoolSize);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME + " = " + keepAliveTime);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE + " = " + queueSize);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION + " = "
+                    + maxTimerJobsPerAcquisition);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION + " = "
+                    + maxAsyncJobsDuePerAcquisition);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME + " = "
+                    + asyncJobAcquireWaitTime);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME + " = "
+                    + timerJobAcquireWaitTime);
+            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME + " = " + timerLockTime);
+            logger.config(
+                    "   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME + " = " + asyncJobLockTime);
+
+            final DefaultAsyncJobExecutor defaultAsyncJobExecutor = new DefaultAsyncJobExecutor();
+            defaultAsyncJobExecutor.setCorePoolSize(corePoolSize);
+            defaultAsyncJobExecutor.setMaxPoolSize(maxPoolSize);
+            defaultAsyncJobExecutor.setKeepAliveTime(keepAliveTime);
+            defaultAsyncJobExecutor.setQueueSize(queueSize);
+            defaultAsyncJobExecutor.setMaxTimerJobsPerAcquisition(maxTimerJobsPerAcquisition);
+            defaultAsyncJobExecutor.setMaxAsyncJobsDuePerAcquisition(maxAsyncJobsDuePerAcquisition);
+            defaultAsyncJobExecutor.setDefaultAsyncJobAcquireWaitTimeInMillis(asyncJobAcquireWaitTime);
+            defaultAsyncJobExecutor.setDefaultTimerJobAcquireWaitTimeInMillis(timerJobAcquireWaitTime);
+            defaultAsyncJobExecutor.setTimerLockTimeInMillis(timerLockTime);
+            defaultAsyncJobExecutor.setAsyncJobLockTimeInMillis(asyncJobLockTime);
+
+            // Startup and shutdown of the async executor is controlled through startup and stop of the SE Flowable
+            pec.setAsyncExecutorActivate(false);
+
+            pec.setAsyncExecutor(defaultAsyncJobExecutor);
+
         } else {
-            this.getLogger().warning("No asynchronous job executor available, so no configuration is needed !");
+            pec.setAsyncExecutorActivate(false);
+            pec.setAsyncExecutor(null);
         }
     }
 
@@ -1111,7 +1135,7 @@ public class FlowableSE extends AbstractServiceEngine {
     }
 
     private int getRestApiPort() {
-        return this.getParameterAsInteger(FlowableSEConstants.ENGINE_REST_API_PORT, 
+        return this.getParameterAsInteger(FlowableSEConstants.ENGINE_REST_API_PORT,
                 FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT);
     }
 

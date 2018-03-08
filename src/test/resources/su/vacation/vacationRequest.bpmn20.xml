@@ -30,8 +30,7 @@
   <!-- ==========================================
            Declaration of the Petals services
        ========================================== -->
-  <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
-  <import location="classpath:su/vacation/archivageService.wsdl"
+  <import location="archivageService.wsdl"
           namespace="http://petals.ow2.org/se-flowable/unit-test/vacation/archivageService"
           importType="http://schemas.xmlsoap.org/wsdl/" />
           

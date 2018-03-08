@@ -33,8 +33,7 @@
    xmlns:process="http://petals.ow2.org/se-flowable/unit-test/robust-in-only"
    targetNamespace="http://petals.ow2.org/se-flowable/unit-test/robust-in-only">
 
-   <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
-   <import location="classpath:su/robust-in-only/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/robust-in-only/archivageService"
+   <import location="archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/robust-in-only/archivageService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
 
    <interface name="Archive Service" implementationRef="archivage:archiver">

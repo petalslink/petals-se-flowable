@@ -51,6 +51,8 @@ public abstract class ProcessWithRobustInOnlyConsumerTestEnvironment extends Abs
 
     protected static final String ROBUSTINONLY_SU = "robust-in-only";
 
+    protected static final String ROBUSTINONLY_SU_HOME = "su/robust-in-only/";
+
     private static final String ROBUSTINONLY_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/robust-in-only";
 
     protected static final QName ROBUSTINONLY_INTERFACE = new QName(ROBUSTINONLY_NAMESPACE, "robust-in-only");
@@ -93,20 +95,25 @@ public abstract class ProcessWithRobustInOnlyConsumerTestEnvironment extends Abs
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/robust-in-only/robust-in-only.wsdl");
+                            .getResource(ROBUSTINONLY_SU_HOME + "robust-in-only.wsdl");
                     assertNotNull("WSDL not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             ROBUSTINONLY_INTERFACE, ROBUSTINONLY_SERVICE, ROBUSTINONLY_ENDPOINT, wsdlUrl);
 
                     final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/robust-in-only/startResponse.xsl");
+                            .getResource(ROBUSTINONLY_SU_HOME + "startResponse.xsl");
                     assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
                     serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/robust-in-only/robust-in-only.bpmn");
+                            .getResource(ROBUSTINONLY_SU_HOME + "robust-in-only.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
+
+                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(ROBUSTINONLY_SU_HOME + "archivageService.wsdl");
+                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "robust-in-only.bpmn");

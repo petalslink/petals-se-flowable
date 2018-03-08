@@ -33,8 +33,7 @@
    xmlns:process="http://petals.ow2.org/se-flowable/unit-test/placeholders"
    targetNamespace="http://petals.ow2.org/se-flowable/unit-test/placeholders">
 
-   <!-- TODO: Relative imports are not supported by Activiti: ACT-2173 -->
-   <import location="classpath:su/placeholders/archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/placeholders/archivageService"
+   <import location="archivageService.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/placeholders/archivageService"
       importType="http://schemas.xmlsoap.org/wsdl/" />
 
    <interface name="Archive Service" implementationRef="archivage:archiver">

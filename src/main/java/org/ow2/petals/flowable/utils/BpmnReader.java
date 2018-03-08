@@ -198,11 +198,12 @@ public class BpmnReader {
 
     /**
      * <p>
-     * Read an embedded BPMN model of the SU from its raw information.
+     * Read an embedded BPMN model file of the SU from its raw information.
      * </p>
      * 
      * @param processFileName
-     *            The file name of the process, as raw data read from the SU JBI descriptor. Not <code>null</code>.
+     *            The file name of the process definition, as raw data read from the SU JBI descriptor. Not
+     *            <code>null</code>.
      * @param versionStr
      *            The version of the process, as raw data read from the SU JBI descriptor. Not <code>null</code>.
      * @throws ProcessDefinitionDeclarationException

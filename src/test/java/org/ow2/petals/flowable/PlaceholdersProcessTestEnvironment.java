@@ -56,6 +56,8 @@ public abstract class PlaceholdersProcessTestEnvironment extends AbstractTestEnv
 
     protected static final String PLACEHOLDERS_SU = "placeholders";
 
+    protected static final String PLACEHOLDERS_SU_HOME = "su/placeholders/";
+
     private static final String PLACEHOLDERS_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/placeholders";
 
     protected static final QName PLACEHOLDERS_INTERFACE = new QName(PLACEHOLDERS_NAMESPACE, "placeholders");
@@ -116,35 +118,40 @@ public abstract class PlaceholdersProcessTestEnvironment extends AbstractTestEnv
                 public ServiceConfiguration create() {
 
                     final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/placeholders/placeholders.wsdl");
+                            .getResource(PLACEHOLDERS_SU_HOME + "placeholders.wsdl");
                     assertNotNull("WSDL not found", wsdlUrl);
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             PLACEHOLDERS_INTERFACE, PLACEHOLDERS_SERVICE, PLACEHOLDERS_ENDPOINT, wsdlUrl);
 
                     final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/placeholders/startResponse.xsl");
+                            .getResource(PLACEHOLDERS_SU_HOME + "startResponse.xsl");
                     assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
                     serviceConfiguration.addResource(startResponseXslUrl);
 
                     final URL unlockResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/placeholders/unlockAckResponse.xsl");
+                            .getResource(PLACEHOLDERS_SU_HOME + "unlockAckResponse.xsl");
                     assertNotNull("Output XSL 'unlockAckResponse.xsl' not found", unlockResponseXslUrl);
                     serviceConfiguration.addResource(unlockResponseXslUrl);
 
                     final URL alreadyUnlockedXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/placeholders/alreadyUnlocked.xsl");
+                            .getResource(PLACEHOLDERS_SU_HOME + "alreadyUnlocked.xsl");
                     assertNotNull("Output XSL 'alreadyUnlocked.xsl' not found", alreadyUnlockedXslUrl);
                     serviceConfiguration.addResource(alreadyUnlockedXslUrl);
 
                     final URL instanceUnknownXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/placeholders/instanceUnknown.xsl");
+                            .getResource(PLACEHOLDERS_SU_HOME + "instanceUnknown.xsl");
                     assertNotNull("Output XSL 'instanceUnknown.xsl' not found", instanceUnknownXslUrl);
                     serviceConfiguration.addResource(instanceUnknownXslUrl);
 
                     final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("su/placeholders/placeholders.bpmn");
+                            .getResource(PLACEHOLDERS_SU_HOME + "placeholders.bpmn");
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
+
+                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource(PLACEHOLDERS_SU_HOME + "archivageService.wsdl");
+                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "placeholders.bpmn");

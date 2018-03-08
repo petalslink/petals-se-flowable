@@ -1105,7 +1105,10 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             assertEquals(jdbcMaxCheckoutTime, pec.getJdbcMaxCheckoutTime());
             assertEquals(jdbcMaxWaitTime, pec.getJdbcMaxWaitTime());
 
-            assertEquals(jobExecutorEnableJobExecutor, pec.isAsyncExecutorActivate());
+            // Job executor is enable when a async executor exists at Flowable level. We use operator '!=' instead of
+            // '^' that is more human-readable and equivalent
+            // (https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.22.2)
+            assertTrue(jobExecutorEnableJobExecutor != (pec.getAsyncExecutor() == null));
 
             assertEquals(jobExecutorCorePoolSize, defaultAsyncExecutor.getCorePoolSize());
             assertEquals(jobExecutorMaxPoolSize, defaultAsyncExecutor.getMaxPoolSize());
