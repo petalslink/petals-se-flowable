@@ -223,25 +223,15 @@
                                              jmx.pwd="${container-1.password}" />
 
       <!-- We purge all process instancess ended, using the 2nd SE Flowable -->
-      <tempfile property="flowInsts-outputFile-global" prefix="se-flowable" suffix=".out" />
-      <loadfile property="process-instance-ids" srcfile="${procInstEnded-outputFile}" />
-      <for param="process-instance-id" list="${process-instance-ids}" delimiter="${line.separator}">
-         <sequential>
-            <echo message="Purging process instance #@{process-instance-id}..." />
-            <tempfile property="flowInsts-outputFile-@{process-instance-id}" prefix="se-flowable" suffix=".out" />
-            <se-flowable.purgeProcessInstance process-instance-id="@{process-instance-id}"
-                                              output-file="${flowInsts-outputFile-@{process-instance-id}}"
-                                              jmx.port="${container-2.port}"
-                                              jmx.host="${container-2.ip}"
-                                              jmx.user="${container-2.username}"
-                                              jmx.pwd="${container-2.password}" />
-            <concat destfile="${flowInsts-outputFile-global}" append="true">
-               <filelist files="${flowInsts-outputFile-@{process-instance-id}}" />
-            </concat>
-         </sequential>
-      </for>
+      <tempfile property="flowInsts-outputFile" prefix="se-flowable" suffix=".out" />
+      <se-flowable.purgeProcessInstance process-instance-ids-file="${procInstEnded-outputFile}"
+                                        output-file="${flowInsts-outputFile}"
+                                        jmx.port="${container-2.port}"
+                                        jmx.host="${container-2.ip}"
+                                        jmx.user="${container-2.username}"
+                                        jmx.pwd="${container-2.password}" />
       <echo message="Process instances purged. Associated flow instance ids:" />
-      <loadfile property="flowInsts" srcFile="${flowInsts-outputFile-global}" />
+      <loadfile property="flowInsts" srcFile="${flowInsts-outputFile}" />
       <echo message="${flowInsts}" />
 
       <!-- No process instances ended should exist after purge, using the 2nd SE Flowable -->
@@ -264,7 +254,7 @@
       </if>
 
       <!-- Purge MONIT traces associated to purged process instances -->
-      <loadfile property="flow-instance-ids" srcfile="${flowInsts-outputFile-global}" />
+      <loadfile property="flow-instance-ids" srcfile="${flowInsts-outputFile}" />
       <for param="flow-instance-id" list="${flow-instance-ids}" delimiter="${line.separator}">
          <sequential>
             <echo message="Removing flow instance #@{flow-instance-id} on all containers..." />
