@@ -25,17 +25,28 @@
    <import>
       <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven.plugin.classpath}" />
    </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-se-flowable-cli.xml"
+                    classpath="${maven.plugin.classpath}" />
+   </import>
+
+   <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
+   <property name="petals.cli.home"
+             value="${project.build.directory}/${project.artifactId}/petals-cli/${petalsCliDirName}" />
 
    <basename property="petalsRegistryDirName" file="${org.ow2.petals:petals-registry-overlay-zip:zip}" suffix=".zip" />
    <property name="registry.home"
              value="${project.build.directory}/${project.artifactId}/registry/${petalsRegistryDirName}" />
-   <property name="petals.home.0" value="${project.build.directory}/${project.artifactId}/container-0" />
-   <property name="petals.home.1" value="${project.build.directory}/${project.artifactId}/container-1" />
-   <property name="petals.home.2" value="${project.build.directory}/${project.artifactId}/container-2" />
-   <property name="bc-soap.properties" value="${petals.home.0}/conf/bc-soap.properties" />
    <property name="topology.container.name.0" value="container-0" />
    <property name="topology.container.name.1" value="container-1" />
    <property name="topology.container.name.2" value="container-2" />
+   <property name="petals.home.0"
+             value="${project.build.directory}/${project.artifactId}/${topology.container.name.0}" />
+   <property name="petals.home.1"
+             value="${project.build.directory}/${project.artifactId}/${topology.container.name.1}" />
+   <property name="petals.home.2"
+             value="${project.build.directory}/${project.artifactId}/${topology.container.name.2}" />
+   <property name="bc-soap.properties" value="${petals.home.0}/conf/bc-soap.properties" />
 
    <!-- Properties -->
    <property name="container-0.port" value="7700" />
@@ -189,7 +200,6 @@
                                   password="${container-2.password}" />
    </target>
 
-
    <!-- Target : Run -->
    <target name="run">
       <echo message="Launching Flowable component tests..." />
@@ -199,8 +209,91 @@
       <petals-soapui-load-test testCase="Nominal TestCase without adjustment"
                                loadTest="Loop on concurrent WS clients" />
 
-   </target>
+      <!-- We start another process instance that will not be completed. It should not be purged. -->
+      <petals-soapui-test testCase="Partial Nominal TestCase (only creation)" />
 
+      <!-- List all process instances ended to purge them, using the 1st SE Flowable -->
+      <tempfile property="procInstEnded-outputFile" prefix="se-flowable" suffix=".out" />
+      <se-flowable.listProcessInstancesEnded process-definition-key="vacationRequest"
+                                             process-definition-version="1"
+                                             output-file="${procInstEnded-outputFile}"
+                                             jmx.port="${container-1.port}"
+                                             jmx.host="${container-1.ip}"
+                                             jmx.user="${container-1.username}"
+                                             jmx.pwd="${container-1.password}" />
+
+      <!-- We purge all process instancess ended, using the 2nd SE Flowable -->
+      <tempfile property="flowInsts-outputFile-global" prefix="se-flowable" suffix=".out" />
+      <loadfile property="process-instance-ids" srcfile="${procInstEnded-outputFile}" />
+      <for param="process-instance-id" list="${process-instance-ids}" delimiter="${line.separator}">
+         <sequential>
+            <echo message="Purging process instance #@{process-instance-id}..." />
+            <tempfile property="flowInsts-outputFile-@{process-instance-id}" prefix="se-flowable" suffix=".out" />
+            <se-flowable.purgeProcessInstance process-instance-id="@{process-instance-id}"
+                                              output-file="${flowInsts-outputFile-@{process-instance-id}}"
+                                              jmx.port="${container-2.port}"
+                                              jmx.host="${container-2.ip}"
+                                              jmx.user="${container-2.username}"
+                                              jmx.pwd="${container-2.password}" />
+            <concat destfile="${flowInsts-outputFile-global}" append="true">
+               <filelist files="${flowInsts-outputFile-@{process-instance-id}}" />
+            </concat>
+         </sequential>
+      </for>
+      <echo message="Process instances purged. Associated flow instance ids:" />
+      <loadfile property="flowInsts" srcFile="${flowInsts-outputFile-global}" />
+      <echo message="${flowInsts}" />
+
+      <!-- No process instances ended should exist after purge, using the 2nd SE Flowable -->
+      <tempfile property="noMoreProcInstEnded-outputFile" prefix="se-flowable" suffix=".out" />
+      <se-flowable.listProcessInstancesEnded process-definition-key="vacationRequest"
+                                             process-definition-version="1"
+                                             output-file="${noMoreProcInstEnded-outputFile}"
+                                             jmx.port="${container-2.port}"
+                                             jmx.host="${container-2.ip}"
+                                             jmx.user="${container-2.username}"
+                                             jmx.pwd="${container-2.password}" />
+      <if>
+         <not>
+            <length file="${noMoreProcInstEnded-outputFile}" when="equal" length="0" />
+         </not>
+         <then>
+            <loadfile property="remainingProcInsts" srcFile="${noMoreProcInstEnded-outputFile}" />
+            <fail message="Process instances ended no completely purged. Remaining process instances:${line.separator}${remainingProcInsts}" />
+         </then>
+      </if>
+
+      <!-- Purge MONIT traces associated to purged process instances -->
+      <loadfile property="flow-instance-ids" srcfile="${flowInsts-outputFile-global}" />
+      <for param="flow-instance-id" list="${flow-instance-ids}" delimiter="${line.separator}">
+         <sequential>
+            <echo message="Removing flow instance #@{flow-instance-id} on all containers..." />
+            <for list="0,1,2" param="container.counter" parallel="true">
+               <sequential>
+                  <delete dir="${petals.home.@{container.counter}}/logs/flow-monitoring/@{flow-instance-id}" />
+               </sequential>
+            </for>
+         </sequential>
+      </for>
+
+      <!-- Check that no more MONIT traces linked to purged process instances exist, they should be all deleted. -->
+      <for list="0,1,2" param="container.counter">
+         <sequential>
+            <fileset id="remaining-flow-instances"
+                     dir="${project.build.directory}/${project.artifactId}/${topology.container.name.@{container.counter}}/logs/flow-monitoring">
+               <include name="**/petals.log" />
+               <contains text="flowStepInterfaceName = '{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacation'" />
+            </fileset>
+            <fail message="At least one flow instance linked to purge process instance always exists on container ${topology.container.name.@{container.counter}}">
+               <condition>
+                  <!-- only one process instance is pending -->
+                  <resourcecount when="greater" count="1" refid="remaining-flow-instances" />
+               </condition>
+            </fail>
+         </sequential>
+      </for>
+
+   </target>
 
    <!-- Target : Clean all -->
    <target name="cleanAll">

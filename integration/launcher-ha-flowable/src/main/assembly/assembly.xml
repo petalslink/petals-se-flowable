@@ -74,6 +74,15 @@
          </includes>
          <unpack>true</unpack>
       </dependencySet>
+      
+      <!-- Petals CLI -->
+      <dependencySet>
+         <outputDirectory>/petals-cli</outputDirectory>
+         <includes>
+           <include>org.ow2.petals:petals-cli-distrib-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
    </dependencySets>
 
    <fileSets>
