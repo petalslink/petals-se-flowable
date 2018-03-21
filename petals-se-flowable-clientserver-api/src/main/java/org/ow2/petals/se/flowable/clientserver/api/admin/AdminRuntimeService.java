@@ -53,12 +53,12 @@ public interface AdminRuntimeService {
             final int processDefinitionVersion) throws PetalsException;
 
     /**
-     * Purge a list of process instances deleting all data from each process instances.
+     * Purge a process instance deleting all its data.
      * 
      * @param procInstId
      *            Identifier of the process instance to purge. Not {@code null} and not empty.
-     * @param returns
-     *            correlated flow instances
+     * @param returnsCorrelatedFlows
+     *            If {@code true}, returns correlated flow instances. If {@code false}, returns an empty list.
      * @return List of flow instance identifiers associated to purged process instances, to use to purge MONIT logs for
      *         example
      * @throws ProcessInstanceNotFoundException
