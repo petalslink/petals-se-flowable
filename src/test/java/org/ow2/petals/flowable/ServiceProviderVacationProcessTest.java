@@ -72,6 +72,8 @@ import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
 import org.ow2.petals.flowable.monitoring.MonitoringMBean;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
 import org.ow2.petals.flowable.monitoring.UserTaskFlowStepBeginLogData;
+import org.ow2.petals.se.flowable.clientserver.api.admin.AdminRuntimeService;
+import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessInstanceNotFoundException;
 import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.Archiver;
 import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.ArchiverResponse;
 import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.AckResponse;
@@ -128,6 +130,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
          * 1 process instance in state ended, the one created by unit test 'validStartEventRequest'
          */
         assertEquals(1, vacationInstances[3].longValue());
+
         final Long[] jiraInstances = metrics.get("jira_PETALSSEACTIVITI-4");
         assertEquals(0, jiraInstances[0].longValue());
         assertEquals(0, jiraInstances[1].longValue());
@@ -169,6 +172,29 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertEquals(0, monitoringMbean.getDatabaseConnectionPoolActiveConnectionsCurrent());
         assertTrue(monitoringMbean.getDatabaseConnectionPoolIdleConnectionsMax() >= 1);
         assertNotEquals(0, monitoringMbean.getDatabaseConnectionPoolIdleConnectionsCurrent());
+
+        //
+        // Test administration operations about deleting process instances
+        assertTrue(COMPONENT_UNDER_TEST.getComponentObject() instanceof AdminRuntimeService);
+        final AdminRuntimeService adminRuntimeMbean = (AdminRuntimeService) COMPONENT_UNDER_TEST.getComponentObject();
+        assertEquals(2, adminRuntimeMbean.listPurgeableProcessInstances(null, 0).size());
+        assertEquals(2, adminRuntimeMbean.listPurgeableProcessInstances("", 0).size());
+        final List<String> purgeableProcInstIds = adminRuntimeMbean.listPurgeableProcessInstances("vacationRequest", 1);
+        assertEquals(1, purgeableProcInstIds.size());
+
+        final List<String> purgedProcInstFlowInstanceIds = adminRuntimeMbean
+                .purgeProcessInstance(purgeableProcInstIds.get(0), true);
+        // 3 flow instance ids: 1 for process instance, 1 correlated flow to start process instance, and 1 correlated
+        // flow to complete user task
+        assertEquals(3, purgedProcInstFlowInstanceIds.size());
+
+        final String inexistingProcInstId = "123456";
+        try {
+            adminRuntimeMbean.purgeProcessInstance(inexistingProcInstId, true);
+        } catch (final ProcessInstanceNotFoundException e) {
+            // It's the expected erreur when the process instance does not exist
+            assertEquals(inexistingProcInstId, e.getProcInstNotFound());
+        }
     }
 
     /**
