@@ -325,6 +325,13 @@ public abstract class FlowableOperation implements FlowableService {
                             throw new MessagingException("The value of the variable '" + variableName
                                     + "' must be a long ! Current value is: " + variableValueAsStr);
                         }
+                    } else if (varType.equals("double")) {
+                        try {
+                            variableValues.put(variableName, Double.valueOf(variableValueAsStr));
+                        } catch (final NumberFormatException e) {
+                            throw new MessagingException("The value of the variable '" + variableName
+                                    + "' must be a double ! Current value is: " + variableValueAsStr);
+                        }
                     } else if (varType.equals("enum")) {
                         boolean validValue = false;
                         for (final FormValue enumValue : variableProperties.getFormValues()) {
@@ -356,6 +363,9 @@ public abstract class FlowableOperation implements FlowableService {
                                     + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
                                     + variableValueAsStr);
                         }
+                    } else {
+                        throw new MessagingException(
+                                "Unsupported type '" + varType + "' for the variable '" + variableName + "'.");
                     }
                 }
             } catch (final XPathExpressionException e) {
