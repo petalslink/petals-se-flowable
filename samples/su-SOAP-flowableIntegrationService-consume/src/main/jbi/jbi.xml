@@ -52,5 +52,33 @@
          <soap:enable-http-transport>true</soap:enable-http-transport>
          <soap:enable-jms-transport>false</soap:enable-jms-transport>
       </jbi:consumes>
+
+      <jbi:consumes interface-name="integrationService:User"
+         service-name="integrationService:UserService" >
+
+         <!-- CDK specific elements -->
+         <petalsCDK:timeout />
+         <petalsCDK:mep xsi:nil="true" />
+
+         <!-- Component specific elements -->
+         <soap:service-name>userService</soap:service-name>
+         <soap:mode>SOAP</soap:mode>
+         <soap:enable-http-transport>true</soap:enable-http-transport>
+         <soap:enable-jms-transport>false</soap:enable-jms-transport>
+      </jbi:consumes>
+
+      <jbi:consumes interface-name="integrationService:Group"
+         service-name="integrationService:GroupService" >
+
+         <!-- CDK specific elements -->
+         <petalsCDK:timeout />
+         <petalsCDK:mep xsi:nil="true" />
+
+         <!-- Component specific elements -->
+         <soap:service-name>groupService</soap:service-name>
+         <soap:mode>SOAP</soap:mode>
+         <soap:enable-http-transport>true</soap:enable-http-transport>
+         <soap:enable-jms-transport>false</soap:enable-jms-transport>
+      </jbi:consumes>
    </jbi:services>
 </jbi:jbi>
