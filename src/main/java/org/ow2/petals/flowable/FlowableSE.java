@@ -61,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -90,15 +89,11 @@ import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.common.api.FlowableException;
-import org.flowable.engine.history.HistoricProcessInstance;
-import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.bpmn.parser.factory.XMLImporterFactory;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.parse.BpmnParseHandler;
 import org.flowable.job.service.impl.asyncexecutor.AsyncExecutor;
 import org.flowable.job.service.impl.asyncexecutor.DefaultAsyncJobExecutor;
-import org.flowable.task.api.history.HistoricTaskInstance;
-import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.ow2.easywsdl.wsdl.api.Endpoint;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 import org.ow2.petals.basisapi.exception.PetalsException;
@@ -109,6 +104,7 @@ import org.ow2.petals.component.framework.se.AbstractServiceEngine;
 import org.ow2.petals.component.framework.se.ServiceEngineServiceUnitManager;
 import org.ow2.petals.component.framework.util.ServiceEndpointOperationKey;
 import org.ow2.petals.component.framework.util.WSDLUtilImpl;
+import org.ow2.petals.flowable.admin.AdminOperations;
 import org.ow2.petals.flowable.event.AbstractEventListener;
 import org.ow2.petals.flowable.event.CallActivityStartedEventListener;
 import org.ow2.petals.flowable.event.IntermediateCatchMessageEventEndedEventListener;
@@ -138,7 +134,6 @@ import org.ow2.petals.flowable.rest.config.SecurityConfiguration;
 import org.ow2.petals.probes.api.exceptions.MultipleProbesFactoriesFoundException;
 import org.ow2.petals.probes.api.exceptions.NoProbesFactoryFoundException;
 import org.ow2.petals.se.flowable.clientserver.api.admin.AdminRuntimeService;
-import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessInstanceNotFoundException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.filter.DelegatingFilterProxy;
@@ -1177,68 +1172,22 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
     public List<String> listPurgeableProcessInstances(final String processDefinitionKey,
             final int processDefinitionVersion)
             throws PetalsException {
-        final HistoricProcessInstanceQuery puregableProcInstQuery = this.flowableEngine.getHistoryService()
-                .createHistoricProcessInstanceQuery();
-        if (processDefinitionKey == null || processDefinitionKey.trim().isEmpty()) {
-            // No filter on process definition. All process definitions taken into account
-        } else {
-            puregableProcInstQuery.processDefinitionKey(processDefinitionKey)
-                    .processDefinitionVersion(processDefinitionVersion);
-        }
-        puregableProcInstQuery.finished();
 
-        final List<HistoricProcessInstance> purgeableProcInsts = puregableProcInstQuery.list();
-        final List<String> result = new LinkedList<>();
-        for (final HistoricProcessInstance purgeableProcInst : purgeableProcInsts) {
-            result.add(purgeableProcInst.getId());
-        }
-        return result;
+        return AdminOperations.listPurgeableProcessInstances(processDefinitionKey, processDefinitionVersion,
+                this.flowableEngine);
     }
 
     @Override
     public List<String> purgeProcessInstance(final String procInstId, final boolean returnsCorrelatedFlows)
             throws PetalsException {
-        assert procInstId != null;
-        assert !procInstId.trim().isEmpty();
 
-        final List<String> result = new LinkedList<>();
+        return AdminOperations.purgeProcessInstance(procInstId, returnsCorrelatedFlows, this.flowableEngine);
+    }
 
-        final HistoricProcessInstanceQuery procInstQuery = this.flowableEngine.getHistoryService()
-                .createHistoricProcessInstanceQuery().processInstanceId(procInstId).includeProcessVariables();
-        final HistoricProcessInstance procInst = procInstQuery.singleResult();
-        if (procInst == null) {
-            throw new ProcessInstanceNotFoundException(procInstId);
-        } else {
-            final String procInstFlowId = (String) procInst.getProcessVariables()
-                    .get(FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID);
-            if (procInstFlowId != null) {
-                result.add(procInstFlowId);
-            }
+    @Override
+    public void undeployProcessDefinition(final String procDefKey, final int procDefVer) throws PetalsException {
 
-            if (returnsCorrelatedFlows) {
-                final String procInstCorrelatedFlowId = (String) procInst.getProcessVariables()
-                        .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
-                if (procInstCorrelatedFlowId != null) {
-                    result.add(procInstCorrelatedFlowId);
-                }
+        AdminOperations.undeployProcessDefinition(procDefKey, procDefVer, this.flowableEngine);
 
-                final HistoricTaskInstanceQuery procInstTasksQuery = this.flowableEngine.getHistoryService()
-                        .createHistoricTaskInstanceQuery().processInstanceId(procInstId).includeTaskLocalVariables();
-                // TODO: We should be able to filter on task local variable, but it seems to not work
-                // .taskVariableExists(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
-                final List<HistoricTaskInstance> procInstTasks = procInstTasksQuery.list();
-                for (final HistoricTaskInstance procInstTask : procInstTasks) {
-                    final String procInstTaskCorrelatedFlowId = (String) procInstTask.getTaskLocalVariables()
-                            .get(FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID);
-                    if (procInstTaskCorrelatedFlowId != null) {
-                        result.add(procInstTaskCorrelatedFlowId);
-                    }
-                }
-            }
-
-            this.flowableEngine.getHistoryService().deleteHistoricProcessInstance(procInstId);
-
-            return result;
-        }
     }
 }

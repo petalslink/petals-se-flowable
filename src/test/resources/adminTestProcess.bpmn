@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Copyright (c) 2018 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions id="definitions"
+             targetNamespace="http://petals.ow2.org/se-flowable/unit-test/admin/adminTestProcess" 
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://java.sun.com/products/jsp/" 
+             xmlns:flowable="http://flowable.org/bpmn"
+             xmlns:process="http://petals.ow2.org/se-flowable/unit-test/admin/adminTestProcess" >
+  
+  <process id="adminTestProcess" name="Admin test process">
+  
+    <startEvent id="request" flowable:initiator="employeeName" name="Create vacation request">
+      <extensionElements>
+        <flowable:formProperty id="numberOfDays" name="Number of days" type="long" value="1" required="true"/>
+        <flowable:formProperty id="startDate" name="First day of holiday (dd-MM-yyy)" datePattern="dd-MM-yyyy hh:mm" type="date" required="true" />
+        <flowable:formProperty id="vacationMotivation" name="Motivation" type="string" />
+      </extensionElements>
+    </startEvent>
+    <sequenceFlow id="flow1" sourceRef="request" targetRef="handleRequest" />
+    
+    <userTask id="handleRequest" name="Handle vacation request" >
+      <documentation>
+        ${employeeName} would like to take ${numberOfDays} day(s) of vacation (Motivation: ${vacationMotivation}).
+      </documentation> 
+      <extensionElements>
+         <flowable:formProperty id="vacationApproved" name="Do you approve this vacation" type="enum" required="true">
+          <flowable:value id="true" name="Approve" />
+          <flowable:value id="false" name="Reject" />
+        </flowable:formProperty>
+        <flowable:formProperty id="managerMotivation" name="Motivation" type="string" />
+      </extensionElements>
+      <potentialOwner>
+        <resourceAssignmentExpression>
+          <formalExpression>group(management)</formalExpression>
+        </resourceAssignmentExpression>
+      </potentialOwner>         
+    </userTask>
+    <sequenceFlow id="flow2" sourceRef="handleRequest" targetRef="theEnd" />
+    <endEvent id="theEnd" />
+      
+  </process>
+  
+</definitions>

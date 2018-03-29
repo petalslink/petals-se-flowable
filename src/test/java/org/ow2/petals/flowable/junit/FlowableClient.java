@@ -337,6 +337,13 @@ public class FlowableClient extends ExternalResource {
     }
 
     /**
+     * @return A reference to the process engine
+     */
+    public ProcessEngine getProcessEngine() {
+        return this.flowableClientEngine;
+    }
+
+    /**
      * @return The {@link RuntimeService} of the Flowable engine
      */
     public RuntimeService getRuntimeService() {

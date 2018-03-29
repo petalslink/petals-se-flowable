@@ -20,6 +20,7 @@ package org.ow2.petals.se.flowable.clientserver.api.admin;
 import java.util.List;
 
 import org.ow2.petals.basisapi.exception.PetalsException;
+import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessInstanceExistForDefinitionException;
 import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessInstanceNotFoundException;
 
 /**
@@ -67,6 +68,29 @@ public interface AdminRuntimeService {
      *             An error occurs purging process instances. Some process instances can be not purged.
      */
     public List<String> purgeProcessInstance(final String procInstId, final boolean returnsCorrelatedFlows)
+            throws PetalsException;
+
+    /**
+     * <p>
+     * Undeploy a process definition.
+     * </p>
+     * <p>
+     * All process definition data (process instances, history process instances and jobs) must be purged previously.
+     * </p>
+     * 
+     * @param processDefinitionKey
+     *            The process definition of process instances to list. Can be {@link null} or empty.
+     * @param processDefinitionVersion
+     *            Version of the process definition of process instances to list. Can be {@link null} or empty.
+     * @throws ProcessDefinitionNotFoundExcpetion
+     *             The process definition to undeploy does not exist.
+     * @throws ProcessInstanceExistForDefinitionException
+     *             Pending (active or suspended) or ended process instances exist. They must be purged previously to the
+     *             undeployment.
+     * @throws PetalsException
+     *             An error occurs undeploying the process definition
+     */
+    public void undeployProcessDefinition(final String processDefinitionKey, final int processDefinitionVersion)
             throws PetalsException;
 
 }

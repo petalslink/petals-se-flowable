@@ -83,15 +83,15 @@ public abstract class AbstractVacationProcessTestEnvironment extends AbstractTes
 
     protected static final QName OPERATION_VALIDERDEMANDE = new QName(VACATION_NAMESPACE, "validerDemande");
 
-    protected static final String BPMN_PROCESS_DEFINITION_KEY = "vacationRequest";
+    public static final String BPMN_PROCESS_DEFINITION_KEY = "vacationRequest";
 
     protected static final String BPMN_PROCESS_1ST_USER_TASK_KEY = "handleRequest";
 
     protected static final String BPMN_PROCESS_2ND_USER_TASK_KEY = "adjustVacationRequestTask";
 
-    protected static final String BPMN_USER_DEMANDEUR = "demandeur";
+    public static final String BPMN_USER_DEMANDEUR = "demandeur";
 
-    protected static final String BPMN_USER_VALIDEUR = "valideur";
+    public static final String BPMN_USER_VALIDEUR = "valideur";
 
     private static final String ARCHIVE_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/vacation/archivageService";
 
