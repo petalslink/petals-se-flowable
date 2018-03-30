@@ -142,14 +142,15 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             final org.ow2.petals.component.framework.api.message.Exchange jbiExchange = this.sender
                     .createConsumeExchange(consume, mep);
 
-            // we always use the operation from the process (the JBI Consumes defines the service used, not the
+            // We always use the operation from the process (the JBI Consumes defines the service used, not the
             // operation)
             jbiExchange.setOperation(operationName);
 
-            // set timeout at CXF level must be upper than the timeout defined into SU JBI descriptor level)
-            if (consume.getTimeout() != null && consume.getTimeout() > 0) {
+            // Set timeout at CXF level. It must be upper than the timeout defined into SU JBI descriptor level)
+            final long timeout = this.sender.getTimeout(consume);
+            if (timeout > 0) {
                 cxfExchange.getOutMessage().put(ClientImpl.SYNC_TIMEOUT,
-                        consume.getTimeout() + CXF_SYNC_TIMEOUT_INTERNAL_PART);
+                        timeout + CXF_SYNC_TIMEOUT_INTERNAL_PART);
             }
 
             // TODO: Add support for attachments

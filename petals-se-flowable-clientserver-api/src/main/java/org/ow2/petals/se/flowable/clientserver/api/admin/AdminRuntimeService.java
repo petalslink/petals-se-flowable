@@ -79,9 +79,9 @@ public interface AdminRuntimeService {
      * </p>
      * 
      * @param processDefinitionKey
-     *            The process definition of process instances to list. Can be {@link null} or empty.
+     *            The key of the process definition to undeploy. Not {@link null} and not empty.
      * @param processDefinitionVersion
-     *            Version of the process definition of process instances to list. Can be {@link null} or empty.
+     *            The version of the process definition to undeploy.
      * @throws ProcessDefinitionNotFoundExcpetion
      *             The process definition to undeploy does not exist.
      * @throws ProcessInstanceExistForDefinitionException
