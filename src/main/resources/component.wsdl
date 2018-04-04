@@ -118,6 +118,11 @@
                         <xsd:documentation>Definition identifier of the tasks to retrieve</xsd:documentation>
                      </xsd:annotation>
                   </xsd:element>
+                  <xsd:element name="with-process-instance-variables" type="xsd:boolean" maxOccurs="1" minOccurs="0">
+                     <xsd:annotation>
+                        <xsd:documentation>If true, process instance variables will be retrieved and put in reply. Default: false</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:element>
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
@@ -135,6 +140,13 @@
             </xsd:sequence>
          </xsd:complexType>
          <xsd:complexType name="Task">
+            <xsd:sequence>
+               <xsd:element name="process-variables" type="flowable:Variables" maxOccurs="1" minOccurs="0">
+                  <xsd:annotation>
+                     <xsd:documentation>Variable values that are set on process instance level</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:element>
+            </xsd:sequence>
             <xsd:attribute name="process-definition-identifier" type="xsd:string" use="required" />
             <xsd:attribute name="process-instance-identifier" type="xsd:string" use="required" />
             <xsd:attribute name="task-identifier" type="xsd:string" use="required" />

@@ -22,8 +22,10 @@ import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.I
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.transform.Source;
 
 import org.junit.Test;
@@ -33,6 +35,7 @@ import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMe
 import org.ow2.petals.components.flowable.generic._1.GetTasks;
 import org.ow2.petals.components.flowable.generic._1.GetTasksResponse;
 import org.ow2.petals.components.flowable.generic._1.Task;
+import org.ow2.petals.components.flowable.generic._1.Variable;
 import org.ow2.petals.flowable.incoming.integration.GetTasksOperation;
 import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.Demande;
 import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.Numero;
@@ -166,15 +169,17 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
         // ---- Create a new instance of the process definition
         // --------------------------------------------------------
         final Demande requestBean_1 = new Demande();
-        requestBean_1.setDemandeur(BPMN_USER_DEMANDEUR);
-        final int numberOfDays = 10;
-        requestBean_1.setNbJourDde(numberOfDays);
+        final String expectedEmployeeName = BPMN_USER_DEMANDEUR;
+        requestBean_1.setDemandeur(expectedEmployeeName);
+        final int expectedNumberOfDays = 10;
+        requestBean_1.setNbJourDde(expectedNumberOfDays);
         final GregorianCalendar now = new GregorianCalendar();
         final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
                 now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
-        requestBean_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
-        final String motivation = "hollidays";
-        requestBean_1.setMotifDde(motivation);
+        final XMLGregorianCalendar expectedStartDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate);
+        requestBean_1.setDateDebutDde(expectedStartDate);
+        final String expectedMotivation = "hollidays";
+        requestBean_1.setMotifDde(expectedMotivation);
 
         // Send the 1st valid request for start event 'request
         final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
@@ -194,28 +199,84 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
         assertNotNull(response_1.getNumeroDde());
 
         // --------------------------------------------------------
-        // ---- Retrieve task
+        // ---- Retrieve task without process variables
         // --------------------------------------------------------
-        final GetTasks getTasks = new GetTasks();
-        getTasks.setActive(Boolean.TRUE);
-        getTasks.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
-        getTasks.setProcessInstanceIdentifier(response_1.getNumeroDde());
-        getTasks.setTaskDefinitionIdentifier(BPMN_PROCESS_1ST_USER_TASK_KEY);
-        final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
-                ITG_OP_GETTASKS, getTasks);
+        {
+            final GetTasks getTasks = new GetTasks();
+            getTasks.setActive(Boolean.TRUE);
+            getTasks.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+            getTasks.setProcessInstanceIdentifier(response_1.getNumeroDde());
+            getTasks.setTaskDefinitionIdentifier(BPMN_PROCESS_1ST_USER_TASK_KEY);
+            final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                    ITG_OP_GETTASKS, getTasks);
 
-        assertTrue(getTasksRespObj instanceof GetTasksResponse);
-        final GetTasksResponse getTasksResp = (GetTasksResponse) getTasksRespObj;
-        assertNotNull(getTasksResp.getTasks());
-        assertNotNull(getTasksResp.getTasks().getTask());
-        assertEquals(1, getTasksResp.getTasks().getTask().size());
-        final Task task = getTasksResp.getTasks().getTask().get(0);
-        assertEquals(BPMN_PROCESS_DEFINITION_KEY, task.getProcessDefinitionIdentifier());
-        assertEquals(response_1.getNumeroDde(), task.getProcessInstanceIdentifier());
-        assertEquals(BPMN_PROCESS_1ST_USER_TASK_KEY, task.getTaskIdentifier());
-        assertEquals("Handle vacation request", task.getTaskName());
-        assertEquals(String.format("%s would like to take %d day(s) of vacation (Motivation: %s).", BPMN_USER_DEMANDEUR,
-                numberOfDays, motivation), task.getTaskDescription());
+            assertTrue(getTasksRespObj instanceof GetTasksResponse);
+            final GetTasksResponse getTasksResp = (GetTasksResponse) getTasksRespObj;
+            assertNotNull(getTasksResp.getTasks());
+            assertNotNull(getTasksResp.getTasks().getTask());
+            assertEquals(1, getTasksResp.getTasks().getTask().size());
+            final Task task = getTasksResp.getTasks().getTask().get(0);
+            assertEquals(BPMN_PROCESS_DEFINITION_KEY, task.getProcessDefinitionIdentifier());
+            assertEquals(response_1.getNumeroDde(), task.getProcessInstanceIdentifier());
+            assertEquals(BPMN_PROCESS_1ST_USER_TASK_KEY, task.getTaskIdentifier());
+            assertEquals("Handle vacation request", task.getTaskName());
+            assertEquals(String.format("%s would like to take %d day(s) of vacation (Motivation: %s).",
+                    expectedEmployeeName, expectedNumberOfDays, expectedMotivation), task.getTaskDescription());
+        }
+
+        // --------------------------------------------------------
+        // ---- Retrieve task with process variables
+        // --------------------------------------------------------
+        {
+            final GetTasks getTasks = new GetTasks();
+            getTasks.setActive(Boolean.TRUE);
+            getTasks.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+            getTasks.setProcessInstanceIdentifier(response_1.getNumeroDde());
+            getTasks.setTaskDefinitionIdentifier(BPMN_PROCESS_1ST_USER_TASK_KEY);
+            getTasks.setWithProcessInstanceVariables(Boolean.TRUE);
+            final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
+                    ITG_OP_GETTASKS, getTasks);
+
+            assertTrue(getTasksRespObj instanceof GetTasksResponse);
+            final GetTasksResponse getTasksResp = (GetTasksResponse) getTasksRespObj;
+            assertNotNull(getTasksResp.getTasks());
+            assertNotNull(getTasksResp.getTasks().getTask());
+            assertEquals(1, getTasksResp.getTasks().getTask().size());
+            final Task task = getTasksResp.getTasks().getTask().get(0);
+            assertEquals(BPMN_PROCESS_DEFINITION_KEY, task.getProcessDefinitionIdentifier());
+            assertEquals(response_1.getNumeroDde(), task.getProcessInstanceIdentifier());
+            assertEquals(BPMN_PROCESS_1ST_USER_TASK_KEY, task.getTaskIdentifier());
+            assertEquals("Handle vacation request", task.getTaskName());
+            assertEquals(String.format("%s would like to take %d day(s) of vacation (Motivation: %s).",
+                    expectedEmployeeName, expectedNumberOfDays, expectedMotivation), task.getTaskDescription());
+
+            assertNotNull(task.getProcessVariables());
+            final List<Variable> variables = task.getProcessVariables().getVariable();
+            assertFalse(variables.isEmpty());
+            boolean employeeNameFound = false;
+            boolean numberOfDaysFound = false;
+            boolean startDateFound = false;
+            boolean vacationMotivationFound = false;
+            for (final Variable variable : variables) {
+                if (variable.getName().equals("employeeName")) {
+                    assertEquals(expectedEmployeeName, variable.getValue());
+                    employeeNameFound = true;
+                } else if (variable.getName().equals("numberOfDays")) {
+                    assertEquals(String.valueOf(expectedNumberOfDays), variable.getValue());
+                    numberOfDaysFound = true;
+                } else if (variable.getName().equals("startDate")) {
+                    assertEquals(expectedStartDate.toString(), variable.getValue());
+                    startDateFound = true;
+                } else if (variable.getName().equals("vacationMotivation")) {
+                    assertEquals(expectedMotivation, variable.getValue());
+                    vacationMotivationFound = true;
+                }
+            }
+            assertTrue(employeeNameFound);
+            assertTrue(numberOfDaysFound);
+            assertTrue(startDateFound);
+            assertTrue(vacationMotivationFound);
+        }
     }
 
 }

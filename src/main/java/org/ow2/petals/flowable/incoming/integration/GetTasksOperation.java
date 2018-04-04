@@ -100,6 +100,12 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
             taskQuery.taskDefinitionKey(taskDefinitionId);
         }
 
+        final boolean isWithProcessInstanceVariables = incomingObject.isWithProcessInstanceVariables() != null
+                && incomingObject.isWithProcessInstanceVariables().booleanValue();
+        if (isWithProcessInstanceVariables) {
+            taskQuery.includeProcessVariables();
+        }
+
         final GetTasksResponse response = new GetTasksResponse();
         final Tasks responseTasks = new Tasks();
         response.setTasks(responseTasks);
@@ -123,6 +129,10 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
                     .processDefinitionId(task.getProcessDefinitionId());
             final ProcessDefinition processDefinition = processDefQuery.singleResult();
             responseTask.setProcessDefinitionIdentifier(processDefinition.getKey());
+
+            if (isWithProcessInstanceVariables) {
+                responseTask.setProcessVariables(Utils.buildVariables(task.getProcessVariables(), this.log));
+            }
         }
 
         return response;

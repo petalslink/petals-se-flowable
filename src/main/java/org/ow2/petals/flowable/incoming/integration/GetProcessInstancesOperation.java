@@ -183,28 +183,7 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
             final ProcessDefinition processDefinition = processDefQuery.singleResult();
             responseProcessInstance.setProcessDefinitionIdentifier(processDefinition.getKey());
 
-            final Variables responseProcessVariables = new Variables();
-            responseProcessInstance.setVariables(responseProcessVariables);
-            for (final Entry<String, Object> variable : processInstance.getProcessVariables().entrySet()) {
-
-                final Variable responseProcessVariable = new Variable();
-                final Object variableValue = variable.getValue();
-                responseProcessVariable.setName(variable.getKey());
-                if (variableValue instanceof Date) {
-                    final GregorianCalendar calendar = new GregorianCalendar();
-                    calendar.setTime((Date) variableValue);
-                    try {
-                        responseProcessVariable.setValue(DatatypeFactory.newInstance()
-                                .newXMLGregorianCalendar(calendar).toXMLFormat());
-                    } catch (final DatatypeConfigurationException e) {
-                        this.log.log(Level.WARNING, "Error converting a date to XML.", e);
-                    }
-
-                } else {
-                    responseProcessVariable.setValue(variableValue != null ? variableValue.toString() : "");
-                }
-                responseProcessVariables.getVariable().add(responseProcessVariable);
-            }
+            responseProcessInstance.setVariables(Utils.buildVariables(processInstance.getProcessVariables(), this.log));
         }
 
         return response;

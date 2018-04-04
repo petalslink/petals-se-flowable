@@ -274,7 +274,7 @@
                <include name="**/petals.log" />
                <contains text="flowStepInterfaceName = '{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacation'" />
             </fileset>
-            <fail message="At least one flow instance linked to purge process instance always exists on container ${topology.container.name.@{container.counter}}">
+            <fail message="At least one flow instance linked to a purged process instance always exists on container ${topology.container.name.@{container.counter}}">
                <condition>
                   <!-- only one process instance is pending -->
                   <resourcecount when="greater" count="1" refid="remaining-flow-instances" />
