@@ -55,6 +55,13 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in JRE 8 -->
+               <groupId>javax.activation</groupId>
+               <artifactId>activation</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
