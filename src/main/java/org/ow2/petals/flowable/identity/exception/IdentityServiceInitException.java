@@ -29,4 +29,8 @@ public class IdentityServiceInitException extends Exception {
         super(message);
     }
 
+    public IdentityServiceInitException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
 }

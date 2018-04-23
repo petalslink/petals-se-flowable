@@ -223,21 +223,13 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
 
         assert cfgFile != null;
 
-        try {
-            final InputStream cfgInputStream = new FileInputStream(cfgFile);
-            try {
-                return this.readConfiguration(cfgInputStream);
-            } finally {
-                try {
-                    cfgInputStream.close();
-                } catch (final IOException e) {
-                    // NOP: We discard exception on close
-                    this.logger.log(Level.WARNING,
-                            String.format("An error occurs closing resource '%s'. Error skipped.", cfgFile), e);
-                }
-            }
+        try (final InputStream cfgInputStream = new FileInputStream(cfgFile)) {
+            return this.readConfiguration(cfgInputStream);
         } catch (final FileNotFoundException e) {
             throw new IdentityServiceResourceNotFoundException(cfgFile.getAbsolutePath());
+        } catch (final IOException e) {
+            throw new IdentityServiceInitException(
+                    String.format("An error occurs closing resource '%s'. Error skipped.", cfgFile), e);
         }
     }
 
@@ -264,8 +256,7 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
                 try {
                     cfgInputStream.close();
                 } catch (final IOException e) {
-                    // NOP: We discard exception on close
-                    this.logger.log(Level.WARNING,
+                    throw new IdentityServiceInitException(
                             String.format("An error occurs closing resource '%s'. Error skipped.", cfgResourceName), e);
                 }
             }

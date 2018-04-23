@@ -150,15 +150,8 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
     private static Properties loadFileAsProperties(final File fileToLoad) throws IOException {
 
         final Properties props = new Properties();
-        final Reader fileReader = new FileReader(fileToLoad);
-        try {
+        try (final Reader fileReader = new FileReader(fileToLoad)) {
             props.load(fileReader);
-        } finally {
-            try {
-                fileReader.close();
-            } catch (final IOException e) {
-                // NOP: We discard exception on close
-            }
         }
 
         return props;
@@ -190,20 +183,14 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         } else if (!tmpFile.isFile()) {
             throw new IdentityServiceInitException("The file declaring users (" + usersFileName + ") is not a file.");
         } else {
-            try {
-                final InputStream usersFileInputStream = new FileInputStream(tmpFile);
-                assert usersFileInputStream != null;
-                try {
-                    this.readUsers(usersFileInputStream);
-                } finally {
-                    try {
-                        usersFileInputStream.close();
-                    } catch (final IOException e) {
-                        // NOP: We discard exception on close
-                    }
-                }
+            try (final InputStream usersFileInputStream = new FileInputStream(tmpFile)) {
+                this.readUsers(usersFileInputStream);
             } catch (final FileNotFoundException e) {
                 throw new IdentityServiceInitException(e);
+            } catch (final IOException e) {
+                throw new IdentityServiceInitException(
+                        String.format("An error occurs closing file '%s'. Error skipped.", tmpFile.getAbsolutePath()),
+                        e);
             }
         }
     }
@@ -233,22 +220,13 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         } else if (!tmpFile.isFile()) {
             throw new IdentityServiceInitException("The file declaring groups (" + groupsFileName + ") is not a file.");
         } else {
-            try {
-                final InputStream groupsFileInputStream = new FileInputStream(tmpFile);
-                assert groupsFileInputStream != null;
-                try {
-                    this.readGroups(groupsFileInputStream);
-                } finally {
-                    try {
-                        groupsFileInputStream.close();
-                    } catch (final IOException e) {
-                        // NOP: We discard exception on close
-                        this.logger.log(Level.WARNING, String.format(
-                                "An error occurs closing file '%s'. Error skipped.", tmpFile.getAbsolutePath()), e);
-                    }
-                }
+            try (final InputStream groupsFileInputStream = new FileInputStream(tmpFile)) {
+                this.readGroups(groupsFileInputStream);
             } catch (final FileNotFoundException e) {
                 throw new IdentityServiceInitException(e);
+            } catch (final IOException e) {
+                throw new IdentityServiceInitException(String
+                        .format("An error occurs closing resource '%s'. Error skipped.", tmpFile.getAbsolutePath()), e);
             }
         }
     }
@@ -275,8 +253,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
                 try {
                     usersInputStream.close();
                 } catch (final IOException e) {
-                    // NOP: We discard exception on close
-                    this.logger.log(Level.WARNING,
+                    throw new IdentityServiceInitException(
                             String.format("An error occurs closing resource '%s'. Error skipped.", usersResourceName),
                             e);
                 }
@@ -307,8 +284,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
             try {
                 groupsInputStream.close();
             } catch (final IOException e) {
-                // NOP: We discard exception on close
-                this.logger.log(Level.WARNING,
+                throw new IdentityServiceInitException(
                         String.format("An error occurs closing resource '%s'. Error skipped.", groupsResourceName), e);
             }
         }
