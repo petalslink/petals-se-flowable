@@ -37,18 +37,18 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
     /**
      * <p>
      * Check the processing of the integration service {@link GetProcessInstancesOperation} when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is not compliant to the XML schema defined in WSDL</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_WsdlUncompliant() throws Exception {
@@ -60,18 +60,18 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
     /**
      * <p>
      * Check the processing of the integration service {@link GetProcessInstancesOperation} when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is compliant to the XML schema defined in WSDL</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_WsdlCompliant() throws Exception {
@@ -84,17 +84,17 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
     /**
      * <p>
      * Check the processing of the integration service {@link GetProcessInstancesOperation} when:
+     * </p>
      * <ul>
      * <li>an empty request is sent</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_EmptyRequest() throws Exception {
@@ -106,18 +106,18 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
     /**
      * <p>
      * Check the processing of the integration service {@link GetProcessInstancesOperation} when:
+     * </p>
      * <ul>
      * <li>no argument is given</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>no fault occurs</li>
      * <li>no task returns because no process instance exists</li>
      * </ul>
-     * </p>
      */
     @Test
     public void noArguments() throws Exception {

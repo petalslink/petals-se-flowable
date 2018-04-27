@@ -232,7 +232,6 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
      *            the end-point Name and operation Name
      * @param flowableService
      *            the Flowable service
-     * @return the map with the inserted elements
      */
     public void registerFlowableService(final ServiceEndpointOperationKey eptAndOperation,
             final FlowableService flowableService) {

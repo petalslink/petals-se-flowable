@@ -51,12 +51,12 @@ public class ProcessWithRobustifiedInOnlyConsumerTest extends ProcessWithRobusti
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the process instance is automatically completed when all is correctly done.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void nominal() throws Exception {
@@ -121,12 +121,12 @@ public class ProcessWithRobustifiedInOnlyConsumerTest extends ProcessWithRobusti
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the service task is automatically set as dead letter job.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void error() throws Exception {

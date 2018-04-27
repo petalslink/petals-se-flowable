@@ -57,6 +57,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>if the event is received when not expected by the BPMN engine, an error is returned,</li>
@@ -65,7 +66,6 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
      * <li>if the event is received when already recieved by the BPMN engine, an error is returned,</li>
      * <li>the process instance is automatically completed when all is correctly done.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void execute() throws Exception {

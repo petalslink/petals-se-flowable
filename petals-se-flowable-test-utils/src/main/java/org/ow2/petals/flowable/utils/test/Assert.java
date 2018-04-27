@@ -62,8 +62,8 @@ public class Assert extends org.junit.Assert {
      * 
      * @param processInstanceId
      *            The process instance identifier
-     * @param processDefinitionKey
-     *            The process definition key
+     * @param historyService
+     *            The Flowable's history service used to request the Flowable engine about historic process instances.
      */
     public static void assertProcessInstanceFinished(final String processInstanceId,
             final HistoryService historyService) {

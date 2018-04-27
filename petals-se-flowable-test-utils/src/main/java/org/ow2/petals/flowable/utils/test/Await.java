@@ -132,8 +132,8 @@ public class Await {
      * 
      * @param processInstanceId
      *            The process instance identifier of the process instance to wait its placement as dead letter job.
-     * @param duration
-     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
+     * @param managementService
+     *            The Flowable's management service used to request the Flowable engine about dead letter jobs.
      */
     public static void waitProcessInstanceAsDeadLetterJob(final String processInstanceId,
             final ManagementService managementService) throws InterruptedException {
@@ -146,6 +146,8 @@ public class Await {
      * 
      * @param processInstanceId
      *            The process instance identifier of the process instance to wait its placement as dead letter job.
+     * @param managementService
+     *            The Flowable's management service used to request the Flowable engine about dead letter jobs.
      * @param duration
      *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */
@@ -260,7 +262,7 @@ public class Await {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
-     * @param messageName
+     * @param messageEventName
      *            The message name of the intermediate catch message event
      */
     public static void waitIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName,
@@ -275,7 +277,7 @@ public class Await {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
-     * @param messageName
+     * @param messageEventName
      *            The message name of the intermediate catch message event
      * @param duration
      *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing

@@ -43,12 +43,12 @@ public class StartStopTest extends StartStopTestEnvironment {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the async executor is not started if SE Flowable not started,</li>
      * <li>the async executor is started when we start the SE FLowable,</li>
      * <li>the async executor is stopped when we stop the SE Flowable.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void startStop() throws Exception {

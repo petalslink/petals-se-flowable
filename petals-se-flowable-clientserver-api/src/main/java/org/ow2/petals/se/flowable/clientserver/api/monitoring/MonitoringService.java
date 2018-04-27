@@ -61,6 +61,7 @@ public interface MonitoringService
      * Returns information on process definitions.
      * <p>
      * The map key is the process definition identifier. Each value of the map entry is an array of numbers where:
+     * </p>
      * <ul>
      * <li>the 1st value is the suspension state: {@code 1} the process definition is suspended, {@code 0} it is not
      * suspended,
@@ -69,7 +70,6 @@ public interface MonitoringService
      * <li>the 3rd value is the number of suspended process instances,</li>
      * <li>the 4th value is the number of ended process instances.</li>
      * </ul>
-     * </p>
      */
     public Map<String, Long[]> getProcessDefinitions();
 

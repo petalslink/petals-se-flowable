@@ -34,7 +34,7 @@ import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceResourceNotFoundException;
 
 /**
- * A {@link ProcessEngineConfigurator} that integrates an identity management engine based on LDAP.
+ * A {@link SeFlowableIdmServiceConfigurator} that integrates an identity management engine based on LDAP.
  * 
  * @author Christophe DENEUX - Linagora
  */

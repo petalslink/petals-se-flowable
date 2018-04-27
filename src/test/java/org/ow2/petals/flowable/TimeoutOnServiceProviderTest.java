@@ -61,12 +61,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is put as dead letter job because of the timeout.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void timeout_expiration_on_sync() throws Exception {
@@ -121,12 +121,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is put as dead letter job because of the timeout.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void timeout_expiration_on_async() throws Exception {
@@ -182,12 +182,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is correctly terminated.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void long_service_provider_invocation_sync() throws Exception {
@@ -255,12 +255,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is correctly terminated.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void long_service_provider_invocation_async() throws Exception {
@@ -332,12 +332,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is put as dead letter job because of the timeout.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void long_timeout_expiration_sync() throws Exception {
@@ -392,12 +392,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is put as dead letter job because of the timeout.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void long_timeout_expiration_async() throws Exception {
@@ -469,12 +469,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is put as dead letter job because of the timeout.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void default_timeout_expiration_sync() throws Exception {
@@ -529,12 +529,12 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the service is correctly invoked,</li>
      * <li>the job associated to the service invocation is put as dead letter job because of the timeout.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void default_timeout_expiration_async() throws Exception {

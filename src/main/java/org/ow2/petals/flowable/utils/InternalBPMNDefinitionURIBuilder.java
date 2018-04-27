@@ -25,11 +25,11 @@ import java.net.URI;
  * </p>
  * <p>
  * The URI format is '<code>petals:&lt;service-unit-name&gt;:&lt;bpmn-file&gt;</code>' where;
+ * </p>
  * <ul>
  * <li><code>service-unit-name</code> is the unique name of the service unit embedding the BPMN definition file,</li>
  * <li><code>bpmn-file</code> is the BPMN definition file path relative to the root directory of the service unit.</li>
  * </ul>
- * </p>
  * 
  * @author Christophe DENEUX - Linagora
  *

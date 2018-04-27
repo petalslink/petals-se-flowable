@@ -57,13 +57,13 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the placeholders are correctly used in main process,</li>
      * <li>the placeholders are correctly used in main sub-process,</li>
      * <li>the process instance is automatically completed when all is correctly done.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void execute() throws Exception {

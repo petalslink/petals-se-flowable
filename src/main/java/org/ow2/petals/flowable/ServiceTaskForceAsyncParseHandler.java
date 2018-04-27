@@ -36,7 +36,7 @@ import org.flowable.engine.parse.BpmnParseHandler;
  * task starts. To be able to retrieve these variables, the service task MUST be asynchronous.
  * </p>
  * 
- * @see PETALSSEACTIVITI-4
+ * @see <a href="https://jira.petalslink.com/browse/PETALSSEACTIVITI-4">PETALSSEACTIVITI-4</a>
  * 
  * @author Christophe DENEUX - Linagora
  *

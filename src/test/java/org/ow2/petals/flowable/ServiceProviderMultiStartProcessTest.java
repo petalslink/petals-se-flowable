@@ -70,11 +70,11 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the process instance is automatically completed with the right service call.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void web() throws Exception {
@@ -143,11 +143,11 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the process instance is automatically completed with the right service calls.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void onlineAgent() throws Exception {

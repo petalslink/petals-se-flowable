@@ -25,7 +25,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 
 /**
- * The {@link PoolableObjectFactory} to create JAXB unmarshalers
+ * The {@link org.apache.commons.pool2.PooledObjectFactory} to create JAXB unmarshalers
  * 
  * @author Christophe DENEUX - Linagora
  *

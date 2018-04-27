@@ -98,11 +98,11 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because no process declaration is included into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_NoProcessDefinition() throws SecurityException, IllegalArgumentException,
@@ -137,11 +137,11 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the field 'version' is missing into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_OneProcessDefinition_MissingVersion() throws SecurityException, IllegalArgumentException,
@@ -187,11 +187,11 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the field 'version' is missing into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_OneProcessDefinition_EmptyVersion() throws SecurityException, IllegalArgumentException,
@@ -239,11 +239,11 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the field 'version' is set to an invalid value into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_OneProcessDefinition_InvalidVersion() throws SecurityException, IllegalArgumentException,
@@ -292,11 +292,11 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the field 'process-file' is missing into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_OneProcessDefinition_MissingProcessFile() throws SecurityException, IllegalArgumentException,
@@ -343,11 +343,11 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the field 'process-file' is empty into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_OneProcessDefinition_EmptyProcessFile() throws SecurityException, IllegalArgumentException,
@@ -397,11 +397,11 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the field 'process-file' does not exist</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_OneProcessDefinition_UnknownProcessFile() throws SecurityException, IllegalArgumentException,
@@ -449,18 +449,19 @@ public class FlowableSuManagerTest extends AbstractTest {
     /**
      * <p>
      * Try do deploy an invalid SU containing multiple process declarations where:
+     * </p>
      * <ul>
      * <li>a first process declaration is valid,</li>
      * <li>the 2nd process declaration: the process file is set without version.
-     * </p>
+     * </ul>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>As version occurs once, an error about a missing process file occurs because the CDK has read multiple
      * process files as '<code>process_file&lt;i&gt;</code>' but the unique version as '<code>version</code>'</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_MultipleProcessDefinition_MissingVersion() throws SecurityException, IllegalArgumentException,
@@ -509,17 +510,18 @@ public class FlowableSuManagerTest extends AbstractTest {
     /**
      * <p>
      * Try do deploy an invalid SU containing multiple process declarations where:
+     * </p>
      * <ul>
      * <li>a first process declaration is valid,</li>
      * <li>the 2nd process declaration: the process file is set with an empty version.
-     * </p>
+     * </ul>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the 2nd field 'version' is empty into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_MultipleProcessDefinition_EmptyVersion() throws SecurityException, IllegalArgumentException,
@@ -570,17 +572,18 @@ public class FlowableSuManagerTest extends AbstractTest {
     /**
      * <p>
      * Try do deploy an invalid SU containing multiple process declarations where:
+     * </p>
      * <ul>
      * <li>a first process declaration is valid,</li>
      * <li>the 2nd process declaration: the process file is set with an invalid version.
-     * </p>
+     * </ul>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the 2nd field 'version' is invalid into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_MultipleProcessDefinition_InvalidVersion() throws SecurityException, IllegalArgumentException,
@@ -632,18 +635,19 @@ public class FlowableSuManagerTest extends AbstractTest {
     /**
      * <p>
      * Try do deploy an invalid SU containing multiple process declarations where:
+     * </p>
      * <ul>
      * <li>a first process declaration is valid,</li>
      * <li>the 2nd process declaration: the process version is set without file.
-     * </p>
+     * </ul>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>As process file occurs once, an error about a missing version occurs because the CDK has read multiple
      * process files as '<code>version&lt;i&gt;</code>' but the unique version as '<code>process_file</code>'</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_MultipleProcessDefinition_MissingProcessFile() throws SecurityException,
@@ -693,17 +697,18 @@ public class FlowableSuManagerTest extends AbstractTest {
     /**
      * <p>
      * Try do deploy an invalid SU containing multiple process declarations where:
+     * </p>
      * <ul>
      * <li>a first process declaration is valid,</li>
      * <li>the 2nd process declaration: the process version is set with an empty file.
-     * </p>
+     * </ul>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>an error occurs because the 2nd field 'version' is empty into the JBI descriptor</li>
      * <li>the error is logged as ERROR</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deploy_MultipleProcessDefinition_EmptyProcessFile() throws SecurityException, IllegalArgumentException,

@@ -87,6 +87,7 @@ public abstract class AnnotatedOperation {
      * <b>Note 1</b>: If the user identifier placeholder is null or empty, the error {@link NoUserIdMappingException}
      * will be thrown.
      * </p>
+     * <p>
      * <b>Note 2</b>: For performance reasons, variable types are populated during the coherence check.
      * </p>
      * 
@@ -187,13 +188,13 @@ public abstract class AnnotatedOperation {
     /**
      * <p>
      * Entry point to:
+     * </p>
      * <ul>
      * <li>extend checks about annotation coherence,</li>
      * <li>and to populate variable types.</li>
      * </ul>
-     * </p>
      * 
-     * @throws model
+     * @param model
      *             The model of the process definition
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.

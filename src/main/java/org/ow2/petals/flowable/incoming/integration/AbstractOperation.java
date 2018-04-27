@@ -45,12 +45,12 @@ import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
 public abstract class AbstractOperation<T, V> implements FlowableService {
 
     /**
-     * A pool of marshallers for Java-->XML binding of the operation responses
+     * A pool of marshallers for Java--&gt;XML binding of the operation responses
      */
     protected final ObjectPool<Marshaller> marshalerPool;
 
     /**
-     * A pool of unmarshallers for XML-->Java binding of the operation request
+     * A pool of unmarshallers for XML--&gt;Java binding of the operation request
      */
     protected final ObjectPool<Unmarshaller> unmarshalerPool;
 

@@ -248,14 +248,15 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where:
+     * </p>
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
      * <li>a 2nd valid request is sent to complete the waiting user task,</li>
      * <li>a 3rd valid request is sent to complete again the user task already completed by the 2nd request.</li>
      * </ol>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>on the first request:
      * <ul>
@@ -275,7 +276,6 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <li>on the 3rd request, the right business fault associated to a user task already completed is returned because
      * the process instance is finished.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void validStartEventRequest() throws Exception {
@@ -671,17 +671,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where a request is sent to create a new process instance, where:
+     * </p>
      * <ul>
      * <li>the user identifier is missing into the incoming payload.</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>a fault is returned to the caller</li>
      * <li>no process instance is created on the Flowable engine</li>
      * </ul>
-     * </p>
      */
     @Test
     public void startEventRequest_NoUserIdValue() throws Exception {
@@ -719,16 +719,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where a request is sent to create a new process instance, where:
+     * </p>
      * <ul>
      * <li>the user identifier is empty into the incoming payload.</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>a fault is returned to the caller</li>
      * </ul>
-     * </p>
      */
     @Test
     public void startEventRequest_EmptyUserIdValue() throws Exception {
@@ -767,13 +767,14 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where:
+     * </p>
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
      * <li>a 2nd request is sent to complete the waiting user task where the user identifier is missing.</li>
      * </ol>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>on the first request:
      * <ul>
@@ -791,7 +792,6 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * </ul>
      * </li>
      * </ul>
-     * </p>
      */
     @Test
     public void userTaskRequest_NoUserIdValue() throws Exception {
@@ -867,13 +867,14 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where:
+     * </p>
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
      * <li>a 2nd request is sent to complete the waiting user task where the user identifier is empty.</li>
      * </ol>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>on the first request:
      * <ul>
@@ -891,7 +892,6 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * </ul>
      * </li>
      * </ul>
-     * </p>
      */
     @Test
     public void userTaskRequest_EmptyUserIdValue() throws Exception {
@@ -967,14 +967,15 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where:
+     * </p>
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
      * <li>a 2nd request is sent to complete the waiting user task where the process instance identifier is missing.
      * </li>
      * </ol>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>on the first request:
      * <ul>
@@ -992,7 +993,6 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * </ul>
      * </li>
      * </ul>
-     * </p>
      */
     @Test
     public void userTaskRequest_NoProcessInstanceIdValue() throws Exception {
@@ -1067,13 +1067,14 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where:
+     * </p>
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
      * <li>a 2nd request is sent to complete the waiting user task where the process instance identifier is empty.</li>
      * </ol>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>on the first request:
      * <ul>
@@ -1091,7 +1092,6 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * </ul>
      * </li>
      * </ul>
-     * </p>
      */
     @Test
     public void userTaskRequest_EmptyProcessInstanceIdValue() throws Exception {
@@ -1167,17 +1167,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where:
+     * </p>
      * <ol>
      * <li>a valid request is sent to complete a waiting user task where the process instance identifier does not exist
      * on the BPMN engine side.</li>
      * </ol>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the right business fault associated to a process instance identifier not found is returned.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void userTaskRequest_ProcessInstanceIdNotFound() throws Exception {
@@ -1218,14 +1218,15 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Check the message processing where:
+     * </p>
      * <ol>
      * <li>a first valid request is sent to create a new process instance,</li>
      * <li>a 2nd valid request is sent to complete the waiting user task,</li>
      * <li>a 3rd valid request is sent to complete again the user task already completed by the 2nd request.</li>
      * </ol>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>on the first request:
      * <ul>
@@ -1245,7 +1246,6 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
      * <li>on the 3rd request, the right business fault associated to a user task already completed is returned because
      * the user task is already completed.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void userTaskRequest_TaskCompletedFault() throws Exception {
@@ -1383,11 +1383,11 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     /**
      * <p>
      * Unit test about:
+     * </p>
      * <ul>
      * <li>PETALSSEACTIVITI-4: a service task follow the start event,</li>
      * <li>PETALSSEACTIVITI-5: process definition without user task.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void jira_PETALSSEACTIVITI_4() throws Exception {

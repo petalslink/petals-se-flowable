@@ -122,13 +122,13 @@ public class DeploymentTest extends AbstractVacationProcessTestEnvironment {
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs,</li>
      * <li>only one version of the process definition is deployed,</li>
      * <li>process instances started before redeployment continues correctly their execution after the
      * redeployment.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void redeploySameServiceUnit() throws Exception {
@@ -198,14 +198,15 @@ public class DeploymentTest extends AbstractVacationProcessTestEnvironment {
     /**
      * <p>
      * Check the deployment of a new version of a service unit:
+     * </p>
      * <ul>
      * <li>a first version of the service unit is deployed with a first version of process definition,</li>
      * <li>the first version of the service unit is undeployed,</li>
      * <li>a second version of the service unit is deployed with a second version of the process definition.</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs,</li>
      * <li>on first deployment, only one version of the process definition is deployed,</li>
@@ -216,7 +217,6 @@ public class DeploymentTest extends AbstractVacationProcessTestEnvironment {
      * <li>after second deployment, new process instances are created from the second version of the process
      * definition.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void deployNewVersionServiceUnit() throws Exception {

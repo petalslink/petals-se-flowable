@@ -37,18 +37,18 @@ public class SearchUsersInvocationTest extends AbstractIntegrationServiceInvokat
     /**
      * <p>
      * Check the processing of the integration service {@link SearchUsersOperation} when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is not compliant to the XML schema defined in WSDL</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_WsdlUncompliantRequest() throws Exception {
@@ -60,18 +60,18 @@ public class SearchUsersInvocationTest extends AbstractIntegrationServiceInvokat
     /**
      * <p>
      * Check the processing of the integration service {@link SearchUsersOperation} when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is compliant to the XML schema defined in WSDL</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_WsdlCompliantRequest() throws Exception {
@@ -86,17 +86,17 @@ public class SearchUsersInvocationTest extends AbstractIntegrationServiceInvokat
     /**
      * <p>
      * Check the processing of the integration service {@link SearchUsersOperation} when:
+     * </p>
      * <ul>
      * <li>an empty request is sent</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_EmptyRequest() throws Exception {
@@ -107,17 +107,17 @@ public class SearchUsersInvocationTest extends AbstractIntegrationServiceInvokat
     /**
      * <p>
      * Check the processing of the integration service {@link SearchUsersOperation} when:
+     * </p>
      * <ul>
      * <li>valid arguments are given to retrieve all users of a given group</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>user information are correctly retrieved</li>
      * </ul>
-     * </p>
      */
     @Test
     public void validRequest() throws Exception {

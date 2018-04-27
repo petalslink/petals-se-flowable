@@ -96,8 +96,6 @@ public class PetalsFlowableRule extends FlowableRule {
      * 
      * @param processInstanceId
      *            The process instance identifier
-     * @param processDefinitionKey
-     *            The process definition key
      */
     public void assertProcessInstanceFinished(final String processInstanceId) {
 
@@ -198,8 +196,6 @@ public class PetalsFlowableRule extends FlowableRule {
      * 
      * @param processInstanceId
      *            The process instance identifier of the process instance to wait its placement as dead letter job.
-     * @param duration
-     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */
     public void waitProcessInstanceAsDeadLetterJob(final String processInstanceId) throws InterruptedException {
         Await.waitProcessInstanceAsDeadLetterJob(processInstanceId, this.getManagementService(), 60);
@@ -256,8 +252,8 @@ public class PetalsFlowableRule extends FlowableRule {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its end.
-     * @param serviceTaskDefinitionKey
-     *            The service task identifier in the process definition
+     * @param taskDefinitionKey
+     *            The service task identifier (definition key) in the process definition
      */
     public void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
             final String candidateUser) throws InterruptedException {
@@ -270,8 +266,8 @@ public class PetalsFlowableRule extends FlowableRule {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its end.
-     * @param serviceTaskDefinitionKey
-     *            The service task identifier in the process definition
+     * @param taskDefinitionKey
+     *            The task identifier (definition key) in the process definition
      * @param duration
      *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */
@@ -288,7 +284,7 @@ public class PetalsFlowableRule extends FlowableRule {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
-     * @param messageName
+     * @param messageEventName
      *            The message name of the intermediate catch message event
      */
     public void waitIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName)
@@ -303,7 +299,7 @@ public class PetalsFlowableRule extends FlowableRule {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
-     * @param messageName
+     * @param messageEventName
      *            The message name of the intermediate catch message event
      * @param duration
      *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing

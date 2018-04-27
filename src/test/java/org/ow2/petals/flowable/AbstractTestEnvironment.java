@@ -117,8 +117,6 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      * 
      * @param processInstanceId
      *            The process instance identifier
-     * @param processDefinitionKey
-     *            The process definition key
      */
     protected void assertProcessInstanceFinished(final String processInstanceId) {
 
@@ -166,8 +164,6 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      * 
      * @param processInstanceId
      *            The process instance identifier of the process instance to wait its placement as dead letter job.
-     * @param duration
-     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */
     protected void waitProcessInstanceAsDeadLetterJob(final String processInstanceId) throws InterruptedException {
         Await.waitProcessInstanceAsDeadLetterJob(processInstanceId, this.flowableClient.getManagementService(), 60);
@@ -255,7 +251,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its assignment.
-     * @param messageName
+     * @param messageEventName
      *            The message name of the intermediate catch message event
      */
     protected void waitIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName)

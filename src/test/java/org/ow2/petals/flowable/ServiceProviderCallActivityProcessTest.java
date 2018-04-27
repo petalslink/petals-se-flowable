@@ -84,11 +84,11 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the process instance is correctly created in the Flowable engine,</li>
      * <li>the process instance is automatically completed with the right service call.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void nominal() throws Exception {
@@ -267,11 +267,11 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the error is correctly pushed to the Flowable engine as a technical error,</li>
      * <li>the service task is retried several times.</li>
      * </ul>
-     * </p>
      */
     @Test
     public void jbiErrorOnServiceTask() throws Exception {
@@ -396,11 +396,11 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
      * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>the JBI fault is correctly pushed to the Flowable engine as a BPMN error,</li>
      * <li>the service task is executed only once.</li>
      * </ul>
-     * </p>
      */
     @Test
     @Ignore("Until the call activity completion/cancelation is not correctly trapped ! (PETALSSEFLOWABLE-35)")

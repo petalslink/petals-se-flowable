@@ -39,18 +39,18 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
     /**
      * <p>
      * Check the processing of the integration service {@link GetUserOperation} when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is not compliant to the XML schema defined in WSDL</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_WsdlUncompliantRequest() throws Exception {
@@ -62,18 +62,18 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
     /**
      * <p>
      * Check the processing of the integration service {@link GetUserOperation} when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is compliant to the XML schema defined in WSDL</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_WsdlCompliantRequest() throws Exception {
@@ -88,17 +88,17 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
     /**
      * <p>
      * Check the processing of the integration service {@link GetUserOperation} when:
+     * </p>
      * <ul>
      * <li>an empty request is sent</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     @Test
     public void invalidRequest_EmptyRequest() throws Exception {
@@ -109,17 +109,17 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
     /**
      * <p>
      * Check the processing of the integration service {@link GetUserOperation} when:
+     * </p>
      * <ul>
      * <li>valid arguments are given to retrieve a user</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>user information are correctly retrieved</li>
      * </ul>
-     * </p>
      */
     @Test
     public void validRequest() throws Exception {
@@ -138,17 +138,17 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
     /**
      * <p>
      * Check the processing of the integration service {@link GetUserOperation} when:
+     * </p>
      * <ul>
      * <li>valid arguments are given to retrieve an unknown user</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>fault 'Unknown User' is returned</li>
      * </ul>
-     * </p>
      */
     @Test
     public void unkownUser() throws Exception {

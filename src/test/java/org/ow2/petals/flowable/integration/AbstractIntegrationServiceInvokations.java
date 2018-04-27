@@ -37,18 +37,18 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
     /**
      * <p>
      * Check the processing of an integration service operation when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is not compliant to the XML schema defined in WSDL</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     protected void testInvalidRequest_WsdlUncompliant(final String suName, final QName interfaceName,
             final QName serviceName,
@@ -81,18 +81,18 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
     /**
      * <p>
      * Check the processing of the integration service operation when:
+     * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
      * <li>the request content is compliant to the XML schema defined in WSDL, for example a response used as request</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     protected void testInvalidRequest_WsdlCompliant(final String suName, final QName interfaceName,
             final QName serviceName,
@@ -123,17 +123,17 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
     /**
      * <p>
      * Check the processing of the integration service operation when:
+     * </p>
      * <ul>
      * <li>an empty request is sent</li>
      * </ul>
-     * </p>
      * <p>
      * Expected results:
+     * </p>
      * <ul>
      * <li>no error occurs</li>
      * <li>a fault occurs about the invalid request</li>
      * </ul>
-     * </p>
      */
     protected void testInvalidRequest_Empty(final String suName, final QName interfaceName, final QName serviceName,
             final QName operationName)

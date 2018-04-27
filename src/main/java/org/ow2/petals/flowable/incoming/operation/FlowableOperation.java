@@ -134,8 +134,8 @@ public abstract class FlowableOperation implements FlowableService {
     /**
      * @param annotatedOperation
      *            Annotations of the operation to create
-     * @param processDefinitionId
-     *            The process definition identifier to associate to the operation to create
+     * @param outTemplates
+     *            The XSL templates used to generate the response payload
      * @param logger
      */
     protected FlowableOperation(final AnnotatedOperation annotatedOperation, final Templates outTemplates,
@@ -174,8 +174,8 @@ public abstract class FlowableOperation implements FlowableService {
      * 
      * @param exchange
      *            The current exchange
-     * @throws OperationProcessingException
-     *             An error occurs du
+     * @throws InvalidMEPException
+     *             The MEP is not supported by this operation
      */
     protected void checkMEP(final Exchange exchange) throws InvalidMEPException {
         // By default all MEPs are accepted
@@ -377,7 +377,7 @@ public abstract class FlowableOperation implements FlowableService {
 
     /**
      * 
-     * @param domSource
+     * @param incomingPayload
      *            The incoming XML payload
      * @param userId
      *            The user identifier. Can be {@code null} if no user id XPath expression is defined for the operation

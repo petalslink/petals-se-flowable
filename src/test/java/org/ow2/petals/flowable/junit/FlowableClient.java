@@ -111,12 +111,14 @@ public class FlowableClient extends ExternalResource {
     /**
      * <p>
      * Creates a temporary Flowable client connected to a default Flowable server:
+     * </p>
      * <ul>
-     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC Driver: {@link org.ow2.petals.flowable.FlowableSEConstants.DBServer#DEFAULT_JDBC_DRIVER},</li>
      * <li>JDBC URL: an embedded in-memoty H2 database,</li>
      * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
      * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
      * </ul>
+     * <p>
      * And using the default configuration for the identity service.
      * </p>
      */
@@ -127,13 +129,13 @@ public class FlowableClient extends ExternalResource {
     /**
      * <p>
      * Creates a temporary Flowable client connected to a default Flowable server:
+     * </p>
      * <ul>
-     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC Driver: {@link org.ow2.petals.flowable.FlowableSEConstants.DBServer#DEFAULT_JDBC_DRIVER},</li>
      * <li>JDBC URL: an embedded in-memory H2 database,</li>
      * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
      * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
      * </ul>
-     * </p>
      * 
      * @param idmEngineConfigurator
      *            IDM engine configurator
@@ -149,13 +151,13 @@ public class FlowableClient extends ExternalResource {
     /**
      * <p>
      * Creates a temporary Flowable client connected to a default Flowable server:
+     * </p>
      * <ul>
-     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC Driver: {@link org.ow2.petals.flowable.FlowableSEConstants.DBServer#DEFAULT_JDBC_DRIVER},</li>
      * <li>JDBC URL: an embedded in-memoty H2 database,</li>
      * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
      * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
      * </ul>
-     * </p>
      * 
      * @param idmEngineConfigurator
      *            IDM engine configurator
@@ -171,13 +173,13 @@ public class FlowableClient extends ExternalResource {
     /**
      * <p>
      * Creates a temporary Flowable client connected to a default Flowable server:
+     * </p>
      * <ul>
-     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC Driver: {@link org.ow2.petals.flowable.FlowableSEConstants.DBServer#DEFAULT_JDBC_DRIVER},</li>
      * <li>JDBC URL: an embedded H2 database as file,</li>
      * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
      * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
      * </ul>
-     * </p>
      * 
      * @param fileForJdbcUrl
      *            The file path of the Flowable database set as JDBC URL
@@ -189,13 +191,13 @@ public class FlowableClient extends ExternalResource {
     /**
      * <p>
      * Creates a temporary Flowable client connected to a default Flowable server:
+     * </p>
      * <ul>
-     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC Driver: {@link org.ow2.petals.flowable.FlowableSEConstants.DBServer#DEFAULT_JDBC_DRIVER},</li>
      * <li>JDBC URL: a JDBC URL for H2,</li>
      * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
      * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
      * </ul>
-     * </p>
      * 
      * @param h2JdbcUrl
      *            The JDBC URL for H2 database
@@ -213,13 +215,13 @@ public class FlowableClient extends ExternalResource {
     /**
      * <p>
      * Creates a temporary Flowable client connected to a default Flowable server:
+     * </p>
      * <ul>
-     * <li>JDBC Driver: {@link #DEFAULT_JDBC_DRIVER},</li>
+     * <li>JDBC Driver: {@link org.ow2.petals.flowable.FlowableSEConstants.DBServer#DEFAULT_JDBC_DRIVER},</li>
      * <li>JDBC URL: an embedded H2 database as file,</li>
      * <li>JDBC username: {@link #DEFAULT_JDBC_USERNAME},</li>
      * <li>JDBC password: {@link #DEFAULT_JDBC_PWD}.</li>
      * </ul>
-     * </p>
      * 
      * @param fileForJdbcUrl
      *            The file path of the Flowable database set as JDBC URL
@@ -302,7 +304,7 @@ public class FlowableClient extends ExternalResource {
     }
 
     /**
-     * Initialize & start the Flowable client
+     * Initialize &amp; start the Flowable client
      */
     public void create() throws Exception {
 

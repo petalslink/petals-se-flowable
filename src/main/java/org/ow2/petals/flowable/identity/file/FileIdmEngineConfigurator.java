@@ -40,11 +40,12 @@ import org.flowable.idm.api.User;
 import org.flowable.idm.engine.impl.persistence.entity.GroupEntityImpl;
 import org.flowable.idm.engine.impl.persistence.entity.UserEntityImpl;
 import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceResourceNotFoundException;
 
 /**
- * A {@link ProcessEngineConfigurator} that integrates an identity management engine based on files.
+ * A {@link SeFlowableIdmServiceConfigurator} that integrates an identity management engine based on files.
  * 
  * @author Christophe DENEUX - Linagora
  */
