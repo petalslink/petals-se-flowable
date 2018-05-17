@@ -24,6 +24,7 @@ import java.lang.reflect.Method;
 
 import org.apache.cxf.resource.URIResolver;
 import org.ow2.petals.component.framework.su.AbstractServiceUnitManager;
+import org.ow2.petals.component.framework.su.ServiceUnitDataHandler;
 
 public class InternalBPMNDefinitionURIResolver extends URIResolver {
 
@@ -52,6 +53,12 @@ public class InternalBPMNDefinitionURIResolver extends URIResolver {
 
         final String serviceUnitName = serviceUnitBase.substring(0, idx);
         final String resource = serviceUnitBase.substring(idx + 1);
+
+        final ServiceUnitDataHandler suDH = suMngr.getSUDataHandler(serviceUnitName);
+        if (suDH == null) {
+            throw new IOException(String.format("Unable to retrieve the service unit '%s'. Perhaps it is not deployed",
+                    serviceUnitName));
+        }
 
         try {
             final Method mTryFileSystem = this.getClass().getSuperclass().getDeclaredMethod("tryFileSystem",
