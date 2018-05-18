@@ -316,7 +316,7 @@
          <artifactId>flowable-cxf</artifactId>
       </dependency>
       <dependency>
-         <!-- Dependency required by the Petals transporter -->
+         <!-- Dependency required by the Petals transporter. The version must be aligned with the CXF embedded by flowable-cxf. -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-core</artifactId>
          <version>3.1.6</version>
@@ -459,6 +459,32 @@
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-junit-external-resources</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- flowable-cxf requires a version of CXF requiring Jetty 9.2.x, so we force to use it.
+                    TODO: To remove when CXF 3.2 will be used by flowable-cxf -->
+               <groupId>org.eclipse.jetty</groupId>
+               <artifactId>jetty-server</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- flowable-cxf requires a version of CXF requiring Jetty 9.2.x, so we force to use it.
+                    TODO: To remove when CXF 3.2 will be used by flowable-cxf -->
+               <groupId>org.eclipse.jetty</groupId>
+               <artifactId>jetty-http</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- flowable-cxf requires a version of CXF requiring Jetty 9.2.x, so we force to use it.
+                    TODO: To remove when CXF 3.2 will be used by flowable-cxf -->
+               <groupId>org.eclipse.jetty</groupId>
+               <artifactId>jetty-util</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- flowable-cxf requires a version of CXF requiring Jetty 9.2.x, so we force to use it.
+                    TODO: To remove when CXF 3.2 will be used by flowable-cxf -->
+               <groupId>org.eclipse.jetty</groupId>
+               <artifactId>jetty-servlet</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
