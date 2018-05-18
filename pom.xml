@@ -94,10 +94,9 @@
             <version>2.8.10</version>
          </dependency>
          <dependency>
-            <!-- Enforce the use of jetty 9.2.x (latest version supporting Java 7) -->
-            <groupId>cz.jirutka.maven</groupId>
+            <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-bom</artifactId>
-            <version>9.2.20.v20161216</version>
+            <version>9.4.10.v20180503</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
