@@ -94,9 +94,11 @@
             <version>2.8.10</version>
          </dependency>
          <dependency>
-            <groupId>org.eclipse.jetty</groupId>
+            <!-- Jetty version required by Apache CXF. -->
+            <!-- TODO: To move to Jetty 9.4+ when CXF 3.2+ will be used -->
+            <groupId>cz.jirutka.maven</groupId>
             <artifactId>jetty-bom</artifactId>
-            <version>9.4.10.v20180503</version>
+            <version>9.2.20.v20161216</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
