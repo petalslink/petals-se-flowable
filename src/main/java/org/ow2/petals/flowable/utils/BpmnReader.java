@@ -31,9 +31,11 @@ import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.engine.common.api.io.InputStreamProvider;
 import org.flowable.engine.common.impl.util.io.InputStreamSource;
+import org.flowable.engine.impl.bpmn.deployer.ResourceNameUtil;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Services;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.exception.IncoherentProcessDefinitionDeclarationException;
+import org.ow2.petals.flowable.exception.InvalidSuffixForProcessFileException;
 import org.ow2.petals.flowable.exception.InvalidVersionDeclaredException;
 import org.ow2.petals.flowable.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.exception.ProcessDefinitionDeclarationException;
@@ -208,12 +210,15 @@ public class BpmnReader {
     private EmbeddedProcessDefinition readBpmnModel(final String processFileName, final String versionStr)
             throws ProcessDefinitionDeclarationException {
 
-        if (processFileName != null && processFileName.trim().isEmpty()) {
+        assert processFileName != null;
+        assert versionStr != null;
+
+        if (processFileName.trim().isEmpty()) {
             throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
         }
 
         final int version;
-        if (versionStr != null && versionStr.trim().isEmpty()) {
+        if (versionStr.trim().isEmpty()) {
             throw new IncoherentProcessDefinitionDeclarationException(processFileName, versionStr);
         } else {
             try {
@@ -221,6 +226,18 @@ public class BpmnReader {
             } catch (final NumberFormatException e) {
                 throw new InvalidVersionDeclaredException(processFileName, versionStr);
             }
+        }
+        
+        // Check that the BPMN file has a suffix expected by Flowable, otherwise its deployment will be skiped
+        boolean correctlySuffixed = false;
+        for (final String suffix : ResourceNameUtil.BPMN_RESOURCE_SUFFIXES) {
+            if (processFileName.endsWith(suffix)) {
+                correctlySuffixed = true;
+                break;
+            }
+        }
+        if (!correctlySuffixed) {
+            throw new InvalidSuffixForProcessFileException(processFileName);
         }
 
         // Read the BPMN model
