@@ -60,18 +60,6 @@
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <!-- Align dependency with the one of Flowable -->
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
-         </dependency>
-         <dependency>
-            <!-- Align dependency with the one of Flowable -->
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-xjc</artifactId>
-            <version>2.2.11</version>
-         </dependency>
-         <dependency>
             <!-- Align flowable-rest dependency with the one of CDK -->
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
