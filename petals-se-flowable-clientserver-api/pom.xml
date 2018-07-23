@@ -28,7 +28,7 @@
    <groupId>org.ow2.petals</groupId>
    <artifactId>petals-se-flowable-clientserver-api</artifactId>
    <name>Petals ESB - Components - SE Flowable - Client/Server API</name>
-   <version>1.1.0</version>
+   <version>1.1.1-SNAPSHOT</version>
    <packaging>jar</packaging>
    <description>Petals SE Flowable Client/Server API</description>
 
@@ -48,6 +48,6 @@
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
       <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
-     <tag>petals-se-flowable-clientserver-api-1.1.0</tag>
+     <tag>HEAD</tag>
   </scm>
 </project>
