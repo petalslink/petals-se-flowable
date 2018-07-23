@@ -22,7 +22,7 @@
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath />
-      <version>20.2.8-SNAPSHOT</version>
+      <version>20.2.8</version>
    </parent>
 
    <groupId>org.ow2.petals</groupId>
@@ -36,12 +36,12 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-basis-api</artifactId>
-         <version>1.1.0-SNAPSHOT</version>
+         <version>1.1.0</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-clientserver-api</artifactId>
-         <version>1.2.0-SNAPSHOT</version>
+         <version>1.2.0</version>
       </dependency>
    </dependencies>
 
