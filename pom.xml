@@ -245,7 +245,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-clientserver-api</artifactId>
-         <version>1.1.0</version>
+         <version>1.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>

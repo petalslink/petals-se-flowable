@@ -41,7 +41,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-clientserver-api</artifactId>
-         <version>1.2.0</version>
+         <version>1.2.1</version>
       </dependency>
    </dependencies>
 
