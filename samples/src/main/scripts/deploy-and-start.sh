@@ -65,7 +65,7 @@ java -cp ${HOME}/.m2/repository/com/h2database/h2/1.4.178/h2-1.4.178.jar org.h2.
 
 petals-cli -h ${PETALS_HOSTNAME} -n ${PETALS_JMX_PORT} -u ${PETALS_JMX_USER} -p ${PETALS_JMX_PWD} - << EOF
 connect -y
-deploy -u mvn:https://repository.ow2.org/nexus/content/repositories/public@id=ow2.public!org.ow2.petals.samples.flowable/sa-flowable-vacation-sample/1.0.0-1.0.0-SNAPSHOT/zip
+deploy -u mvn:https://repository.ow2.org/nexus/content/repositories/public@id=ow2.public!org.ow2.petals.samples.flowable/sa-flowable-vacation-sample/${SAMPLE_VERSION}/zip
 EOF
 
 
