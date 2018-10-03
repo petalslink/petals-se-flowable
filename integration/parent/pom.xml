@@ -20,7 +20,7 @@
    <parent>
       <artifactId>parent</artifactId>
       <groupId>org.ow2.petals.integration.tests</groupId>
-      <version>5.2.0-SNAPSHOT</version>
+      <version>5.2.1-SNAPSHOT</version>
       <relativePath />
    </parent>
 
