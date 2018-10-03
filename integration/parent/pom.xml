@@ -30,14 +30,14 @@
    <packaging>pom</packaging>
 
    <properties>
-      <petals-se-flowable.version>1.1.0-SNAPSHOT</petals-se-flowable.version>
+      <!-- We override here the component version defined in the integration test parent POM
+           file to defined the version of the component to test. -->
+      <petals-se-flowable.version>1.1.1</petals-se-flowable.version>
    </properties>
 
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <!-- We override here the component version defined in the integration test parent POM
-                 file to defined the version of the component to test. -->
             <artifactId>petals-se-flowable</artifactId>
             <groupId>org.ow2.petals</groupId>
             <version>${petals-se-flowable.version}</version>
