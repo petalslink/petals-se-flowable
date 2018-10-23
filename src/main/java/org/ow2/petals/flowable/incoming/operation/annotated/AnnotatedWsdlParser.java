@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -604,7 +605,10 @@ public class AnnotatedWsdlParser {
                 throw new OutputXslNotFoundException(wsdlOperationName, xslFileName);
             } else {
                 try {
-                    xslUrl = xslFile.toURI().toURL();
+                    // The Java URI class allows non-URI characters that are not allowed by RFC 3896. The
+                    // URI returned by File.toURI() is invalid except using URI.toASCIIString().
+                    // see: http://www.garretwilson.com/blog/2008/10/25/javauriclassgotchas.xhtml
+                    xslUrl = URI.create(xslFile.toURI().toASCIIString()).toURL();
                 } catch (final MalformedURLException e) {
                     // This exception should never occur
                     throw new InvalidOutputXslException(wsdlOperationName, xslFileName, e);
@@ -669,7 +673,10 @@ public class AnnotatedWsdlParser {
                 throw new FaultXslNotFoundException(wsdlOperationName, wsdlFaultName, xslFileName);
             } else {
                 try {
-                    xslUrl = xslFile.toURI().toURL();
+                    // The Java URI class allows non-URI characters that are not allowed by RFC 3896. The
+                    // URI returned by File.toURI() is invalid except using URI.toASCIIString().
+                    // see: http://www.garretwilson.com/blog/2008/10/25/javauriclassgotchas.xhtml
+                    xslUrl = URI.create(xslFile.toURI().toASCIIString()).toURL();
                 } catch (final MalformedURLException e) {
                     // This exception should never occur
                     throw new InvalidFaultXslException(wsdlOperationName, wsdlFaultName, xslFileName, e);
