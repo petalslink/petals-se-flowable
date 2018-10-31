@@ -71,9 +71,9 @@ public class SuspendProcessInstancesOperation extends
             try {
                 this.runtimeService.suspendProcessInstanceById(processInstanceId);
                 result.setResult(AdjournmentResult.SUSPENDED);
-            } catch (final FlowableObjectNotFoundException e) {
+            } catch (final @SuppressWarnings("squid:S1166") FlowableObjectNotFoundException e) {
                 result.setResult(AdjournmentResult.NOT_FOUND);
-            } catch (final FlowableException e) {
+            } catch (final @SuppressWarnings("squid:S1166") FlowableException e) {
                 result.setResult(AdjournmentResult.ALREADY_SUSPENDED);
             }
         }

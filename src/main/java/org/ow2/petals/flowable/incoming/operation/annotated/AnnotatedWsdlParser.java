@@ -169,12 +169,13 @@ public class AnnotatedWsdlParser {
      */
     protected final String tenantId;
 
+    @SuppressWarnings("squid:S1312")
     private final Logger logger;
 
     /**
      * List of errors encountered during a parsing. All errors are reseted when the parsing starts
      */
-    private final List<InvalidAnnotationException> encounteredErrors = new ArrayList<InvalidAnnotationException>();
+    private final List<InvalidAnnotationException> encounteredErrors = new ArrayList<>();
 
     private final ErrorListener transformerFactoryErrorListener;
 
@@ -189,8 +190,7 @@ public class AnnotatedWsdlParser {
 
             @Override
             public void fatalError(final TransformerException exception) throws TransformerException {
-                AnnotatedWsdlParser.this.logger.severe(exception.getMessageAndLocation());
-                throw exception;
+                this.error(exception);
             }
 
             @Override
@@ -542,7 +542,7 @@ public class AnnotatedWsdlParser {
     private Map<String, Templates> getFaultTemplates(final Node wsdlOperation, final QName wsdlOperationName,
             final String suRootPath) throws InvalidAnnotationForOperationException {
         
-        final Map<String, Templates> faultTemplates = new HashMap<String, Templates>();
+        final Map<String, Templates> faultTemplates = new HashMap<>();
         
         final NodeList wsdlFaults = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_WSDL, "fault");
         for (int j = 0; j < wsdlFaults.getLength(); j++) {
@@ -627,15 +627,14 @@ public class AnnotatedWsdlParser {
                 final Source fileSource = new StreamSource(isXsl, xslUrl.toURI().toASCIIString());
                 transformerFactory.setErrorListener(this.transformerFactoryErrorListener);
                 return transformerFactory.newTemplates(fileSource);
-            } catch (final TransformerConfigurationException e) {
-                throw new InvalidOutputXslException(wsdlOperationName, xslFileName, e);
-            } catch (final URISyntaxException e) {
+            } catch (final TransformerConfigurationException | URISyntaxException e) {
                 throw new InvalidOutputXslException(wsdlOperationName, xslFileName, e);
             } finally {
                 try {
                     isXsl.close();
                 } catch (final IOException e) {
-                    // NOP
+                    this.logger.log(Level.WARNING,
+                            String.format("An error occurs closing XSL '%s'. Error skipped.", xslUrl.toString()), e);
                 }
             }
         } catch (final IOException e) {
@@ -695,16 +694,14 @@ public class AnnotatedWsdlParser {
                 final Source fileSource = new StreamSource(isXsl, xslUrl.toURI().toASCIIString());
                 transformerFactory.setErrorListener(this.transformerFactoryErrorListener);
                 return transformerFactory.newTemplates(fileSource);
-            } catch (final TransformerConfigurationException e) {
-                throw new InvalidFaultXslException(wsdlOperationName, wsdlFaultName, xslFileName, e);
-            } catch (final URISyntaxException e) {
-                // This exception should never occur
+            } catch (final TransformerConfigurationException | URISyntaxException e) {
                 throw new InvalidFaultXslException(wsdlOperationName, wsdlFaultName, xslFileName, e);
             } finally {
                 try {
                     isXsl.close();
                 } catch (final IOException e) {
-                    // NOP
+                    this.logger.log(Level.WARNING,
+                            String.format("An error occurs closing XSL '%s'. Error skipped.", xslUrl.toString()), e);
                 }
             }
         } catch (final IOException e) {

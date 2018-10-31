@@ -99,7 +99,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      * @param enableFlowableBpmnValidation
      *            Activation flag of the BPMN validation on process deployments into the Flowable engine
      */
-    public void setEnableFlowableBpmnValidation(boolean enableFlowableBpmnValidation) {
+    public void setEnableFlowableBpmnValidation(final boolean enableFlowableBpmnValidation) {
         this.enableFlowableBpmnValidation = enableFlowableBpmnValidation;
     }
 

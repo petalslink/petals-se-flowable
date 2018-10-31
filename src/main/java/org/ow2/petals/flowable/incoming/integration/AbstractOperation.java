@@ -54,6 +54,7 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
      */
     protected final ObjectPool<Unmarshaller> unmarshalerPool;
 
+    @SuppressWarnings("squid:S1312")
     protected final Logger log;
 
     private final QName operationName;

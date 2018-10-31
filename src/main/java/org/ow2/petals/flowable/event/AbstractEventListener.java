@@ -31,6 +31,7 @@ import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
  */
 public abstract class AbstractEventListener implements FlowableEventListener {
 
+    @SuppressWarnings("squid:S1312")
     protected final Logger log;
 
     private final FlowableEngineEventType listenEventType;

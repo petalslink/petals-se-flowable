@@ -177,7 +177,7 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
             final Long[] values = new Long[4];
 
             // Suspension state
-            values[PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE] = deployment.isSuspended() ? 1l : 0l;
+            values[PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE] = deployment.isSuspended() ? 1L : 0L;
 
             // active process instances
             final List<ProcessInstance> activeProcessInstances = this.runtimeService.createProcessInstanceQuery()

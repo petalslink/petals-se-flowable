@@ -80,7 +80,7 @@ public class FlowableParameterReader {
                     } else {
                         return idmEngineConfiguratorClass;
                     }
-                } catch (final ClassNotFoundException e) {
+                } catch (final @SuppressWarnings("squid:S1166") ClassNotFoundException e) {
                     log.warning("IDM engine configurator class not found: " + idmEngineConfiguratorClassNameConfigured
                             + ". Default value used.");
                     return FlowableSE.class.getClassLoader().loadClass(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME);

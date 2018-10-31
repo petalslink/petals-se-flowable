@@ -62,15 +62,6 @@ public class FlowableJBIListener extends AbstractJBIListener {
      */
     private PooledDataSourceProbe probeDatabaseConnectionPool = null;
 
-    /**
-     * A prefix to use for logged messages.
-     * <p>
-     * This prefix is updated for every processed message.<br />
-     * It only contains the exchange ID.
-     * </p>
-     */
-    private String logHint;
-
     @Override
     public void init() {
         super.init();
@@ -86,10 +77,9 @@ public class FlowableJBIListener extends AbstractJBIListener {
     @Override
     public boolean onJBIMessage(final Exchange exchange) {
  
+        @SuppressWarnings("squid:S1312")
         final Logger logger = this.getLogger();
         logger.fine("Start FlowableJBIListener.onJBIMessage()");
-
-        this.logHint = "Exchange " + exchange.getExchangeId();
 
         try {
             // Probes are not null here because message processing starts after JBI listener initialization
@@ -119,7 +109,8 @@ public class FlowableJBIListener extends AbstractJBIListener {
                         final QName operation = exchange.getOperation();
 
                         if (logger.isLoggable(Level.FINE)) {
-                            logger.fine(logHint + " was received and is started to be processed.");
+                            logger.fine("Exchange " + exchange.getExchangeId()
+                                    + " was received and is started to be processed.");
                             logger.fine("interfaceName = " + interfaceName);
                             logger.fine("Service       = " + service);
                             logger.fine("EndpointName  = " + eptName);

@@ -78,10 +78,6 @@ public class IntermediateCatchMessageEventStartedEventListener extends AbstractM
             final String flowPreviousStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
             final String flowStepId = this.simpleUUIDGenerator.getNewID();
 
-            // Flow attribute of the correlated service invocation are stored as local variables
-            final Map<String, Object> localVariables = this.runtimeService
-                    .getVariablesLocal(messageEvent.getExecutionId());
-
             // We store the flow step id as local variable of the intermediate catch message event
             this.runtimeService.setVariableLocal(messageEvent.getExecutionId(),
                     FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID, flowStepId);

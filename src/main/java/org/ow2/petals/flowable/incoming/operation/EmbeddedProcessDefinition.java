@@ -37,17 +37,17 @@ public class EmbeddedProcessDefinition {
      * The version of the embedded process
      */
     private final int version;
-    
+
     /**
      * The model of the embedded process
      */
     private BpmnModel model;
 
     public EmbeddedProcessDefinition(final String processFileName, final int version, final BpmnModel model) {
-		this.processFileName = processFileName;
-		this.version = version;
-		this.model = model;
-	}
+        this.processFileName = processFileName;
+        this.version = version;
+        this.model = model;
+    }
 
     /**
      * @return The file name of the embedded process

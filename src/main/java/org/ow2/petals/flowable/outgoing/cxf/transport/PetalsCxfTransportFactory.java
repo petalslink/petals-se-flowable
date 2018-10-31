@@ -18,9 +18,7 @@
 package org.ow2.petals.flowable.outgoing.cxf.transport;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,8 +44,6 @@ public class PetalsCxfTransportFactory extends AbstractTransportFactory implemen
 
     public static final String TRANSPORT_ID = "http://apache.org/transports/petals";
 
-    public static final List<String> DEFAULT_NAMESPACES = Arrays.asList(TRANSPORT_ID);
-
     private static final Logger LOG = LogUtils.getL7dLogger(PetalsCxfTransportFactory.class);
 
     private static final Set<String> URI_PREFIXES = new HashSet<>();
@@ -60,7 +56,7 @@ public class PetalsCxfTransportFactory extends AbstractTransportFactory implemen
 
     @Override
     public Conduit getConduit(final EndpointInfo targetInfo, final Bus bus) throws IOException {
-        return new PetalsConduit(this.createReference(targetInfo), bus);
+        return new PetalsConduit(createReference(targetInfo), bus);
     }
 
     @Override
@@ -68,7 +64,7 @@ public class PetalsCxfTransportFactory extends AbstractTransportFactory implemen
             throws IOException {
         LOG.log(Level.FINE, "Creating conduit for {0}", localInfo.getAddress());
         if (target == null) {
-            return new PetalsConduit(this.createReference(localInfo), bus);
+            return new PetalsConduit(createReference(localInfo), bus);
         } else {
             return new PetalsConduit(target, bus);
         }
@@ -85,7 +81,7 @@ public class PetalsCxfTransportFactory extends AbstractTransportFactory implemen
         return this.uriPrefixes;
     }
 
-    private EndpointReferenceType createReference(final EndpointInfo ei) {
+    private static EndpointReferenceType createReference(final EndpointInfo ei) {
         final EndpointReferenceType epr = new EndpointReferenceType();
         final AttributedURIType address = new AttributedURIType();
         address.setValue(ei.getAddress());

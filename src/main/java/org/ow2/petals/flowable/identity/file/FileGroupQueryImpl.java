@@ -32,7 +32,7 @@ public class FileGroupQueryImpl extends GroupQueryImpl {
     /**
      * Groups by user into a map: key=user-id, value=list of group-id
      */
-    private final Map<String, List<Group>> groupsByUser;
+    private final transient Map<String, List<Group>> groupsByUser;
 
     public FileGroupQueryImpl(final Map<String, List<Group>> groupsByUser) {
         this.groupsByUser = groupsByUser;

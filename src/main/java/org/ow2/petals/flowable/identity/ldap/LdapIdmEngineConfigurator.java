@@ -88,6 +88,7 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
     /**
      * Property name of the identity service containing declaration of parameter 'password'
      */
+    @SuppressWarnings("squid:S2068")
     public static final String PROP_PASSWORD = "password";
 
     /**
@@ -170,6 +171,7 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
      */
     private File configurationFile;
 
+    @SuppressWarnings("squid:S1312")
     private Logger logger;
 
     @Override
@@ -225,7 +227,7 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
 
         try (final InputStream cfgInputStream = new FileInputStream(cfgFile)) {
             return this.readConfiguration(cfgInputStream);
-        } catch (final FileNotFoundException e) {
+        } catch (final @SuppressWarnings("squid:S1166") FileNotFoundException e) {
             throw new IdentityServiceResourceNotFoundException(cfgFile.getAbsolutePath());
         } catch (final IOException e) {
             throw new IdentityServiceInitException(
@@ -248,20 +250,16 @@ public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlo
 
         assert cfgResourceName != null;
 
-        final InputStream cfgInputStream = this.getClass().getResourceAsStream(cfgResourceName);
-        if (cfgInputStream != null) {
-            try {
+        try (final InputStream cfgInputStream = this.getClass().getResourceAsStream(cfgResourceName)) {
+            if (cfgInputStream != null) {
                 return this.readConfiguration(cfgInputStream);
-            } finally {
-                try {
-                    cfgInputStream.close();
-                } catch (final IOException e) {
-                    throw new IdentityServiceInitException(
-                            String.format("An error occurs closing resource '%s'. Error skipped.", cfgResourceName), e);
-                }
+            } else {
+                throw new IdentityServiceResourceNotFoundException(cfgResourceName);
             }
-        } else {
-            throw new IdentityServiceResourceNotFoundException(cfgResourceName);
+        } catch (final IOException e) {
+            // Exception occurring on automatic close() invocation.
+            throw new IdentityServiceInitException(
+                    String.format("An error occurs closing resource '%s'. Error skipped.", cfgResourceName), e);
         }
     }
 

@@ -129,6 +129,7 @@ public abstract class FlowableOperation implements FlowableService {
      */
     private final Map<String, Templates> faultTemplates;
 
+    @SuppressWarnings("squid:S1312")
     protected final Logger logger;
 
     /**
@@ -316,23 +317,23 @@ public abstract class FlowableOperation implements FlowableService {
                     final FormProperty variableProperties = this.variableTypes.get(variableName);
                     final String varType = variableProperties.getType();
                     // Put the value in map of Flowable variable in the right format
-                    if (varType.equals("string")) {
+                    if ("string".equals(varType)) {
                         variableValues.put(variableName, variableValueAsStr);
-                    } else if (varType.equals("long")) {
+                    } else if ("long".equals(varType)) {
                         try {
                             variableValues.put(variableName, Long.valueOf(variableValueAsStr));
                         } catch (final NumberFormatException e) {
                             throw new MessagingException("The value of the variable '" + variableName
                                     + "' must be a long ! Current value is: " + variableValueAsStr);
                         }
-                    } else if (varType.equals("double")) {
+                    } else if ("double".equals(varType)) {
                         try {
                             variableValues.put(variableName, Double.valueOf(variableValueAsStr));
                         } catch (final NumberFormatException e) {
                             throw new MessagingException("The value of the variable '" + variableName
                                     + "' must be a double ! Current value is: " + variableValueAsStr);
                         }
-                    } else if (varType.equals("enum")) {
+                    } else if ("enum".equals(varType)) {
                         boolean validValue = false;
                         for (final FormValue enumValue : variableProperties.getFormValues()) {
                             if (variableValueAsStr.equals(enumValue.getId())) {
@@ -346,7 +347,7 @@ public abstract class FlowableOperation implements FlowableService {
                         } else {
                             variableValues.put(variableName, variableValueAsStr);
                         }
-                    } else if (varType.equals("date")) {
+                    } else if ("date".equals(varType)) {
                         try {
                             variableValues.put(variableName,
                                     DatatypeConverter.parseDateTime(variableValueAsStr).getTime());
@@ -354,9 +355,9 @@ public abstract class FlowableOperation implements FlowableService {
                             throw new MessagingException("The value of the variable '" + variableName
                                     + "' must be a valid date ! Current value is: " + variableValueAsStr, e);
                         }
-                    } else if (varType.equals("boolean")) {
-                        if (variableValueAsStr.equalsIgnoreCase("true")
-                                || variableValueAsStr.equalsIgnoreCase("false")) {
+                    } else if ("boolean".equals(varType)) {
+                        if ("true".equalsIgnoreCase(variableValueAsStr)
+                                || "false".equalsIgnoreCase(variableValueAsStr)) {
                             variableValues.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
                         } else {
                             throw new MessagingException("The value of the variable '" + variableName

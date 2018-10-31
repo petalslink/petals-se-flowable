@@ -19,8 +19,6 @@ package org.ow2.petals.flowable;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ASYNC_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_DEFAULT_FAILED_JOB_WAIT_TIME;
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_COREPOOLSIZE;
@@ -33,7 +31,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXE
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_GROUP;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ADDRESS;
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ENABLE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME;
@@ -57,7 +54,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATO
 import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_TYPE;
-import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
@@ -82,6 +78,7 @@ import javax.management.InvalidAttributeValueException;
 
 import org.ow2.petals.component.framework.DefaultBootstrap;
 import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
+import org.ow2.petals.flowable.utils.ConfigurationValueParser;
 
 /**
  * The component class of the Flowable BPMN Service Engine.
@@ -237,7 +234,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
                 } else {
                     this.setParam(JDBC_DRIVER, value);
                 }
-            } catch (final ClassNotFoundException e) {
+            } catch (final @SuppressWarnings("squid:S1166") ClassNotFoundException e) {
                 throw new InvalidAttributeValueException("Invalid value for attribute '" + ATTR_NAME_JDBC_DRIVER
                         + "': The class '" + value + "' has not been found.");
             }
@@ -413,18 +410,8 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
      */
     public String getDatabaseSchemaUpdate() {
 
-        final String databaseSchemaUpdate;
-        final String databaseSchemaUpdateString = this.getParam(DATABASE_SCHEMA_UPDATE);
-        if (databaseSchemaUpdateString == null || databaseSchemaUpdateString.trim().isEmpty()) {
-            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
-        } else if (databaseSchemaUpdateString.trim().equals("false") || databaseSchemaUpdateString.trim().equals("true")
-                || databaseSchemaUpdateString.trim().equals("create-drop")) {
-            databaseSchemaUpdate = databaseSchemaUpdateString.trim();
-        } else {
-            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
-        }
-
-        return databaseSchemaUpdate;
+        return ConfigurationValueParser.parseDatabaseSchemaUpdate(this.getParam(DATABASE_SCHEMA_UPDATE),
+                this.getLogger());
     }
 
     /**
@@ -445,21 +432,8 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
      */
     public String getEngineEnableJobExecutor() {
 
-        // Caution:
-        // - only the value "false", ignoring case and spaces will disable the job executor,
-        // - only the value "true", ignoring case and spaces will enable the job executor,
-        // - otherwise, the default value is used.
-        final boolean enableFlowableJobExecutor;
-        final String enableFlowableJobExecutorConfigured = this.getParam(ENGINE_ENABLE_JOB_EXECUTOR);
-        if (enableFlowableJobExecutorConfigured == null || enableFlowableJobExecutorConfigured.trim().isEmpty()) {
-            this.getLogger().info("The activation of the Flowable job executor is not configured. Default value used.");
-            enableFlowableJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
-        } else {
-            enableFlowableJobExecutor = enableFlowableJobExecutorConfigured.trim().equalsIgnoreCase("false") ? false
-                    : (enableFlowableJobExecutorConfigured.trim().equalsIgnoreCase("true") ? true
-                            : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
-        }
-        return Boolean.toString(enableFlowableJobExecutor);
+        return Boolean.toString(ConfigurationValueParser
+                .parseEngineEnableJobExecutor(this.getParam(ENGINE_ENABLE_JOB_EXECUTOR), this.getLogger()));
     }
 
     /**
@@ -694,24 +668,8 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
      * @return the engineEnableBpmnValidation
      */
     public String getEngineEnableBpmnValidation() {
-
-        // Caution:
-        // - only the value "false", ignoring case and spaces will disable the BPMN validation,
-        // - only the value "true", ignoring case and spaces will enable the BPMN validation,
-        // - otherwise, the default value is used.
-        final boolean enableFlowableBpmnValidation;
-        final String enableFlowableBpmnValidationConfigured = this.getParam(ENGINE_ENABLE_BPMN_VALIDATION);
-        if (enableFlowableBpmnValidationConfigured == null || enableFlowableBpmnValidationConfigured.trim().isEmpty()) {
-            this.getLogger().info(
-                    "The activation of the BPMN validation on process deployments into Flowable engine is not configured. Default value used.");
-            enableFlowableBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
-        } else {
-            enableFlowableBpmnValidation = enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("false")
-                    ? false
-                    : (enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
-                            : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
-        }
-        return Boolean.toString(enableFlowableBpmnValidation);
+        return Boolean.toString(ConfigurationValueParser
+                .parseEngineEnableBpmnValidation(this.getParam(ENGINE_ENABLE_BPMN_VALIDATION), this.getLogger()));
     }
 
     /**
@@ -773,7 +731,9 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
         try {
             return FlowableParameterReader.getIdmEngineConfiguratorClassName(
                     this.getParam(IDM_ENGINE_CONFIGURATOR_CLASS_NAME), this.getLogger()).getName();
-        } catch (final JBIException e) {
+        } catch (final @SuppressWarnings("squid:S1166") JBIException e) {
+            // We return the default IDM engine configurator class name even if we are unable to load it. It is needed
+            // to return something.
             return FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
         }
     }
@@ -841,22 +801,8 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
     }
 
     public boolean getEngineRestApiEnable() {
-
-        // Caution:
-        // - only the value "false", ignoring case and spaces will disable the rest api,
-        // - only the value "true", ignoring case and spaces will enable the rest api,
-        // - otherwise, the default value is used.
-        final boolean engineRestApiEnable;
-        final String configuredEngineRestApiEnable = this.getParam(ENGINE_REST_API_ENABLE);
-        if (configuredEngineRestApiEnable == null || configuredEngineRestApiEnable.trim().isEmpty()) {
-            this.getLogger().info("The activation of the Flowable job executor is not configured. Default value used.");
-            engineRestApiEnable = DEFAULT_ENGINE_REST_API_ENABLE;
-        } else {
-            engineRestApiEnable = configuredEngineRestApiEnable.trim().equalsIgnoreCase("false") ? false
-                    : (configuredEngineRestApiEnable.trim().equalsIgnoreCase("true") ? true
-                            : DEFAULT_ENGINE_REST_API_ENABLE);
-        }
-        return engineRestApiEnable;
+        return ConfigurationValueParser.parseEngineRestApiEnable(this.getParam(ENGINE_REST_API_ENABLE),
+                this.getLogger());
     }
 
     public void setEngineRestApiEnable(final boolean value) {

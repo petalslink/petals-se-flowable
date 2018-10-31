@@ -41,8 +41,7 @@ public class NoProcessInstanceIdValueException extends OperationProcessingFault 
 
     @Override
     public Map<QName, String> getXslParameters() {
-        final Map<QName, String> xslParameters = new HashMap<QName, String>();
-        return xslParameters;
+        return new HashMap<>();
     }
 
 }

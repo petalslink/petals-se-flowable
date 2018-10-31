@@ -43,6 +43,7 @@ import org.flowable.engine.parse.BpmnParseHandler;
  */
 public class ServiceTaskForceAsyncParseHandler extends AbstractBpmnParseHandler<ServiceTask> {
 
+    @SuppressWarnings("squid:S1312")
     private final Logger log;
 
     public ServiceTaskForceAsyncParseHandler(final Logger log) {

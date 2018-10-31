@@ -93,6 +93,7 @@ public final class FlowableSEConstants {
 		/**
 		 * The Jdbc Password: password to connect to the database. 
 		 */
+        @SuppressWarnings("squid:S2068")
 		public static final String JDBC_PASSWORD = "jdbc_password";
 
         /**
@@ -386,6 +387,7 @@ public final class FlowableSEConstants {
     /**
      * Default value of {@link #ENGINE_REST_API_ADDRESS}
      */
+    @SuppressWarnings("squid:S1313")
     public static final String DEFAULT_ENGINE_REST_API_ADDRESS = "0.0.0.0";
 
     /**
@@ -569,7 +571,8 @@ public final class FlowableSEConstants {
         /**
          * Name of the integration operation to search process instances
          */
-        public static final QName ITG_OP_GETPROCESSINSTANCES = new QName(ITG_NAMESPACE, ITG_OP_GETPROCESSINSTANCES_NAME);
+        public static final QName ITG_OP_GETPROCESSINSTANCES = new QName(ITG_NAMESPACE,
+                ITG_OP_GETPROCESSINSTANCES_NAME);
 
         /**
          * Name (local part) of the integration operation to suspend process instances

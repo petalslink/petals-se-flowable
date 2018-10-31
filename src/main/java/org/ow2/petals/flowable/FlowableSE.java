@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.flowable;
 
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME;
@@ -27,7 +26,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATO
 import static org.ow2.petals.flowable.FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DATABASE_TYPE;
-import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_DATABASE_SCHEMA_UPDATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_MAX_ACTIVE_CONNECTIONS;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_MAX_CHECKOUT_TIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_MAX_IDLE_CONNECTIONS;
@@ -131,6 +129,7 @@ import org.ow2.petals.flowable.outgoing.WSDLImporterForFlowableFactory;
 import org.ow2.petals.flowable.outgoing.cxf.transport.PetalsCxfTransportFactory;
 import org.ow2.petals.flowable.rest.FlowableProcessApiConfiguration;
 import org.ow2.petals.flowable.rest.config.SecurityConfiguration;
+import org.ow2.petals.flowable.utils.ConfigurationValueParser;
 import org.ow2.petals.probes.api.exceptions.MultipleProbesFactoriesFoundException;
 import org.ow2.petals.probes.api.exceptions.NoProbesFactoryFoundException;
 import org.ow2.petals.se.flowable.clientserver.api.admin.AdminRuntimeService;
@@ -292,22 +291,8 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             this.configureFlowableEngineOtherParams(pec);
             this.configureFlowableIdmEngine(pec);
 
-            // Caution:
-            // - only the value "false", ignoring case and spaces will disable the job executor,
-            // - only the value "true", ignoring case and spaces will enable the job executor,
-            // - otherwise, the default value is used.
-            final String enableFlowableJobExecutorConfigured = this.getComponentExtensions()
-                    .get(ENGINE_ENABLE_JOB_EXECUTOR);
-            if (enableFlowableJobExecutorConfigured == null || enableFlowableJobExecutorConfigured.trim().isEmpty()) {
-                this.getLogger()
-                        .info("The activation of the Flowable job executor is not configured. Default value used.");
-                this.enableFlowableJobExecutor = DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR;
-            } else {
-                this.enableFlowableJobExecutor = enableFlowableJobExecutorConfigured.trim().equalsIgnoreCase("false")
-                        ? false
-                        : (enableFlowableJobExecutorConfigured.trim().equalsIgnoreCase("true") ? true
-                                : DEFAULT_ENGINE_ENABLE_JOB_EXECUTOR);
-            }
+            this.enableFlowableJobExecutor = ConfigurationValueParser.parseEngineEnableJobExecutor(
+                    this.getComponentExtensions().get(ENGINE_ENABLE_JOB_EXECUTOR), this.getLogger());
 
             // We register the Petals transport into Apache CXF
             this.registerCxfPetalsTransport();
@@ -436,23 +421,8 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
 
     private void configureFlowableEngineOtherParams(final ProcessEngineConfiguration pec) {
 
-        // Caution:
-        // - only the value "false", ignoring case and spaces will disable the BPMN validation,
-        // - only the value "true", ignoring case and spaces will enable the BPMN validation,
-        // - otherwise, the default value is used.
-        final String enableFlowableBpmnValidationConfigured = this.getComponentExtensions()
-                .get(ENGINE_ENABLE_BPMN_VALIDATION);
-        final boolean enableFlowableBpmnValidation;
-        if (enableFlowableBpmnValidationConfigured == null || enableFlowableBpmnValidationConfigured.trim().isEmpty()) {
-            this.getLogger().info(
-                    "The activation of the BPMN validation during process deployments is not configured. Default value used.");
-            enableFlowableBpmnValidation = DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION;
-        } else {
-            enableFlowableBpmnValidation = enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("false")
-                    ? false
-                    : (enableFlowableBpmnValidationConfigured.trim().equalsIgnoreCase("true") ? true
-                            : DEFAULT_ENGINE_ENABLE_BPMN_VALIDATION);
-        }
+        final boolean enableFlowableBpmnValidation = ConfigurationValueParser.parseEngineEnableBpmnValidation(
+                this.getComponentExtensions().get(ENGINE_ENABLE_BPMN_VALIDATION), this.getLogger());
 
         final int defaultFailedJobWaitTime = this.getDefaultFailedJobWaitTime();
         final int asyncFailedJobWaitTime = this.getAsyncFailedJobWaitTime();
@@ -554,27 +524,11 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             }
         }
 
-        /* DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}. */
+        // DATABASE_TYPE Possible values: {h2, mysql, oracle, postgres, mssql, db2}.
         final String databaseType = this.getComponentExtensions().get(DATABASE_TYPE);
 
-        /* DATABASE_SCHEMA_UPDATE Possible values: {false, true, create-drop } */
-        /*
-         * TODO Test the Database Schema Version What about databaseSchemaUpdate values "true" and "create-drop"
-         */
-        final String databaseSchemaUpdateConfigured = this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE);
-        final String databaseSchemaUpdate;
-        if (databaseSchemaUpdateConfigured == null || databaseSchemaUpdateConfigured.trim().isEmpty()) {
-            this.getLogger().info("No schema update processing configured for database. Default value used.");
-            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
-        } else if (databaseSchemaUpdateConfigured.trim().equals("false")
-                || databaseSchemaUpdateConfigured.trim().equals("true")
-                || databaseSchemaUpdateConfigured.trim().equals("create-drop")) {
-            databaseSchemaUpdate = databaseSchemaUpdateConfigured.trim();
-        } else {
-            this.getLogger().info("Invalid value '" + databaseSchemaUpdateConfigured
-                    + "' configured for the schema update processing. Default value used.");
-            databaseSchemaUpdate = DEFAULT_DATABASE_SCHEMA_UPDATE;
-        }
+        final String databaseSchemaUpdate = ConfigurationValueParser
+                .parseDatabaseSchemaUpdate(this.getComponentExtensions().get(DATABASE_SCHEMA_UPDATE), this.getLogger());
 
         /* TODO Test Flowable database connection configuration */
         /* TODO Set the non set value with default value */

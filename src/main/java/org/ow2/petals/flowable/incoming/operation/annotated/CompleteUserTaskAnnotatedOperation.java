@@ -56,7 +56,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
     private static final List<String> EXCEPTIONS_MAPPED;
 
     static {
-        EXCEPTIONS_MAPPED = new ArrayList<String>();
+        EXCEPTIONS_MAPPED = new ArrayList<>();
         for (final Class<OperationProcessingFault> exception : new Class[] { ProcessInstanceNotFoundException.class,
                 TaskCompletedException.class, NoProcessInstanceIdValueException.class, NoUserIdValueException.class,
                 UnexpectedUserException.class }) {
@@ -147,9 +147,10 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
      * 
      * @param model
      *            BPMN model containing the process definition with the current user task
-     * @return The form properties of the current user task, or {@code null} if the no user task exists with the given
+     * @return The form properties of the current user task, or {@code null} if no user task exists with the given
      *         user task identifier ({@link #userTaskId}).
      */
+    @SuppressWarnings("squid:S1168")
     private List<FormProperty> findFormPropertiesOfUserTask(final BpmnModel model) {
         final Process process = model.getProcessById(this.getProcessDefinitionId());
         for (final FlowElement flowElt : process.getFlowElements()) {

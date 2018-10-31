@@ -64,6 +64,7 @@ public class BpmnReader {
     /**
      * The component's Logger
      */
+    @SuppressWarnings("squid:S1312")
     private final Logger logger;
 
     /**
@@ -120,12 +121,12 @@ public class BpmnReader {
                 } else if (multiProcessFileName != null && multiVersionStr != null) {
                     bpmnModels.put(multiProcessFileName, this.readBpmnModel(multiProcessFileName, multiVersionStr));
                     nbProcesses++;
-                } else if ((multiProcessFileName != null && multiVersionStr == null)
-                        || (multiProcessFileName == null && multiVersionStr != null)) {
+                } else if (multiProcessFileName != null || multiVersionStr != null) {
+                    // Here, multiProcessFileName == null or multiVersionStr == null.
                     throw new IncoherentProcessDefinitionDeclarationException(multiProcessFileName, multiVersionStr);
                 } else {
-                    // Here, processFileName == null and versionStr == null, and at least one process definition was
-                    // previously read, so we have nothing to do, we will exit the loop
+                    // Here, multiProcessFileName == null and multiVersionStr == null, and at least one process
+                    // definition was previously read, so we have nothing to do, we will exit the loop.
                 }
             } while (multiProcessFileName != null && multiVersionStr != null);
         } else if (uniqueProcessFileName != null && uniqueVersionStr != null) {

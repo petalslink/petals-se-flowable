@@ -55,7 +55,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    protected void configure(final HttpSecurity http) throws Exception {
         final HttpSecurity httpSecurity = http.authenticationProvider(authenticationProvider()).sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().csrf().disable();
 

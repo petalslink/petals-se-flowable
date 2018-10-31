@@ -178,7 +178,7 @@ public abstract class AnnotatedOperation {
     }
 
     private List<String> getMappedExceptionNames() {
-        final List<String> mappedExceptionNames = new ArrayList<String>();
+        final List<String> mappedExceptionNames = new ArrayList<>();
         this.addMappedExceptionNames(mappedExceptionNames);
         return mappedExceptionNames;
     }

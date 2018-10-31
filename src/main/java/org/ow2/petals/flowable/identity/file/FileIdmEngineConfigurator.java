@@ -177,7 +177,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         } else if (!tmpFile.exists()) {
             try {
                 this.readUsersResource(usersFileName);
-            } catch (final IdentityServiceResourceNotFoundException e) {
+            } catch (final @SuppressWarnings("squid:S1166") IdentityServiceResourceNotFoundException e) {
                 throw new IdentityServiceInitException(
                         "The file declaring users (" + usersFileName + ") does not exist.");
             }
@@ -189,6 +189,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
             } catch (final FileNotFoundException e) {
                 throw new IdentityServiceInitException(e);
             } catch (final IOException e) {
+                // Exception occurring on automatic close() invocation.
                 throw new IdentityServiceInitException(
                         String.format("An error occurs closing file '%s'. Error skipped.", tmpFile.getAbsolutePath()),
                         e);
@@ -214,7 +215,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         } else if (!tmpFile.exists()) {
             try {
                 this.readGroupsResource(groupsFileName);
-            } catch (final IdentityServiceResourceNotFoundException e) {
+            } catch (final @SuppressWarnings("squid:S1166") IdentityServiceResourceNotFoundException e) {
                 throw new IdentityServiceInitException(
                         "The file declaring groups (" + groupsFileName + ") does not exist.");
             }
@@ -226,6 +227,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
             } catch (final FileNotFoundException e) {
                 throw new IdentityServiceInitException(e);
             } catch (final IOException e) {
+                // Exception occurring on automatic close() invocation.
                 throw new IdentityServiceInitException(String
                         .format("An error occurs closing resource '%s'. Error skipped.", tmpFile.getAbsolutePath()), e);
             }
@@ -246,21 +248,16 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
 
         assert usersResourceName != null;
 
-        final InputStream usersInputStream = this.getClass().getResourceAsStream(usersResourceName);
-        if (usersInputStream != null) {
-            try {
+        try (final InputStream usersInputStream = this.getClass().getResourceAsStream(usersResourceName)) {
+            if (usersInputStream != null) {
                 this.readUsers(usersInputStream);
-            } finally {
-                try {
-                    usersInputStream.close();
-                } catch (final IOException e) {
-                    throw new IdentityServiceInitException(
-                            String.format("An error occurs closing resource '%s'. Error skipped.", usersResourceName),
-                            e);
-                }
+            } else {
+                throw new IdentityServiceResourceNotFoundException(usersResourceName);
             }
-        } else {
-            throw new IdentityServiceResourceNotFoundException(usersResourceName);
+        } catch (final IOException e) {
+            // Exception occurring on automatic close() invocation.
+            throw new IdentityServiceInitException(
+                    String.format("An error occurs closing resource '%s'. Error skipped.", usersResourceName), e);
         }
     }
 
@@ -276,18 +273,15 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
 
         assert groupsResourceName != null;
 
-        final InputStream groupsInputStream = this.getClass().getResourceAsStream(groupsResourceName);
-        assert groupsInputStream != null : "Resource [" + groupsResourceName
-                + "] containing group declaration not found";
-        try {
+        try (final InputStream groupsInputStream = this.getClass().getResourceAsStream(groupsResourceName)) {
+            assert groupsInputStream != null : "Resource [" + groupsResourceName
+                    + "] containing group declaration not found";
+
             this.readGroups(groupsInputStream);
-        } finally {
-            try {
-                groupsInputStream.close();
-            } catch (final IOException e) {
-                throw new IdentityServiceInitException(
-                        String.format("An error occurs closing resource '%s'. Error skipped.", groupsResourceName), e);
-            }
+
+        } catch (final IOException e) {
+            throw new IdentityServiceInitException(
+                    String.format("An error occurs closing resource '%s'. Error skipped.", groupsResourceName), e);
         }
     }
 

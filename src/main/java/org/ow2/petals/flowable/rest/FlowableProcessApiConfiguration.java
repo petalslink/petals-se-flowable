@@ -125,7 +125,7 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
     }
 
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+    public void configureMessageConverters(final List<HttpMessageConverter<?>> converters) {
         addDefaultHttpMessageConverters(converters);
         for (final HttpMessageConverter<?> converter : converters) {
             if (converter instanceof MappingJackson2HttpMessageConverter) {
@@ -137,7 +137,7 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
     }
 
     @Override
-    protected void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+    protected void configureContentNegotiation(final ContentNegotiationConfigurer configurer) {
         configurer.favorPathExtension(false);
     }
 

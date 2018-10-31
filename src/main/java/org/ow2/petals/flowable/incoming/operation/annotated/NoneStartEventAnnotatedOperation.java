@@ -105,9 +105,10 @@ public class NoneStartEventAnnotatedOperation extends StartEventAnnotatedOperati
      * 
      * @param model
      *            BPMN model containing the process definition with the current start event step
-     * @return The form properties of the current start event step, or {@code null} if the no start event step exists
-     *         with the given non start event identifier ({@link #noneStartEventId}). 
+     * @return The form properties of the current start event step, or {@code null} if no start event step exists with
+     *         the given non start event identifier ({@link #noneStartEventId}).
      */
+    @SuppressWarnings("squid:S1168")
     private List<FormProperty> findFormPropertiesOfStartEvent(final BpmnModel model) {
         final Process process = model.getProcessById(this.getProcessDefinitionId());
         for (final FlowElement flowElt : process.getFlowElements()) {

@@ -140,7 +140,7 @@ public class CompleteUserTaskOperation extends FlowableOperation {
         // Set flow attributes as task local variables that will be used by Flowable event listener to generate a MONIT
         // trace
         final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
-        final Map<String, Object> taskLocalVariables = new HashMap<String, Object>(2);
+        final Map<String, Object> taskLocalVariables = new HashMap<>(2);
         taskLocalVariables.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         taskLocalVariables.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
         this.taskService.setVariablesLocal(taskToComplete.getId(), taskLocalVariables);

@@ -71,9 +71,9 @@ public class ActivateProcessInstancesOperation extends
             try {
                 this.runtimeService.activateProcessInstanceById(processInstanceId);
                 result.setResult(ActivationResult.ACTIVATED);
-            } catch (final FlowableObjectNotFoundException e) {
+            } catch (final @SuppressWarnings("squid:S1166") FlowableObjectNotFoundException e) {
                 result.setResult(ActivationResult.NOT_FOUND);
-            } catch (final FlowableException e) {
+            } catch (final @SuppressWarnings("squid:S1166") FlowableException e) {
                 result.setResult(ActivationResult.ALREADY_ACTIVATED);
             }
         }

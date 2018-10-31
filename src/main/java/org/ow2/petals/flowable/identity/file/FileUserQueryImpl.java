@@ -32,12 +32,12 @@ public class FileUserQueryImpl extends UserQueryImpl {
     /**
      * Users list into a map: key=user-id, value=user-password
      */
-    private final Map<String, User> users;
+    private final transient Map<String, User> users;
 
     /**
      * Groups list into a map: key=group-id, value=list of user-id
      */
-    private final Map<String, List<String>> groups;
+    private final transient Map<String, List<String>> groups;
 
     public FileUserQueryImpl(final Map<String, User> users, final Map<String, List<String>> groups) {
         this.users = users;

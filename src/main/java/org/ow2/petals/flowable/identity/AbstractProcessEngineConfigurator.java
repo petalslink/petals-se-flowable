@@ -30,6 +30,7 @@ public abstract class AbstractProcessEngineConfigurator
      */
     protected File configurationFile;
 
+    @SuppressWarnings("squid:S1312")
     protected Logger logger;
 
     @Override
