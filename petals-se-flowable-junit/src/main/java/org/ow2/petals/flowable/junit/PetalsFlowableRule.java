@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
+import org.flowable.task.api.Task;
 import org.junit.runner.Description;
 import org.ow2.petals.flowable.utils.test.Assert;
 import org.ow2.petals.flowable.utils.test.Await;
@@ -103,7 +104,12 @@ public class PetalsFlowableRule extends FlowableRule {
     }
 
     /**
-     * Assertion to check that a user task can be completed by a given user.
+     * <p>
+     * Assertion to check that a single user task can be completed by the given user.
+     * </p>
+     * <p>
+     * The requested user can be the task assignee, or a member of a candidate group, or a candidate user.
+     * </p>
      * 
      * @param processInstanceId
      *            The process instance identifier
@@ -111,11 +117,12 @@ public class PetalsFlowableRule extends FlowableRule {
      *            The process definition key
      * @param user
      *            The task can be completed by the given user
+     * @return The task to complete
      */
-    public void assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
+    public Task assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
             final String user) {
 
-        Assert.assertCurrentUserTask(processInstanceId, taskDefinitionKey, user, this.getTaskService());
+        return Assert.assertCurrentUserTask(processInstanceId, taskDefinitionKey, user, this.getTaskService());
     }
 
     /**

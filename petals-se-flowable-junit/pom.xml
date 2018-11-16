@@ -99,6 +99,11 @@
          <version>${flowable.version}</version>
       </dependency>
       <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-task-service-api</artifactId>
+         <version>${flowable.version}</version>
+      </dependency>
+      <dependency>
          <!-- We use 'log4j-over-slf4j' as SLF bridge -->
          <groupId>org.slf4j</groupId>
          <artifactId>log4j-over-slf4j</artifactId>
@@ -106,7 +111,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-test-utils</artifactId>
-         <version>1.1.0</version>
+         <version>1.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.xmlunit</groupId>
