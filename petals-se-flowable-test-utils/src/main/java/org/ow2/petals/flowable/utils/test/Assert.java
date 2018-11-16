@@ -75,7 +75,12 @@ public class Assert extends org.junit.Assert {
     }
 
     /**
-     * Assertion to check that a user task can be completed by a given user.
+     * <p>
+     * Assertion to check that a single user task can be completed by the given user.
+     * </p>
+     * <p>
+     * The requested user can be the task assignee, or a member of a candidate group, or a candidate user.
+     * </p>
      * 
      * @param processInstanceId
      *            The process instance identifier
@@ -83,15 +88,19 @@ public class Assert extends org.junit.Assert {
      *            The process definition key
      * @param user
      *            The task can be completed by the given user
+     * @return The task to complete
      */
-    public static void assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
+    public static Task assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
             final String user, final TaskService taskService) {
 
         final TaskQuery taskQuery = taskService.createTaskQuery();
-        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskCandidateUser(user).singleResult();
+        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskCandidateOrAssigned(user)
+                .singleResult();
         assertNotNull(nextTask);
         assertEquals(processInstanceId, nextTask.getProcessInstanceId());
         assertEquals(taskDefinitionKey, nextTask.getTaskDefinitionKey());
+
+        return nextTask;
     }
 
     /**
