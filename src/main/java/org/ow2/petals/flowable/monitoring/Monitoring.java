@@ -1,27 +1,34 @@
 /**
  * Copyright (c) 2016-2018 Linagora
- * 
+ *
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 2.1 of the License, or (at your
  * option) any later version.
- * 
+ *
  * This program/library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
  * for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
 package org.ow2.petals.flowable.monitoring;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import javax.management.openmbean.CompositeDataSupport;
+import javax.management.openmbean.CompositeType;
+import javax.management.openmbean.OpenDataException;
+import javax.management.openmbean.OpenType;
+import javax.management.openmbean.SimpleType;
+import javax.management.openmbean.TabularData;
+import javax.management.openmbean.TabularDataSupport;
+import javax.management.openmbean.TabularType;
 
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.flowable.engine.HistoryService;
@@ -55,10 +62,20 @@ import org.ow2.petals.probes.api.probes.macro.ThreadPoolProbe;
 
 /**
  * The monitoring MBean of the SE Flowable
- * 
+ *
  * @author Christophe DENEUX - Linagora
  */
 public class Monitoring extends org.ow2.petals.component.framework.monitoring.Monitoring implements MonitoringMBean {
+
+    /**
+     * Item names of the process definition TabularData returned by {@link #getProcessDefinitions()}
+     */
+    private static final String[] PROCESS_DEFINITIONS_ITEM_NAMES;
+
+    /**
+     * TabularData type of the process definition returned by {@link #getProcessDefinitions()}
+     */
+    private static final TabularType PROCESS_DEFINITIONS_TABULAR_TYPE;
 
     /**
      * The repository service of the Flowable engine
@@ -89,7 +106,7 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
 
     /**
      * Creates the monitoring MBean
-     * 
+     *
      * @param responseTimeProbesTimer
      *            The timer used as sampler by response time probes. <b>The caller is responsible to cancel the timer to
      *            free resources attached</b>.
@@ -168,13 +185,18 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
     }
 
     @Override
-    public Map<String, Long[]> getProcessDefinitions() {
+    public TabularData getProcessDefinitions() throws OpenDataException {
+
+        assert PROCESS_DEFINITIONS_TABULAR_TYPE != null;
+        final TabularDataSupport tabServiceInvocations = new TabularDataSupport(PROCESS_DEFINITIONS_TABULAR_TYPE);
 
         final List<ProcessDefinition> deployments = this.repositoryService.createProcessDefinitionQuery().list();
 
-        final Map<String, Long[]> results = new HashMap<>(deployments.size());
         for (final ProcessDefinition deployment : deployments) {
-            final Long[] values = new Long[4];
+            final Object[] values = new Object[5];
+
+            // Process definition
+            values[PROCESS_DEFINITION_INFO_ID_KEY] = deployment.getKey();
 
             // Suspension state
             values[PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE] = deployment.isSuspended() ? 1L : 0L;
@@ -191,13 +213,18 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
                     .valueOf(suspendedProcessInstances.size());
 
             // ended process instances
-            final List<HistoricProcessInstance> endedProcessInstances = historyService
+            final List<HistoricProcessInstance> endedProcessInstances = this.historyService
                     .createHistoricProcessInstanceQuery().processDefinitionKey(deployment.getKey()).finished().list();
             values[PROCESS_DEFINITION_INFO_ID_ENDED_INSTANCES_COUNTER] = Long.valueOf(endedProcessInstances.size());
 
-            results.put(deployment.getKey(), values);
+            final CompositeDataSupport support = new CompositeDataSupport(
+                    PROCESS_DEFINITIONS_TABULAR_TYPE.getRowType(),
+                    PROCESS_DEFINITIONS_ITEM_NAMES,
+                    values);
+
+            tabServiceInvocations.put(support);
         }
-        return results;
+        return tabServiceInvocations;
     }
 
     //
@@ -275,11 +302,11 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
     }
 
     public ThreadPoolProbe getProbeAsyncExecutorThreadPool() {
-        return probeAsyncExecutorThreadPool;
+        return this.probeAsyncExecutorThreadPool;
     }
 
     public PooledDataSourceProbe getProbeDatabaseConnectionPool() {
-        return probeDatabaseConnectionPool;
+        return this.probeDatabaseConnectionPool;
     }
 
     @Override
@@ -330,5 +357,38 @@ public class Monitoring extends org.ow2.petals.component.framework.monitoring.Mo
         } catch (final ProbeNotStartedException e) {
             throw new MonitoringProbeNotStartedException(e);
         }
+    }
+
+    static {
+        try {
+            //
+            // --- Process definitions
+            //
+            PROCESS_DEFINITIONS_ITEM_NAMES = new String[] {
+                    "processDefinition", "suspensionState", "active", "suspended", "ended"};
+
+            final CompositeType processDefinitionsCompositeType = new CompositeType(
+                    "ProcessDefinition",
+                    "current process definitions deployed with some metrics on process instances",
+                    PROCESS_DEFINITIONS_ITEM_NAMES,
+                    new String[] {
+                            "definition of the process",
+                            "the suspension state: '1' the process definition is suspended, '0' it is not suspended",
+                            "the number of active process instances",
+                            "the number of suspended process instances",
+                    "the number of ended process instances"},
+                    new OpenType[] { SimpleType.STRING, SimpleType.LONG, SimpleType.LONG, SimpleType.LONG,
+                            SimpleType.LONG });
+
+            PROCESS_DEFINITIONS_TABULAR_TYPE = new TabularType(
+                    "ProcessDefinitions",
+                    "List current process definitions deployed with some metrics on process instances",
+                    processDefinitionsCompositeType,
+                    new String[] {"processDefinition"});
+
+        } catch (final OpenDataException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 }

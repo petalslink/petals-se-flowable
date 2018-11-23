@@ -240,12 +240,12 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-basis-api</artifactId>
-         <version>1.1.0</version>
+         <version>1.1.1-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-clientserver-api</artifactId>
-         <version>1.1.1</version>
+         <version>1.1.2-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -360,7 +360,7 @@
          <version>${flowable.version}</version>
          <exclusions>
             <exclusion>
-               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We 
+               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We
                     choose arbitrarly spring-aop -->
                <groupId>aopalliance</groupId>
                <artifactId>aopalliance</artifactId>
@@ -405,7 +405,7 @@
          <artifactId>spring-security-core</artifactId>
          <exclusions>
             <exclusion>
-               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We 
+               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We
                     choose arbitrarly spring-aop -->
                <groupId>aopalliance</groupId>
                <artifactId>aopalliance</artifactId>
@@ -417,7 +417,7 @@
          <artifactId>spring-security-config</artifactId>
          <exclusions>
             <exclusion>
-               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We 
+               <!-- aopalliance:aopalliance is already packaged into spring-aop, but with different classes. We
                     choose arbitrarly spring-aop -->
                <groupId>aopalliance</groupId>
                <artifactId>aopalliance</artifactId>
@@ -439,7 +439,7 @@
          <artifactId>log4j-over-slf4j</artifactId>
          <!-- scope 'provided', it is provided by the petals-bootstrap-launcher -->
       </dependency>
-      
+
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-cdk-junit</artifactId>
