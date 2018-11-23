@@ -32,7 +32,6 @@ import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessagingException;
 
 import org.apache.cxf.Bus;
-import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
@@ -54,17 +53,17 @@ import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
 
 public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
-    private static final Logger LOG = LogUtils.getL7dLogger(PetalsConduit.class);
-
     public static final ThreadLocal<FlowAttributes> flowAttributes = new ThreadLocal<>();
 
     private final Bus bus;
 
     private final AbstractListener sender;
 
-    final AsyncCallback asyncCallback;
+    private final AsyncCallback asyncCallback;
 
-    public PetalsConduit(final EndpointReferenceType t, final Bus bus) {
+    private final Logger logger;
+
+    public PetalsConduit(final EndpointReferenceType t, final Bus bus, final Logger logger) {
         super(t);
         this.bus = bus;
 
@@ -73,6 +72,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
         this.sender = (AbstractListener) beans.get(PETALS_SENDER_COMP_NAME);
 
         this.asyncCallback = this;
+        this.logger = logger;
 
     }
 
@@ -85,7 +85,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
     @Override
     protected Logger getLogger() {
-        return LOG;
+        return this.logger;
     }
 
     @Override
@@ -106,8 +106,8 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
                 DOMHelper.prettyPrint(xmlPayload, ebaos);
 
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Fault XML payload received: " + ebaos.toString());
+                if (this.logger.isLoggable(Level.FINE)) {
+                    this.logger.fine("Fault XML payload received: " + ebaos.toString());
                 }
 
                 // TODO: Add support for attachments
@@ -117,11 +117,12 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
             } catch (final PEtALSCDKException e) {
                 // TODO: The error should be pushed into CXF exchange
-                LOG.log(Level.WARNING, "An error occurs", e);
+                this.logger.log(Level.WARNING, "An error occurs", e);
             }
         } else if (asyncExchange.isErrorStatus()) {
             // TODO: The error is pushed into CXF exchange as a standard fault
-            LOG.log(Level.WARNING, String.format("An error occurs on exchange '%s'", asyncExchange.getExchangeId()),
+            this.logger.log(Level.WARNING,
+                    String.format("An error occurs on exchange '%s'", asyncExchange.getExchangeId()),
                     asyncExchange.getError());
 
             final Document xmlPayload = wrapAsSoapCommonFault(asyncExchange.getError());
@@ -129,8 +130,8 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
             final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
             DOMHelper.prettyPrint(xmlPayload, ebaos);
 
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Error received as common soap fault: " + ebaos.toString());
+            if (this.logger.isLoggable(Level.FINE)) {
+                this.logger.fine("Error received as common soap fault: " + ebaos.toString());
             }
 
             msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());
@@ -145,8 +146,8 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
             final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
             DOMHelper.prettyPrint(xmlPayload, ebaos);
 
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Status DONE received and transformed into: " + ebaos.toString());
+            if (this.logger.isLoggable(Level.FINE)) {
+                this.logger.fine("Status DONE received and transformed into: " + ebaos.toString());
             }
 
             msg.setContent(InputStream.class, ebaos.toByteArrayInputStream());
@@ -162,8 +163,8 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
                 final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
                 DOMHelper.prettyPrint(xmlPayload, ebaos);
 
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Output XML payload received: " + ebaos.toString());
+                if (this.logger.isLoggable(Level.FINE)) {
+                    this.logger.fine("Output XML payload received: " + ebaos.toString());
                 }
 
                 // TODO: Add support for attachments
@@ -173,7 +174,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
             } catch (final MessagingException e) {
                 // TODO: The error should be pushed into CXF exchange
-                LOG.log(Level.WARNING, "An error occurs", e);
+                this.logger.log(Level.WARNING, "An error occurs", e);
             }
         }
 
@@ -186,15 +187,15 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
         // A timeout occurs, the error is pushed into CXF exchange as a standard fault
         final String errorMsg = String.format("A timeout occurs on exchange '%s'", asyncExchange.getExchangeId());
-        LOG.warning(errorMsg);
+        this.logger.warning(errorMsg);
 
         final Document xmlPayload = wrapAsSoapCommonFault(new Exception(errorMsg));
 
         final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
         DOMHelper.prettyPrint(xmlPayload, ebaos);
 
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("Timeout received as common soap fault: " + ebaos.toString());
+        if (this.logger.isLoggable(Level.FINE)) {
+            this.logger.fine("Timeout received as common soap fault: " + ebaos.toString());
         }
 
         final MessageImpl msg = new MessageImpl();

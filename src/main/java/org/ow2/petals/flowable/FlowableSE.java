@@ -977,7 +977,7 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
 
     private void registerCxfPetalsTransport() {
         final Bus bus = BusFactory.getThreadDefaultBus();
-        final PetalsCxfTransportFactory cxfPetalsTransport = new PetalsCxfTransportFactory();
+        final PetalsCxfTransportFactory cxfPetalsTransport = new PetalsCxfTransportFactory(this.getLogger());
         final ConduitInitiatorManager extension = bus.getExtension(ConduitInitiatorManager.class);
         extension.registerConduitInitiator(PetalsCxfTransportFactory.TRANSPORT_ID, cxfPetalsTransport);
     }

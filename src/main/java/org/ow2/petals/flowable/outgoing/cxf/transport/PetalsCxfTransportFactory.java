@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.cxf.Bus;
-import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.service.model.EndpointInfo;
 import org.apache.cxf.transport.AbstractTransportFactory;
 import org.apache.cxf.transport.Conduit;
@@ -44,29 +43,33 @@ public class PetalsCxfTransportFactory extends AbstractTransportFactory implemen
 
     public static final String TRANSPORT_ID = "http://apache.org/transports/petals";
 
-    private static final Logger LOG = LogUtils.getL7dLogger(PetalsCxfTransportFactory.class);
-
     private static final Set<String> URI_PREFIXES = new HashSet<>();
 
     static {
         URI_PREFIXES.add("petals://");
     }
 
+    private final Logger logger;
+
     private Set<String> uriPrefixes = new HashSet<>(URI_PREFIXES);
+
+    public PetalsCxfTransportFactory(final Logger logger) {
+        this.logger = logger;
+    }
 
     @Override
     public Conduit getConduit(final EndpointInfo targetInfo, final Bus bus) throws IOException {
-        return new PetalsConduit(createReference(targetInfo), bus);
+        return new PetalsConduit(createReference(targetInfo), bus, this.logger);
     }
 
     @Override
     public Conduit getConduit(final EndpointInfo localInfo, final EndpointReferenceType target, final Bus bus)
             throws IOException {
-        LOG.log(Level.FINE, "Creating conduit for {0}", localInfo.getAddress());
+        this.logger.log(Level.FINE, "Creating conduit for {0}", localInfo.getAddress());
         if (target == null) {
-            return new PetalsConduit(createReference(localInfo), bus);
+            return new PetalsConduit(createReference(localInfo), bus, this.logger);
         } else {
-            return new PetalsConduit(target, bus);
+            return new PetalsConduit(target, bus, this.logger);
         }
     }
 
