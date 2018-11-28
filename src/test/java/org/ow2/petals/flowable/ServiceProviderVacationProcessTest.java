@@ -1,16 +1,16 @@
 /**
  * Copyright (c) 2014-2018 Linagora
- * 
+ *
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 2.1 of the License, or (at your
  * option) any later version.
- * 
+ *
  * This program/library is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
  * for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
@@ -29,11 +29,12 @@ import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.I
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.LogRecord;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeFactory;
@@ -89,9 +90,9 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 
 /**
  * Unit tests about request processing of BPMN services, with a component configured with default values
- * 
+ *
  * @author Christophe DENEUX - Linagora
- * 
+ *
  */
 public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvironment {
 
@@ -105,17 +106,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         //
         // -- Assertions about monitoring of process definitions --
         //
-        final Map<String, Long[]> metrics = monitoringMbean.getProcessDefinitions();
+        final TabularData metrics = monitoringMbean.getProcessDefinitions();
 
         // 2 process definitions: jira_PETALSSEACTIVITI-4 and vacationRequest
         assertEquals(2, metrics.size());
-        assertNotNull(metrics.get("vacationRequest"));
-        assertNotNull(metrics.get("jira_PETALSSEACTIVITI-4"));
+        assertNotNull(metrics.get(new String[] { "vacationRequest" }));
+        assertNotNull(metrics.get(new String[] { "jira_PETALSSEACTIVITI-4" }));
 
         // process instances
-        final Long[] vacationInstances = metrics.get("vacationRequest");
-        assertEquals(0, vacationInstances[0].longValue());
-        
+        final CompositeData vacationInstances = metrics.get(new String[] { "vacationRequest" });
+        assertEquals(0, ((Long) vacationInstances.get("suspensionState")).longValue());
+
         /*
          * 5 process instances in state 'Pending', the ones created by unit tests:
          * - userTaskRequest_EmptyProcessInstanceIdValue,
@@ -124,21 +125,21 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
          * - userTaskRequest_NoProcessInstanceIdValue,
          * - userTaskRequest_TaskCompletedFault
          */
-        assertEquals(5, vacationInstances[1].longValue());
-        assertEquals(0, vacationInstances[2].longValue());
+        assertEquals(5, ((Long) vacationInstances.get("active")).longValue());
+        assertEquals(0, ((Long) vacationInstances.get("suspended")).longValue());
         /*
          * 1 process instance in state ended, the one created by unit test 'validStartEventRequest'
          */
-        assertEquals(1, vacationInstances[3].longValue());
+        assertEquals(1, ((Long) vacationInstances.get("ended")).longValue());
 
-        final Long[] jiraInstances = metrics.get("jira_PETALSSEACTIVITI-4");
-        assertEquals(0, jiraInstances[0].longValue());
-        assertEquals(0, jiraInstances[1].longValue());
-        assertEquals(0, jiraInstances[2].longValue());
+        final CompositeData jiraInstances = metrics.get(new String[] { "jira_PETALSSEACTIVITI-4" });
+        assertEquals(0, ((Long) jiraInstances.get("suspensionState")).longValue());
+        assertEquals(0, ((Long) jiraInstances.get("active")).longValue());
+        assertEquals(0, ((Long) jiraInstances.get("suspended")).longValue());
         /*
          * 1 process instance in state ended, the one created by unit test 'jira_PETALSSEACTIVITI-4'
          */
-        assertEquals(1, jiraInstances[3].longValue());
+        assertEquals(1, ((Long) jiraInstances.get("ended")).longValue());
 
         checkProcessInstancesByIntgService(null, 5, 0, 1);
         checkProcessInstancesByIntgService(ProcessInstanceState.ACTIVE, 5, 0, 0);
@@ -1506,7 +1507,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
     /**
      * Retrieve a process instance.
-     * 
+     *
      * @param processInstanceId
      *            The process instance identifier of the process instance to retrieve
      * @param expectedStartDate
@@ -1594,7 +1595,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
     /**
      * Retrieve a user task.
-     * 
+     *
      * @param user
      *            The user to which the task is assigned
      * @param processInstanceId
