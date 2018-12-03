@@ -112,19 +112,27 @@
       </sql>
 
       <echo message="Deploying and starting service assemblies..." />
-      <deploySa url="${org.ow2.petals.samples.flowable:sa-flowable-vacation-sample:jbi-service-assembly}"
-                id="sa-flowable-vacation-sample"
-                jmx.port="${host1.port}"
-                jmx.host="${host1.ip}"
-                jmx.user="${host1.username}"
-                jmx.pwd="${host1.password}" />
+      <parallel>
+	      <deploySa url="${org.ow2.petals.samples.flowable:sa-flowable-vacation-sample:jbi-service-assembly}"
+	                id="sa-flowable-vacation-sample"
+	                jmx.port="${host1.port}"
+	                jmx.host="${host1.ip}"
+	                jmx.user="${host1.username}"
+	                jmx.pwd="${host1.password}" />
+	      <deploySa url="${org.ow2.petals.samples.flowable:sa-flowable-collaboration-sample:jbi-service-assembly}"
+	                id="sa-flowable-collaboration-sample"
+	                jmx.port="${host1.port}"
+	                jmx.host="${host1.ip}"
+	                jmx.user="${host1.username}"
+	                jmx.pwd="${host1.password}" />
+      </parallel>
    </target>
 
 
    <!-- Target : Run -->
    <target name="run">
       <echo message="Launching Flowable component tests..." />
-
+            
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
       <!-- Wait the end of the process instance execution -->
@@ -289,6 +297,8 @@
       <!-- Sleep few seconds waiting the end of process instances -->
       <!-- TODO: Use a check against MONIT traces to known when the last process instance is ended -->
       <sleep seconds="15" />
+      
+      <petals-soapui-test testCase="Collaboration TestCase - Nominal" />
 
       <checkAsyncExecutorMetrics />
       <checkDatabaseConnectionPoolMetrics />
@@ -414,33 +424,95 @@
                                                          jmx.port="${host1.port}"
                                                          jmx.user="${host1.username}"
                                                          jmx.pwd="${host1.password}"
-                                                         result-property="process-instance-active-counter" />
+                                                         result-property="vacation-process-instance-active-counter" />
             <se-flowable.getSuspendedProcessInstanceCounter component-id="petals-se-flowable"
                                                             process-definition="vacationRequest"
                                                             jmx.host="${host1.ip}"
                                                             jmx.port="${host1.port}"
                                                             jmx.user="${host1.username}"
                                                             jmx.pwd="${host1.password}"
-                                                            result-property="process-instance-suspended-counter" />
+                                                            result-property="vacation-process-instance-suspended-counter" />
             <se-flowable.getEndedProcessInstanceCounter component-id="petals-se-flowable"
                                                         process-definition="vacationRequest"
                                                         jmx.host="${host1.ip}"
                                                         jmx.port="${host1.port}"
                                                         jmx.user="${host1.username}"
                                                         jmx.pwd="${host1.password}"
-                                                        result-property="process-instance-ended-counter" />
+                                                        result-property="vacation-process-instance-ended-counter" />
+            
+            <se-flowable.getActiveProcessInstanceCounter component-id="petals-se-flowable"
+                                                         process-definition="masterProcess"
+                                                         jmx.host="${host1.ip}"
+                                                         jmx.port="${host1.port}"
+                                                         jmx.user="${host1.username}"
+                                                         jmx.pwd="${host1.password}"
+                                                         result-property="master-process-instance-active-counter" />
+            <se-flowable.getSuspendedProcessInstanceCounter component-id="petals-se-flowable"
+                                                            process-definition="masterProcess"
+                                                            jmx.host="${host1.ip}"
+                                                            jmx.port="${host1.port}"
+                                                            jmx.user="${host1.username}"
+                                                            jmx.pwd="${host1.password}"
+                                                            result-property="master-process-instance-suspended-counter" />
+            <se-flowable.getEndedProcessInstanceCounter component-id="petals-se-flowable"
+                                                        process-definition="masterProcess"
+                                                        jmx.host="${host1.ip}"
+                                                        jmx.port="${host1.port}"
+                                                        jmx.user="${host1.username}"
+                                                        jmx.pwd="${host1.password}"
+                                                        result-property="master-process-instance-ended-counter" />
+            
+            <se-flowable.getActiveProcessInstanceCounter component-id="petals-se-flowable"
+                                                         process-definition="childProcess"
+                                                         jmx.host="${host1.ip}"
+                                                         jmx.port="${host1.port}"
+                                                         jmx.user="${host1.username}"
+                                                         jmx.pwd="${host1.password}"
+                                                         result-property="child-process-instance-active-counter" />
+            <se-flowable.getSuspendedProcessInstanceCounter component-id="petals-se-flowable"
+                                                            process-definition="childProcess"
+                                                            jmx.host="${host1.ip}"
+                                                            jmx.port="${host1.port}"
+                                                            jmx.user="${host1.username}"
+                                                            jmx.pwd="${host1.password}"
+                                                            result-property="child-process-instance-suspended-counter" />
+            <se-flowable.getEndedProcessInstanceCounter component-id="petals-se-flowable"
+                                                        process-definition="childProcess"
+                                                        jmx.host="${host1.ip}"
+                                                        jmx.port="${host1.port}"
+                                                        jmx.user="${host1.username}"
+                                                        jmx.pwd="${host1.password}"
+                                                        result-property="child-process-instance-ended-counter" />
          </parallel>
          <fail message="Invalid statistics for process instances">
             <condition>
                <or>
                   <not>
-                     <equals arg1="${process-instance-active-counter}" arg2="0" />
+                     <equals arg1="${vacation-process-instance-active-counter}" arg2="0" />
                   </not>
                   <not>
-                     <equals arg1="${process-instance-suspended-counter}" arg2="0" />
+                     <equals arg1="${vacation-process-instance-suspended-counter}" arg2="0" />
                   </not>
                   <not>
-                     <equals arg1="${process-instance-ended-counter}" arg2="4" />
+                     <equals arg1="${vacation-process-instance-ended-counter}" arg2="4" />
+                  </not>
+                  <not>
+                     <equals arg1="${master-process-instance-active-counter}" arg2="0" />
+                  </not>
+                  <not>
+                     <equals arg1="${master-process-instance-suspended-counter}" arg2="0" />
+                  </not>
+                  <not>
+                     <equals arg1="${master-process-instance-ended-counter}" arg2="1" />
+                  </not>
+                  <not>
+                     <equals arg1="${child-process-instance-active-counter}" arg2="0" />
+                  </not>
+                  <not>
+                     <equals arg1="${child-process-instance-suspended-counter}" arg2="0" />
+                  </not>
+                  <not>
+                     <equals arg1="${child-process-instance-ended-counter}" arg2="1" />
                   </not>
                </or>
             </condition>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2018 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<jbi:jbi version="1.0" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:petals-se-flowable="http://petals.ow2.org/components/petals-se-flowable/1.0"
+   xmlns:collaboration="http://petals.ow2.org/samples/se-flowable/collaboration/services">
+	
+   <jbi:services binding-component="false">
+		
+		<jbi:provides
+			interface-name="collaboration:collaboration"
+			service-name="collaboration:collaborationService"
+			endpoint-name="autogenerate">
+			
+        <petalsCDK:wsdl>collaboration.wsdl</petalsCDK:wsdl>
+
+      </jbi:provides>
+      
+      <!-- The service associated to the startup of child process -->
+      <jbi:consumes
+           interface-name="collaboration:collaboration"
+           service-name="collaboration:collaborationService">
+         <petalsCDK:mep>InOut</petalsCDK:mep>
+         <petalsCDK:operation>collaboration:startChildProcess</petalsCDK:operation>
+      </jbi:consumes>
+      
+      <!-- The service associated to the master process notification -->
+      <jbi:consumes
+           interface-name="collaboration:collaboration"
+           service-name="collaboration:collaborationService">
+         <petalsCDK:mep>InOut</petalsCDK:mep>
+         <petalsCDK:operation>collaboration:notifyMasterProcess</petalsCDK:operation>
+      </jbi:consumes>
+         
+      <!-- SE Flowable specific fields -->
+      <petals-se-flowable:tenant_id>my-tenant</petals-se-flowable:tenant_id>
+      <petals-se-flowable:category_id>samples</petals-se-flowable:category_id>
+      <petals-se-flowable:process_file1>collaboration.bpmn</petals-se-flowable:process_file1>
+      <petals-se-flowable:version1>1</petals-se-flowable:version1>
+   </jbi:services>
+</jbi:jbi>

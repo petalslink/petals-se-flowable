@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2018 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions name="collaboration"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/collaboration/services"
+
+   xmlns:collaboration="http://petals.ow2.org/samples/se-flowable/collaboration/services"
+
+   xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/collaboration/services">
+      
+         <xsd:element name="startMasterProcess">
+            <xsd:complexType>
+               <xsd:sequence />
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="startMasterProcessResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-id" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="startChildProcess">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id-callback" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="startChildProcessResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="childProcessId" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="notifyMasterProcess">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id-callback" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="data-returned" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="masterProcessUnknown">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id-callback" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="noMasterProcessWaitingNotification">
+            <xsd:complexType>
+               <xsd:sequence />
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="masterProcessAlreadyNotified">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id-callback" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:schema>
+   </wsdl:types>
+   
+   <wsdl:message name="startMasterProcess">
+      <wsdl:part name="parameters" element="collaboration:startMasterProcess" />
+   </wsdl:message>
+   <wsdl:message name="startMasterProcessResponse">
+      <wsdl:part name="parameters" element="collaboration:startMasterProcessResponse" />
+   </wsdl:message>
+   <wsdl:message name="startChildProcess">
+      <wsdl:part name="parameters" element="collaboration:startChildProcess" />
+   </wsdl:message>
+   <wsdl:message name="startChildProcessResponse">
+      <wsdl:part name="parameters" element="collaboration:startChildProcessResponse" />
+   </wsdl:message>
+   <wsdl:message name="notifyMasterProcess">
+      <wsdl:part name="parameters" element="collaboration:notifyMasterProcess" />
+   </wsdl:message>
+   <wsdl:message name="masterProcessUnknown">
+      <wsdl:part name="parameters" element="collaboration:masterProcessUnknown" />
+   </wsdl:message>
+   <wsdl:message name="noMasterProcessWaitingNotification">
+      <wsdl:part name="parameters" element="collaboration:noMasterProcessWaitingNotification" />
+   </wsdl:message>
+   <wsdl:message name="masterProcessAlreadyNotified">
+      <wsdl:part name="parameters" element="collaboration:masterProcessAlreadyNotified" />
+   </wsdl:message>
+   
+   <wsdl:portType name="collaboration">
+      <wsdl:operation name="startMasterProcess">
+         <wsdl:input message="collaboration:startMasterProcess" />
+         <wsdl:output message="collaboration:startMasterProcessResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="startChildProcess">
+         <wsdl:input message="collaboration:startChildProcess" />
+         <wsdl:output message="collaboration:startChildProcessResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="notifyMasterProcess">
+         <wsdl:input message="collaboration:notifyMasterProcess" />
+         <wsdl:fault message="collaboration:masterProcessUnknown" name="masterProcessUnknown" />
+         <wsdl:fault message="collaboration:noMasterProcessWaitingNotification" name="noMasterProcessWaitingNotification" />
+         <wsdl:fault message="collaboration:masterProcessAlreadyNotified" name="masterProcessAlreadyNotified" />
+      </wsdl:operation>
+   </wsdl:portType>
+   
+   <wsdl:binding name="collaborationSoapBinding" type="collaboration:collaboration">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="startMasterProcess">
+         <soap:operation
+            soapAction="http://petals.ow2.org/samples/se-flowable/collaboration/services/startMasterProcess"
+            style="document" />
+         <bpmn:operation processDefinitionId="masterProcess" action="startEvent"
+            none-start-event-id="startEventMasterProcess" />
+         <bpmn:output>startMasterProcessResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="startChildProcess">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/collaboration/services/startChildProcess"
+            style="document" />
+         <bpmn:operation processDefinitionId="childProcess" action="startEvent"
+            start-event-message-name="startChildProcessMsg" />
+         <bpmn:variable name="processInstanceIdCallback">/*[local-name()='startChildProcess']/*[local-name()='process-instance-id-callback']</bpmn:variable>
+         <bpmn:output>startChildProcessResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="notifyMasterProcess">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/collaboration/services/notifyMasterProcess"
+            style="document" />
+         <bpmn:operation processDefinitionId="masterProcess" action="intermediateMessageCatch"
+            message-event-name="notifyMasterProcessMsg" />
+         <bpmn:processInstanceId>/*[local-name()='notifyMasterProcess']/*[local-name()='process-instance-id-callback']</bpmn:processInstanceId>
+         <bpmn:variable name="data-returned" type="string">/*[local-name()='notifyMasterProcess']/*[local-name()='data-returned']</bpmn:variable>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:fault name="masterProcessUnknown">
+            <bpmn:fault name="ProcessInstanceNotFoundException">masterProcessUnknown.xsl</bpmn:fault>
+            <soap:fault name="masterProcessUnknown" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="noMasterProcessWaitingNotification">
+            <bpmn:fault name="UnexpectedMessageEventException">noMasterProcessWaitingNotification.xsl</bpmn:fault>
+            <soap:fault name="noMasterProcessWaitingNotification" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="masterProcessAlreadyNotified">
+            <bpmn:fault name="MessageEventReceivedException">masterProcessAlreadyNotified.xsl</bpmn:fault>
+            <soap:fault name="masterProcessAlreadyNotified" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="collaborationService">
+      <wsdl:port name="autogenerate" binding="collaboration:collaborationSoapBinding">
+         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/collaboration/services}collaboration" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

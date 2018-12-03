@@ -100,7 +100,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
             final String userTaskId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
             final Map<String, XPathExpression> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
+        super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates, true);
         this.userTaskId = userTaskId;
         this.processInstanceIdHolder = processInstanceIdHolder;
     }

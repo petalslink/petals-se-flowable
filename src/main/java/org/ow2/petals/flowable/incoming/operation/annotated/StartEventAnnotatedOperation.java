@@ -57,7 +57,7 @@ public abstract class StartEventAnnotatedOperation extends AnnotatedOperationWit
             final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
             final Templates outputTemplate, final Map<String, Templates> faultTemplates)
             throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
+        super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates, true);
     }
 
     @Override

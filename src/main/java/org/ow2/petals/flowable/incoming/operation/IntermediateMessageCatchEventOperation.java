@@ -106,7 +106,7 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
 
     @Override
     protected void doExecute(final Document incomingPayload, final String bpmnUserId,
-            final Map<String, Object> variables, final Map<QName, String> outputNamedValues, final Exchange exchange)
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
             throws OperationProcessingException {
 
         // Get the process instance identifier
@@ -141,12 +141,13 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
         // Set flow attributes as local variables. They will be used by Flowable event listener to generate a MONIT
         // trace
         final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
-        final Map<String, Object> localVariables = new HashMap<String, Object>(2);
+        final Map<String, Object> localVariables = new HashMap<>(2);
         localVariables.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         localVariables.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
         this.runtimeService.setVariablesLocal(executionId, localVariables);
 
         // We notify Flowable that a event was received
+        this.runtimeService.setVariables(processInstanceId, processVars);
         this.runtimeService.messageEventReceivedAsync(this.messageEventName, executionId);
 
         // No output because only MEPs 'InOnly' and 'RobustInOnly' have sens here

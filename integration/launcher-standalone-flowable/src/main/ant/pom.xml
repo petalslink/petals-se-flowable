@@ -14,28 +14,38 @@
  along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
  for the New BSD License (3-clause license).
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.ebmwebsourcing.petals.integration.tests.se.flowable</groupId>
-  <artifactId>launcher-standalone-soapui</artifactId>
-  <name>launcher-standalone-soapui</name>
-  <version>0-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  
-  <pluginRepositories>
-    <pluginRepository>
-      <id>smartbear-sweden-plugin-repository</id>
-      <url>http://www.soapui.org/repository/maven2/</url>
-    </pluginRepository>
-  </pluginRepositories>
-  
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>com.smartbear.soapui</groupId>
-        <artifactId>soapui-maven-plugin</artifactId>
-        <version>5.4.0</version>
-      </plugin>
-    </plugins>
-  </build>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>com.ebmwebsourcing.petals.integration.tests.se.flowable</groupId>
+   <artifactId>launcher-standalone-soapui</artifactId>
+   <name>launcher-standalone-soapui</name>
+   <version>0-SNAPSHOT</version>
+   <packaging>pom</packaging>
+
+   <pluginRepositories>
+      <pluginRepository>
+         <id>smartbear-sweden-plugin-repository</id>
+         <url>http://www.soapui.org/repository/maven2/</url>
+      </pluginRepository>
+   </pluginRepositories>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui-maven-plugin</artifactId>
+            <version>5.4.0</version>
+            <dependencies>
+               <dependency>
+                  <!-- To workaround error "A required class was missing while executing com.smartbear.soapui:soapui-maven-plugin:5.4.0:mock: com/jgoodies/forms/layout/CellConstraints"
+                       starting SoapUI through maven -->
+                  <groupId>com.jgoodies</groupId>
+                  <artifactId>jgoodies-forms</artifactId>
+                  <version>1.9.0</version>
+               </dependency>
+            </dependencies>
+         </plugin>
+      </plugins>
+   </build>
 </project>
