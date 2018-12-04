@@ -82,7 +82,7 @@ public class GetTasksOperation extends AbstractOperation<GetTasks, GetTasksRespo
 
         final String assignee = incomingObject.getAssignee();
         if (assignee != null && !assignee.isEmpty()) {
-            taskQuery.taskCandidateUser(assignee);
+            taskQuery.taskCandidateOrAssigned(assignee);
         }
 
         final String processInstanceId = incomingObject.getProcessInstanceIdentifier();
