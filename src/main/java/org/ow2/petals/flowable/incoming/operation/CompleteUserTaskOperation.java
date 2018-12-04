@@ -130,7 +130,7 @@ public class CompleteUserTaskOperation extends FlowableOperation {
 
         // Get the task
         final List<Task> taskList = this.taskService.createTaskQuery().processInstanceId(processInstanceId)
-                .taskDefinitionKey(this.userTaskId).taskCandidateUser(bpmnUserId).list();
+                .taskDefinitionKey(this.userTaskId).taskCandidateOrAssigned(bpmnUserId).list();
         if ((taskList == null) || (taskList.isEmpty())) {
             throw this.investigateMissingTask(processInstanceId, bpmnUserId);
         }
