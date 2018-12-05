@@ -37,7 +37,7 @@
             <!-- Align dependencies with those of Flowable -->
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-se-flowable</artifactId>
-            <version>1.1.1</version>
+            <version>1.1.2-SNAPSHOT</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
@@ -46,7 +46,7 @@
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>
             <type>jbi-component</type>
-            <version>1.1.1</version>
+            <version>1.1.2-SNAPSHOT</version>
          </dependency>
          <dependency>
             <artifactId>petals-bc-soap</artifactId>
