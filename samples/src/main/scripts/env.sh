@@ -22,7 +22,7 @@ PETALS_JMX_PWD=petals
 PETALS_HOSTNAME=localhost
 PETALS_JMX_PORT=7700
 
-PETALS_HOME=${HOME}/workspace/petals-trunk/container/petals-esb-default-zip/target/petals-esb-default-zip-5.1.0-SNAPSHOT/petals-esb-default-zip-5.1.0-SNAPSHOT
+PETALS_HOME=${HOME}/workspace/petals-trunk/container/petals-esb-default-zip/target/petals-esb-default-zip-5.3.0-SNAPSHOT/petals-esb-default-zip-5.3.0-SNAPSHOT
 PETALS_DATA=${PETALS_HOME}/data/work
 #PETALS_DATA=/var/lib/petals-esb/sample-0/work
 PETALS_COMPONENT_CONFIG_FILES_HOME=${PETALS_HOME}/conf
@@ -32,7 +32,7 @@ PETALS_BC_SOAP_PROPERTIES=${PETALS_COMPONENT_CONFIG_FILES_HOME}/bc-soap.properti
 
 FLOWABLE_H2_DB=${PETALS_DATA}/h2-flowable.db
 
-BC_SOAP_VERSION=5.0.0
-SE_FLOWABLE_VERSION=1.1.1
-SAMPLE_VERSION=1.1.1-1.0.0
+BC_SOAP_VERSION=5.0.1
+SE_FLOWABLE_VERSION=1.2.0
+SAMPLE_VERSION=1.2.0-1.0.0
 
