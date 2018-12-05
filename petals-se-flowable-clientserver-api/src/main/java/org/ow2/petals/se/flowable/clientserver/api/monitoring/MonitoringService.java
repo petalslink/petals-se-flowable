@@ -19,9 +19,6 @@ package org.ow2.petals.se.flowable.clientserver.api.monitoring;
 
 import java.util.Map;
 
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.TabularData;
-
 import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotInitializedException;
 import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringProbeNotStartedException;
 import org.ow2.petals.component.framework.clientserver.api.monitoring.exception.MonitoringServiceException;
@@ -38,32 +35,27 @@ public interface MonitoringService
     /**
      * Index of the process definition suspension state returned by {@link #getProcessDefinitions()}.
      */
-    public static final int PROCESS_DEFINITION_INFO_ID_KEY = 0;
-    
+    public static final int PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE = 0;
+
     /**
-     * Index of the process definition suspension state returned by {@link #getProcessDefinitions()}.
-     */
-    public static final int PROCESS_DEFINITION_INFO_ID_SUSPENSION_STATE = 1;
-    
-     /**
      * Index of the active process instance counter returned by {@link #getProcessDefinitions()}.
      */
-    public static final int PROCESS_DEFINITION_INFO_ID_ACTIVE_INSTANCES_COUNTER = 2;
-    
-     /**
+    public static final int PROCESS_DEFINITION_INFO_ID_ACTIVE_INSTANCES_COUNTER = 1;
+
+    /**
      * Index of the suspended process instance counter returned by {@link #getProcessDefinitions()}.
      */
-    public static final int PROCESS_DEFINITION_INFO_ID_SUSPENDED_INSTANCES_COUNTER = 3;
-    
-     /**
+    public static final int PROCESS_DEFINITION_INFO_ID_SUSPENDED_INSTANCES_COUNTER = 2;
+
+    /**
      * Index of the ended process instance counter returned by {@link #getProcessDefinitions()}.
      */
-    public static final int PROCESS_DEFINITION_INFO_ID_ENDED_INSTANCES_COUNTER = 4;
-    
+    public static final int PROCESS_DEFINITION_INFO_ID_ENDED_INSTANCES_COUNTER = 3;
+
     //
     // --- Process definitions / Process instances
     //
-    
+
     /**
      * <p>
      * Returns information on process definitions.
@@ -79,7 +71,7 @@ public interface MonitoringService
      * <li>the 4th value is the number of ended process instances.</li>
      * </ul>
      */
-    public TabularData getProcessDefinitions() throws OpenDataException;
+    public Map<String, Long[]> getProcessDefinitions();
 
     /**
      * @return The current max size of the asynchronous executor thread pool.
