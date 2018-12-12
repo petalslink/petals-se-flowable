@@ -36,9 +36,10 @@ public abstract class AnnotatedOperationWithOut extends AnnotatedOperation {
 
     public AnnotatedOperationWithOut(final QName wsdlOperation, final String processDefinitionId,
             final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
-            final Templates outputTemplate, final Map<String, Templates> faultTemplates)
+            final Templates outputTemplate, final Map<String, Templates> faultTemplates,
+            final boolean canDeclareVariable)
             throws InvalidAnnotationForOperationException {
-        super(wsdlOperation, processDefinitionId, userIdHolder, variables, faultTemplates);
+        super(wsdlOperation, processDefinitionId, userIdHolder, variables, faultTemplates, canDeclareVariable);
 
         this.outputTemplate = outputTemplate;
     }

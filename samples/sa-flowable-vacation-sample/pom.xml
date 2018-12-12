@@ -27,7 +27,7 @@
 
    <artifactId>sa-flowable-vacation-sample</artifactId>
    <packaging>jbi-service-assembly</packaging>
-   <name>sa-vacation-sample</name>
+   <name>sa-flowable-vacation-sample</name>
    <!-- No version set -->
    <description>sa-flowable-vacation-sample description</description>
 

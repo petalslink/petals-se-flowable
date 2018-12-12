@@ -69,6 +69,12 @@ public abstract class AnnotatedOperation {
     private final Map<String, XPathExpression> variables;
 
     /**
+     * Drive the {@link AnnotatedOperation} processing against capacity of associated BPMN element to declare process
+     * variables. If {@code true}, the BPMN element variables can be declared at BPMN level and a check will be done.
+     */
+    private final boolean canDeclareVariable;
+
+    /**
      * Types of variables read from the process definition.
      */
     private final Map<String, FormProperty> variableTypes = new HashMap<>();
@@ -101,12 +107,14 @@ public abstract class AnnotatedOperation {
      *            The definition of variables of the operation
      * @param faultTemplates
      *            The XSLT style-sheet compiled associated to WSDL faults
+     * @param canDeclareVariable
+     *            Drive the processing against capacity of associated BPMN element to declare process variables
      * @throws InvalidAnnotationForOperationException
      *             The annotated operation is incoherent.
      */
     protected AnnotatedOperation(final QName wsdlOperation, final String processDefinitionId,
             final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
-            final Map<String, Templates> faultTemplates)
+            final Map<String, Templates> faultTemplates, final boolean canDeclareVariable)
             throws InvalidAnnotationForOperationException {
         super();
         this.wsdlOperation = wsdlOperation;
@@ -114,6 +122,7 @@ public abstract class AnnotatedOperation {
         this.userIdHolder = userIdHolder;
         this.variables = variables;
         this.faultTemplates = faultTemplates;
+        this.canDeclareVariable = canDeclareVariable;
     }
 
     /**
@@ -154,9 +163,12 @@ public abstract class AnnotatedOperation {
         this.doAnnotationCoherenceCheck(modelContainingProcessDefinitionId);
 
         // Check the existence of declared variables into the process definition
-        for (final String variableName : this.variables.keySet()) {
-            if (!this.variableTypes.containsKey(variableName)) {
-                throw new VariableNotFoundInModelException(this.wsdlOperation, variableName, this.processDefinitionId);
+        if (this.canDeclareVariable) {
+            for (final String variableName : this.variables.keySet()) {
+                if (!this.variableTypes.containsKey(variableName)) {
+                    throw new VariableNotFoundInModelException(this.wsdlOperation, variableName,
+                            this.processDefinitionId);
+                }
             }
         }
 

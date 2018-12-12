@@ -61,6 +61,19 @@
             <soap:body use="literal" />
          </wsdl:output>
       </wsdl:operation>
+      <wsdl:operation name="valid_withValidVariables">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/1.0/handleRequest" />
+         <bpmn:operation processDefinitionId="intermediate-message-catch-event-process" action="intermediateMessageCatch" message-event-name="messageName"/>
+         <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
+         <bpmn:variable name="variable-1" type="string">/*[local-name()='unlock']/*[local-name()='var-1']</bpmn:variable>
+         <bpmn:variable name="variable-2" type="string">/*[local-name()='unlock']/*[local-name()='var-2']</bpmn:variable>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
       <wsdl:operation name="eventReceived_attrMsgEventNameMissing">
          <soap:operation soapAction="http://petals.ow2.org/se-flowable/1.0/handleRequest" />
          <bpmn:operation processDefinitionId="intermediate-message-catch-event-process" action="intermediateMessageCatch" />
@@ -141,6 +154,19 @@
          <soap:operation soapAction="http://petals.ow2.org/se-flowable/1.0/handleRequest" />
          <bpmn:operation processDefinitionId="intermediate-message-catch-event-process" action="intermediateMessageCatch" message-event-name="messageName" />
          <bpmn:processInstanceId></bpmn:processInstanceId>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="eventReceived_withInvalidVariable">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/1.0/handleRequest" />
+         <bpmn:operation processDefinitionId="intermediate-message-catch-event-process" action="intermediateMessageCatch" message-event-name="messageName"/>
+         <bpmn:processInstanceId>/*[local-name()='validation']/*[local-name()='numeroDde']</bpmn:processInstanceId>
+         <bpmn:variable name="variable-1" type="string">/*[local-name()='unlock']/*[local-name()='var-1']</bpmn:variable>
+         <bpmn:variable name="variable-2">/*[local-name()='unlock']/*[local-name()='var-2']</bpmn:variable>
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>

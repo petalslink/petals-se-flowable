@@ -73,7 +73,7 @@
 
    <modules>
       <module>su-flowable-vacationService-provide</module>
-      <module>sa-vacation-sample</module>
+      <module>sa-flowable-vacation-sample</module>
       <module>su-SOAP-vacationService-consume</module>
       <module>su-SOAP-notifyVacationService-provide</module>
       <module>su-SOAP-archiveService-provide</module>
@@ -82,6 +82,9 @@
       <module>sample-vacation-webapp</module>
       <module>su-SOAP-notifyVacationService-consume</module>
       <module>su-SOAP-archiveService-consume</module>
+      <module>su-flowable-collaboration-provide</module>
+      <module>su-SOAP-collaborationService-consume</module>
+      <module>sa-flowable-collaboration-sample</module>
    </modules>
 
    <scm>
