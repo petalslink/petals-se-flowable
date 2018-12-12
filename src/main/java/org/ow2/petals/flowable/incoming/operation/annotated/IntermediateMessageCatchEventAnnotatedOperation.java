@@ -28,6 +28,7 @@ import javax.xml.xpath.XPathExpression;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.EventDefinition;
 import org.flowable.bpmn.model.FlowElement;
+import org.flowable.bpmn.model.FormProperty;
 import org.flowable.bpmn.model.IntermediateCatchEvent;
 import org.flowable.bpmn.model.MessageEventDefinition;
 import org.flowable.bpmn.model.Process;
@@ -36,6 +37,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.Intermedia
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoIntermediateMessageCatchEventIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableTypeRequiredException;
 import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
@@ -81,6 +83,11 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
     private final XPathExpression processInstanceIdHolder;
 
     /**
+     * The definition of variable types of the operation read from the WSDL
+     */
+    private final Map<String, String> variableTypesFromWsdl;
+
+    /**
      * 
      * @param wsdlOperationName
      *            The WSDL operation containing the current annotations
@@ -93,6 +100,8 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
      *            The message name associated to the intermediate catch event in the BPMN model
      * @param variables
      *            The definition of variables of the operation
+     * @param variableTypesFromWsdl
+     *            The definition of variable types of the operation
      * @param faultTemplates
      *            The XSLT style-sheet compiled associated to WSDL faults
      * @throws InvalidAnnotationForOperationException
@@ -101,8 +110,10 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
     public IntermediateMessageCatchEventAnnotatedOperation(final QName wsdlOperationName,
             final String processDefinitionId, final XPathExpression processInstanceIdHolder,
             final String messageEventName, final Map<String, XPathExpression> variables,
-            final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
-        super(wsdlOperationName, processDefinitionId, null, variables, faultTemplates);
+            final Map<String, String> variableTypesFromWsdl, final Map<String, Templates> faultTemplates)
+            throws InvalidAnnotationForOperationException {
+        super(wsdlOperationName, processDefinitionId, null, variables, faultTemplates, false);
+        this.variableTypesFromWsdl = variableTypesFromWsdl;
         this.messageEventName = messageEventName;
         this.processInstanceIdHolder = processInstanceIdHolder;
     }
@@ -152,6 +163,18 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
             // The message name was not found in the BPMN definition
             throw new IntermediateMessageEventNameNotFoundInModelException(this.wsdlOperation, this.messageEventName,
                     this.getProcessDefinitionId());
+        }
+
+        // Prepare variable type
+        for (final String variableName : this.getVariables().keySet()) {
+            final String variableType = this.variableTypesFromWsdl.get(variableName);
+            if (variableType == null) {
+                throw new VariableTypeRequiredException(this.wsdlOperation);
+            }
+            final FormProperty formProp = new FormProperty();
+            formProp.setName(variableName);
+            formProp.setType(variableType);
+            this.getVariableTypes().put(variableName, formProp);
         }
     }
 

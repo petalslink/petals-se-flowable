@@ -37,6 +37,12 @@
          <type>jbi-service-assembly</type>
       </dependency>
       <dependency>
+         <groupId>org.ow2.petals.samples.flowable</groupId>
+         <artifactId>sa-flowable-collaboration-sample</artifactId>
+         <version>${petals-samples-flowable.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
          <artifactId>petals-se-flowable</artifactId>
          <groupId>org.ow2.petals</groupId>
          <type>jbi-component</type>

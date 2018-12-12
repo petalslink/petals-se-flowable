@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2014-2018 Linagora
+ Copyright (c) 2018 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -25,11 +25,11 @@
       <relativePath>../pom.xml</relativePath>
    </parent>
 
-   <artifactId>sa-flowable-vacation-sample</artifactId>
+   <artifactId>sa-flowable-collaboration-sample</artifactId>
    <packaging>jbi-service-assembly</packaging>
-   <name>sa-vacation-sample</name>
+   <name>sa-flowable-collaboration-sample</name>
    <!-- No version set -->
-   <description>sa-flowable-vacation-sample description</description>
+   <description>sa-flowable-collaboration-sample description</description>
 
    <properties>
       <!-- Skip dependency check for service assembly because it has Java no source code. -->
@@ -41,31 +41,13 @@
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals.samples.flowable</groupId>
-         <artifactId>su-flowable-vacationService-provide</artifactId>
+         <artifactId>su-flowable-collaboration-provide</artifactId>
          <version>${project.version}</version>
          <type>jbi-service-unit</type>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals.samples.flowable</groupId>
-         <artifactId>su-SOAP-vacationService-consume</artifactId>
-         <version>${project.version}</version>
-         <type>jbi-service-unit</type>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals.samples.flowable</groupId>
-         <artifactId>su-SOAP-notifyVacationService-provide</artifactId>
-         <version>${project.version}</version>
-         <type>jbi-service-unit</type>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals.samples.flowable</groupId>
-         <artifactId>su-SOAP-archiveService-provide</artifactId>
-         <version>${project.version}</version>
-         <type>jbi-service-unit</type>
-      </dependency>
-      <dependency>
-         <groupId>org.ow2.petals.samples.flowable</groupId>
-         <artifactId>su-SOAP-flowableIntegrationService-consume</artifactId>
+         <artifactId>su-SOAP-collaborationService-consume</artifactId>
          <version>${project.version}</version>
          <type>jbi-service-unit</type>
       </dependency>

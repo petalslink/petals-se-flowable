@@ -1504,7 +1504,154 @@
       <soap:address location="http://localhost:8084/petals/services/processInstancesService"/>
     </w:port>
   </w:service>
-</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="42841b1a-196c-4d67-a9e6-fc5316439e5d"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/suspendProcessInstances" name="suspendProcessInstances" bindingOperationName="suspendProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="36ddc83d-961c-4c11-a8b7-516fc8088709"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/activateProcessInstances" name="activateProcessInstances" bindingOperationName="activateProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="a7587071-30d0-421a-9890-9a8cdc1afe3b"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1" id="d321bdb1-1509-4a46-9bf2-75c1c1824db0"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>5</con:value></con:property><con:property><con:name>task-assignement-max-loop</con:name><con:value>150</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="7c065596-0bd9-4c52-a78e-4682e049e6b4"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/getProcessInstances" name="getProcessInstances" bindingOperationName="getProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="42841b1a-196c-4d67-a9e6-fc5316439e5d"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/suspendProcessInstances" name="suspendProcessInstances" bindingOperationName="suspendProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="36ddc83d-961c-4c11-a8b7-516fc8088709"><con:settings/></con:operation><con:operation isOneWay="false" action="http://petals.ow2.org/components/flowable/generic/1.0/activateProcessInstances" name="activateProcessInstances" bindingOperationName="activateProcessInstances" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional" id="a7587071-30d0-421a-9890-9a8cdc1afe3b"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" id="6422fffe-c664-4866-b0aa-fe74db0b871f" wsaVersion="NONE" name="collaborationSoapBinding" type="wsdl" bindingName="{http://petals.ow2.org/samples/se-flowable/collaboration/services}collaborationSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8084/petals/services/collaborationService?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8084/petals/services/collaborationService?wsdl"><con:part><con:url>http://localhost:8084/petals/services/collaborationService?wsdl</con:url><con:content><![CDATA[<w:definitions name="collaboration" targetNamespace="http://petals.ow2.org/samples/se-flowable/collaboration/services" xmlns:w="http://schemas.xmlsoap.org/wsdl/" xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0" xmlns:collaboration="http://petals.ow2.org/samples/se-flowable/collaboration/services" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:ns10="ns23" xmlns:ns11="ns9" xmlns:ns12="wsdl" xmlns:ns13="soap" xmlns:ns14="bpmn" xmlns:ns14_="xs" xmlns:ns15="ns19" xmlns:ns17="ns12" xmlns:ns19="ns8" xmlns:ns20="xml" xmlns:ns21="ns11" xmlns:ns22="collaboration" xmlns:ns23="mime" xmlns:ns23_="ns26" xmlns:ns23__="ns28" xmlns:ns25="soap" xmlns:ns26="ns13" xmlns:ns26_="ns17" xmlns:ns26__="ns10" xmlns:ns27="ns26_" xmlns:ns28="xml" xmlns:ns28_="ns31" xmlns:ns29="ns22" xmlns:ns31="ns15" xmlns:ns32="ns21" xmlns:ns33="soap12" xmlns:ns34="http" xmlns:ns35="w" xmlns:ns36="soap" xmlns:ns37="ns27" xmlns:ns38="ns20" xmlns:ns39="ns34" xmlns:ns40="ns14_" xmlns:ns42="ns29" xmlns:ns43="ns32" xmlns:ns44="ns23_" xmlns:ns45="ns37" xmlns:ns46="ns25" xmlns:ns8="ns14" xmlns:ns9="xsd" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <w:types>
+    <xs:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/collaboration/services">
+      <xs:element name="startMasterProcess">
+        <xs:complexType>
+          <xs:sequence/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="startMasterProcessResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="process-id"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="startChildProcess">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="process-instance-id-callback" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="startChildProcessResponse">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="child-process-id"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="notifyMasterProcess">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="process-instance-id-callback" type="xs:string"/>
+            <xs:element maxOccurs="1" minOccurs="1" name="data-returned" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="masterProcessUnknown">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="process-instance-id-callback" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="noMasterProcessWaitingNotification">
+        <xs:complexType>
+          <xs:sequence/>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="masterProcessAlreadyNotified">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="1" minOccurs="1" name="process-instance-id-callback" type="xs:string"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:schema>
+  </w:types>
+  <w:message name="startMasterProcess">
+    <w:part element="collaboration:startMasterProcess" name="parameters"/>
+  </w:message>
+  <w:message name="startMasterProcessResponse">
+    <w:part element="collaboration:startMasterProcessResponse" name="parameters"/>
+  </w:message>
+  <w:message name="startChildProcess">
+    <w:part element="collaboration:startChildProcess" name="parameters"/>
+  </w:message>
+  <w:message name="startChildProcessResponse">
+    <w:part element="collaboration:startChildProcessResponse" name="parameters"/>
+  </w:message>
+  <w:message name="notifyMasterProcess">
+    <w:part element="collaboration:notifyMasterProcess" name="parameters"/>
+  </w:message>
+  <w:message name="masterProcessUnknown">
+    <w:part element="collaboration:masterProcessUnknown" name="parameters"/>
+  </w:message>
+  <w:message name="noMasterProcessWaitingNotification">
+    <w:part element="collaboration:noMasterProcessWaitingNotification" name="parameters"/>
+  </w:message>
+  <w:message name="masterProcessAlreadyNotified">
+    <w:part element="collaboration:masterProcessAlreadyNotified" name="parameters"/>
+  </w:message>
+  <w:portType name="collaboration">
+    <w:operation name="startMasterProcess">
+      <w:input message="collaboration:startMasterProcess"/>
+      <w:output message="collaboration:startMasterProcessResponse"/>
+    </w:operation>
+    <w:operation name="startChildProcess">
+      <w:input message="collaboration:startChildProcess"/>
+      <w:output message="collaboration:startChildProcessResponse"/>
+    </w:operation>
+    <w:operation name="notifyMasterProcess">
+      <w:input message="collaboration:notifyMasterProcess"/>
+      <w:fault message="collaboration:masterProcessUnknown" name="masterProcessUnknown"/>
+      <w:fault message="collaboration:noMasterProcessWaitingNotification" name="noMasterProcessWaitingNotification"/>
+      <w:fault message="collaboration:masterProcessAlreadyNotified" name="masterProcessAlreadyNotified"/>
+    </w:operation>
+  </w:portType>
+  <w:binding name="collaborationSoapBinding" type="collaboration:collaboration">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <w:operation name="startMasterProcess">
+      <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/collaboration/services/startMasterProcess" style="document"/>
+      <bpmn:operation action="startEvent" none-start-event-id="startEventMasterProcess" processDefinitionId="masterProcess" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml"/>
+      <bpmn:output xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">startMasterProcessResponse.xsl</bpmn:output>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:output>
+        <soap:body use="literal"/>
+      </w:output>
+    </w:operation>
+    <w:operation name="startChildProcess">
+      <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/collaboration/services/startChildProcess" style="document"/>
+      <bpmn:operation action="startEvent" processDefinitionId="childProcess" start-event-message-name="startChildProcessMsg" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml"/>
+      <bpmn:variable name="processInstanceIdCallback" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">/*[local-name()='startChildProcess']/*[local-name()='process-instance-id-callback']</bpmn:variable>
+      <bpmn:output xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">startChildProcessResponse.xsl</bpmn:output>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+    </w:operation>
+    <w:operation name="notifyMasterProcess">
+      <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/collaboration/services/notifyMasterProcess" style="document"/>
+      <bpmn:operation action="intermediateMessageCatch" message-event-name="notifyMasterProcessMsg" processDefinitionId="masterProcess" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml"/>
+      <bpmn:processInstanceId xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">/*[local-name()='notifyMasterProcess']/*[local-name()='process-instance-id-callback']</bpmn:processInstanceId>
+      <bpmn:variable name="data-returned" type="string" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">/*[local-name()='notifyMasterProcess']/*[local-name()='data-returned']</bpmn:variable>
+      <w:input>
+        <soap:body use="literal"/>
+      </w:input>
+      <w:fault name="masterProcessUnknown">
+        <bpmn:fault name="ProcessInstanceNotFoundException" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">masterProcessUnknown.xsl</bpmn:fault>
+        <soap:fault name="masterProcessUnknown" use="literal"/>
+      </w:fault>
+      <w:fault name="noMasterProcessWaitingNotification">
+        <bpmn:fault name="UnexpectedMessageEventException" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">noMasterProcessWaitingNotification.xsl</bpmn:fault>
+        <soap:fault name="noMasterProcessWaitingNotification" use="literal"/>
+      </w:fault>
+      <w:fault name="masterProcessAlreadyNotified">
+        <bpmn:fault name="MessageEventReceivedException" xmlns:ns10="collaboration" xmlns:ns14_="http" xmlns:ns15="w" xmlns:ns21="ns10" xmlns:ns27="ns20" xmlns:ns33="ns10" xmlns:ns34="ns14_" xmlns:ns37="ns25" xmlns:ns8="xml">masterProcessAlreadyNotified.xsl</bpmn:fault>
+        <soap:fault name="masterProcessAlreadyNotified" use="literal"/>
+      </w:fault>
+    </w:operation>
+  </w:binding>
+  <w:service name="collaborationService">
+    <w:port binding="collaboration:collaborationSoapBinding" name="edpt-1ab1b080-f951-11e8-a809-024252c3cb4b">
+      <soap:address location="http://localhost:8084/petals/services/collaborationService"/>
+    </w:port>
+  </w:service>
+</w:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/collaborationService</con:endpoint></con:endpoints><con:operation id="2c798a32-e394-4b8f-bfda-895f3677531c" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/collaboration/services/notifyMasterProcess" name="notifyMasterProcess" bindingOperationName="notifyMasterProcess" type="One-Way" inputName="" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation id="2f831403-94b4-4fc2-92e0-f03d96f0157c" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/collaboration/services/startChildProcess" name="startChildProcess" bindingOperationName="startChildProcess" type="Request-Response" inputName="" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation id="649ce0b5-4540-4bb4-bcee-9cc3d44a802a" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/collaboration/services/startMasterProcess" name="startMasterProcess" bindingOperationName="startMasterProcess" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation></con:interface><con:testSuite name="TestSuite 1" id="d321bdb1-1509-4a46-9bf2-75c1c1824db0"><con:settings/><con:runType>SEQUENTIAL</con:runType><con:testCase failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Nominal TestCase without adjustment" searchProperties="true" id="5e9117af-9e64-4a24-ab4a-e6938f78df5f"><con:settings/><con:testStep type="properties" name="Properties" id="c56f304c-4c84-47d6-bb53-523dc3af13f3"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>vacationRequestId</con:name><con:value>5</con:value></con:property><con:property><con:name>task-assignement-max-loop</con:name><con:value>150</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Create vacation request" id="9dcf7743-6d84-4b61-93ce-bb8a09a1f742"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>vacationBinding</con:interface><con:operation>new</con:operation><con:request name="Create vacation request" outgoingWss="" incomingWss="" timeout="" sslKeystore="" useWsAddressing="false" useWsReliableMessaging="false" wssPasswordType="" id="7c065596-0bd9-4c52-a78e-4682e049e6b4"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
    <soapenv:Header/>
    <soapenv:Body>
       <vac:vacationRequest>
@@ -1985,7 +2132,21 @@ count(//soapenv:Envelope/soapenv:Body/soapenv:Fault/detail/ns:vacationRequestIdU
          <approval>true</approval>
       </vac:validationRequest>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="9c2f8698-2e0f-4c27-b723-e89aa49e21bc"/><con:assertion type="Schema Compliance" id="a76f5c19-e656-4d87-8745-639802a93588"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" name="Not SOAP Fault" id="aa11a6d1-3574-4ed0-8c7d-e0ceb11c29b2"/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:mockService port="8088" path="/mockNotifyVacationService" host="cdeneux-laptop" name="notifyVacationBinding MockService" id="0683f6d4-8ef2-4aec-b26c-b240e5e6e644"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting></con:settings><con:properties/><con:mockOperation name="newVacationRequest" interface="notifyVacationBinding" operation="newVacationRequest" id="21e9c30d-80ed-41f6-8d08-632586b96dd9"><con:settings/><con:defaultResponse>Response 1</con:defaultResponse><con:dispatchStyle>SEQUENCE</con:dispatchStyle><con:response name="Response 1" httpResponseStatus="200" encoding="UTF-8" id="8b17e41e-96e1-4c04-b32a-f521a3ff84d0"><con:settings/><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:not="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService">
+</soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="9c2f8698-2e0f-4c27-b723-e89aa49e21bc"/><con:assertion type="Schema Compliance" id="a76f5c19-e656-4d87-8745-639802a93588"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" name="Not SOAP Fault" id="aa11a6d1-3574-4ed0-8c7d-e0ceb11c29b2"/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:testCase id="18a01829-4cc6-4e03-95e5-ac863a4a1d1c" failOnError="true" failTestCaseOnErrors="true" keepSession="false" maxResults="0" name="Collaboration TestCase - Nominal" searchProperties="true"><con:settings/><con:testStep type="properties" name="Properties" id="12f7f52c-c34f-4e02-b4fe-393c23578b90"><con:settings/><con:config xsi:type="con:PropertiesStep" saveFirst="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:properties><con:property><con:name>masterProcessInstId</con:name><con:value>12</con:value></con:property></con:properties></con:config></con:testStep><con:testStep type="request" name="Start master process instance" id="f712a70d-98e0-4459-883f-0fdf91425d54"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>collaborationSoapBinding</con:interface><con:operation>startMasterProcess</con:operation><con:request name="Start master process instance" id="aa02bbad-b1fd-41a9-b315-e1f77e9f9564"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/collaborationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://petals.ow2.org/samples/se-flowable/collaboration/services">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:startMasterProcess/>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="b6777c8a-bd26-4e6d-8f31-872e2e2768bd"/><con:assertion type="Schema Compliance" id="4ec5af1c-1f5e-4117-a693-f51ff72438ca"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" id="ffe1d42d-3af0-424d-b2ec-e8caf86fe400"/><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:testStep type="transfer" name="Extract master process instance identifier" id="17da2ccb-b3ba-43b9-8b79-1737a1eb8879"><con:settings/><con:config xsi:type="con:PropertyTransfersStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:transfers setNullOnMissingSource="true" transferTextContent="true" failOnError="true" ignoreEmpty="false" transferToAll="false" entitize="false" transferChildNodes="false"><con:name>As property</con:name><con:sourceType>Response</con:sourceType><con:sourceStep>Start master process instance</con:sourceStep><con:sourcePath>declare namespace soap='http://schemas.xmlsoap.org/soap/envelope/';
+declare namespace ns0='http://petals.ow2.org/samples/se-flowable/collaboration/services'
+//soap:Envelope/soap:Body/ns0:startMasterProcessResponse/process-id</con:sourcePath><con:targetType>masterProcessInstId</con:targetType><con:targetStep>Properties</con:targetStep><con:upgraded>true</con:upgraded></con:transfers></con:config></con:testStep><con:testStep type="delay" name="Wait end of master process instance" id="5df0eec4-28f6-4d60-b709-cb65d366f863"><con:settings/><con:config><delay>30000</delay></con:config></con:testStep><con:testStep type="request" name="Retrieve master process instance data" id="7cfc4c8e-6075-46cf-b385-7582f7ec1d93"><con:settings/><con:config xsi:type="con:RequestStep" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:interface>ProcessInstancesServiceSoapBinding</con:interface><con:operation>getProcessInstances</con:operation><con:request name="Retrieve master process instance data" id="64e2ff3c-4bc3-45b9-87b4-095bb0598580"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/processInstancesService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="http://petals.ow2.org/components/flowable/generic/1.0">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ns:getProcessInstances>
+         <ns:process-instance-identifier>${masterProcessInstId}</ns:process-instance-identifier>
+      </ns:getProcessInstances>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:assertion type="SOAP Response" id="5d7c1b15-d7aa-4aca-8be6-53dbad702dfc"/><con:assertion type="Schema Compliance" id="792e8685-160d-4e15-9fb7-37480bcf3f8c"><con:configuration/></con:assertion><con:assertion type="SOAP Fault Assertion" id="c309f052-bd49-4738-af63-a9fdb39ca9f2"/><con:assertion type="Simple Contains" id="7057dfa8-e9d1-43e2-92e2-659572c366de" name="Data returned by child process are set as variable in master process"><con:configuration><token>&lt;variable name="data-returned">Data returned from child process&lt;/variable></token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:assertion type="Simple Contains" id="4722649f-107c-4cc9-9115-3aeefd3af433" name="Process instance finished"><con:configuration><token>state="finished"</token><ignoreCase>false</ignoreCase><useRegEx>false</useRegEx></con:configuration></con:assertion><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508"/><con:wsrmConfig version="1.2"/></con:request></con:config></con:testStep><con:properties/></con:testCase><con:properties/></con:testSuite><con:mockService port="8088" path="/mockNotifyVacationService" host="cdeneux-laptop" name="notifyVacationBinding MockService" id="0683f6d4-8ef2-4aec-b26c-b240e5e6e644"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting></con:settings><con:properties/><con:mockOperation name="newVacationRequest" interface="notifyVacationBinding" operation="newVacationRequest" id="21e9c30d-80ed-41f6-8d08-632586b96dd9"><con:settings/><con:defaultResponse>Response 1</con:defaultResponse><con:dispatchStyle>SEQUENCE</con:dispatchStyle><con:response name="Response 1" httpResponseStatus="200" encoding="UTF-8" id="8b17e41e-96e1-4c04-b32a-f521a3ff84d0"><con:settings/><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:not="http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService">
    <soapenv:Header/>
    <soapenv:Body>
       <not:okResponse>ok</not:okResponse>

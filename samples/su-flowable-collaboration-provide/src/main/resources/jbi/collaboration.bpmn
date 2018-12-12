@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2018 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/collaboration/processes"
+   xmlns:col-procs="http://petals.ow2.org/samples/se-flowable/collaboration/processes"
+   xmlns:col-svcs="http://petals.ow2.org/samples/se-flowable/collaboration/services"
+   
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:flowable="http://flowable.org/bpmn"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath">
+   
+   <import location="collaboration.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/collaboration/services"
+    importType="http://schemas.xmlsoap.org/wsdl/" />
+    
+   <collaboration id="Collaboration">
+      <participant id="pool1" name="Master process" processRef="masterProcess" />
+      <participant id="pool2" name="Child process" processRef="childProcess" />
+      <messageFlow id="startChildProcessMessageFlow" sourceRef="startChildProcess" targetRef="startEventChildProcess" />
+      <messageFlow id="notifyMasterProcessMessageFlow" sourceRef="notifyMasterProcess" targetRef="messageintermediatecatchevent1" />
+   </collaboration>
+
+   <process id="masterProcess" name="Master Process" isExecutable="true">
+      <laneSet id="laneSet_masterProcess">
+         <lane id="lane1">
+            <flowNodeRef>startEventMasterProcess</flowNodeRef>
+            <flowNodeRef>messageintermediatecatchevent1</flowNodeRef>
+            <flowNodeRef>endevent1</flowNodeRef>
+            <flowNodeRef>startChildProcess</flowNodeRef>
+         </lane>
+      </laneSet>
+      
+      <dataObject id="childProcessId" name="Child process instance identifier" itemSubjectRef="xsd:long" />
+      
+      <startEvent id="startEventMasterProcess" name="Start"></startEvent>
+      <sequenceFlow id="flow1" sourceRef="startEventMasterProcess" targetRef="startChildProcess" />
+      <serviceTask id="startChildProcess" name="Start child process" implementation="##WebService" operationRef="col-procs:startChildProcessOp">
+         <ioSpecification>
+           <dataInput itemSubjectRef="col-procs:startChildProcessItem" id="dataInputOfStartChildProcess" />
+           <dataOutput itemSubjectRef="col-procs:startChildProcessResponseItem" id="dataOutputOfStartChildProcess" />
+           <inputSet>
+             <dataInputRefs>dataInputOfStartChildProcess</dataInputRefs>
+           </inputSet>
+            <outputSet>
+               <dataOutputRefs>dataOutputOfStartChildProcess</dataOutputRefs>
+            </outputSet>
+         </ioSpecification>
+         <dataInputAssociation>
+           <targetRef>dataInputOfStartChildProcess</targetRef>
+           <assignment>
+             <from>${execution.processInstanceId}</from>
+             <to>${dataInputOfStartChildProcess.processInstanceIdCallback}</to>
+           </assignment>
+         </dataInputAssociation>
+         <dataOutputAssociation>
+           <targetRef>childProcessId</targetRef>
+           <transformation>${dataOutputOfStartChildProcess.childProcessId}</transformation>
+         </dataOutputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow2" sourceRef="startChildProcess" targetRef="messageintermediatecatchevent1" />
+      <intermediateCatchEvent id="messageintermediatecatchevent1" name="MessageCatchEvent">
+         <messageEventDefinition messageRef="col-procs:notifyMasterProcessMessage" />
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow4" sourceRef="messageintermediatecatchevent1" targetRef="endevent1" />
+      <endEvent id="endevent1" name="End" />
+   </process>
+
+   <process id="childProcess" name="Child Process" isExecutable="true">
+      <laneSet id="laneSet_childProcess">
+         <lane id="lane2">
+            <flowNodeRef>endevent2</flowNodeRef>
+            <flowNodeRef>startEventChildProcess</flowNodeRef>
+            <flowNodeRef>notifyMasterProcess</flowNodeRef>
+         </lane>
+      </laneSet>
+      
+      <startEvent id="startEventChildProcess" name="Start">
+         <extensionElements>
+            <flowable:formProperty id="processInstanceIdCallback" name="Process instance identifier of the associated master process" type="string" required="true" />
+         </extensionElements>
+         <messageEventDefinition messageRef="col-procs:startChildProcessMessage" />
+      </startEvent>
+      <sequenceFlow id="flow3" sourceRef="startEventChildProcess" targetRef="notifyMasterProcess" />
+      <serviceTask id="notifyMasterProcess" name="Notify master process" implementation="##WebService" operationRef="col-procs:notifyMasterProcessOp">
+         <ioSpecification>
+           <dataInput itemSubjectRef="col-procs:notifyMasterProcessItem" id="dataInputOfNotifyMasterProcess" />
+           <inputSet>
+             <dataInputRefs>dataInputOfNotifyMasterProcess</dataInputRefs>
+           </inputSet>
+           <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+           <targetRef>dataInputOfNotifyMasterProcess</targetRef>
+           <assignment>
+             <from>${processInstanceIdCallback}</from>
+             <to>${dataInputOfNotifyMasterProcess.processInstanceIdCallback}</to>
+           </assignment>
+           <assignment>
+             <from>${'Data returned from child process'}</from>
+             <to>${dataInputOfNotifyMasterProcess.dataReturned}</to>
+           </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow5" sourceRef="notifyMasterProcess" targetRef="endevent2" />
+      <endEvent id="endevent2" name="End" />
+   </process>
+   
+   <interface name="Collaboration business service" implementationRef="col-svcs:collaboration">
+      <operation id="startChildProcessOp" name="Start hild process"
+         implementationRef="col-svcs:startChildProcess">
+         <inMessageRef>col-procs:startChildProcessMessage</inMessageRef>
+         <outMessageRef>col-procs:startChildProcessResponseMessage</outMessageRef>
+      </operation>
+      <operation id="notifyMasterProcessOp" name="Notify master process"
+         implementationRef="col-svcs:notifyMasterProcess">
+         <inMessageRef>col-procs:notifyMasterProcessMessage</inMessageRef>
+      </operation>
+   </interface>
+   
+   <message id="startChildProcessMessage" name="startChildProcessMsg" itemRef="col-procs:startChildProcessItem" />
+   <message id="startChildProcessResponseMessage" itemRef="col-procs:startChildProcessResponseItem" />
+   <message id="notifyMasterProcessMessage" name="notifyMasterProcessMsg" itemRef="col-procs:notifyMasterProcessItem" />
+   
+   <itemDefinition id="startChildProcessItem" structureRef="col-svcs:startChildProcess" />
+   <itemDefinition id="startChildProcessResponseItem" structureRef="col-svcs:startChildProcessResponse" />
+   <itemDefinition id="notifyMasterProcessItem" structureRef="col-svcs:notifyMasterProcess" />
+
+   <bpmndi:BPMNDiagram id="BPMNDiagram_Collaboration">
+      <bpmndi:BPMNPlane bpmnElement="Collaboration" id="BPMNPlane_Collaboration">
+         <bpmndi:BPMNShape bpmnElement="pool1" id="BPMNShape_pool1">
+            <omgdc:Bounds height="150.0" width="500.0" x="20.0" y="20.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="lane1" id="BPMNShape_lane1">
+            <omgdc:Bounds height="150.0" width="480.0" x="40.0" y="20.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="pool2" id="BPMNShape_pool2">
+            <omgdc:Bounds height="150.0" width="500.0" x="20.0" y="180.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="lane2" id="BPMNShape_lane2">
+            <omgdc:Bounds height="150.0" width="480.0" x="40.0" y="180.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="startEventMasterProcess" id="BPMNShape_startEventMasterProcess">
+            <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="80.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="startChildProcess" id="BPMNShape_startChildProcess">
+            <omgdc:Bounds height="55.0" width="105.0" x="140.0" y="70.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="messageintermediatecatchevent1"
+            id="BPMNShape_messageintermediatecatchevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="330.0" y="80.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="440.0" y="80.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="notifyMasterProcess" id="BPMNShape_notifyMasterProcess">
+            <omgdc:Bounds height="61.0" width="105.0" x="230.0" y="217.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
+            <omgdc:Bounds height="35.0" width="35.0" x="440.0" y="230.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="startEventChildProcess" id="BPMNShape_startEventChildProcess">
+            <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="230.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+            <omgdi:waypoint x="95.0" y="97.0"></omgdi:waypoint>
+            <omgdi:waypoint x="140.0" y="97.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+            <omgdi:waypoint x="245.0" y="97.0"></omgdi:waypoint>
+            <omgdi:waypoint x="330.0" y="97.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+            <omgdi:waypoint x="365.0" y="97.0"></omgdi:waypoint>
+            <omgdi:waypoint x="440.0" y="97.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+            <omgdi:waypoint x="95.0" y="247.0"></omgdi:waypoint>
+            <omgdi:waypoint x="230.0" y="247.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+            <omgdi:waypoint x="335.0" y="247.0"></omgdi:waypoint>
+            <omgdi:waypoint x="440.0" y="247.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+      </bpmndi:BPMNPlane>
+   </bpmndi:BPMNDiagram>
+</definitions>

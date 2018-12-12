@@ -23,6 +23,7 @@ import java.util.logging.LogRecord;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.transform.Source;
 
+import org.flowable.engine.runtime.ProcessInstance;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
@@ -51,6 +52,10 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  */
 public class IntermediateMessageCatchEventProcessTest extends IntermediateMessageCatchEventProcessTestEnvironment {
 
+    private static final String VARIABLE_1_VALUE = "variable-1-value";
+
+    private static final String VARIABLE_2_VALUE = "variable-2-value";
+
     /**
      * <p>
      * Check the message processing where: a valid request is sent to event receipt.
@@ -76,7 +81,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         // ------------------------------------------------------------
 
         // Create a new instance of the process definition
-        final StringBuilder processInstance = new StringBuilder();
+        final StringBuilder processInstanceId = new StringBuilder();
         {
             final Start start = new Start();
             start.setCustomer(BPMN_USER);
@@ -95,11 +100,11 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             assertTrue(responseObj instanceof StartResponse);
             final StartResponse response = (StartResponse) responseObj;
             assertNotNull(response.getCaseFileNumber());
-            processInstance.append(response.getCaseFileNumber());
+            processInstanceId.append(response.getCaseFileNumber());
         }
 
-        this.assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
-        this.waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        this.assertProcessInstancePending(processInstanceId.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        this.waitUserTaskAssignment(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when not expected by the BPMN engine
@@ -108,8 +113,9 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         // ----------------------------------------------------------------------------
         {
             final Unlock unlockRequest = new Unlock();
-            unlockRequest.setInstanceId(processInstance.toString());
-
+            unlockRequest.setInstanceId(processInstanceId.toString());
+            unlockRequest.setVar1(VARIABLE_1_VALUE);
+            unlockRequest.setVar2(VARIABLE_2_VALUE);
             final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                     INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
                     AbsItfOperation.MEPPatternConstants.IN_ONLY.value(), toByteArray(unlockRequest));
@@ -120,7 +126,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         }
         {
             final Unlock unlockRequest = new Unlock();
-            unlockRequest.setInstanceId(processInstance.toString());
+            unlockRequest.setInstanceId(processInstanceId.toString());
 
             final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                     INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
@@ -133,25 +139,27 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             final Object responseObj = UNMARSHALLER.unmarshal(fault);
             assertTrue(responseObj instanceof NotLocked);
             final NotLocked responseBean = (NotLocked) responseObj;
-            assertEquals(processInstance.toString(), responseBean.getInstanceId());
+            assertEquals(processInstanceId.toString(), responseBean.getInstanceId());
             assertEquals("myMessageName", responseBean.getEventName());
         }
 
-        this.assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
-        this.waitUserTaskAssignment(processInstance.toString(), USER_TASK_1, BPMN_USER);
+        this.assertProcessInstancePending(processInstanceId.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        this.waitUserTaskAssignment(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
 
         // Complete the user task
         IN_MEMORY_LOG_HANDLER.clear();
-        this.flowableClient.completeUserTask(processInstance.toString(), USER_TASK_1, BPMN_USER);
-        this.assertUserTaskEnded(processInstance.toString(), USER_TASK_1, BPMN_USER);
-        this.waitIntermediateCatchMessageEvent(processInstance.toString(), "myMessageName");
+        this.flowableClient.completeUserTask(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
+        this.assertUserTaskEnded(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
+        this.waitIntermediateCatchMessageEvent(processInstanceId.toString(), "myMessageName");
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when expected by the BPMN engine
         // ----------------------------------------------------------------------------
         {
             final Unlock unlockRequest = new Unlock();
-            unlockRequest.setInstanceId(processInstance.toString());
+            unlockRequest.setInstanceId(processInstanceId.toString());
+            unlockRequest.setVar1(VARIABLE_1_VALUE);
+            unlockRequest.setVar2(VARIABLE_2_VALUE);
 
             final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                     INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
@@ -161,8 +169,15 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             assertEquals(ExchangeStatus.DONE, response.getStatus());
         }
 
-        this.assertProcessInstancePending(processInstance.toString(), BPMN_PROCESS_DEFINITION_KEY);
-        this.waitUserTaskAssignment(processInstance.toString(), USER_TASK_2, BPMN_USER);
+        this.assertProcessInstancePending(processInstanceId.toString(), BPMN_PROCESS_DEFINITION_KEY);
+        this.waitUserTaskAssignment(processInstanceId.toString(), USER_TASK_2, BPMN_USER);
+
+        // Assert that complementary variables are correctly set
+        final ProcessInstance procInst = this.flowableClient.getRuntimeService().createProcessInstanceQuery()
+                .processInstanceId(processInstanceId.toString()).includeProcessVariables().singleResult();
+        assertNotNull(procInst);
+        assertEquals(VARIABLE_1_VALUE, procInst.getProcessVariables().get("variable-1"));
+        assertEquals(VARIABLE_2_VALUE, procInst.getProcessVariables().get("variable-2"));
 
         // Check MONIT traces. Caution:
         // - as the user task is completed by the Flowable client, no MONIT trace is generated
@@ -197,7 +212,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         // ----------------------------------------------------------------------------
         {
             final Unlock unlockRequest = new Unlock();
-            unlockRequest.setInstanceId(processInstance.toString());
+            unlockRequest.setInstanceId(processInstanceId.toString());
 
             final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                     INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
@@ -209,7 +224,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         }
         {
             final Unlock unlockRequest = new Unlock();
-            unlockRequest.setInstanceId(processInstance.toString());
+            unlockRequest.setInstanceId(processInstanceId.toString());
 
             final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                     INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_UNLOCK,
@@ -222,19 +237,19 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             final Object responseObj = UNMARSHALLER.unmarshal(fault);
             assertTrue(responseObj instanceof AlreadyUnlocked);
             final AlreadyUnlocked responseBean = (AlreadyUnlocked) responseObj;
-            assertEquals(processInstance.toString(), responseBean.getInstanceId());
+            assertEquals(processInstanceId.toString(), responseBean.getInstanceId());
             assertEquals("myMessageName", responseBean.getEventName());
         }
 
         // Complete the 2nd user task
-        this.flowableClient.completeUserTask(processInstance.toString(), USER_TASK_2, BPMN_USER);
-        this.assertUserTaskEnded(processInstance.toString(), USER_TASK_2, BPMN_USER);
+        this.flowableClient.completeUserTask(processInstanceId.toString(), USER_TASK_2, BPMN_USER);
+        this.assertUserTaskEnded(processInstanceId.toString(), USER_TASK_2, BPMN_USER);
 
         // Wait the end of the process instance
-        this.waitEndOfProcessInstance(processInstance.toString());
+        this.waitEndOfProcessInstance(processInstanceId.toString());
 
         // Assertions about state of process instance at Flowable Level
-        this.assertProcessInstanceFinished(processInstance.toString());
+        this.assertProcessInstanceFinished(processInstanceId.toString());
 
     }
 }

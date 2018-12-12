@@ -74,6 +74,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.UserTaskId
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableMappingExpressionException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableNameMissingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableNotFoundInModelException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableTypeRequiredException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -1810,7 +1811,8 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
 
     /**
      * <p>
-     * Check the parser against a WSDL containing BPMN annotations 'intermediate message catch event'.
+     * Check the parser against a WSDL containing BPMN annotations 'intermediate message catch event' without variable
+     * definition.
      */
     @Test
     public void parse_WsdlIntermediateMessageCatchEvent() throws SAXException, IOException {
@@ -1819,11 +1821,23 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
                 this.parser.parse(this.readWsdlDocument("parser/intermediate-message-catch-event.wsdl"),
                         Arrays.asList(this.readBpmnModel("parser/intermediate-message-catch-event.bpmn")),
                         SU_ROOT_PATH);
-        assertEquals(1, operations.size());
-        assertEquals("valid", operations.get(0).wsdlOperation.getLocalPart());
+        assertEquals(2, operations.size());
+        boolean validOp = false;
+        boolean validWithVariablesOp = false;
+        for (final AnnotatedOperation operationName : operations) {
+            if ("valid".equals(operationName.wsdlOperation.getLocalPart())) {
+                validOp = true;
+            } else if ("valid_withValidVariables".equals(operationName.wsdlOperation.getLocalPart())) {
+                validWithVariablesOp = true;
+            } else {
+                fail("Unexpected valid operation: " + operationName.wsdlOperation.getLocalPart());
+            }
+        }
+        assertTrue(validOp);
+        assertTrue(validWithVariablesOp);
 
         final List<InvalidAnnotationException> encounteredErrors = this.parser.getEncounteredErrors();
-        assertEquals(8, encounteredErrors.size());
+        assertEquals(9, encounteredErrors.size());
         boolean attrMsgEventNameMissing = false;
         boolean attrMsgEventNameEmpty = false;
         boolean procDefIdMissing = false;
@@ -1832,6 +1846,7 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
         boolean procInstIdMissing = false;
         boolean procInstIdNoValue = false;
         boolean procInstIdEmpty = false;
+        boolean missingVariableType = false;
         for (final InvalidAnnotationException exception : encounteredErrors) {
             if (exception instanceof NoProcessInstanceIdMappingException) {
                 if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_procInstIdMissing")
@@ -1877,6 +1892,14 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
                     fail("Unexpected operation: "
                             + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
                 }
+            } else if (exception instanceof VariableTypeRequiredException) {
+                if (new QName(WSDL_TARGET_NAMESPACE, "eventReceived_withInvalidVariable").equals(
+                        ((VariableTypeRequiredException) exception).getWsdlOperation())) {
+                    missingVariableType = true;
+                } else {
+                    fail("Unexpected operation: "
+                            + ((InvalidAnnotationForOperationException) exception).getWsdlOperation());
+                }
             } else {
                 fail("Unexpected error: " + exception.getClass());
             }
@@ -1889,5 +1912,6 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
         assertTrue(procInstIdMissing);
         assertTrue(procInstIdNoValue);
         assertTrue(procInstIdEmpty);
+        assertTrue(missingVariableType);
     }
 }
