@@ -22,6 +22,8 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.task.api.Task;
@@ -44,6 +46,8 @@ public class Assert extends org.junit.Assert {
      *            The process instance identifier
      * @param processDefinitionKey
      *            The process definition key
+     * @param runtimeService
+     *            The Flowable's runtime service used to request the Flowable engine about process instances.
      */
     public static void assertProcessInstancePending(final String processInstanceId, final String processDefinitionKey,
             final RuntimeService runtimeService) {
@@ -88,6 +92,8 @@ public class Assert extends org.junit.Assert {
      *            The process definition key
      * @param user
      *            The task can be completed by the given user
+     * @param taskService
+     *            The Flowable's task service used to request the Flowable engine about task instances.
      * @return The task to complete
      */
     public static Task assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
@@ -112,6 +118,8 @@ public class Assert extends org.junit.Assert {
      *            The process definition key
      * @param user
      *            The task has been completed by the given user
+     * @param historyService
+     *            The Flowable's history service used to request the Flowable engine about historic process instances.
      */
     public static void assertUserTaskEnded(final String processInstanceId, final String taskDefinitionKey,
             final String user, final HistoryService historyService) {
@@ -121,6 +129,28 @@ public class Assert extends org.junit.Assert {
                 .taskDefinitionKey(taskDefinitionKey).singleResult();
         assertNotNull(nextTask);
         assertEquals(user, nextTask.getAssignee());
+    }
+
+    /**
+     * Assertion to check an intermediate catch message event in wait.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its assignment.
+     * @param messageEventName
+     *            The message name of the intermediate catch message event
+     * @param runtimeService
+     *            The Flowable's runtime service used to request the Flowable engine about process instances.
+     * @return The {@link Execution} associated to the intermediate catch message event in wait.
+     */
+    public static Execution assertCurrentIntermediateCatchMessageEvent(final String processInstanceId,
+            final String messageEventName, final RuntimeService runtimeService) {
+
+        final ExecutionQuery query = runtimeService.createExecutionQuery().processInstanceId(processInstanceId)
+                .messageEventSubscriptionName(messageEventName);
+        final Execution execution = query.singleResult();
+        assertNotNull("No pending intermediate catch message event found.", execution);
+
+        return execution;
     }
 
 }
