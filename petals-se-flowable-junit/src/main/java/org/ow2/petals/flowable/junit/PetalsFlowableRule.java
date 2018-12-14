@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
 import org.flowable.task.api.Task;
@@ -138,6 +139,22 @@ public class PetalsFlowableRule extends FlowableRule {
     public void assertUserTaskEnded(final String processInstanceId, final String taskDefinitionKey, final String user) {
 
         Assert.assertUserTaskEnded(processInstanceId, taskDefinitionKey, user, this.getHistoryService());
+    }
+
+    /**
+     * Assertion to check an intermediate catch message event in wait.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its assignment.
+     * @param messageEventName
+     *            The message name of the intermediate catch message event
+     * @return The {@link Execution} associated to the intermediate catch message event in wait.
+     */
+    public Execution assertCurrentIntermediateCatchMessageEvent(final String processInstanceId,
+            final String messageEventName) {
+
+        return Assert.assertCurrentIntermediateCatchMessageEvent(processInstanceId, messageEventName,
+                this.getRuntimeService());
     }
 
     /**
@@ -316,6 +333,85 @@ public class PetalsFlowableRule extends FlowableRule {
 
         Await.waitIntermediateCatchMessageEvent(processInstanceId, messageEventName, this.getRuntimeService(),
                 duration);
+    }
+
+    /**
+     * Signal an intermediate catch message event.
+     * 
+     * @param processInstanceId
+     *            The identifier of the process instance waiting the intermediate catch message event
+     * @param messageEventName
+     *            The message name of the intermediate catch message event
+     */
+    public void signalIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName) {
+
+        this.signalIntermediateCatchMessageEvent(processInstanceId, messageEventName, null);
+
+    }
+
+    /**
+     * <p>
+     * Signal an intermediate catch message event, providing variables to set on process instance.
+     * </p>
+     * <p>
+     * This method will do a search query to retrieve the execution associated to the intermediate catch message event.
+     * To avoid to do a new search query, use {@link #signalIntermediateCatchMessageEvent(Execution, String)}.
+     * </p>
+     * 
+     * @param processInstanceId
+     *            The identifier of the process instance waiting the intermediate catch message event
+     * @param messageEventName
+     *            The message name of the intermediate catch message event
+     * @param variables
+     *            Process variables to set signaling the intermediate catch message event
+     */
+    public void signalIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName,
+            final Map<String, Object> variables) {
+
+        final Execution execution = this.assertCurrentIntermediateCatchMessageEvent(processInstanceId,
+                messageEventName);
+
+        if (variables == null) {
+            this.getRuntimeService().messageEventReceived(messageEventName, execution.getId());
+        } else {
+            this.getRuntimeService().messageEventReceived(messageEventName, execution.getId(), variables);
+        }
+
+    }
+
+    /**
+     * Signal an intermediate catch message event.
+     * 
+     * @param execution
+     *            The {@link Execution} associated to the intermediate catch message event in wait.
+     * @param messageEventName
+     *            The message name of the intermediate catch message event
+     */
+    public void signalIntermediateCatchMessageEvent(final Execution execution, final String messageEventName) {
+
+        this.signalIntermediateCatchMessageEvent(execution, messageEventName, null);
+
+    }
+
+    /**
+     * Signal an intermediate catch message event, providing variables to set on process instance.
+     * 
+     * @param execution
+     *            The {@link Execution} associated to the intermediate catch message event in wait.
+     * @param messageEventName
+     *            The message name of the intermediate catch message event
+     * @param variables
+     *            Process variables to set signaling the intermediate catch message event
+     */
+    public void signalIntermediateCatchMessageEvent(final Execution execution, final String messageEventName,
+            final Map<String, Object> variables) {
+
+        if (variables == null) {
+            this.getRuntimeService().messageEventReceived(messageEventName, execution.getId());
+        } else {
+            this.getRuntimeService().messageEventReceived(messageEventName, execution.getId(), variables);
+        }
+
     }
 
 }
