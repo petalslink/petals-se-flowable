@@ -19,7 +19,7 @@ package org.ow2.petals.flowable;
 
 import java.net.URL;
 
-import org.ow2.petals.component.framework.junit.Assert;
+import org.ow2.petals.component.framework.test.Assert;
 
 /**
  * Abstract class for unit tests about request processing
