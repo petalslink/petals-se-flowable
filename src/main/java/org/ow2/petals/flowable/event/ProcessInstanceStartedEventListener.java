@@ -23,13 +23,13 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FL
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.common.api.delegate.event.FlowableEvent;
 import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.delegate.event.impl.FlowableProcessStartedEventImpl;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
 
@@ -42,8 +42,8 @@ import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
 public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLoggerEventListener
         implements FlowableEventListener {
 
-    public ProcessInstanceStartedEventListener(final Logger log) {
-        super(FlowableEngineEventType.PROCESS_STARTED, log);
+    public ProcessInstanceStartedEventListener(final AbstractComponent component) {
+        super(FlowableEngineEventType.PROCESS_STARTED, component);
     }
 
     @Override
@@ -70,13 +70,16 @@ public class ProcessInstanceStartedEventListener extends AbstractMonitDirectLogg
                 // TODO: Add a unit test where the process does not contain user task (the process instance is
                 // completely executed when creating it) to demonstrate that the following MONIT trace occurs before the
                 // trace 'consumeEnd'
-                return new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
-                        correlatedFlowStepId, entity.getProcessDefinitionKey(), processInstanceId);
+                if (this.isFlowTracingEnabled(processVariables)) {
+                    return new ProcessInstanceFlowStepBeginLogData(flowInstanceId, flowStepId, correlatedFlowInstanceId,
+                            correlatedFlowStepId, entity.getProcessDefinitionKey(), processInstanceId);
+                } else {
+                    return null;
+                }
             } else {
                 // A call activity or a sub-process is started
                 return null;
             }
-
         } else {
             this.log.warning("Unexpected event implementation: " + event.getClass().getName());
             return null;

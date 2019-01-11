@@ -696,47 +696,45 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
 
         // Create & Register event listeners
         final RuntimeService runtimeService = this.flowableEngine.getRuntimeService();
-        this.processInstanceStartedEventListener = new ProcessInstanceStartedEventListener(this.getLogger());
+        this.processInstanceStartedEventListener = new ProcessInstanceStartedEventListener(this);
         runtimeService.addEventListener(this.processInstanceStartedEventListener,
                 this.processInstanceStartedEventListener.getListenEventType());
 
         final HistoryService historyService = this.flowableEngine.getHistoryService();
-        this.processInstanceCompletedEventListener = new ProcessInstanceCompletedEventListener(historyService,
-                this.getLogger());
+        this.processInstanceCompletedEventListener = new ProcessInstanceCompletedEventListener(historyService, this);
         runtimeService.addEventListener(this.processInstanceCompletedEventListener,
                 this.processInstanceCompletedEventListener.getListenEventType());
 
-        this.processInstanceCanceledEventListener = new ProcessInstanceCanceledEventListener(historyService,
-                this.getLogger());
+        this.processInstanceCanceledEventListener = new ProcessInstanceCanceledEventListener(historyService, this);
         runtimeService.addEventListener(this.processInstanceCanceledEventListener,
                 this.processInstanceCanceledEventListener.getListenEventType());
 
-        this.serviceTaskStartedEventListener = new ServiceTaskStartedEventListener(runtimeService, this.getLogger());
+        this.serviceTaskStartedEventListener = new ServiceTaskStartedEventListener(runtimeService, this);
         runtimeService.addEventListener(this.serviceTaskStartedEventListener,
                 this.serviceTaskStartedEventListener.getListenEventType());
 
         final TaskService taskService = this.flowableEngine.getTaskService();
         this.userTaskStartedEventListener = new UserTaskStartedEventListener(this.simpleUUIDGenerator, taskService,
-                this.getLogger());
+                this);
         runtimeService.addEventListener(this.userTaskStartedEventListener,
                 this.userTaskStartedEventListener.getListenEventType());
 
-        this.userTaskCompletedEventListener = new UserTaskCompletedEventListener(taskService, this.getLogger());
+        this.userTaskCompletedEventListener = new UserTaskCompletedEventListener(taskService, this);
         runtimeService.addEventListener(this.userTaskCompletedEventListener,
                 this.userTaskCompletedEventListener.getListenEventType());
 
         this.callActivityStartedEventListener = new CallActivityStartedEventListener(runtimeService,
-                this.simpleUUIDGenerator, this.getLogger());
+                this.simpleUUIDGenerator, this);
         runtimeService.addEventListener(this.callActivityStartedEventListener,
                 this.callActivityStartedEventListener.getListenEventType());
 
         this.intermediateCatchMessageEventStartedEventListener = new IntermediateCatchMessageEventStartedEventListener(
-                this.simpleUUIDGenerator, runtimeService, this.getLogger());
+                this.simpleUUIDGenerator, runtimeService, this);
         runtimeService.addEventListener(this.intermediateCatchMessageEventStartedEventListener,
                 this.intermediateCatchMessageEventStartedEventListener.getListenEventType());
 
         this.intermediateCatchMessageEventEndedEventListener = new IntermediateCatchMessageEventEndedEventListener(
-                runtimeService, this.getLogger());
+                runtimeService, this);
         runtimeService.addEventListener(this.intermediateCatchMessageEventEndedEventListener,
                 this.intermediateCatchMessageEventEndedEventListener.getListenEventType());
 

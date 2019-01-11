@@ -108,8 +108,8 @@ public class CompleteUserTaskOperation extends FlowableOperation {
 
     @Override
     protected void doExecute(final Document incomingPayload, final String bpmnUserId,
-            final Map<String, Object> taskVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
-            throws OperationProcessingException {
+            final Map<String, Object> taskVars, final Map<QName, String> outputNamedValues, final Exchange exchange,
+            final boolean isFlowTracingEnabled) throws OperationProcessingException {
 
         // Get the process instance identifier
         final String processInstanceId;

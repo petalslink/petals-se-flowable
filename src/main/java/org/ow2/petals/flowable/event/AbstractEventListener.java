@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.common.api.delegate.event.FlowableEvent;
 import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.ow2.petals.component.framework.AbstractComponent;
 
 /**
  * Abstract class managing Flowable event
@@ -31,17 +32,20 @@ import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
  */
 public abstract class AbstractEventListener implements FlowableEventListener {
 
+    protected final AbstractComponent component;
+
     @SuppressWarnings("squid:S1312")
     protected final Logger log;
 
     private final FlowableEngineEventType listenEventType;
 
-    public AbstractEventListener(final FlowableEngineEventType listenEventType, final Logger log) {
+    public AbstractEventListener(final FlowableEngineEventType listenEventType, final AbstractComponent component) {
 
-        assert log != null;
+        assert component != null;
         assert listenEventType != null;
 
-        this.log = log;
+        this.component = component;
+        this.log = component.getLogger();
         this.listenEventType = listenEventType;
     }
 
@@ -53,9 +57,9 @@ public abstract class AbstractEventListener implements FlowableEventListener {
         assert event != null;
 
         if (event.getType() == this.listenEventType) {
-            
+
             this.processEvent(event);
-            
+
         } else {
             this.log.warning("Unexpected event type '" + event.getType().name() + "'. Event discarded !");
         }

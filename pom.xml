@@ -520,6 +520,10 @@
          <version>2.0.4</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>com.jayway.awaitility</groupId>
+         <artifactId>awaitility</artifactId>
+      </dependency>
    </dependencies>
 
    <build>
@@ -568,28 +572,30 @@
                   <configuration>
                      <addCompileSourceRoot>false</addCompileSourceRoot>
                      <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
-                     <schemaDirectory>${basedir}/src/test/resources/su/</schemaDirectory>
+                     <schemaDirectory>${basedir}/src/test/resources/</schemaDirectory>
                      <schemaIncludes>
-                        <include>vacation/vacationRequest.wsdl</include>
-                        <include>vacation/archivageService.wsdl</include>
-                        <include>multi-start/multi-start.wsdl</include>
-                        <include>multi-start/archivageService.wsdl</include>
-                        <include>multi-start/coreService.wsdl</include>
-                        <include>call-activity/call-activity.wsdl</include>
-                        <include>call-activity/archivageService.wsdl</include>
-                        <include>call-activity/coreService.wsdl</include>
-                        <include>intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
-                        <include>placeholders/placeholders.wsdl</include>
-                        <include>placeholders/archivageService.wsdl</include>
-                        <include>in-only/in-only.wsdl</include>
-                        <include>in-only/archivageService.wsdl</include>
-                        <include>robust-in-only/robust-in-only.wsdl</include>
-                        <include>robust-in-only/archivageService.wsdl</include>
-                        <include>robustified-in-only/robustified-in-only.wsdl</include>
-                        <include>robustified-in-only/archivageService.wsdl</include>
-                        <include>start-stop/start-stop.wsdl</include>
-                        <include>timeout/timeout.wsdl</include>
-                        <include>timeout/archivageService.wsdl</include>
+                        <include>su/vacation/vacationRequest.wsdl</include>
+                        <include>su/vacation/archivageService.wsdl</include>
+                        <include>su/multi-start/multi-start.wsdl</include>
+                        <include>su/multi-start/archivageService.wsdl</include>
+                        <include>su/multi-start/coreService.wsdl</include>
+                        <include>su/call-activity/call-activity.wsdl</include>
+                        <include>su/call-activity/archivageService.wsdl</include>
+                        <include>su/call-activity/coreService.wsdl</include>
+                        <include>su/intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
+                        <include>su/placeholders/placeholders.wsdl</include>
+                        <include>su/placeholders/archivageService.wsdl</include>
+                        <include>su/in-only/in-only.wsdl</include>
+                        <include>su/in-only/archivageService.wsdl</include>
+                        <include>su/robust-in-only/robust-in-only.wsdl</include>
+                        <include>su/robust-in-only/archivageService.wsdl</include>
+                        <include>su/robustified-in-only/robustified-in-only.wsdl</include>
+                        <include>su/robustified-in-only/archivageService.wsdl</include>
+                        <include>su/start-stop/start-stop.wsdl</include>
+                        <include>su/timeout/timeout.wsdl</include>
+                        <include>su/timeout/archivageService.wsdl</include>
+                        <include>org/ow2/petals/flowable/monit/monitFiltering.wsdl</include>
+                        <include>org/ow2/petals/flowable/monit/echo.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
                   </configuration>

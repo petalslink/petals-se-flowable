@@ -17,10 +17,9 @@
  */
 package org.ow2.petals.flowable.event;
 
-import java.util.logging.Logger;
-
 import org.flowable.engine.TaskService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
+import org.ow2.petals.component.framework.AbstractComponent;
 
 /**
  * Base class for listeners about task events
@@ -33,8 +32,8 @@ public abstract class AbstractTaskEventListener extends AbstractMonitDirectLogge
     protected final TaskService taskService;
 
     public AbstractTaskEventListener(final FlowableEngineEventType listenEventType, final TaskService taskService,
-            final Logger log) {
-        super(listenEventType, log);
+            final AbstractComponent component) {
+        super(listenEventType, component);
         this.taskService = taskService;
     }
 }

@@ -88,7 +88,7 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
     }
 
     @Override
-    public void execute(final Exchange exchange) {
+    public void execute(final Exchange exchange, final boolean isFlowTracingEnabled) {
 
         try {
             try {

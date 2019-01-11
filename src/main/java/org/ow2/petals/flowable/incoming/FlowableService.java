@@ -42,8 +42,13 @@ public interface FlowableService {
      * <p>
      * The reply XML payload or fault or error of the operation processing is set into the exchange.
      * </p>
+     * 
+     * @param exchange
+     *            The incoming JBI exchange received.
+     * @param isFlowTracingEnabled
+     *            Current flow tracing activation state.
      */
-    public void execute(final Exchange exchange);
+    public void execute(final Exchange exchange, final boolean isFlowTracingEnabled);
 
     public void log(final Logger logger, final Level logLevel);
 

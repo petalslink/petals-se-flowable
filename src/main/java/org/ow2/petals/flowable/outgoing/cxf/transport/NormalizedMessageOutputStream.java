@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -81,13 +82,17 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
     private final FlowAttributes flowAttributes;
 
+    private final Optional<Boolean> extFlowTracingActivated;
+
     public NormalizedMessageOutputStream(final AbstractListener sender, final Message cxfMessage,
-            final PetalsConduit conduit, final AsyncCallback asyncCallback, final FlowAttributes flowAttributes) {
+            final PetalsConduit conduit, final AsyncCallback asyncCallback, final FlowAttributes flowAttributes,
+            final Optional<Boolean> extFlowTracingActivated) {
         this.sender = sender;
         this.cxfMessage = cxfMessage;
         this.conduit = conduit;
         this.asyncCallback = asyncCallback;
         this.flowAttributes = flowAttributes;
+        this.extFlowTracingActivated = extFlowTracingActivated;
     }
 
     @Override
@@ -140,7 +145,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             // TODO: Create a unit test where the operation name is missing
 
             final org.ow2.petals.component.framework.api.message.Exchange jbiExchange = this.sender
-                    .createConsumeExchange(consume, mep);
+                    .createExchange(consume, mep, this.extFlowTracingActivated);
 
             // We always use the operation from the process (the JBI Consumes defines the service used, not the
             // operation)

@@ -21,7 +21,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FL
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.flowable.engine.TaskService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
@@ -30,6 +29,7 @@ import org.flowable.engine.common.api.delegate.event.FlowableEvent;
 import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.flowable.variable.api.persistence.entity.VariableInstance;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.monitoring.UserTaskFlowStepBeginLogData;
 
@@ -52,8 +52,8 @@ public class UserTaskStartedEventListener extends AbstractTaskEventListener impl
     private final SimpleUUIDGenerator simpleUUIDGenerator;
 
     public UserTaskStartedEventListener(final SimpleUUIDGenerator simpleUUIDGenerator, final TaskService taskService,
-            final Logger log) {
-        super(FlowableEngineEventType.TASK_CREATED, taskService, log);
+            final AbstractComponent component) {
+        super(FlowableEngineEventType.TASK_CREATED, taskService, component);
         this.simpleUUIDGenerator = simpleUUIDGenerator;
     }
 

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions
+   targetNamespace="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering/echo"
+   xmlns:tns="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering/echo"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+   <wsdl:types>
+      <xs:schema elementFormDefault="unqualified"
+          xmlns:xs="http://www.w3.org/2001/XMLSchema"
+          targetNamespace="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering/echo" version="1.0">
+         <xs:element name="sayHello" type="tns:sayHello" />
+         <xs:element name="echoHello" type="tns:echoHello" />
+         <xs:element name="noWall" type="tns:noWall" />
+         <xs:element name="echoHelloResponse" type="tns:echoHelloResponse" />
+         <xs:complexType name="sayHello">
+            <xs:sequence>
+               <xs:element minOccurs="1" maxOccurs="1" name="message" type="xs:string" />
+            </xs:sequence>
+         </xs:complexType>
+         <xs:complexType name="echoHello">
+            <xs:sequence>
+               <xs:element minOccurs="1" maxOccurs="1" name="message" type="xs:string" />
+            </xs:sequence>
+         </xs:complexType>
+         <xs:complexType name="echoHelloResponse">
+            <xs:sequence>
+               <xs:element minOccurs="1" maxOccurs="1" name="echo" type="xs:string" />
+            </xs:sequence>
+         </xs:complexType>
+         <xs:complexType name="noWall">
+            <xs:sequence />
+         </xs:complexType>
+      </xs:schema>
+   </wsdl:types>
+   <wsdl:message name="sayHello">
+      <wsdl:part name="sayHelloParam" element="tns:sayHello" />
+   </wsdl:message>
+   <wsdl:message name="echoHello">
+      <wsdl:part name="echoHelloParam" element="tns:echoHello" />
+   </wsdl:message>
+   <wsdl:message name="echoHelloResponse">
+      <wsdl:part name="echoHelloResponseParam" element="tns:echoHelloResponse" />
+   </wsdl:message>
+   <wsdl:message name="noWall">
+      <wsdl:part name="noWallParam" element="tns:noWall" />
+   </wsdl:message>
+   <wsdl:portType name="EchoInterface">
+      <wsdl:operation name="sayHello">
+         <wsdl:input name="sayHello" message="tns:sayHello" />
+      </wsdl:operation>
+      <wsdl:operation name="echoHello">
+         <wsdl:input name="echoHello" message="tns:echoHello" />
+         <wsdl:output name="echoHelloResponse" message="tns:echoHelloResponse" />
+         <wsdl:fault name="noWall" message="tns:noWall" />
+      </wsdl:operation>
+      <wsdl:operation name="robustSayHello">
+         <wsdl:input name="sayHello" message="tns:sayHello" />
+         <wsdl:fault name="noWall" message="tns:noWall" />
+      </wsdl:operation>
+   </wsdl:portType>
+   <wsdl:binding name="EchoServiceBinding" type="tns:EchoInterface">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="sayHello">
+         <wsdl:input />
+      </wsdl:operation>
+      <wsdl:operation name="echoHello">
+         <wsdl:input />
+         <wsdl:output />
+         <wsdl:fault name="noWall">
+            <soap:fault name="noWall"/>
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="robustSayHello">
+         <wsdl:input />
+         <wsdl:fault name="noWall">
+            <soap:fault name="noWall"/>
+         </wsdl:fault>
+      </wsdl:operation>
+   </wsdl:binding>
+   <wsdl:service name="EchoService">
+      <wsdl:port name="consumedEchoEndpoint" binding="tns:EchoServiceBinding">
+         <soap:address location="petals:///{http://petals.ow2.org/unit-tests/se/flowable/monit/filtering/echo}EchoInterface" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

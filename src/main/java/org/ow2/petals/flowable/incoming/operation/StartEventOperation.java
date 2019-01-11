@@ -19,6 +19,7 @@ package org.ow2.petals.flowable.incoming.operation;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
@@ -119,8 +120,8 @@ public abstract class StartEventOperation extends FlowableOperation {
 
     @Override
     protected void doExecute(final Document incomingPayload, final String bpmnUserId,
-            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
-            throws OperationProcessingException {
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange,
+            final boolean isFlowTracingEnabled) throws OperationProcessingException {
 
         // TODO Set the CategoryId (not automatically done, but automatically done for tenant_id ?)
 
@@ -132,6 +133,11 @@ public abstract class StartEventOperation extends FlowableOperation {
         final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
         processVars.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         processVars.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
+
+        // The current flow tracing activation state must be propagated to the service providers invoked during the
+        // process instance execution. We use a process instance variable to store it, and to retrieve it when invoking
+        // service providers.
+        processVars.put(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE, isFlowTracingEnabled);
 
         // We add all placeholders as a map process variable
         processVars.put(VAR_PETALS_PLACEHOLDERS, this.processPlaceholders);

@@ -21,7 +21,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FL
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
@@ -30,6 +29,7 @@ import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.delegate.event.impl.FlowableEntityEventImpl;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepEndLogData;
 
@@ -42,8 +42,9 @@ import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepEndLogData;
 public class ProcessInstanceCompletedEventListener extends AbstractProcessEventListener
         implements FlowableEventListener {
 
-    public ProcessInstanceCompletedEventListener(final HistoryService historyService, final Logger log) {
-        super(FlowableEngineEventType.PROCESS_COMPLETED, historyService, log);
+    public ProcessInstanceCompletedEventListener(final HistoryService historyService,
+            final AbstractComponent component) {
+        super(FlowableEngineEventType.PROCESS_COMPLETED, historyService, component);
     }
 
     @Override
@@ -64,8 +65,11 @@ public class ProcessInstanceCompletedEventListener extends AbstractProcessEventL
             final String flowInstanceId = (String) processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
             final String flowStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
 
-            return new ProcessInstanceFlowStepEndLogData(flowInstanceId, flowStepId);
-
+            if (this.isFlowTracingEnabled(processVariables)) {
+                return new ProcessInstanceFlowStepEndLogData(flowInstanceId, flowStepId);
+            } else {
+                return null;
+            }
         } else {
             this.log.warning("Unexpected event implementation: " + event.getClass().getName());
             return null;

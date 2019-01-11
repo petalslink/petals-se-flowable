@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,6 +56,8 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
 
     public static final ThreadLocal<FlowAttributes> flowAttributes = new ThreadLocal<>();
 
+    public static final ThreadLocal<Optional<Boolean>> extFlowTracingActivated = new ThreadLocal<>();
+
     private final Bus bus;
 
     private final AbstractListener sender;
@@ -79,7 +82,7 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
     @Override
     public void prepare(final Message message) throws IOException {
         final NormalizedMessageOutputStream out = new NormalizedMessageOutputStream(this.sender, message, this,
-                this.asyncCallback, flowAttributes.get());
+                this.asyncCallback, flowAttributes.get(), extFlowTracingActivated.get());
         message.setContent(OutputStream.class, out);
     }
 

@@ -17,10 +17,9 @@
  */
 package org.ow2.petals.flowable.event;
 
-import java.util.logging.Logger;
-
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
+import org.ow2.petals.component.framework.AbstractComponent;
 
 /**
  * Base class for listeners about process events
@@ -33,9 +32,8 @@ public abstract class AbstractProcessEventListener extends AbstractMonitDirectLo
     protected final HistoryService historyService;
 
     public AbstractProcessEventListener(final FlowableEngineEventType listenEventType,
-            final HistoryService historyService,
-            final Logger log) {
-        super(listenEventType, log);
+            final HistoryService historyService, final AbstractComponent component) {
+        super(listenEventType, component);
         this.historyService = historyService;
     }
 }

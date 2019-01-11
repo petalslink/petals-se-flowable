@@ -183,7 +183,7 @@ public abstract class FlowableOperation implements FlowableService {
     }
 
     @Override
-    public final void execute(final Exchange exchange) {
+    public final void execute(final Exchange exchange, final boolean isFlowTracingEnabled) {
 
         try {
             this.checkMEP(exchange);
@@ -209,7 +209,7 @@ public abstract class FlowableOperation implements FlowableService {
 
                 // Extract process flow data
                 final Map<QName, String> xslParameters = new HashMap<>();
-                this.doExecute(incomingPayload, userId, variableValues, xslParameters, exchange);
+                this.doExecute(incomingPayload, userId, variableValues, xslParameters, exchange, isFlowTracingEnabled);
 
                 if (exchange.isInOutPattern()) {
                     try {
@@ -386,13 +386,15 @@ public abstract class FlowableOperation implements FlowableService {
      * @param outputNamedValues
      *            The output named values to generate response
      * @param exchange
-     *            The exchange
+     *            The incoming exchange
+     * @param isFlowTracingEnabled
+     *            Current flow tracing activation state
      * @throws OperationProcessingException
      *             An error occurs when processing the operation
      */
     protected abstract void doExecute(final Document incomingPayload, final String userId,
-            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange)
-            throws OperationProcessingException;
+            final Map<String, Object> processVars, final Map<QName, String> outputNamedValues, final Exchange exchange,
+            final boolean isFlowTracingEnabled) throws OperationProcessingException;
 
     @Override
     public void log(final Logger logger, final Level logLevel) {

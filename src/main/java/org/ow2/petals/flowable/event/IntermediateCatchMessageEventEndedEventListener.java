@@ -23,7 +23,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FL
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
@@ -32,6 +31,7 @@ import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.delegate.event.FlowableMessageEvent;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.monitoring.IntermediateCatchMessageEventFlowStepEndLogData;
 
@@ -53,8 +53,9 @@ public class IntermediateCatchMessageEventEndedEventListener extends AbstractMon
 
     private final RuntimeService runtimeService;
 
-    public IntermediateCatchMessageEventEndedEventListener(final RuntimeService runtimeService, final Logger log) {
-        super(FlowableEngineEventType.ACTIVITY_MESSAGE_RECEIVED, log);
+    public IntermediateCatchMessageEventEndedEventListener(final RuntimeService runtimeService,
+            final AbstractComponent component) {
+        super(FlowableEngineEventType.ACTIVITY_MESSAGE_RECEIVED, component);
         this.runtimeService = runtimeService;
     }
 

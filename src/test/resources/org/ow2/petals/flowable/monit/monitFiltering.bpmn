@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2017-2019 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:flowable="http://flowable.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath"
+   
+   xmlns:echo="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering/echo" 
+   xmlns:process="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering"
+   targetNamespace="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering">
+
+   <import location="echo.wsdl" namespace="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering/echo"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <interface name="Echo Service" implementationRef="echo:EchoInterface">
+      <operation id="sayHelloOp" name="Say Hello Operation" implementationRef="echo:sayHello">
+         <inMessageRef>process:sayHelloRequestMessage</inMessageRef>
+      </operation>
+      <operation id="robustSayHelloOp" name="Robust Say Hello Operation" implementationRef="echo:robustSayHello">
+         <inMessageRef>process:robustSayHelloRequestMessage</inMessageRef>
+      </operation>
+      <operation id="echoHelloOp" name="Echo Hello Operation" implementationRef="echo:echoHello">
+         <inMessageRef>process:echoHelloRequestMessage</inMessageRef>
+         <outMessageRef>process:echoHelloResponseMessage</outMessageRef>
+      </operation>
+   </interface>
+
+   <message id="sayHelloRequestMessage" itemRef="process:sayHelloRequestItem" />
+   <message id="robustSayHelloRequestMessage" itemRef="process:robustSayHelloRequestItem" />
+   <message id="echoHelloRequestMessage" itemRef="process:echoHelloRequestItem" />
+   <message id="echoHelloResponseMessage" itemRef="process:echoHelloResponseItem" />
+
+   <itemDefinition id="sayHelloRequestItem" structureRef="echo:sayHello" />
+   <itemDefinition id="robustSayHelloRequestItem" structureRef="echo:robustSayHello" />
+   <itemDefinition id="echoHelloRequestItem" structureRef="echo:echoHello" />
+   <itemDefinition id="echoHelloResponseItem" structureRef="echo:echoHelloResponse" />
+   
+   <error id="NoWall_Exception" errorCode="org.ow2.petals.unit_tests.se.flowable.monit.filtering.echo.NoWall_Exception" />
+   
+   <process id="monit-filtering-in-only" name="Process for unit test about MONIT trace filtering, MEP InOnly" isExecutable="true">
+      <startEvent id="startevent1" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow11" sourceRef="startevent1" targetRef="servicetask1" />
+      <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"
+         operationRef="process:sayHelloOp">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT1S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:sayHelloRequestItem" id="dataInputOfServiceTaskEcho1" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskEcho1</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskEcho1</targetRef>
+            <assignment>
+               <from>${'Hello world !!'}</from>
+               <to>${dataInputOfServiceTaskEcho1.message}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow12" sourceRef="servicetask1" targetRef="endevent1" />
+      <endEvent id="endevent1" name="End" />
+   </process>
+   
+   <process id="monit-filtering-in-out" name="Process for unit test about MONIT trace filtering, MEP InOut"
+      isExecutable="true">
+      <dataObject id="echoMsg" name="Echo message" itemSubjectRef="xsd:string" />
+      
+      <startEvent id="startevent2" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow21" sourceRef="startevent2" targetRef="servicetask2" />
+      <serviceTask id="servicetask2" name="Service Task" implementation="##WebService"
+         operationRef="process:echoHelloOp">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT1S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:echoHelloRequestItem" id="dataInputOfServiceTaskEcho2" />
+            <dataOutput itemSubjectRef="process:echoHelloResponseItem" id="dataOutputOfServiceTaskEcho2" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskEcho2</dataInputRefs>
+            </inputSet>
+            <outputSet>
+               <dataOutputRefs>dataOutputOfServiceTaskEcho2</dataOutputRefs>
+            </outputSet>
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskEcho2</targetRef>
+            <assignment>
+               <from>${'Hello world !!'}</from>
+               <to>${dataInputOfServiceTaskEcho2.message}</to>
+            </assignment>
+         </dataInputAssociation>
+         <dataOutputAssociation>
+            <targetRef>echoMsg</targetRef>
+            <transformation>${dataOutputOfServiceTaskEcho2.echo}</transformation>
+         </dataOutputAssociation>
+      </serviceTask>
+      <boundaryEvent id="errorBoundaryEvent1" attachedToRef="servicetask2">
+         <errorEventDefinition errorRef="NoWall_Exception" />
+      </boundaryEvent>
+      <sequenceFlow id="flow22" sourceRef="errorBoundaryEvent1" targetRef="endevent22"></sequenceFlow>
+      <sequenceFlow id="flow23" sourceRef="servicetask2" targetRef="endevent21" />
+      <endEvent id="endevent21" name="End" />
+      <endEvent id="endevent22" name="End with error" />
+   </process>
+   
+   <process id="monit-filtering-robust-in-only" name="Process for unit test about MONIT trace filtering, MEP RobustInOnly" isExecutable="true">
+      <startEvent id="startevent3" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="flow31" sourceRef="startevent3" targetRef="servicetask3" />
+      <serviceTask id="servicetask3" name="Service Task" implementation="##WebService"
+         operationRef="process:robustSayHelloOp">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R1/PT1S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:robustSayHelloRequestItem" id="dataInputOfServiceTaskEcho3" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskEcho3</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskEcho3</targetRef>
+            <assignment>
+               <from>${'Hello world !!'}</from>
+               <to>${dataInputOfServiceTaskEcho3.message}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <boundaryEvent id="errorBoundaryEvent2" attachedToRef="servicetask3">
+         <errorEventDefinition errorRef="NoWall_Exception" />
+      </boundaryEvent>
+      <sequenceFlow id="flow32" sourceRef="errorBoundaryEvent2" targetRef="endevent32"></sequenceFlow>
+      <sequenceFlow id="flow33" sourceRef="servicetask3" targetRef="endevent31" />
+      <endEvent id="endevent31" name="End" />
+      <endEvent id="endevent32" name="End with error" />
+   </process>
+</definitions>

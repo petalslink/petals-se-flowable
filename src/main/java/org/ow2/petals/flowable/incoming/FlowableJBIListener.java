@@ -132,7 +132,8 @@ public class FlowableJBIListener extends AbstractJBIListener {
                             throw new MessagingException("No Flowable service found matching the exchange");
                         }
 
-                        flowableService.execute(exchange);
+                        flowableService.execute(exchange,
+                                this.getComponent().isFlowTracingActivated(exchange.getMessageExchange()));
 
                     } catch (final MessagingException e) {
                         logger.log(Level.SEVERE, "Exchange " + exchange.getExchangeId() + " encountered a problem.", e);

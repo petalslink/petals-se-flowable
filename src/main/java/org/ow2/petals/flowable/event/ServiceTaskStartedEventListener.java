@@ -17,11 +17,12 @@
  */
 package org.ow2.petals.flowable.event;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
-import java.util.logging.Logger;
+import java.util.Optional;
 
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
@@ -31,6 +32,7 @@ import org.flowable.engine.delegate.event.FlowableActivityEvent;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.ow2.petals.commons.log.FlowAttributes;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.flowable.outgoing.cxf.transport.PetalsConduit;
 
 /**
@@ -44,8 +46,8 @@ public class ServiceTaskStartedEventListener extends AbstractEventListener imple
 
     private final RuntimeService runtimeService;
 
-    public ServiceTaskStartedEventListener(final RuntimeService runtimeService, final Logger log) {
-        super(FlowableEngineEventType.ACTIVITY_STARTED, log);
+    public ServiceTaskStartedEventListener(final RuntimeService runtimeService, final AbstractComponent component) {
+        super(FlowableEngineEventType.ACTIVITY_STARTED, component);
         this.runtimeService = runtimeService;
     }
 
@@ -66,7 +68,16 @@ public class ServiceTaskStartedEventListener extends AbstractEventListener imple
                 final String flowInstanceId = (String) processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
                 final String flowStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
 
+                final Optional<Boolean> extFlowTracingActivated;
+                if (processVariables.containsKey(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE)) {
+                    extFlowTracingActivated = Optional.of(Boolean
+                            .valueOf((boolean) processVariables.get(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE)));
+                } else {
+                    extFlowTracingActivated = Optional.empty();
+                }
+
                 PetalsConduit.flowAttributes.set(new FlowAttributes(flowInstanceId, flowStepId));
+                PetalsConduit.extFlowTracingActivated.set(extFlowTracingActivated);
             }
         } else {
             this.log.warning("Unexpected event implementation: " + event.getClass().getName());

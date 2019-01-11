@@ -21,7 +21,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FL
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
@@ -30,6 +29,7 @@ import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.delegate.event.FlowableMessageEvent;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.FlowableSEConstants;
 import org.ow2.petals.flowable.monitoring.IntermediateCatchMessageEventFlowStepBeginLogData;
@@ -57,8 +57,8 @@ public class IntermediateCatchMessageEventStartedEventListener extends AbstractM
     private final RuntimeService runtimeService;
 
     public IntermediateCatchMessageEventStartedEventListener(final SimpleUUIDGenerator simpleUUIDGenerator,
-            final RuntimeService runtimeService, final Logger log) {
-        super(FlowableEngineEventType.ACTIVITY_MESSAGE_WAITING, log);
+            final RuntimeService runtimeService, final AbstractComponent component) {
+        super(FlowableEngineEventType.ACTIVITY_MESSAGE_WAITING, component);
         this.simpleUUIDGenerator = simpleUUIDGenerator;
         this.runtimeService = runtimeService;
     }

@@ -17,12 +17,16 @@
  */
 package org.ow2.petals.flowable.event;
 
-import java.util.logging.Logger;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE;
+
+import java.util.Map;
 
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
 import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
+import org.ow2.petals.flowable.FlowableSEConstants.Flowable;
 
 /**
  * Abstract class logging directly a MONIT trace on Flowable events
@@ -30,17 +34,37 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  * @author Christophe DENEUX - Linagora
  *
  */
-public abstract class AbstractMonitDirectLoggerEventListener extends AbstractMonitLoggerEventListener implements
-        FlowableEventListener {
+public abstract class AbstractMonitDirectLoggerEventListener extends AbstractMonitLoggerEventListener
+        implements FlowableEventListener {
 
     protected static final String MISSING_VARIABLE_PATTERN = "Unable to find the variable '%s' into the process instance '%s'.";
 
-    public AbstractMonitDirectLoggerEventListener(final FlowableEngineEventType listenEventType, final Logger log) {
-        super(listenEventType, log);
+    public AbstractMonitDirectLoggerEventListener(final FlowableEngineEventType listenEventType,
+            final AbstractComponent component) {
+        super(listenEventType, component);
     }
 
     @Override
     protected void flushLogData(final AbstractFlowLogData logData) {
         this.log.log(Level.MONIT, "", logData);
+    }
+
+    /**
+     * <p>
+     * Retrieve the value of the flow tracing activation according to the process variable
+     * {@value Flowable#VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE} defined at process instance level, and the
+     * parameter 'activate-flow-tracing' defined component level.
+     * </p>
+     * 
+     * @param processVariables
+     *            Process instance variables
+     * @return The flow tracing activation state.
+     */
+    protected boolean isFlowTracingEnabled(final Map<String, Object> processVariables) {
+        final boolean isFlowTracingStateDefinedAtProcessLevel = processVariables
+                .containsKey(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE);
+        return (isFlowTracingStateDefinedAtProcessLevel
+                && (boolean) processVariables.get(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE))
+                || (!isFlowTracingStateDefinedAtProcessLevel && this.component.isFlowTracingActivated());
     }
 }

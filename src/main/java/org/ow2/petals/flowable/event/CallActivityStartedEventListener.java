@@ -22,7 +22,6 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FL
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
@@ -32,6 +31,7 @@ import org.flowable.engine.delegate.event.impl.FlowableProcessStartedEventImpl;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 import org.ow2.petals.flowable.CallActivityForceAsyncParseHandler;
 import org.ow2.petals.flowable.monitoring.CallActivityFlowStepBeginLogData;
@@ -56,8 +56,8 @@ public class CallActivityStartedEventListener extends AbstractMonitDirectLoggerE
     private final SimpleUUIDGenerator simpleUUIDGenerator;
 
     public CallActivityStartedEventListener(final RuntimeService runtimeService,
-            final SimpleUUIDGenerator simpleUUIDGenerator, final Logger log) {
-        super(FlowableEngineEventType.PROCESS_STARTED, log);
+            final SimpleUUIDGenerator simpleUUIDGenerator, final AbstractComponent component) {
+        super(FlowableEngineEventType.PROCESS_STARTED, component);
         this.runtimeService = runtimeService;
         this.simpleUUIDGenerator = simpleUUIDGenerator;
     }

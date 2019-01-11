@@ -17,11 +17,10 @@
  */
 package org.ow2.petals.flowable.event;
 
-import java.util.logging.Logger;
-
 import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.common.api.delegate.event.FlowableEvent;
 import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
@@ -32,8 +31,9 @@ import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
  */
 public abstract class AbstractMonitLoggerEventListener extends AbstractEventListener implements FlowableEventListener {
 
-    public AbstractMonitLoggerEventListener(final FlowableEngineEventType listenEventType, final Logger log) {
-        super(listenEventType, log);
+    public AbstractMonitLoggerEventListener(final FlowableEngineEventType listenEventType,
+            final AbstractComponent component) {
+        super(listenEventType, component);
     }
 
     protected abstract AbstractFlowLogData createLogData(final FlowableEvent event);
@@ -48,5 +48,4 @@ public abstract class AbstractMonitLoggerEventListener extends AbstractEventList
             this.flushLogData(flowLogData);
         }
     }
-
 }
