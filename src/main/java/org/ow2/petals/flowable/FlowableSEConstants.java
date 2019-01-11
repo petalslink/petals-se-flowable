@@ -413,6 +413,12 @@ public final class FlowableSEConstants {
         public static final String VAR_PETALS_FLOW_STEP_ID = "petals.flow.step.id";
 
         /**
+         * Name of a variable used to store the external flow tracing activation state to be propagated to service
+         * providers invoked by process instance execution.
+         */
+        public static final String VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE = "petals.flow.external.tracing.activation.state";
+
+        /**
          * Name of a variable used to store the Petals flow instance identifier of the flow that has created the new
          * flow associated to the process instance.
          */

@@ -19,6 +19,7 @@ package org.ow2.petals.flowable.incoming.operation;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CORRELATED_FLOW_STEP_ID;
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
@@ -26,6 +27,7 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PL
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -40,6 +42,8 @@ import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.component.framework.util.ExchangeUtil;
+import org.ow2.petals.component.framework.util.exception.InvalidFlowTracingActivationExchangePropertyValueException;
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.StartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
@@ -132,6 +136,19 @@ public abstract class StartEventOperation extends FlowableOperation {
         final FlowAttributes exchangeFlowAttibutes = PetalsExecutionContext.getFlowAttributes();
         processVars.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         processVars.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
+
+        // The current flow tracing activation state must be propagated to the service providers invoked during the
+        // process instance execution. We use a process instance variable to store it, and to retrieve it when invoking
+        // service providers.
+        try {
+            final Optional<Boolean> extFlowTracingActivation = ExchangeUtil.isFlowTracingActivated(exchange);
+            if (extFlowTracingActivation.isPresent()) {
+                processVars.put(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE,
+                        extFlowTracingActivation.get().booleanValue());
+            }
+        } catch (final InvalidFlowTracingActivationExchangePropertyValueException e) {
+            throw new OperationProcessingException(this.wsdlOperation, e);
+        }
 
         // We add all placeholders as a map process variable
         processVars.put(VAR_PETALS_PLACEHOLDERS, this.processPlaceholders);

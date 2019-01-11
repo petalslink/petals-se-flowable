@@ -17,10 +17,12 @@
  */
 package org.ow2.petals.flowable.event;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.flowable.engine.RuntimeService;
@@ -66,7 +68,16 @@ public class ServiceTaskStartedEventListener extends AbstractEventListener imple
                 final String flowInstanceId = (String) processVariables.get(VAR_PETALS_FLOW_INSTANCE_ID);
                 final String flowStepId = (String) processVariables.get(VAR_PETALS_FLOW_STEP_ID);
 
+                final Optional<Boolean> extFlowTracingActivated;
+                if (processVariables.containsKey(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE)) {
+                    extFlowTracingActivated = Optional.of(Boolean
+                            .valueOf((boolean) processVariables.get(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE)));
+                } else {
+                    extFlowTracingActivated = Optional.empty();
+                }
+
                 PetalsConduit.flowAttributes.set(new FlowAttributes(flowInstanceId, flowStepId));
+                PetalsConduit.extFlowTracingActivated.set(extFlowTracingActivated);
             }
         } else {
             this.log.warning("Unexpected event implementation: " + event.getClass().getName());
