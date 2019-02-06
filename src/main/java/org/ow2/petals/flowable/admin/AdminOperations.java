@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.common.api.FlowableObjectNotFoundException;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -158,6 +159,18 @@ public final class AdminOperations {
                             procDefKey, procDefVer),
                     e);
         }
+    }
 
+    /**
+     * Admin utility operation associated to {@link AdminRuntimeService#cancelProcessInstance(String, String)}
+     */
+    public static void cancelProcessInstance(final String procInstId, final String deleteReason,
+            final ProcessEngine flowableEngine) throws PetalsException {
+
+        try {
+            flowableEngine.getRuntimeService().deleteProcessInstance(procInstId, deleteReason);
+        } catch (final FlowableObjectNotFoundException e) {
+            throw new ProcessInstanceNotFoundException(procInstId, e);
+        }
     }
 }

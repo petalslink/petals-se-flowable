@@ -1120,6 +1120,11 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
     }
 
     @Override
+    public void cancelProcessInstance(final String procInstId, final String deleteReason) throws PetalsException {
+        AdminOperations.cancelProcessInstance(procInstId, deleteReason, this.flowableEngine);
+    }
+
+    @Override
     public List<String> listPurgeableProcessInstances(final String processDefinitionKey,
             final int processDefinitionVersion)
             throws PetalsException {

@@ -34,6 +34,18 @@ import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessInstan
 public interface AdminRuntimeService {
 
     /**
+     * Cancel execution of a process instance.
+     * 
+     * @param procInstId
+     *            Identifier of the process instance to cancel. Not {@code null} and not empty.
+     * @throws ProcessInstanceNotFoundException
+     *             The given process instance does not exist.
+     * @throws PetalsException
+     *             An error occurs canceling process instance.
+     */
+    public void cancelProcessInstance(final String procInstId, final String deleteReason) throws PetalsException;
+
+    /**
      * <p>
      * List process instances that can be purged for a given process definition in its given version. A process instance
      * can be purged if it is ended successfully or with error.

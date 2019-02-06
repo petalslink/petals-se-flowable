@@ -38,6 +38,11 @@ public class ProcessInstanceNotFoundException extends PetalsException {
         this.procInstNotFound = procInstNotFound;
     }
 
+    public ProcessInstanceNotFoundException(final String procInstNotFound, final Throwable cause) {
+        super(String.format(PATTERN, procInstNotFound), cause);
+        this.procInstNotFound = procInstNotFound;
+    }
+
     public String getProcInstNotFound() {
         return this.procInstNotFound;
     }
