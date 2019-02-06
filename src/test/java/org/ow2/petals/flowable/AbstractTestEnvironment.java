@@ -20,7 +20,9 @@ package org.ow2.petals.flowable;
 import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.List;
+import java.util.logging.LogRecord;
 
 import org.apache.mina.util.AvailablePortFinder;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -28,6 +30,8 @@ import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.ow2.petals.commons.log.FlowLogData;
+import org.ow2.petals.commons.log.TraceCode;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
 import org.ow2.petals.flowable.junit.FlowableClient;
@@ -258,6 +262,98 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             throws InterruptedException {
         Await.waitIntermediateCatchMessageEvent(processInstanceId, messageEventName,
                 this.flowableClient.getRuntimeService(), 60);
+    }
+
+    /**
+     * Retrieve and remove the MONIT trace 'provideFlowStepBegin' associated to the given endpoint.
+     * 
+     * @param providerEndpoint
+     *            The service provider endpoint name for which the MONIT trace is looked for.
+     * @param monitLogs
+     *            MONIT traces of the flow
+     * @return The MONIT trace extracted matching criteria
+     */
+    protected LogRecord extractProviderBegin(final String providerEndpoint, final List<LogRecord> monitLogs) {
+        final Iterator<LogRecord> itMonitLogs = monitLogs.iterator();
+        while (itMonitLogs.hasNext()) {
+            final LogRecord logRecord = itMonitLogs.next();
+            final FlowLogData flowLogData = (FlowLogData) logRecord.getParameters()[0];
+            if (flowLogData.get(FlowLogData.FLOW_STEP_TRACE_CODE) == TraceCode.PROVIDE_FLOW_STEP_BEGIN
+                    && flowLogData.get(FlowLogData.FLOW_STEP_ENDPOINT_NAME_PROPERTY_NAME).equals(providerEndpoint)) {
+                itMonitLogs.remove();
+                return logRecord;
+            }
+        }
+        fail("MONIT trace 'provideFlowStepBegin' not found");
+        return null;
+    }
+
+    /**
+     * Retrieve and remove the MONIT trace 'provideFlowStepEnd' associated to the given flow step.
+     * 
+     * @param flowStepId
+     *            The flow step identifier for which the MONIT trace is looked for.
+     * @param monitLogs
+     *            MONIT traces of the flow
+     * @return The MONIT trace extracted matching criteria
+     */
+    protected LogRecord extractProviderEnd(final Object flowStepId, final List<LogRecord> monitLogs) {
+        return this.extractEndOrFailure(flowStepId, TraceCode.PROVIDE_FLOW_STEP_END, monitLogs);
+    }
+
+    /**
+     * Retrieve and remove the MONIT trace 'provideFlowStepFailure' associated to the given flow step.
+     * 
+     * @param flowStepId
+     *            The flow step identifier for which the MONIT trace is looked for.
+     * @param monitLogs
+     *            MONIT traces of the flow
+     * @return The MONIT trace extracted matching criteria
+     */
+    protected LogRecord extractProviderFailure(final Object flowStepId, final List<LogRecord> monitLogs) {
+        return this.extractEndOrFailure(flowStepId, TraceCode.PROVIDE_FLOW_STEP_FAILURE, monitLogs);
+    }
+
+    /**
+     * Retrieve and remove the MONIT trace 'consumerExtFlowStepEnd' associated to the given flow step.
+     * 
+     * @param flowStepId
+     *            The flow step identifier for which the MONIT trace is looked for.
+     * @param monitLogs
+     *            MONIT traces of the flow
+     * @return The MONIT trace extracted matching criteria
+     */
+    protected LogRecord extractConsumerExtEnd(final Object flowStepId, final List<LogRecord> monitLogs) {
+        return this.extractEndOrFailure(flowStepId, TraceCode.CONSUME_EXT_FLOW_STEP_END, monitLogs);
+    }
+
+    /**
+     * Retrieve and remove the MONIT trace 'consumerExtFlowStepFailure' associated to the given flow step.
+     * 
+     * @param flowStepId
+     *            The flow step identifier for which the MONIT trace is looked for.
+     * @param monitLogs
+     *            MONIT traces of the flow
+     * @return The MONIT trace extracted matching criteria
+     */
+    protected LogRecord extractConsumerExtFailure(final Object flowStepId, final List<LogRecord> monitLogs) {
+        return this.extractEndOrFailure(flowStepId, TraceCode.CONSUME_EXT_FLOW_STEP_FAILURE, monitLogs);
+    }
+
+    private LogRecord extractEndOrFailure(final Object flowStepId, final TraceCode traceCode,
+            final List<LogRecord> monitLogs) {
+        final Iterator<LogRecord> itMonitLogs = monitLogs.iterator();
+        while (itMonitLogs.hasNext()) {
+            final LogRecord logRecord = itMonitLogs.next();
+            final FlowLogData flowLogData = (FlowLogData) logRecord.getParameters()[0];
+            if (flowLogData.get(FlowLogData.FLOW_STEP_TRACE_CODE) == traceCode
+                    && flowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME).equals(flowStepId)) {
+                itMonitLogs.remove();
+                return logRecord;
+            }
+        }
+        fail("MONIT trace '" + traceCode.toString() + "' not found: flowStepId=" + flowStepId);
+        return null;
     }
 
 }

@@ -51,6 +51,9 @@
       <sequenceFlow id="flow11" sourceRef="startevent1" targetRef="servicetask1" />
       <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"
          operationRef="process:archiveOperation">
+         <extensionElements>
+            <flowable:failedJobRetryTimeCycle>R3/PT1S</flowable:failedJobRetryTimeCycle>
+         </extensionElements>
          <ioSpecification>
             <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveAttachment1" />
             <inputSet>

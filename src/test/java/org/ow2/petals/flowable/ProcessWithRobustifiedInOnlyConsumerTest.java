@@ -17,6 +17,9 @@
  */
 package org.ow2.petals.flowable;
 
+import java.util.List;
+import java.util.logging.LogRecord;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.transform.Source;
@@ -24,6 +27,8 @@ import javax.xml.transform.Source;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
+import org.ow2.petals.commons.log.FlowLogData;
+import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
@@ -38,7 +43,8 @@ import org.ow2.petals.se_flowable.unit_test.robustified_in_only.archivageservice
 import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 
 /**
- * Unit tests about request processing of BPMN services with MEP 'InOnly'
+ * Unit tests about request processing of BPMN services with a service provider consumed providing an operation with MEP
+ * 'InOnly' but invoked with MEP 'RobustInOnly'.
  * 
  * @author Christophe DENEUX - Linagora
  * 
@@ -65,8 +71,8 @@ public class ProcessWithRobustifiedInOnlyConsumerTest extends ProcessWithRobusti
         final Start start = new Start();
 
         final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
-                ROBUSTIFIED_INONLY_SU,
-                OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(start));
+                ROBUSTIFIED_INONLY_SU, OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                toByteArray(start));
 
         COMPONENT.sendAndCheckResponseAndSendStatus(request, new ServiceProviderImplementation() {
             private MessageExchange msgExchange;
@@ -112,6 +118,26 @@ public class ProcessWithRobustifiedInOnlyConsumerTest extends ProcessWithRobusti
         }, ExchangeStatus.DONE);
 
         this.waitEndOfProcessInstance(processInstanceId.toString());
+
+        // Check MONIT traces
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(6, monitLogs.size());
+        final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(
+                ROBUSTIFIED_INONLY_INTERFACE, ROBUSTIFIED_INONLY_SERVICE, ROBUSTIFIED_INONLY_ENDPOINT, OPERATION_START,
+                monitLogs.get(0));
+        final FlowLogData processBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs.get(1));
+
+        assertMonitProviderEndLog(initialInteractionRequestFlowLogData, this.extractProviderEnd(
+                initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
+
+        final FlowLogData serviceTaskRequestBeginFlowLogData = assertMonitProviderBeginLog(processBeginFlowLogData,
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION,
+                this.extractProviderBegin(ARCHIVE_ENDPOINT, monitLogs));
+        assertMonitProviderEndLog(serviceTaskRequestBeginFlowLogData, this.extractProviderEnd(
+                serviceTaskRequestBeginFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
+
+        assertMonitConsumerExtEndLog(processBeginFlowLogData, this
+                .extractConsumerExtEnd(processBeginFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
 
     }
 
@@ -193,6 +219,41 @@ public class ProcessWithRobustifiedInOnlyConsumerTest extends ProcessWithRobusti
                 false);
 
         this.waitProcessInstanceAsDeadLetterJob(processInstanceId.toString());
+
+        // Cancel the process instance
+        ((FlowableSE) COMPONENT_UNDER_TEST.getComponentObject()).cancelProcessInstance(processInstanceId.toString(),
+                "Unrecoverable technical error !!");
+
+        // Check MONIT traces
+        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        assertEquals(10, monitLogs.size());
+
+        final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(
+                ROBUSTIFIED_INONLY_INTERFACE, ROBUSTIFIED_INONLY_SERVICE, ROBUSTIFIED_INONLY_ENDPOINT, OPERATION_START,
+                monitLogs.get(0));
+        final FlowLogData processBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs.get(1));
+
+        assertMonitProviderEndLog(initialInteractionRequestFlowLogData, this.extractProviderEnd(
+                initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
+
+        final FlowLogData serviceTaskRequestBeginFlowLogData_1 = assertMonitProviderBeginLog(processBeginFlowLogData,
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION,
+                this.extractProviderBegin(ARCHIVE_ENDPOINT, monitLogs));
+        assertMonitProviderFailureLog(serviceTaskRequestBeginFlowLogData_1, this.extractProviderFailure(
+                serviceTaskRequestBeginFlowLogData_1.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
+        final FlowLogData serviceTaskRequestBeginFlowLogData_2 = assertMonitProviderBeginLog(processBeginFlowLogData,
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION,
+                this.extractProviderBegin(ARCHIVE_ENDPOINT, monitLogs));
+        assertMonitProviderFailureLog(serviceTaskRequestBeginFlowLogData_2, this.extractProviderFailure(
+                serviceTaskRequestBeginFlowLogData_2.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
+        final FlowLogData serviceTaskRequestBeginFlowLogData_3 = assertMonitProviderBeginLog(processBeginFlowLogData,
+                ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION,
+                this.extractProviderBegin(ARCHIVE_ENDPOINT, monitLogs));
+        assertMonitProviderFailureLog(serviceTaskRequestBeginFlowLogData_3, this.extractProviderFailure(
+                serviceTaskRequestBeginFlowLogData_3.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
+
+        assertMonitConsumerExtFailureLog(processBeginFlowLogData, this.extractConsumerExtFailure(
+                processBeginFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME), monitLogs));
 
     }
 }

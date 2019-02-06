@@ -57,7 +57,7 @@ public class ProcessInstanceCanceledEventListener extends AbstractProcessEventLi
             this.log.fine("The process instance '" + processInstanceId + "' is canceled.");
 
             final HistoricProcessInstanceQuery processQuery = this.historyService.createHistoricProcessInstanceQuery()
-                    .processInstanceId(processInstanceId);
+                    .processInstanceId(processInstanceId).includeProcessVariables();
             final HistoricProcessInstance processResult = processQuery.singleResult();
 
             final Map<String, Object> processVariables = processResult.getProcessVariables();
@@ -67,7 +67,7 @@ public class ProcessInstanceCanceledEventListener extends AbstractProcessEventLi
 
             if (this.isFlowTracingEnabled(processVariables)) {
                 return new ProcessInstanceFlowStepFailureLogData(flowInstanceId, flowStepId,
-                        processResult.getDeleteReason());
+                        eventImpl.getCause().toString());
             } else {
                 return null;
             }
