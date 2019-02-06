@@ -181,9 +181,11 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                 DocumentBuilders.releaseDocumentBuilder(docBuilder);
             }
 
-            // Pattern RobustInOnly is not supported by WSDL 1.1 and it is considered as InOnly. So we must manage it
+            // Pattern RobustInOnly is not supported by WSDL 1.1 and it is considered as InOnly. More over, no error is
+            // accepted on MEP InOnly. So we must manage them
             // here manually.
-            if (cxfExchange.isOneWay() && mep == MEPPatternConstants.ROBUST_IN_ONLY) {
+            // TODO: Try to find a way to send exchange asynchronously
+            if (cxfExchange.isOneWay()) {
                 if (this.sender.sendSync(jbiExchange)) {
                     if (jbiExchange.isErrorStatus()) {
                         // An error was returned

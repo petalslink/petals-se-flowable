@@ -26,8 +26,10 @@ import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
+import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
+import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.StatusToConsumerMessage;
 import org.ow2.petals.se_flowable.unit_test.in_only.Start;
@@ -80,8 +82,7 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
                 assertEquals(ARCHIVE_ENDPOINT, this.msgExchange.getEndpoint().getEndpointName());
                 assertEquals(ARCHIVER_OPERATION, this.msgExchange.getOperation());
                 assertEquals(ExchangeStatus.ACTIVE, this.msgExchange.getStatus());
-                assertEquals(MEPPatternConstants.IN_ONLY,
-                        MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
+                assertEquals(MEPPatternConstants.IN_ONLY, MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
                 assertTrue(requestObj instanceof Archiver);
 
@@ -111,5 +112,84 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
 
         this.waitEndOfProcessInstance(processInstanceId.toString());
 
+    }
+
+    /**
+     * <p>
+     * Check the service invocation with MEP InOnly when an error occurs.
+     * </p>
+     * <p>
+     * Expected results:
+     * </p>
+     * <ul>
+     * <li>the process instance is correctly created in the Flowable engine,</li>
+     * <li>the service is correctly invoked,</li>
+     * <li>the service task is automatically set as dead letter job.</li>
+     * </ul>
+     */
+    @Test
+    public void error() throws Exception {
+
+        final StringBuilder processInstanceId = new StringBuilder();
+        final Start start = new Start();
+
+        final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST, INONLY_SU,
+                OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(start));
+
+        final ServiceProviderImplementation archiveServiceMock = new ServiceProviderImplementation() {
+            private MessageExchange msgExchange;
+
+            @Override
+            public Message provides(final RequestMessage requestMsg) throws Exception {
+
+                this.msgExchange = requestMsg.getMessageExchange();
+                assertNotNull(this.msgExchange);
+                assertEquals(ARCHIVE_INTERFACE, this.msgExchange.getInterfaceName());
+                assertEquals(ARCHIVE_SERVICE, this.msgExchange.getService());
+                assertNotNull(this.msgExchange.getEndpoint());
+                assertEquals(ARCHIVE_ENDPOINT, this.msgExchange.getEndpoint().getEndpointName());
+                assertEquals(ARCHIVER_OPERATION, this.msgExchange.getOperation());
+                assertEquals(ExchangeStatus.ACTIVE, this.msgExchange.getStatus());
+                assertEquals(MEPPatternConstants.IN_ONLY, MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
+                final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
+                assertTrue(requestObj instanceof Archiver);
+
+                // Returns the reply of the service provider to the Flowable service task
+                return new StatusToConsumerMessage(requestMsg,
+                        new Exception("An error occurs during processing of archiving service."));
+            }
+
+            @Override
+            public boolean statusExpected() {
+                return false;
+            }
+        };
+
+        final ResponseMessage response = COMPONENT.sendAndGetResponse(request, archiveServiceMock);
+        new MessageChecks() {
+
+            @Override
+            public void checks(final Message message) throws Exception {
+                // Check the reply
+                final Source fault = message.getFault();
+                assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
+                assertNotNull("No XML payload in response", message.getPayload());
+                final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
+                assertTrue(responseObj instanceof StartResponse);
+                final StartResponse response = (StartResponse) responseObj;
+                assertNotNull(response.getCaseFileNumber());
+                processInstanceId.append(response.getCaseFileNumber());
+            }
+        }.checks(response);
+
+        // First retry by Flowable
+        COMPONENT.receiveRequestAsExternalProvider(archiveServiceMock, SimpleComponent.DEFAULT_SEND_AND_RECEIVE_TIMEOUT,
+                false);
+
+        // 2nd retry by Flowable
+        COMPONENT.receiveRequestAsExternalProvider(archiveServiceMock, SimpleComponent.DEFAULT_SEND_AND_RECEIVE_TIMEOUT,
+                false);
+
+        this.waitProcessInstanceAsDeadLetterJob(processInstanceId.toString());
     }
 }
