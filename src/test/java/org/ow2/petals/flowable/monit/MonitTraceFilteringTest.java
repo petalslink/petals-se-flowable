@@ -144,7 +144,8 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
 
     @Override
     protected QName getConsumedServiceOperation(final MEPPatternConstants mep) {
-        return mep == MEPPatternConstants.IN_OUT ? CONSUMED_ECHOHELLO_OPERATION : CONSUMED_SAYHELLO_OPERATION;
+        return mep == MEPPatternConstants.IN_OUT ? CONSUMED_ECHOHELLO_OPERATION
+                : mep == MEPPatternConstants.IN_ONLY ? CONSUMED_SAYHELLO_OPERATION : CONSUMED_ROBUSTSAYHELLO_OPERATION;
     }
 
     @Override
@@ -188,8 +189,8 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
 
     @Override
     protected MEPPatternConstants[] getMepsSupportedByServiceProvider() {
-        return new MEPPatternConstants[] {MEPPatternConstants.IN_OUT, /* MEPPatternConstants.IN_ONLY, 
-                MEPPatternConstants.ROBUST_IN_ONLY */};
+        return new MEPPatternConstants[] { MEPPatternConstants.ROBUST_IN_ONLY, MEPPatternConstants.IN_ONLY,
+                MEPPatternConstants.IN_OUT };
     }
 
     @Override
@@ -309,7 +310,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
 
         // Error returned with MEP InOut put the job as dead-letter job. We cancel the process instance to get the last
         // MONIT trace
-        if (mep == MEPPatternConstants.IN_OUT && statusToReturn == ExchangeStatus.ERROR) {
+        if (statusToReturn == ExchangeStatus.ERROR) {
             // Wait that the job is put as dead letter job before to cancel the process instance
             await().atMost(TEN_SECONDS).until(() -> {
                 assertEquals(1,

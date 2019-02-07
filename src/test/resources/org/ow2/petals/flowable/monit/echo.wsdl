@@ -26,10 +26,16 @@
           xmlns:xs="http://www.w3.org/2001/XMLSchema"
           targetNamespace="http://petals.ow2.org/unit-tests/se/flowable/monit/filtering/echo" version="1.0">
          <xs:element name="sayHello" type="tns:sayHello" />
+         <xs:element name="robustSayHello" type="tns:robustSayHello" />
          <xs:element name="echoHello" type="tns:echoHello" />
          <xs:element name="noWall" type="tns:noWall" />
          <xs:element name="echoHelloResponse" type="tns:echoHelloResponse" />
          <xs:complexType name="sayHello">
+            <xs:sequence>
+               <xs:element minOccurs="1" maxOccurs="1" name="message" type="xs:string" />
+            </xs:sequence>
+         </xs:complexType>
+         <xs:complexType name="robustSayHello">
             <xs:sequence>
                <xs:element minOccurs="1" maxOccurs="1" name="message" type="xs:string" />
             </xs:sequence>
@@ -52,6 +58,9 @@
    <wsdl:message name="sayHello">
       <wsdl:part name="sayHelloParam" element="tns:sayHello" />
    </wsdl:message>
+   <wsdl:message name="robustSayHello">
+      <wsdl:part name="robustSayHelloParam" element="tns:robustSayHello" />
+   </wsdl:message>
    <wsdl:message name="echoHello">
       <wsdl:part name="echoHelloParam" element="tns:echoHello" />
    </wsdl:message>
@@ -71,7 +80,7 @@
          <wsdl:fault name="noWall" message="tns:noWall" />
       </wsdl:operation>
       <wsdl:operation name="robustSayHello">
-         <wsdl:input name="sayHello" message="tns:sayHello" />
+         <wsdl:input name="robustSayHello" message="tns:robustSayHello" />
          <wsdl:fault name="noWall" message="tns:noWall" />
       </wsdl:operation>
    </wsdl:portType>
@@ -89,6 +98,7 @@
       </wsdl:operation>
       <wsdl:operation name="robustSayHello">
          <wsdl:input />
+         <wsdl:output />
          <wsdl:fault name="noWall">
             <soap:fault name="noWall"/>
          </wsdl:fault>
