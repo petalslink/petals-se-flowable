@@ -357,7 +357,8 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     }
 
     @Override
-    protected void onExchangeExecutionStart(final String ruleIdPrefix) throws Exception {
+    protected void onExchangeExecutionStart(final String ruleIdPrefix, final ExpectedResponseType expectedResponseType)
+            throws Exception {
 
         // Remove previous terminate processes
         final List<HistoricProcessInstance> historyProcInstances = this.getProcessEngine().getHistoryService()
