@@ -59,7 +59,7 @@ public class ServiceTaskForceAsyncParseHandler extends AbstractBpmnParseHandler<
     protected void executeParse(final BpmnParse bpmnParse, final ServiceTask element) {
 
         // Make always async
-        final FlowElement serviceTaskFlowElt = bpmnParse.getCurrentProcess().getFlowElement(element.getId());
+        final FlowElement serviceTaskFlowElt = bpmnParse.getCurrentFlowElement();
         if (serviceTaskFlowElt instanceof FlowNode) {
             ((FlowNode) serviceTaskFlowElt).setAsynchronous(true);
         } else {
