@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jbi.messaging.MessagingException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
@@ -128,7 +129,7 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
      * Search process instances that are not ended (in state 'active' or 'suspended').
      */
     private GetProcessInstancesResponse searchProcessInstances(final GetProcessInstances incomingObject,
-            final ProcessInstanceState state) {
+            final ProcessInstanceState state) throws MessagingException {
 
         final ProcessInstanceQuery processInstanceQuery = this.runtimeService.createProcessInstanceQuery();
 
@@ -154,7 +155,7 @@ public class GetProcessInstancesOperation extends AbstractOperation<GetProcessIn
         final Variables variables = incomingObject.getVariables();
         if (variables != null && !variables.getVariable().isEmpty()) {
             for (final Variable variable : variables.getVariable()) {
-                processInstanceQuery.variableValueEquals(variable.getName(), variable.getValue());
+                processInstanceQuery.variableValueEquals(variable.getName(), Utils.parseVariableValue(variable));
             }
         }
 

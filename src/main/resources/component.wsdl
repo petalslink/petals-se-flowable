@@ -312,6 +312,22 @@
                         </xsd:documentation>
                      </xsd:annotation>
                   </xsd:attribute>
+                  <xsd:attribute name="as" use="required">
+                     <xsd:annotation>
+                        <xsd:documentation>
+                           If the variable type is different from 'string' it is needed to give it here for query..
+                        </xsd:documentation>
+                     </xsd:annotation>
+                     <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                           <xsd:enumeration value="string" />
+                           <xsd:enumeration value="long" />
+                           <xsd:enumeration value="double" />
+                           <xsd:enumeration value="date" />
+                           <xsd:enumeration value="boolean" />
+                        </xsd:restriction>
+                     </xsd:simpleType>
+                  </xsd:attribute>
                </xsd:extension>
             </xsd:simpleContent>
          </xsd:complexType>
