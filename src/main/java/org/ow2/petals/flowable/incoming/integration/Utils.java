@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jbi.messaging.MessagingException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
@@ -63,6 +64,42 @@ public class Utils {
             resultVariables.getVariable().add(resultVariable);
         }
         return resultVariables;
+    }
+
+    /**
+     * Parse a variable value given through a XML payload ({@link Variable}) into a Flowable variable value
+     * 
+     * @param variable
+     *            The variable to parse
+     * @return The Flowable variable value.
+     * @throws MessagingException
+     *             An error occurs parsing the variable value.
+     */
+    public static Object parseVariableValue(final Variable variable) throws MessagingException {
+
+        try {
+            if (variable.getAs() == null || "string".equals(variable.getAs())) {
+                return variable.getValue();
+            } else if ("long".equals(variable.getAs())) {
+                return Long.parseLong(variable.getValue());
+            } else if ("double".equals(variable.getAs())) {
+                return Double.parseDouble(variable.getValue());
+            } else if ("date".equals(variable.getAs())) {
+                return DatatypeFactory.newInstance().newXMLGregorianCalendar(variable.getValue()).toGregorianCalendar()
+                        .getTime();
+            } else if ("boolean".equals(variable.getAs())) {
+                return Boolean.parseBoolean(variable.getValue());
+            } else {
+                throw new MessagingException(String.format("Unsupported type ('%s')for variable '%s'", variable.getAs(),
+                        variable.getName()));
+            }
+        } catch (final NumberFormatException | DatatypeConfigurationException e) {
+            throw new MessagingException(
+                    String.format("Invalid value ('%s') for variable '%s' according to its type '%s'",
+                            variable.getValue(), variable.getName(), variable.getAs()),
+                    e);
+        }
+
     }
 
 }
