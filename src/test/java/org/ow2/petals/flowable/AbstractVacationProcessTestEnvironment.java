@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2018 Linagora
+ * Copyright (c) 2014-2019 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -31,22 +31,7 @@ import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguratio
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.components.flowable.generic._1.ActivateProcessInstances;
-import org.ow2.petals.components.flowable.generic._1.ActivateProcessInstancesResponse;
-import org.ow2.petals.components.flowable.generic._1.GetProcessInstances;
-import org.ow2.petals.components.flowable.generic._1.GetProcessInstancesResponse;
-import org.ow2.petals.components.flowable.generic._1.GetTasks;
-import org.ow2.petals.components.flowable.generic._1.GetTasksResponse;
-import org.ow2.petals.components.flowable.generic._1.GetUser;
-import org.ow2.petals.components.flowable.generic._1.GetUserResponse;
-import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
-import org.ow2.petals.components.flowable.generic._1.SearchGroups;
-import org.ow2.petals.components.flowable.generic._1.SearchGroupsResponse;
-import org.ow2.petals.components.flowable.generic._1.SearchUsers;
-import org.ow2.petals.components.flowable.generic._1.SearchUsersResponse;
-import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
-import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstancesResponse;
-import org.ow2.petals.components.flowable.generic._1.UnknownUser;
+import org.ow2.petals.components.flowable.generic._1.ObjectFactory;
 import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.Archiver;
 import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.ArchiverResponse;
 import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.AckResponse;
@@ -180,12 +165,7 @@ public abstract class AbstractVacationProcessTestEnvironment extends AbstractTes
         try {
             final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
                     AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
-                    ArchiverResponse.class, GetTasks.class, GetTasksResponse.class, GetProcessInstances.class,
-                    GetProcessInstancesResponse.class, JiraPETALSSEACTIVITI4.class, InvalidRequest.class,
-                    SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
-                    ActivateProcessInstances.class, ActivateProcessInstancesResponse.class, GetUser.class,
-                    GetUserResponse.class, UnknownUser.class, SearchUsers.class, SearchUsersResponse.class,
-                    SearchGroups.class, SearchGroupsResponse.class);
+                    ArchiverResponse.class, JiraPETALSSEACTIVITI4.class, ObjectFactory.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

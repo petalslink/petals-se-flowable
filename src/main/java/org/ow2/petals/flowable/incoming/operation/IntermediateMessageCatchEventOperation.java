@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Linagora
+ * Copyright (c) 2017-2019 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -146,7 +146,7 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
         localVariables.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
         this.runtimeService.setVariablesLocal(executionId, localVariables);
 
-        // We notify Flowable that a event was received
+        // We notify Flowable that an event was received
         this.runtimeService.setVariables(processInstanceId, processVars);
         this.runtimeService.messageEventReceivedAsync(this.messageEventName, executionId);
 

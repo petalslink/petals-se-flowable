@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright (c) 2017-2018 Linagora
+# Copyright (c) 2017-2019 Linagora
 #
 # This program/library is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -33,6 +33,6 @@ PETALS_BC_SOAP_PROPERTIES=${PETALS_COMPONENT_CONFIG_FILES_HOME}/bc-soap.properti
 FLOWABLE_H2_DB=${PETALS_DATA}/h2-flowable.db
 
 BC_SOAP_VERSION=5.0.0
-SE_FLOWABLE_VERSION=1.1.1
-SAMPLE_VERSION=1.1.1-1.0.0
+SE_FLOWABLE_VERSION=1.2.0
+SAMPLE_VERSION=1.2.0-1.0.0
 

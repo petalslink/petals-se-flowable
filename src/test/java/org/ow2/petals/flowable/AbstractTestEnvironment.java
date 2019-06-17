@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014-2018 Linagora
+ * Copyright (c) 2014-2019 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -49,6 +49,8 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     protected static final String NATIVE_TASKS_SVC_CFG = "native-tasks";
 
     protected static final String NATIVE_PROCESSINSTANCES_SVC_CFG = "native-process-instances";
+
+    protected static final String NATIVE_EXECUTIONS_SVC_CFG = "native-executions";
 
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 

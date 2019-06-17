@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2018 Linagora
+ Copyright (c) 2015-2019 Linagora
 
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -48,6 +48,20 @@
 
          <!-- Component specific elements -->
          <soap:service-name>processInstancesService</soap:service-name>
+         <soap:mode>SOAP</soap:mode>
+         <soap:enable-http-transport>true</soap:enable-http-transport>
+         <soap:enable-jms-transport>false</soap:enable-jms-transport>
+      </jbi:consumes>
+
+      <jbi:consumes interface-name="integrationService:Executions"
+         service-name="integrationService:ExecutionsService" >
+
+         <!-- CDK specific elements -->
+         <petalsCDK:timeout />
+         <petalsCDK:mep xsi:nil="true" />
+
+         <!-- Component specific elements -->
+         <soap:service-name>executionsService</soap:service-name>
          <soap:mode>SOAP</soap:mode>
          <soap:enable-http-transport>true</soap:enable-http-transport>
          <soap:enable-jms-transport>false</soap:enable-jms-transport>
