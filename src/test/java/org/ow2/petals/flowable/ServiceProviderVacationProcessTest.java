@@ -96,8 +96,7 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvironment {
 
     @AfterClass
-    public static void assertTechnicalMonitoringMetrics()
-            throws Exception {
+    public static void assertTechnicalMonitoringMetrics() throws Exception {
         assertTrue(COMPONENT_UNDER_TEST.getComponentObject().getMonitoringBean() instanceof MonitoringMBean);
         final MonitoringMBean monitoringMbean = (MonitoringMBean) COMPONENT_UNDER_TEST.getComponentObject()
                 .getMonitoringBean();
@@ -115,14 +114,12 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         // process instances
         final Long[] vacationInstances = metrics.get("vacationRequest");
         assertEquals(0, vacationInstances[0].longValue());
-        
+
         /*
-         * 5 process instances in state 'Pending', the ones created by unit tests:
-         * - userTaskRequest_EmptyProcessInstanceIdValue,
-         * - userTaskRequest_EmptyUserIdValue,
-         * - userTaskRequest_NoUserIdValue,
-         * - userTaskRequest_NoProcessInstanceIdValue,
-         * - userTaskRequest_TaskCompletedFault
+         * 5 process instances in state 'Pending', the ones created by unit tests: -
+         * userTaskRequest_EmptyProcessInstanceIdValue, - userTaskRequest_EmptyUserIdValue, -
+         * userTaskRequest_NoUserIdValue, - userTaskRequest_NoProcessInstanceIdValue, -
+         * userTaskRequest_TaskCompletedFault
          */
         assertEquals(5, vacationInstances[1].longValue());
         assertEquals(0, vacationInstances[2].longValue());
@@ -175,6 +172,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         //
         // Test administration operations about deleting process instances
+        //
         assertTrue(COMPONENT_UNDER_TEST.getComponentObject() instanceof AdminRuntimeService);
         final AdminRuntimeService adminRuntimeMbean = (AdminRuntimeService) COMPONENT_UNDER_TEST.getComponentObject();
         assertEquals(2, adminRuntimeMbean.listPurgeableProcessInstances(null, 0).size());
@@ -402,6 +400,32 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 true);
         this.retrieveUserTask(BPMN_USER_VALIDEUR, response_1.getNumeroDde(), false, processStartedBeginFlowLogData,
                 false);
+
+        // Try to retrieve the process instance searching it from a variable using integration service
+        final GetProcessInstances getProcessInstanceByVarReq = new GetProcessInstances();
+        getProcessInstanceByVarReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+        final Variables getProcessInstanceByVarReqVars = new Variables();
+        getProcessInstanceByVarReq.setVariables(getProcessInstanceByVarReqVars);
+        final Variable getProcessInstanceByVarReqVar = new Variable();
+        getProcessInstanceByVarReqVars.getVariable().add(getProcessInstanceByVarReqVar);
+        getProcessInstanceByVarReqVar.setName("startDate");
+        getProcessInstanceByVarReqVar
+                .setValue(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate).toXMLFormat());
+        getProcessInstanceByVarReqVar.setAs("date");
+        final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
+                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstanceByVarReq));
+        final ResponseMessage getProcessInstanceByVarRespMsg = COMPONENT.sendAndGetResponse(request);
+        assertNotNull("No XML payload in response", getProcessInstanceByVarRespMsg.getPayload());
+        final Object getProcessInstanceByVarRespObj = UNMARSHALLER
+                .unmarshal(getProcessInstanceByVarRespMsg.getPayload());
+        assertTrue(getProcessInstanceByVarRespObj instanceof GetProcessInstancesResponse);
+        final GetProcessInstancesResponse getProcessInstanceByVarResp = (GetProcessInstancesResponse) getProcessInstanceByVarRespObj;
+        assertNotNull(getProcessInstanceByVarResp.getProcessInstances());
+        assertNotNull(getProcessInstanceByVarResp.getProcessInstances().getProcessInstance());
+        assertEquals(1, getProcessInstanceByVarResp.getProcessInstances().getProcessInstance().size());
+        assertEquals(response_1.getNumeroDde(), getProcessInstanceByVarResp.getProcessInstances().getProcessInstance()
+                .get(0).getProcessInstanceIdentifier());
 
         // Suspend the current process instance
         this.tryToSuspendProcessInstance(response_1.getNumeroDde(), processStartedBeginFlowLogData,
@@ -1331,8 +1355,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_2.size());
         assertMonitProviderEndLog(userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
-        final FlowLogData secondUserTaskHandleRequestBeginFlowLogData = assertMonitProviderBeginLog(
-                processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
+        assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
         assertMonitProviderEndLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT,
                 OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(3));
 
