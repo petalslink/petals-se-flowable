@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_PORT_TYPE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_GROUP_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_GROUP_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
@@ -138,6 +140,22 @@ public abstract class VacationProcessTestEnvironment extends AbstractVacationPro
                 @Override
                 public QName getNativeService() {
                     return ITG_PROCESSINSTANCES_SERVICE;
+                }
+            }).registerNativeServiceToDeploy(NATIVE_EXECUTIONS_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+                @Override
+                public ServiceConfiguration create(final String nativeEndpointName) {
+
+                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("component.wsdl");
+                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
+                    return new ProvidesServiceConfiguration(ITG_EXECUTIONS_PORT_TYPE,
+                            ITG_EXECUTIONS_SERVICE, nativeEndpointName, nativeServiceWsdlUrl);
+                }
+
+                @Override
+                public QName getNativeService() {
+                    return ITG_EXECUTIONS_SERVICE;
                 }
             }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE);
 
