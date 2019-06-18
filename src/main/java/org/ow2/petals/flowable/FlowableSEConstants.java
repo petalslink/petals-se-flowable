@@ -530,6 +530,26 @@ public final class FlowableSEConstants {
                 ITG_PROCESSINSTANCES_SERVICE_NAME);
 
         /**
+         * Interface name (local part) of the integration service 'Executions'
+         */
+        public static final String ITG_EXECUTIONS_PORT_TYPE_NAME = "Executions";
+
+        /**
+         * Interface name of the integration service 'Executions'
+         */
+        public static final QName ITG_EXECUTIONS_PORT_TYPE = new QName(ITG_NAMESPACE, ITG_EXECUTIONS_PORT_TYPE_NAME);
+
+        /**
+         * Name (local part) of the integration service 'ProcessInstances'
+         */
+        public static final String ITG_EXECUTIONS_SERVICE_NAME = "ExecutionsService";
+
+        /**
+         * Name of the integration service 'Executions'
+         */
+        public static final QName ITG_EXECUTIONS_SERVICE = new QName(ITG_NAMESPACE, ITG_EXECUTIONS_SERVICE_NAME);
+
+        /**
          * Name (local part) of the integration operation to get user information
          */
         public static final String ITG_OP_GETUSER_NAME = "get";
@@ -579,6 +599,16 @@ public final class FlowableSEConstants {
          */
         public static final QName ITG_OP_GETPROCESSINSTANCES = new QName(ITG_NAMESPACE,
                 ITG_OP_GETPROCESSINSTANCES_NAME);
+
+        /**
+         * Name (local part) of the integration operation to search executions
+         */
+        public static final String ITG_OP_GETEXECUTIONS_NAME = "getExecutions";
+
+        /**
+         * Name of the integration operation to search executions
+         */
+        public static final QName ITG_OP_GETEXECUTIONS = new QName(ITG_NAMESPACE, ITG_OP_GETEXECUTIONS_NAME);
 
         /**
          * Name (local part) of the integration operation to suspend process instances

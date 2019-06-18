@@ -53,6 +53,20 @@
          <soap:enable-jms-transport>false</soap:enable-jms-transport>
       </jbi:consumes>
 
+      <jbi:consumes interface-name="integrationService:Executions"
+         service-name="integrationService:ExecutionsService" >
+
+         <!-- CDK specific elements -->
+         <petalsCDK:timeout />
+         <petalsCDK:mep xsi:nil="true" />
+
+         <!-- Component specific elements -->
+         <soap:service-name>executionsService</soap:service-name>
+         <soap:mode>SOAP</soap:mode>
+         <soap:enable-http-transport>true</soap:enable-http-transport>
+         <soap:enable-jms-transport>false</soap:enable-jms-transport>
+      </jbi:consumes>
+
       <jbi:consumes interface-name="integrationService:User"
          service-name="integrationService:UserService" >
 

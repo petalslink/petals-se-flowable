@@ -17,6 +17,10 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_PORT_TYPE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_SERVICE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETEXECUTIONS;
+
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -31,6 +35,8 @@ import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
+import org.ow2.petals.components.flowable.generic._1.GetExecutions;
+import org.ow2.petals.components.flowable.generic._1.GetExecutionsResponse;
 import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
 import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
@@ -140,7 +146,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             assertTrue(responseObj instanceof NotLocked);
             final NotLocked responseBean = (NotLocked) responseObj;
             assertEquals(processInstanceId.toString(), responseBean.getInstanceId());
-            assertEquals("myMessageName", responseBean.getEventName());
+            assertEquals(MESSAGE_EVENT_NAME, responseBean.getEventName());
         }
 
         this.assertProcessInstancePending(processInstanceId.toString(), BPMN_PROCESS_DEFINITION_KEY);
@@ -150,7 +156,30 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         IN_MEMORY_LOG_HANDLER.clear();
         this.flowableClient.completeUserTask(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
         this.assertUserTaskEnded(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
-        this.waitIntermediateCatchMessageEvent(processInstanceId.toString(), "myMessageName");
+        this.waitIntermediateCatchMessageEvent(processInstanceId.toString(), MESSAGE_EVENT_NAME);
+
+        // ---------------------------------------------------------------------------------------------
+        // Try to retrieve the execution waiting the message event using the right integration service
+        // ---------------------------------------------------------------------------------------------
+        {
+            final GetExecutions getExecutionsReq = new GetExecutions();
+            getExecutionsReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
+            getExecutionsReq.setProcessInstanceIdentifier(processInstanceId.toString());
+            getExecutionsReq.setEventName(MESSAGE_EVENT_NAME);
+            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
+                    NATIVE_EXECUTIONS_SVC_CFG, ITG_OP_GETEXECUTIONS, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
+                    toByteArray(getExecutionsReq));
+            final ResponseMessage getExecutionsRespMsg = COMPONENT.sendAndGetResponse(request);
+            assertNotNull("No XML payload in response", getExecutionsRespMsg.getPayload());
+            final Object getExecutionsRespObj = UNMARSHALLER.unmarshal(getExecutionsRespMsg.getPayload());
+            assertTrue(getExecutionsRespObj instanceof GetExecutionsResponse);
+            final GetExecutionsResponse getExecutionsResp = (GetExecutionsResponse) getExecutionsRespObj;
+            assertNotNull(getExecutionsResp.getExecutions());
+            assertNotNull(getExecutionsResp.getExecutions().getExecution());
+            assertEquals(1, getExecutionsResp.getExecutions().getExecution().size());
+            assertEquals(processInstanceId.toString(),
+                    getExecutionsResp.getExecutions().getExecution().get(0).getProcessInstanceIdentifier());
+        }
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when expected by the BPMN engine
@@ -183,27 +212,31 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         // - as the user task is completed by the Flowable client, no MONIT trace is generated
         // - the last trace is associated to the next user task
         final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
-        assertEquals(5, monitLogs_1.size());
+        assertEquals(7, monitLogs_1.size());
         final FlowLogData intermediateCatchMessageEventBeginFlowLogData = assertMonitProviderBeginLog(null, null, null,
                 null, monitLogs_1.get(0));
         assertEquals("messageIntermediateCatchEventId", intermediateCatchMessageEventBeginFlowLogData
                 .get(IntermediateCatchMessageEventFlowStepBeginLogData.INTERMEDIATE_CATCH_MESSAGE_EVENT_ID));
-        assertEquals("myMessageName", intermediateCatchMessageEventBeginFlowLogData
+        assertEquals(MESSAGE_EVENT_NAME, intermediateCatchMessageEventBeginFlowLogData
                 .get(IntermediateCatchMessageEventFlowStepBeginLogData.MESSAGE_NAME));
         assertNotNull(intermediateCatchMessageEventBeginFlowLogData
                 .get(IntermediateCatchMessageEventFlowStepBeginLogData.INTERMEDIATE_CATCH_MESSAGE_EVENT_INSTANCE_ID));
+        final FlowLogData getExecutionsRequestFlowLogData = assertMonitProviderBeginLog(ITG_EXECUTIONS_PORT_TYPE,
+                ITG_EXECUTIONS_SERVICE, COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_EXECUTIONS_SERVICE),
+                ITG_OP_GETEXECUTIONS, monitLogs_1.get(1));
+        assertMonitProviderEndLog(getExecutionsRequestFlowLogData, monitLogs_1.get(2));
         final FlowLogData unlockRequestFlowLogData = assertMonitProviderBeginLog(
                 INTERMEDIATE_MESSAGE_CATCH_EVENT_INTERFACE, INTERMEDIATE_MESSAGE_CATCH_EVENT_SERVICE,
-                INTERMEDIATE_MESSAGE_CATCH_EVENT_ENDPOINT, OPERATION_UNLOCK, monitLogs_1.get(1));
+                INTERMEDIATE_MESSAGE_CATCH_EVENT_ENDPOINT, OPERATION_UNLOCK, monitLogs_1.get(3));
+        assertMonitProviderEndLog(unlockRequestFlowLogData, monitLogs_1.get(4));
         final FlowLogData intermediateCatchMessageEventEndFlowLogData = assertMonitProviderEndLog(
-                intermediateCatchMessageEventBeginFlowLogData, monitLogs_1.get(3));
+                intermediateCatchMessageEventBeginFlowLogData, monitLogs_1.get(5));
         assertEquals(unlockRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
                 intermediateCatchMessageEventEndFlowLogData
                         .get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
         assertEquals(unlockRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
                 intermediateCatchMessageEventEndFlowLogData
                         .get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
-        assertMonitProviderEndLog(unlockRequestFlowLogData, monitLogs_1.get(2));
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when it was already processed by the BPMN engine
@@ -238,7 +271,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             assertTrue(responseObj instanceof AlreadyUnlocked);
             final AlreadyUnlocked responseBean = (AlreadyUnlocked) responseObj;
             assertEquals(processInstanceId.toString(), responseBean.getInstanceId());
-            assertEquals("myMessageName", responseBean.getEventName());
+            assertEquals(MESSAGE_EVENT_NAME, responseBean.getEventName());
         }
 
         // Complete the 2nd user task

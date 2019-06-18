@@ -54,6 +54,8 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
 
     protected static final String NATIVE_PROCESSINSTANCES_SVC_CFG = "native-process-instances";
 
+    protected static final String NATIVE_EXECUTIONS_SVC_CFG = "native-executions";
+
     protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
 
     protected static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();

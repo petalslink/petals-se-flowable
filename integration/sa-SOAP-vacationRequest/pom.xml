@@ -20,10 +20,9 @@
     <artifactId>parent</artifactId>
     <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
     <version>5.2.1-SNAPSHOT</version>
-      <relativePath>../parent/pom.xml</relativePath>
+    <relativePath>../parent/pom.xml</relativePath>
   </parent>
   
-  <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
   <artifactId>sa-SOAP-vacationRequest</artifactId>
   <packaging>jbi-service-assembly</packaging>
   <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - SA (All SOAP JBI artifacts)</name>

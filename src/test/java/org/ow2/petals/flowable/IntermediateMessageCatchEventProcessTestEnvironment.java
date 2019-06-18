@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_PORT_TYPE;
+import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 
@@ -40,11 +42,6 @@ import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.AlreadyUnlocked;
-import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.NotLocked;
-import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Start;
-import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.StartResponse;
-import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Unlock;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
@@ -75,6 +72,8 @@ public abstract class IntermediateMessageCatchEventProcessTestEnvironment extend
     protected static final String BPMN_PROCESS_DEFINITION_KEY = "intermediate-message-catch-event";
 
     protected static final String BPMN_USER = "kermit";
+
+    protected static final String MESSAGE_EVENT_NAME = "myMessageName";
 
     protected static final String USER_TASK_1 = "userTask1";
 
@@ -152,6 +151,22 @@ public abstract class IntermediateMessageCatchEventProcessTestEnvironment extend
                 public QName getNativeService() {
                     return ITG_PROCESSINSTANCES_SERVICE;
                 }
+            }).registerNativeServiceToDeploy(NATIVE_EXECUTIONS_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+                @Override
+                public ServiceConfiguration create(final String nativeEndpointName) {
+
+                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("component.wsdl");
+                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
+                    return new ProvidesServiceConfiguration(ITG_EXECUTIONS_PORT_TYPE, ITG_EXECUTIONS_SERVICE,
+                            nativeEndpointName, nativeServiceWsdlUrl);
+                }
+
+                @Override
+                public QName getNativeService() {
+                    return ITG_EXECUTIONS_SERVICE;
+                }
             });
 
     @ClassRule
@@ -166,8 +181,9 @@ public abstract class IntermediateMessageCatchEventProcessTestEnvironment extend
 
     static {
         try {
-            final JAXBContext context = JAXBContext.newInstance(Start.class, StartResponse.class, Unlock.class,
-                    NotLocked.class, AlreadyUnlocked.class);
+            final JAXBContext context = JAXBContext.newInstance(
+                    org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.ObjectFactory.class,
+                    org.ow2.petals.components.flowable.generic._1.ObjectFactory.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();
             MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
