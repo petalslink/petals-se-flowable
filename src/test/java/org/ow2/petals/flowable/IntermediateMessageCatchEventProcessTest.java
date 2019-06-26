@@ -27,7 +27,10 @@ import java.util.logging.LogRecord;
 import javax.jbi.messaging.ExchangeStatus;
 import javax.xml.transform.Source;
 
+import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
@@ -41,6 +44,7 @@ import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceived
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
 import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
 import org.ow2.petals.flowable.monitoring.IntermediateCatchMessageEventFlowStepBeginLogData;
+import org.ow2.petals.flowable.utils.test.Await;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.AlreadyUnlocked;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.NotLocked;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.Start;
@@ -67,6 +71,10 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
      * Check the message processing where: a valid request is sent to event receipt.
      * </p>
      * <p>
+     * Note: A first process instance is completed to be sure the historic is not empty, to check if error can occurs on
+     * historic query returning more than one result
+     * </p>
+     * <p>
      * Expected results:
      * </p>
      * <ul>
@@ -74,12 +82,16 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
      * <li>if the event is received when not expected by the BPMN engine, an error is returned,</li>
      * <li>if the event is received when expected by the BPMN engine, no error occurs and the process execution
      * continues,</li>
-     * <li>if the event is received when already recieved by the BPMN engine, an error is returned,</li>
+     * <li>if the event is received when already received by the BPMN engine, an error is returned,</li>
      * <li>the process instance is automatically completed when all is correctly done.</li>
      * </ul>
      */
     @Test
     public void execute() throws Exception {
+
+        // We add a completed process instance to check if error can occurs on historic query returning more than one
+        // result.
+        this.createCompletedProcessInstance();
 
         // ------------------------------------------------------------
         // Create a new instance of the process definition:
@@ -283,6 +295,34 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
 
         // Assertions about state of process instance at Flowable Level
         this.assertProcessInstanceFinished(processInstanceId.toString());
+
+    }
+
+    private void createCompletedProcessInstance() throws InterruptedException {
+
+        final ProcessDefinition deployment = this.flowableClient.getRepositoryService().createProcessDefinitionQuery()
+                .processDefinitionKey("intermediate-message-catch-event").singleResult();
+        final ProcessInstance procInst = this.flowableClient.getRuntimeService()
+                .startProcessInstanceById(deployment.getId());
+        Task task = this.flowableClient.getTaskService().createTaskQuery().processInstanceId(procInst.getId())
+                .singleResult();
+        this.flowableClient.getTaskService().complete(task.getId());
+
+        Await.waitIntermediateCatchMessageEvent(procInst.getId(), "myMessageName",
+                this.flowableClient.getRuntimeService());
+        final Execution execution = this.flowableClient.getRuntimeService().createExecutionQuery()
+                .processInstanceId(procInst.getId()).activityId("messageIntermediateCatchEventId")
+                .messageEventSubscriptionName("myMessageName").singleResult();
+        this.flowableClient.getRuntimeService().messageEventReceived("myMessageName", execution.getId());
+
+        task = this.flowableClient.getTaskService().createTaskQuery().processInstanceId(procInst.getId())
+                .singleResult();
+        this.flowableClient.getTaskService().complete(task.getId());
+
+        assertEquals(1, this.flowableClient.getHistoryService().createHistoricProcessInstanceQuery()
+                .processInstanceId(procInst.getId()).finished().count());
+
+        IN_MEMORY_LOG_HANDLER.clear();
 
     }
 }
