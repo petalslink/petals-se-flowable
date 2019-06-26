@@ -188,8 +188,8 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
             // TODO: Add a unit test
             return new ProcessInstanceNotFoundException(this.wsdlOperation, processInstanceId);
         } else if ((historicActivity = this.historyService.createHistoricActivityInstanceQuery()
-                .activityId(this.messageCatcherActivityId).finished().singleResult()) != null
-                && historicActivity.getId() != null) {
+                .processInstanceId(processInstanceId).activityId(this.messageCatcherActivityId).finished()
+                .singleResult()) != null && historicActivity.getId() != null) {
             // The message event has been already received
             return new MessageEventReceivedException(this.wsdlOperation, processInstanceId, this.messageEventName);
         } else if (this.runtimeService.createExecutionQuery().processInstanceId(processInstanceId)
