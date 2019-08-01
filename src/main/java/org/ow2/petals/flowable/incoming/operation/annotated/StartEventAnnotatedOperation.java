@@ -25,6 +25,7 @@ import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
 
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
+import org.ow2.petals.flowable.incoming.variable.VariableDefinition;
 
 /**
  * Abstract operation for all BPMN operation 'start event' extracted from WDSL according to BPMN annotations.
@@ -54,7 +55,7 @@ public abstract class StartEventAnnotatedOperation extends AnnotatedOperationWit
      *             The annotated operation is incoherent.
      */
     public StartEventAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
-            final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
+            final XPathExpression userIdHolder, final Map<String, VariableDefinition> variables,
             final Templates outputTemplate, final Map<String, Templates> faultTemplates)
             throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates, true);

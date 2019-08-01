@@ -271,13 +271,15 @@ public class PetalsFlowableRule extends FlowableRule {
     }
 
     /**
-     * Wait that a service task of a process instance ends. If the waiting time is upper than 60s, an
-     * {@link AssertionError} is thrown.
+     * Wait that a user task of a process instance is assigned to a candidate user. If the waiting time is upper than
+     * 60s, an {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its end.
      * @param taskDefinitionKey
      *            The service task identifier (definition key) in the process definition
+     * @param candidateUser
+     *            The candidate user expected
      */
     public void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
             final String candidateUser) throws InterruptedException {
@@ -285,13 +287,15 @@ public class PetalsFlowableRule extends FlowableRule {
     }
 
     /**
-     * Wait that a service task of a process instance ends. If the waiting time is upper than the given one, an
-     * {@link AssertionError} is thrown.
+     * Wait that a user task of a process instance is assigned to a candidate user. If the waiting time is upper than
+     * the given one, an {@link AssertionError} is thrown.
      * 
      * @param processInstanceId
      *            The process instance identifier of the service task to wait its end.
      * @param taskDefinitionKey
      *            The task identifier (definition key) in the process definition
+     * @param candidateUser
+     *            The candidate user expected
      * @param duration
      *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
      */

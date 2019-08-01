@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd">
+ 
+   <bean id="asyncExecutor" class="org.flowable.job.service.impl.asyncexecutor.DefaultAsyncJobExecutor">
+      <property name="defaultAsyncJobAcquireWaitTimeInMillis" value="1000" />
+      <property name="defaultTimerJobAcquireWaitTimeInMillis" value="1000" />
+   </bean>
+
+   <bean id="notifyEndpoint" class="javax.xml.namespace.QName">
+      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-flowable/traveling/notifyTravelingService" />
+      <constructor-arg index="1" value="autogenerate" />
+   </bean>
+
+   <bean id="bookingServiceEndpoint" class="javax.xml.namespace.QName">
+      <constructor-arg index="0" value="http://petals.ow2.org/samples/se-flowable/traveling/bookingService" />
+      <constructor-arg index="1" value="autogenerate" />
+   </bean>
+
+   <bean id="wsOverridenEndpointAddresses" class="java.util.concurrent.ConcurrentHashMap">
+      <constructor-arg index="0">
+         <map>
+            <entry>
+               <key>
+                  <ref bean="notifyEndpoint" />
+               </key>
+               <value type="java.net.URL">http://localhost:8188/mocknotifyTravelingBinding</value>
+            </entry>
+            <entry>
+               <key>
+                  <ref bean="bookingServiceEndpoint" />
+               </key>
+               <value type="java.net.URL">http://localhost:8188/mockbookingBinding</value>
+            </entry>
+         </map>
+      </constructor-arg>
+   </bean>
+   
+   <bean id="processEngineConfiguration" class="org.flowable.engine.impl.cfg.StandaloneInMemProcessEngineConfiguration">
+      <property name="jdbcUrl" value="jdbc:h2:mem:flowable;DB_CLOSE_DELAY=1000" />
+      <property name="jdbcDriver" value="org.h2.Driver" />
+      <property name="jdbcUsername" value="sa" />
+      <property name="jdbcPassword" value="" />
+
+      <property name="asyncExecutorActivate" value="true" />
+      <property name="asyncExecutor" ref="asyncExecutor" />
+      
+      <property name="wsOverridenEndpointAddresses">
+         <ref bean="wsOverridenEndpointAddresses" />
+      </property>
+
+      <property name="idmEngineConfigurator">
+         <bean class="org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator">
+            <property name="configurationFile" value="classpath:file-idm-configurator.properties" />
+         </bean>
+      </property>
+   </bean>
+
+</beans>

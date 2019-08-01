@@ -19,20 +19,17 @@ package org.ow2.petals.flowable.incoming.operation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessagingException;
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.flowable.bpmn.model.FormProperty;
 import org.flowable.bpmn.model.FormValue;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.flowable.incoming.FlowableService;
@@ -41,10 +38,18 @@ import org.ow2.petals.flowable.incoming.operation.exception.InvalidMEPException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoUserIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
+import org.ow2.petals.flowable.incoming.variable.VariableDateImpl;
+import org.ow2.petals.flowable.incoming.variable.VariableEnumImpl;
+import org.ow2.petals.flowable.incoming.variable.VariableImpl;
+import org.ow2.petals.flowable.incoming.variable.VariableImplBuilder;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableValueRequiredException;
 import org.ow2.petals.flowable.utils.XslUtils;
 import org.w3c.dom.Document;
 
 import com.ebmwebsourcing.easycommons.xml.XMLPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class FlowableOperation implements FlowableService {
 
@@ -109,14 +114,9 @@ public abstract class FlowableOperation implements FlowableService {
     protected final XPathExpression userIdXPathExpr;
 
     /**
-     * The definition of variables of the operation
+     * The variable implementations of the operation
      */
-    protected final Map<String, XPathExpression> variables;
-
-    /**
-     * Types of variables
-     */
-    protected final Map<String, FormProperty> variableTypes;
+    protected final Map<String, VariableImpl> variables;
 
     /**
      * The output XSLT style-sheet compiled
@@ -136,15 +136,19 @@ public abstract class FlowableOperation implements FlowableService {
      *            Annotations of the operation to create
      * @param outTemplates
      *            The XSL templates used to generate the response payload
+     * @param jacksonObjectMapper
+     *            String to JSON converter of Jackson library.
      * @param logger
+     * @throws VariableUnsupportedTypeException
+     *             A variable definition contains an unsupported type.
      */
     protected FlowableOperation(final AnnotatedOperation annotatedOperation, final Templates outTemplates,
-            final Logger logger) {
+            final ObjectMapper jacksonObjectMapper, final Logger logger) throws VariableUnsupportedTypeException {
         this.wsdlOperation = annotatedOperation.getWsdlOperation();
         this.processDefinitionId = annotatedOperation.getProcessDefinitionId();
         this.userIdXPathExpr = annotatedOperation.getUserIdHolder();
-        this.variables = annotatedOperation.getVariables();
-        this.variableTypes = annotatedOperation.getVariableTypes();
+        this.variables = VariableImplBuilder.build(annotatedOperation.getVariables().values(), jacksonObjectMapper,
+                logger);
         this.outputTemplate = outTemplates;
         this.faultTemplates = annotatedOperation.getFaultTemplates();
         this.logger = logger;
@@ -289,86 +293,15 @@ public abstract class FlowableOperation implements FlowableService {
     private Map<String, Object> getVariableValuesFromIncomingPayload(final Document incomingPayload)
             throws MessagingException {
         final Map<String, Object> variableValues = new HashMap<>();
-        for (final Entry<String, XPathExpression> variable : this.variables.entrySet()) {
-            final String variableName = variable.getKey();
-            try {
-                final XPathExpression xpathExpr = variable.getValue();
-                final String variableValueAsStr;
-                synchronized (xpathExpr) {
-                    variableValueAsStr = xpathExpr.evaluate(incomingPayload);
-                }
-                if (variableValueAsStr == null || variableValueAsStr.trim().isEmpty()) {
-                    if (this.variableTypes.get(variableName).isRequired()) {
-                        throw new MessagingException(
-                                String.format("The action '%s' of process '%s' required the variable '%s'",
-                                        this.getAction(), this.processDefinitionId, variableName));
-                    } else {
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.fine("variable: " + variableName + "=> no value");
-                        }
-                    }
-                } else {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("variable: " + variableName + "=> value: " + variableValueAsStr);
-                    }
+        for (final VariableImpl variable : this.variables.values()) {
 
-                    // Get the type of the bpmn variable
-                    final FormProperty variableProperties = this.variableTypes.get(variableName);
-                    final String varType = variableProperties.getType();
-                    // Put the value in map of Flowable variable in the right format
-                    if (varType.equals("string")) {
-                        variableValues.put(variableName, variableValueAsStr);
-                    } else if (varType.equals("long")) {
-                        try {
-                            variableValues.put(variableName, Long.valueOf(variableValueAsStr));
-                        } catch (final NumberFormatException e) {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + "' must be a long ! Current value is: " + variableValueAsStr);
-                        }
-                    } else if (varType.equals("double")) {
-                        try {
-                            variableValues.put(variableName, Double.valueOf(variableValueAsStr));
-                        } catch (final NumberFormatException e) {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + "' must be a double ! Current value is: " + variableValueAsStr);
-                        }
-                    } else if (varType.equals("enum")) {
-                        boolean validValue = false;
-                        for (final FormValue enumValue : variableProperties.getFormValues()) {
-                            if (variableValueAsStr.equals(enumValue.getId())) {
-                                validValue = true;
-                            }
-                        }
-                        if (!validValue) {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + " does not belong to the enum of Flowable variable ! Current value is: "
-                                    + variableValueAsStr);
-                        } else {
-                            variableValues.put(variableName, variableValueAsStr);
-                        }
-                    } else if (varType.equals("date")) {
-                        try {
-                            variableValues.put(variableName,
-                                    DatatypeConverter.parseDateTime(variableValueAsStr).getTime());
-                        } catch (final IllegalArgumentException e) {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + "' must be a valid date ! Current value is: " + variableValueAsStr, e);
-                        }
-                    } else if (varType.equals("boolean")) {
-                        if (variableValueAsStr.equalsIgnoreCase("true")
-                                || variableValueAsStr.equalsIgnoreCase("false")) {
-                            variableValues.put(variableName, (Boolean) Boolean.valueOf(variableValueAsStr));
-                        } else {
-                            throw new MessagingException("The value of the variable '" + variableName
-                                    + "' must be a boolean value \"true\" or \"false\" ! Current value is: "
-                                    + variableValueAsStr);
-                        }
-                    } else {
-                        throw new MessagingException(
-                                "Unsupported type '" + varType + "' for the variable '" + variableName + "'.");
-                    }
-                }
-            } catch (final XPathExpressionException e) {
+            try {
+                final Object variableValue = variable.extract(incomingPayload);
+                variableValues.put(variable.getName(), variableValue);
+            } catch (final VariableValueRequiredException e) {
+                throw new MessagingException(String.format("The action '%s' of process '%s' required the variable '%s'",
+                        this.getAction(), this.processDefinitionId, e.getVariableName()), e);
+            } catch (final VariableException e) {
                 throw new OperationProcessingException(this.wsdlOperation, e);
             }
         }
@@ -397,26 +330,23 @@ public abstract class FlowableOperation implements FlowableService {
     public void log(final Logger logger, final Level logLevel) {
         if (logger.isLoggable(logLevel)) {
             logger.log(logLevel, "operation '" + this.getClass().getSimpleName() + "':");
-            logger.log(logLevel, "  - processDefinitionId = " + this.processDefinitionId);
-            logger.log(logLevel, "  - processInstanceId => compiled XPath expression");
-            logger.log(logLevel, "  - action = " + this.getClass().getSimpleName());
-            for (final String variableName : this.variables.keySet()) {
-                logger.log(logLevel, "  - variable => name: " + variableName + " => compiled XPath expression");
-            }
-            logger.log(logLevel, "  - Flowable variable types");
-            for (final Entry<String, FormProperty> entry : this.variableTypes.entrySet()) {
-                final String key = entry.getKey();
-                final FormProperty value = entry.getValue();
-                logger.log(logLevel, "      - bpmn variable : " + key + " - Name = " + value.getName() + " - Type = "
-                        + value.getType());
-                if (value.getType().equals("enum")) {
-                    for (final FormValue enumValue : value.getFormValues()) {
-                        logger.log(logLevel, "        |------  enum value Id = " + enumValue.getId() + " - Value = "
-                                + enumValue.getName());
+            logger.log(logLevel, "\t- processDefinitionId = " + this.processDefinitionId);
+            logger.log(logLevel, "\t- processInstanceId => compiled XPath expression");
+            logger.log(logLevel, "\t- action = " + this.getClass().getSimpleName());
+            for (final VariableImpl variable : this.variables.values()) {
+                logger.log(logLevel, "\t- variable:");
+                logger.log(logLevel, "\t\t- name: " + variable.getName());
+                logger.log(logLevel, "\t\t- xpath: compiled XPath expression");
+                logger.log(logLevel, "\t\t- type: " + variable.getType());
+                if (variable instanceof VariableEnumImpl) {
+                    for (final FormValue enumValue : ((VariableEnumImpl) variable).getEnumerations()) {
+                        logger.log(logLevel,
+                                "\t\t\t- enum value Id = " + enumValue.getId() + " - Value = " + enumValue.getName());
                     }
-                } else if (value.getType().equals("date")) {
-                    logger.log(logLevel, "        |------  Date pattern = " + value.getDatePattern());
+                } else if (variable instanceof VariableDateImpl) {
+                    logger.log(logLevel, "\t\t\t- Date pattern = " + ((VariableDateImpl) variable).getDatePattern());
                 }
+                logger.log(logLevel, "      - required: " + variable.isRequired());
             }
         }
     }

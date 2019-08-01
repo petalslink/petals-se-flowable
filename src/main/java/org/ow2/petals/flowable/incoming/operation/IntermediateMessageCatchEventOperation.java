@@ -46,7 +46,10 @@ import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingE
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
 import org.w3c.dom.Document;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The operation to create a new instance of a process
@@ -84,12 +87,17 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
     /**
      * @param annotatedOperation
      *            Annotations of the operation to create
+     * @param jacksonObjectMapper
+     *            String to JSON converter of Jackson library.
      * @param logger
+     * @throws VariableUnsupportedTypeException
+     *             A variable definition contains an unsupported type.
      */
     public IntermediateMessageCatchEventOperation(
             final IntermediateMessageCatchEventAnnotatedOperation annotatedOperation,
-            final RuntimeService runtimeService, final HistoryService historyService, final Logger logger) {
-        super(annotatedOperation, null, logger);
+            final RuntimeService runtimeService, final HistoryService historyService,
+            final ObjectMapper jacksonObjectMapper, final Logger logger) throws VariableUnsupportedTypeException {
+        super(annotatedOperation, null, jacksonObjectMapper, logger);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
         this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();
@@ -199,10 +207,9 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
         } else {
             // This error case should not occur. If this error occurs, it is likely that an business error case is
             // missing from the above conditions
-            return new OperationProcessingException(wsdlOperation,
-                    String.format(
-                            "The message '%s' is not a current intermediate message catch event for the process instance '%s'.",
-                            this.messageEventName, processInstanceId));
+            return new OperationProcessingException(wsdlOperation, String.format(
+                    "The message '%s' is not a current intermediate message catch event for the process instance '%s'.",
+                    this.messageEventName, processInstanceId));
         }
     }
 

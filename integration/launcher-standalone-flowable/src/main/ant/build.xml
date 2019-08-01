@@ -53,7 +53,7 @@
 
    <!-- Used by soapui tasks -->
    <property name="soapui.projectFile"
-             value="${project.build.directory}/${project.artifactId}/resources/soapui/Vacation-Process-soapui-project.xml" />
+             value="${project.build.directory}/${project.artifactId}/resources/soapui/ServiceInvocations-soapui-project.xml" />
 
    <target name="startDatabaseFlowable">
       <delete file="${flowable-db.file}.mv.db" />
@@ -68,17 +68,29 @@
       <!-- Create the properties file for BC SOAP -->
       <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
             file="${bc-soap.properties}" />
-      <echo message="notifyService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+      <echo message="notifyVacationService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+            file="${bc-soap.properties}"
+            append="true" />
+      <echo message="notifyTravelingService.url = http://localhost:8088/mockNotifyTravelingService${line.separator}"
             file="${bc-soap.properties}"
             append="true" />
    </target>
 
    <!-- Target : Deploy -->
    <target name="deploy">
+      
+      <echo message="Installing shared libraries..." />
+      
+      <jbi-install-shared-library file="${org.ow2.petals:petals-sl-groovy-2.5.8:jbi-shared-library}"
+                                        port="${host1.port}"
+                                        host="${host1.ip}"
+                                        username="${host1.username}"
+                                        password="${host1.password}" />
+      
       <echo message="Installing and starting components..." />
 
       <parallel>
-         <deployComponent url="${org.ow2.petals:petals-se-flowable:jbi-component}"
+         <deployComponent url="${basedir}/deployables/petals-se-flowable.zip"
                           id="petals-se-flowable"
                           jmx.port="${host1.port}"
                           jmx.host="${host1.ip}"
@@ -125,6 +137,12 @@
 	                jmx.host="${host1.ip}"
 	                jmx.user="${host1.username}"
 	                jmx.pwd="${host1.password}" />
+	      <deploySa url="${org.ow2.petals.integration.tests.se.flowable:sa-flowable-traveling:jbi-service-assembly}"
+	                id="sa-flowable-traveling"
+	                jmx.port="${host1.port}"
+	                jmx.host="${host1.ip}"
+	                jmx.user="${host1.username}"
+	                jmx.pwd="${host1.password}" />
       </parallel>
    </target>
 
@@ -132,6 +150,8 @@
    <!-- Target : Run -->
    <target name="run">
       <echo message="Launching Flowable component tests..." />
+      
+      <input />
             
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
@@ -541,6 +561,7 @@
    <target name="waitWebservices">
       <parallel failonany="yes">
          <waitMock url="http://localhost:8088/mockNotifyVacationService" />
+         <waitMock url="http://localhost:8088/mockNotifyTravelingService" />
          <waitMock url="http://localhost:8088/mockArchiveService" />
       </parallel>
    </target>
@@ -549,6 +570,7 @@
    <target name="stopWebservices">
       <parallel failonany="yes">
          <stopMock url="http://localhost:8088/mockNotifyVacationService" />
+         <stopMock url="http://localhost:8088/mockNotifyTravelingService" />
          <stopMock url="http://localhost:8088/mockArchiveService" />
       </parallel>
    </target>

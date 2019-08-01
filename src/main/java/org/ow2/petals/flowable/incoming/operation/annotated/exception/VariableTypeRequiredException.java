@@ -29,10 +29,10 @@ public class VariableTypeRequiredException extends InvalidAnnotationForOperation
 
     private static final long serialVersionUID = -7120471251778442787L;
 
-    private static final String MESSAGE = "A BPMN variable is declared for which the type must be defined";
+    private static final String MESSAGE_PATTERN = "A BPMN variable is declared for which the type must be defined: %s";
 
-    public VariableTypeRequiredException(final QName wsdlOperation) {
-        super(wsdlOperation, MESSAGE);
+    public VariableTypeRequiredException(final QName wsdlOperation, final String variableName) {
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, variableName));
     }
 
 }

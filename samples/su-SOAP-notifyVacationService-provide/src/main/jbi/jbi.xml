@@ -39,7 +39,7 @@
          <petalsCDK:wsdl>notifyVacationService.wsdl</petalsCDK:wsdl>
       
          <!-- Component specific elements -->
-         <soap:address>${notifyService.url}</soap:address>
+         <soap:address>${notifyVacationService.url}</soap:address>
          <soap:soap-version>1.1</soap:soap-version>
          <soap:chunked-mode>false</soap:chunked-mode>
          <soap:mode>SOAP</soap:mode>

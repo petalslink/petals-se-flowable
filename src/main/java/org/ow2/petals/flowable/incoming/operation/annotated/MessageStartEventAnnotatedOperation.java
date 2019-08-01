@@ -37,6 +37,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnn
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoStartEventMessageNameMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.StartEventMessageDefinitionnNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.StartEventMessageNameNotFoundInModelException;
+import org.ow2.petals.flowable.incoming.variable.VariableDefinition;
 
 /**
  * The BPMN operation 'none start event' extracted from WDSL according to BPMN annotations. This operation is used to
@@ -81,7 +82,7 @@ public class MessageStartEventAnnotatedOperation extends StartEventAnnotatedOper
      */
     public MessageStartEventAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
             final String startEventMessageName, final String tenantId, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+            final Map<String, VariableDefinition> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
         this.startEventMessageName = startEventMessageName;
@@ -105,8 +106,12 @@ public class MessageStartEventAnnotatedOperation extends StartEventAnnotatedOper
         if (this.startEventMessageName == null || this.startEventMessageName.trim().isEmpty()) {
             throw new NoStartEventMessageNameMappingException(this.wsdlOperation);
         }
+    }
+    
+    @Override
+    protected List<FormProperty> getVariablesFromModel(final BpmnModel model)
+            throws InvalidAnnotationForOperationException {
 
-        // The mapping defining the start event message name must be declared in the process definition
         boolean isMessageNameFound = false;
         List<FormProperty> formPropertyList = null;
         final Process process = model.getProcessById(this.getProcessDefinitionId());
@@ -138,12 +143,7 @@ public class MessageStartEventAnnotatedOperation extends StartEventAnnotatedOper
             throw new StartEventMessageNameNotFoundInModelException(this.getWsdlOperation(), this.startEventMessageName,
                     this.getProcessDefinitionId());
         } else {
-            if (formPropertyList != null && !formPropertyList.isEmpty()) {
-                for (final FormProperty formPropertie : formPropertyList) {
-                    // add the FormProperty to the Map <bpmnvar, FormProperty>
-                    this.getVariableTypes().put(formPropertie.getId(), formPropertie);
-                }
-            }
+            return formPropertyList;
         }
     }
 

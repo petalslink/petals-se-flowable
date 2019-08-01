@@ -92,6 +92,13 @@
       <module>su-flowable-collaboration-provide</module>
       <module>su-SOAP-collaborationService-consume</module>
       <module>sa-flowable-collaboration-sample</module>
+      <module>sa-flowable-traveling-sample</module>
+      <module>su-SOAP-notifyTravelingService-provide</module>
+      <module>su-SOAP-notifyTravelingService-consume</module>
+      <module>su-flowable-travelingService-provide</module>
+      <module>su-SOAP-travelingService-consume</module>
+      <module>su-SOAP-bookingService-provide</module>
+      <module>su-SOAP-bookingService-consume</module>
    </modules>
 
    <scm>

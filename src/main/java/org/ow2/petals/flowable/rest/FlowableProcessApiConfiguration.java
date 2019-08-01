@@ -32,7 +32,6 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.rest.service.api.RestResponseFactory;
-import org.ow2.petals.flowable.FlowableSE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -80,7 +79,7 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
     public static final String FLOWABLE_REST_IDM_IDENTITY_SERVICE_QUALIFIER = "idmIdentityService";
 
     /**
-     * This is injected by the SE (see {@link FlowableSE#createRestApi()}).
+     * This is injected by the SE (FlowableSE#createRestApi(ProcessEngineConfigurationImpl)).
      */
     @Autowired
     @Qualifier(FLOWABLE_REST_PROCESS_ENGINE_QUALIFIER)

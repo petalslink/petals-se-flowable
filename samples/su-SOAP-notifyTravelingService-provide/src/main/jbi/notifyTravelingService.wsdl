@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions name="notifyTravelingService"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/traveling/notifyTravelingService"
+
+   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/traveling/notifyTravelingService"
+
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+   
+   <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode
+        JAX-WS Wrapped requires:
+           - The operation's input and output message (if present) each contain only a single part
+           - The input message part refers to a global element declaration whose local name is equal to the operation name
+           - The output message part refers to a global element declaration
+           - wrapper element should be pure complex type
+           - element reference is not permitted for wrapper element
+     -->
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/traveling/notifyTravelingService">
+         
+         <xsd:element name="newTravelingRequest">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="enquirer" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="day-number" minOccurs="1" maxOccurs="1" type="xsd:long" />
+                  <xsd:element name="start-date" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
+                  <xsd:element name="travelingRequestId" type="xsd:string"  minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="travelingRequestApproved">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="enquirer" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="day-number" minOccurs="1" maxOccurs="1" type="xsd:long" />
+                  <xsd:element name="start-date" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
+                  <xsd:element name="travelingRequestId" type="xsd:string"  minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="approved-by" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="travelingRequestRejected">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="enquirer" minOccurs="1" maxOccurs="1" type="xsd:string" />
+                  <xsd:element name="day-number" minOccurs="1" maxOccurs="1" type="xsd:long" />
+                  <xsd:element name="start-date" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
+                  <xsd:element name="travelingRequestId" type="xsd:string"  minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="approved-by" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+      </xsd:schema>
+   </wsdl:types>
+   
+   <wsdl:message name="newTravelingRequestMessage">
+      <wsdl:part name="newTravelingRequestPart" element="notifyService:newTravelingRequest" />
+   </wsdl:message>
+   <wsdl:message name="travelingRequestApprovedRequest">
+      <wsdl:part name="parameters" element="notifyService:travelingRequestApproved" />
+   </wsdl:message>
+   <wsdl:message name="travelingRequestRejectedRequest">
+      <wsdl:part name="parameters" element="notifyService:travelingRequestRejected" />
+   </wsdl:message>
+
+   <wsdl:portType name="notifyTraveling">
+      <wsdl:operation name="newTravelingRequest">
+         <wsdl:input message="notifyService:newTravelingRequestMessage" name="newTravelingRequestInput"/>
+      </wsdl:operation>
+      <wsdl:operation name="travelingRequestApproved">
+         <wsdl:input message="notifyService:travelingRequestApprovedRequest" name="travelingRequestApproved"/>
+      </wsdl:operation>
+      <wsdl:operation name="travelingRequestRejected">
+         <wsdl:input message="notifyService:travelingRequestRejectedRequest" name="travelingRequestRejected"/>
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="notifyTravelingBinding" type="notifyService:notifyTraveling">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="newTravelingRequest">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/traveling/notifyService/newTravelingRequest" />
+         <wsdl:input name="newTravelingRequestInput">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="travelingRequestApproved">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/traveling/notifyService/travelingRequestApproved" />
+         <wsdl:input name="travelingRequestApproved">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="travelingRequestRejected">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/traveling/notifyService/travelingRequestRejected" />
+         <wsdl:input name="travelingRequestRejected">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="notifyTravelingService">
+      <wsdl:port name="autogenerate" binding="notifyService:notifyTravelingBinding">
+         <!-- TODO: We should use an XML binding instead of SOAP binding to avoid to rework SOAP enveloppe on requests/replies
+                    exchanged between Flowable and Petals -->
+         <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
+         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/traveling/notifyTravelingService}notifyTraveling" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

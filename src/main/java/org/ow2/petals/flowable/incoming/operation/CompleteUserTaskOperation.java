@@ -47,8 +47,11 @@ import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingF
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
 import org.ow2.petals.flowable.incoming.operation.exception.TaskCompletedException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedUserException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
 import org.ow2.petals.flowable.utils.XslUtils;
 import org.w3c.dom.Document;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The operation to complete the user task of process instance
@@ -92,12 +95,17 @@ public class CompleteUserTaskOperation extends FlowableOperation {
     /**
      * @param annotatedOperation
      *            Annotations of the operation to create
+     * @param jacksonObjectMapper
+     *            String to JSON converter of Jackson library.
      * @param logger
+     * @throws VariableUnsupportedTypeException
+     *             A variable definition contains an unsupported type.
      */
     public CompleteUserTaskOperation(final CompleteUserTaskAnnotatedOperation annotatedOperation,
             final TaskService taskService, final IdentityService identityService, final HistoryService historyService,
-            final RuntimeService runtimeService, final Logger logger) {
-        super(annotatedOperation, annotatedOperation.getOutputTemplate(), logger);
+            final RuntimeService runtimeService, final ObjectMapper jacksonObjectMapper, final Logger logger)
+            throws VariableUnsupportedTypeException {
+        super(annotatedOperation, annotatedOperation.getOutputTemplate(), jacksonObjectMapper, logger);
         this.identityService = identityService;
         this.taskService = taskService;
         this.historyService = historyService;

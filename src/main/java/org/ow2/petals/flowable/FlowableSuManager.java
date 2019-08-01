@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import javax.xml.namespace.QName;
+import javax.xml.transform.ErrorListener;
 
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.Process;
@@ -59,12 +60,15 @@ import org.ow2.petals.flowable.incoming.operation.annotated.MessageStartEventAnn
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.UnsupportedActionException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
 import org.ow2.petals.flowable.utils.BpmnReader;
 import org.ow2.petals.flowable.utils.InternalBPMNDefinitionURIBuilder;
+import org.ow2.petals.flowable.utils.LogErrorListener;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Bertrand ESCUDIE - Linagora
@@ -115,7 +119,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
         if (jbiDescriptor == null || jbiDescriptor.getServices() == null) {
             throw new PEtALSCDKException("Invalid JBI descriptor: it does not contain a 'services' section.");
         }
-        
+
         String tenantId = extractTenantId(jbiDescriptor.getServices());
         if (tenantId == null) {
             // TODO: Improve the default value declaration
@@ -131,7 +135,6 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
         // Read BPMN models from files of the service-unit
         final BpmnReader bpmnReader = new BpmnReader(jbiDescriptor.getServices(), suDH.getInstallRoot(), this.logger);
         final Map<String, EmbeddedProcessDefinition> embeddedBpmnModels = bpmnReader.readBpmnModels();
-
 
         final List<Provides> provides = jbiDescriptor.getServices().getProvides();
         if (provides == null || provides.isEmpty()) {
@@ -158,8 +161,9 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                 bpmnModels.add(embeddedBpmnModel.getModel());
             }
 
+            final ErrorListener xslLogErrorListener = new LogErrorListener(logger, suDH.getName());
             final List<FlowableOperation> operations = this.createProcessingOperations(suDH.getInstallRoot(),
-                    suDH.getEndpointDescription(theOnlyOneProvide), bpmnModels, tenantId);
+                    suDH.getEndpointDescription(theOnlyOneProvide), bpmnModels, tenantId, xslLogErrorListener);
 
             // Deploy processes from the BPMN models into the BPMN engine
             this.deployBpmnModels(embeddedBpmnModels, tenantId, categoryId, operations, suDH);
@@ -180,7 +184,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             this.logger.fine("End FlowableSuManager.doDeploy()");
         }
     }
-    
+
     /**
      * Extracts the tenant identifier from the JBI descriptor definition
      * 
@@ -190,7 +194,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      */
     private static String extractTenantId(final Services services) {
         assert services != null;
-        
+
         final List<Element> extensions = services.getAnyOrAny();
         for (final Element e : extensions) {
             assert e != null;
@@ -256,7 +260,6 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                 // Remove the FlowableOperation in the map with the corresponding end-point
                 getComponent().removeFlowableService(edptName);
             }
-            
 
             /**
              * // Get the operation Name of the end point ServiceUnitDataHandler suDataHandler
@@ -267,11 +270,11 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
              * EptAndOperation(edptName,operation.getLocalPart()); // Remove the FlowableOperation in the map with the
              * corresponding end-point and Operation ((FlowableSE)
              * this.component).removeFlowableOperation(eptAndOperation); logger.info("*** ept: "+
-             * eptAndOperation.getEptName() + " operation : "+ eptAndOperation.getOperationName()); logger.info(
-             * "          is removed from MAP eptOperationToFlowableOperation" ); }
+             * eptAndOperation.getEptName() + " operation : "+ eptAndOperation.getOperationName()); logger.info( " is
+             * removed from MAP eptOperationToFlowableOperation" ); }
              */
             // TODO Manage the undeployement of the process: be careful of multi SU deployement for the same process
-            
+
         } finally {
             this.logger.fine("End FlowableSuManager.doUndeploy()");
         }
@@ -317,7 +320,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
         final Iterator<EmbeddedProcessDefinition> iterator = embeddedBpmnModels.values().iterator();
         while (iterator.hasNext()) {
             final EmbeddedProcessDefinition process = iterator.next();
-            
+
             // Check that the BPMN definition is not already deployed. If it exists do not deploy it again.
             // This allow to deploy the same SU (process.bpmn20.xml):
             // - on several petals-se-flowable for high availability, ie. to create several service endpoints for the
@@ -326,7 +329,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             // - to redeploy the SU after few modifications not about the process definition (example: timeout for
             // service consumer, ...),
             // - or to restart the Petals container (SUs are redeployed on Petals container start-up)
-            
+
             // NOTE: A BPMN definition can contain several BPMN processes. So, checking that a BPMN definition is
             // not already deployed is:
             // - try to retrieve process definitions associated to the BPMN definition for the given version
@@ -338,7 +341,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             // definition is not deployed.
 
             final RepositoryService repositoryService = getComponent().getProcessEngine().getRepositoryService();
-            
+
             final List<ProcessDefinition> existingProcDefs = repositoryService.createProcessDefinitionQuery()
                     .processDefinitionResourceName(InternalBPMNDefinitionURIBuilder
                             .buildURI(suDH.getName(), process.getProcessFileName()).toASCIIString())
@@ -346,7 +349,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                     // investigate where is the problem.
                     // .processDefinitionCategory(categoryId)
                     .processDefinitionTenantId(tenantId).processDefinitionVersion(process.getVersion()).list();
-            
+
             final boolean mustDeployBpmnDef;
             final List<Process> currentProcDefs = new ArrayList<>(process.getModel().getProcesses());
             if (currentProcDefs.isEmpty()) {
@@ -474,12 +477,15 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      *            The BPMN models embedded into the service unit. Not {@code null}.
      * @param tenantId
      *            Tenant identifier in which the process definition is deployed. Not {@code null}.
+     * @param logErrorListener
+     *            Error listener of the XSL engine. Not {@code null}.
      * @return The list of {@link FlowableOperation} created from WSDL
      * @throws ProcessDefinitionDeclarationException
      *             An error was detected about annotations
      */
     private List<FlowableOperation> createProcessingOperations(final String suRootPath, final Document wsdlDocument,
-            final List<BpmnModel> bpmnModels, final String tenantId) throws ProcessDefinitionDeclarationException {
+            final List<BpmnModel> bpmnModels, final String tenantId, final ErrorListener xslLogErrorListener)
+            throws ProcessDefinitionDeclarationException {
 
         assert suRootPath != null;
         assert wsdlDocument != null;
@@ -488,7 +494,7 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
 
         final AnnotatedWsdlParser annotatedWdslParser = new AnnotatedWsdlParser(tenantId, this.logger);
         final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
-                suRootPath);
+                suRootPath, xslLogErrorListener);
         // Log all WSDL errors before to process each annotated operations
         if (this.logger.isLoggable(Level.WARNING)) {
             for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {
@@ -501,11 +507,12 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
             throw new NoAnnotatedOperationDeclarationException();
         }
 
+        final ObjectMapper jacksonObjectMapper = new ObjectMapper();
         final List<FlowableOperation> operations = new ArrayList<>(annotatedOperations.size());
         for (final AnnotatedOperation annotatedOperation : annotatedOperations) {
 
             // create the right FlowableOperation according to the bpmnActionType
-            operations.add(this.createProcessingOperation(annotatedOperation));
+            operations.add(this.createProcessingOperation(annotatedOperation, jacksonObjectMapper));
         }
 
         return operations;
@@ -515,41 +522,50 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
      * Create the {@link FlowableOperation} according to the {@link AnnotatedOperation}.
      * 
      * @param annotatedOperation
+     * @param jacksonObjectMapper
+     *            String to JSON converter of Jackson library.
      * @return
      * @throws ProcessDefinitionDeclarationException
      */
-    private FlowableOperation createProcessingOperation(final AnnotatedOperation annotatedOperation)
-            throws ProcessDefinitionDeclarationException {
+    private FlowableOperation createProcessingOperation(final AnnotatedOperation annotatedOperation,
+            final ObjectMapper jacksonObjectMapper) throws ProcessDefinitionDeclarationException {
 
         final QName wsdlOperation = annotatedOperation.getWsdlOperation();
         this.logger.fine("Processing WSDL annotated operation: " + wsdlOperation);
 
-        final FlowableSE component = this.getComponent();
-        if (annotatedOperation instanceof NoneStartEventAnnotatedOperation) {
-            return new NoneStartEventOperation((NoneStartEventAnnotatedOperation) annotatedOperation,
-                    component.getProcessEngine().getIdentityService(), component.getProcessEngine().getRuntimeService(),
-                    component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
-                    component.getPlaceHolders(), this.logger);
-        } else if (annotatedOperation instanceof MessageStartEventAnnotatedOperation) {
-            return new MessageStartEventOperation((MessageStartEventAnnotatedOperation) annotatedOperation,
-                    component.getProcessEngine().getIdentityService(), component.getProcessEngine().getRuntimeService(),
-                    component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
-                    component.getPlaceHolders(), this.logger);
-        } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
-            return new CompleteUserTaskOperation((CompleteUserTaskAnnotatedOperation) annotatedOperation,
-                    component.getProcessEngine().getTaskService(), component.getProcessEngine().getIdentityService(),
-                    component.getProcessEngine().getHistoryService(), component.getProcessEngine().getRuntimeService(),
-                    this.logger);
-        } else if (annotatedOperation instanceof IntermediateMessageCatchEventAnnotatedOperation) {
-            return new IntermediateMessageCatchEventOperation(
-                    (IntermediateMessageCatchEventAnnotatedOperation) annotatedOperation,
-                    component.getProcessEngine().getRuntimeService(), component.getProcessEngine().getHistoryService(),
-                    this.logger);
-        } else {
-            // This case is a bug case, as the annotated operation is known by the parser, it must be supported
-            // here.
-            throw new ProcessDefinitionDeclarationException(
-                    new UnsupportedActionException(wsdlOperation, annotatedOperation.getClass().getSimpleName()));
+        try {
+            final FlowableSE component = this.getComponent();
+            if (annotatedOperation instanceof NoneStartEventAnnotatedOperation) {
+                return new NoneStartEventOperation((NoneStartEventAnnotatedOperation) annotatedOperation,
+                        component.getProcessEngine().getIdentityService(),
+                        component.getProcessEngine().getRuntimeService(),
+                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
+                        component.getPlaceHolders(), jacksonObjectMapper, this.logger);
+            } else if (annotatedOperation instanceof MessageStartEventAnnotatedOperation) {
+                return new MessageStartEventOperation((MessageStartEventAnnotatedOperation) annotatedOperation,
+                        component.getProcessEngine().getIdentityService(),
+                        component.getProcessEngine().getRuntimeService(),
+                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
+                        component.getPlaceHolders(), jacksonObjectMapper, this.logger);
+            } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
+                return new CompleteUserTaskOperation((CompleteUserTaskAnnotatedOperation) annotatedOperation,
+                        component.getProcessEngine().getTaskService(),
+                        component.getProcessEngine().getIdentityService(),
+                        component.getProcessEngine().getHistoryService(),
+                        component.getProcessEngine().getRuntimeService(), jacksonObjectMapper, this.logger);
+            } else if (annotatedOperation instanceof IntermediateMessageCatchEventAnnotatedOperation) {
+                return new IntermediateMessageCatchEventOperation(
+                        (IntermediateMessageCatchEventAnnotatedOperation) annotatedOperation,
+                        component.getProcessEngine().getRuntimeService(),
+                        component.getProcessEngine().getHistoryService(), jacksonObjectMapper, this.logger);
+            } else {
+                // This case is a bug case, as the annotated operation is known by the parser, it must be supported
+                // here.
+                throw new ProcessDefinitionDeclarationException(
+                        new UnsupportedActionException(wsdlOperation, annotatedOperation.getClass().getSimpleName()));
+            }
+        } catch (final VariableUnsupportedTypeException e) {
+            throw new ProcessDefinitionDeclarationException(e);
         }
 
     }

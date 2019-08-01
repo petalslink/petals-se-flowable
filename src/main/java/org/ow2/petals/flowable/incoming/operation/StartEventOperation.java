@@ -43,10 +43,12 @@ import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.StartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
 import org.ow2.petals.flowable.utils.XslUtils;
 import org.w3c.dom.Document;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The operation to create a new instance of a process
@@ -95,13 +97,18 @@ public abstract class StartEventOperation extends FlowableOperation {
      *            A UUID generator
      * @param componentPlaceholders
      *            Placeholders defined at component level
+     * @param jacksonObjectMapper
+     *            String to JSON converter of Jackson library.
      * @param logger
+     * @throws VariableUnsupportedTypeException
+     *             A variable definition contains an unsupported type.
      */
     public StartEventOperation(final StartEventAnnotatedOperation annotatedOperation,
             final IdentityService identityService, final RuntimeService runtimeService,
             final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
-            final Properties componentPlaceholders, final Logger logger) {
-        super(annotatedOperation, annotatedOperation.getOutputTemplate(), logger);
+            final Properties componentPlaceholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
+            throws VariableUnsupportedTypeException {
+        super(annotatedOperation, annotatedOperation.getOutputTemplate(), jacksonObjectMapper, logger);
         this.identityService = identityService;
         this.runtimeService = runtimeService;
         this.historyService = historyService;

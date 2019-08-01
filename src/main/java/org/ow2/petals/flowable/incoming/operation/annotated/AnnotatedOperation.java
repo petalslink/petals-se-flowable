@@ -18,10 +18,8 @@
 package org.ow2.petals.flowable.incoming.operation.annotated;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
@@ -36,8 +34,10 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoUserIdMa
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.ProcessDefinitionIdDuplicatedInModelException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.ProcessDefinitionIdNotFoundInModelException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.RequiredVariableMissingException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.RequiredVirtualRootException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.UnsupportedMappedExceptionNameException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableNotFoundInModelException;
+import org.ow2.petals.flowable.incoming.variable.VariableDefinition;
 
 /**
  * A BPMN operation extracted from WDSL according to BPMN annotations
@@ -66,18 +66,13 @@ public abstract class AnnotatedOperation {
     /**
      * The definition of variables of the operation read from the WSDL
      */
-    private final Map<String, XPathExpression> variables;
+    private final Map<String, VariableDefinition> variables;
 
     /**
      * Drive the {@link AnnotatedOperation} processing against capacity of associated BPMN element to declare process
      * variables. If {@code true}, the BPMN element variables can be declared at BPMN level and a check will be done.
      */
     private final boolean canDeclareVariable;
-
-    /**
-     * Types of variables read from the process definition.
-     */
-    private final Map<String, FormProperty> variableTypes = new HashMap<>();
 
     /**
      * The XSLT style-sheet compiled associated to WSDL faults. The key is the class simple name of the exception
@@ -113,7 +108,7 @@ public abstract class AnnotatedOperation {
      *             The annotated operation is incoherent.
      */
     protected AnnotatedOperation(final QName wsdlOperation, final String processDefinitionId,
-            final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
+            final XPathExpression userIdHolder, final Map<String, VariableDefinition> variables,
             final Map<String, Templates> faultTemplates, final boolean canDeclareVariable)
             throws InvalidAnnotationForOperationException {
         super();
@@ -160,25 +155,45 @@ public abstract class AnnotatedOperation {
             throw new ProcessDefinitionIdDuplicatedInModelException(this.wsdlOperation, this.processDefinitionId);
         }
 
-        this.doAnnotationCoherenceCheck(modelContainingProcessDefinitionId);
+        final List<FormProperty> variablesFromModel = this.getVariablesFromModel(modelContainingProcessDefinitionId);
 
-        // Check the existence of declared variables into the process definition
+        // Check that all variables declared into the WSDL are defined in the associated BPMN element into the process
+        // definition
         if (this.canDeclareVariable) {
             for (final String variableName : this.variables.keySet()) {
-                if (!this.variableTypes.containsKey(variableName)) {
+                boolean variableFound = false;
+                for (final FormProperty formProperty : variablesFromModel) {
+                    if (formProperty.getId().equals(variableName)) {
+                        variableFound = true;
+                    }
+                }
+                if (!variableFound) {
                     throw new VariableNotFoundInModelException(this.wsdlOperation, variableName,
                             this.processDefinitionId);
                 }
             }
         }
 
-        // Check that the all required variables of the process definition are mapped
-        for (final Entry<String, FormProperty> entry : this.variableTypes.entrySet()) {
-            final String variableName = entry.getKey();
-            if (entry.getValue().isRequired() && !this.variables.containsKey(variableName)) {
-                throw new RequiredVariableMissingException(this.wsdlOperation, variableName);
+        // Check that the all required variables of the process definition are declared into the WSDL
+        for (final FormProperty formProperty : variablesFromModel) {
+            if (formProperty.isRequired() && !this.variables.containsKey(formProperty.getId())) {
+                throw new RequiredVariableMissingException(this.wsdlOperation, formProperty.getId());
             }
         }
+
+        // Complete the variable definitions with elements available at form property level
+        for (final FormProperty variableFromModel : variablesFromModel) {
+            this.getVariables().get(variableFromModel.getId()).completeDefinition(variableFromModel);
+        }
+
+        // Check that for variable 'json' a virtual root is defined
+        for (final VariableDefinition variable : this.getVariables().values()) {
+            if ("json".equals(variable.getType()) && variable.getVirtualRoot() == null) {
+                throw new RequiredVirtualRootException(this.wsdlOperation, variable.getName());
+            }
+        }
+
+        this.doAnnotationCoherenceCheck(modelContainingProcessDefinitionId);
 
         // Check supported fault mapping
         final List<String> mappedExceptionNames = this.getMappedExceptionNames();
@@ -189,8 +204,20 @@ public abstract class AnnotatedOperation {
         }
     }
 
+    /**
+     * Retrieve variables from the BPMN element associated to this {@link AnnotatedOperation}.
+     * 
+     * @param model
+     *            BPMN model containing the process definition with the current BPMN element
+     * @return The variables as form properties of the current BPMN element.
+     * @throws InvalidAnnotationForOperationException
+     *             If the associated BPMN element does not exist in the BPMN Model.
+     */
+    protected abstract List<FormProperty> getVariablesFromModel(final BpmnModel model)
+            throws InvalidAnnotationForOperationException;
+
     private List<String> getMappedExceptionNames() {
-        final List<String> mappedExceptionNames = new ArrayList<String>();
+        final List<String> mappedExceptionNames = new ArrayList<>();
         this.addMappedExceptionNames(mappedExceptionNames);
         return mappedExceptionNames;
     }
@@ -243,15 +270,8 @@ public abstract class AnnotatedOperation {
     /**
      * @return The definition of variables of the operation
      */
-    public Map<String, XPathExpression> getVariables() {
+    public Map<String, VariableDefinition> getVariables() {
         return this.variables;
-    }
-
-    /**
-     * @return Types of variables
-     */
-    public Map<String, FormProperty> getVariableTypes() {
-        return this.variableTypes;
     }
 
     /**

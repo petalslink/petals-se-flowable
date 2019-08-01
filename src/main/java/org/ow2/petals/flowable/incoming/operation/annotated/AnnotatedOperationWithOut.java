@@ -26,6 +26,7 @@ import javax.xml.xpath.XPathExpression;
 import org.flowable.bpmn.model.BpmnModel;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoOutputMappingException;
+import org.ow2.petals.flowable.incoming.variable.VariableDefinition;
 
 public abstract class AnnotatedOperationWithOut extends AnnotatedOperation {
 
@@ -35,7 +36,7 @@ public abstract class AnnotatedOperationWithOut extends AnnotatedOperation {
     private final Templates outputTemplate;
 
     public AnnotatedOperationWithOut(final QName wsdlOperation, final String processDefinitionId,
-            final XPathExpression userIdHolder, final Map<String, XPathExpression> variables,
+            final XPathExpression userIdHolder, final Map<String, VariableDefinition> variables,
             final Templates outputTemplate, final Map<String, Templates> faultTemplates,
             final boolean canDeclareVariable)
             throws InvalidAnnotationForOperationException {

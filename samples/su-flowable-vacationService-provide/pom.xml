@@ -25,15 +25,15 @@
       <relativePath>../pom.xml</relativePath>
    </parent>
 
-    <artifactId>su-flowable-vacationService-provide</artifactId>
+   <artifactId>su-flowable-vacationService-provide</artifactId>
    <packaging>jbi-service-unit</packaging>
    <name>su-flowable-vacationService-provide</name>
    <!-- No version set -->
    <description>su-flowable-vacationService-provide description.</description>
 
    <properties>
-      <flowable.groupId>org.flowable</flowable.groupId>
-      <!-- flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
+      <!-- flowable.groupId>org.flowable</flowable.groupId-->
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
 
    <dependencies>
@@ -103,7 +103,7 @@
                   <id>analyze</id>
                   <configuration>
                      <usedDependencies>
-                        <!-- The :following dependency is needed because it's the JBI component on which this SU runs -->
+                        <!-- The following dependency is needed because it's the JBI component on which this SU runs -->
                         <usedDependency>org.ow2.petals:petals-se-flowable</usedDependency>
                         <!-- These following dependencies are needed for unit test -->
                         <usedDependency>${flowable.groupId}:flowable-cxf</usedDependency>

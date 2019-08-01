@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<jbi:jbi version="1.0" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:petals-se-flowable="http://petals.ow2.org/components/petals-se-flowable/1.0"
+   xmlns:process="http://petals.ow2.org/samples/se-flowable/traveling/travelingService"
+   xmlns:notifyService="http://petals.ow2.org/samples/se-flowable/traveling/notifyTravelingService">
+	
+   <jbi:services binding-component="false">
+		
+		<jbi:provides
+			interface-name="process:traveling"
+			service-name="process:travelingService"
+			endpoint-name="autogenerate">
+			
+         <!-- WSDL file -->
+         <petalsCDK:wsdl>travelingService.wsdl</petalsCDK:wsdl>
+
+      </jbi:provides>
+      
+      <!-- The service consumer configuration associated to the service tasks notifying the new traveling request -->
+      <jbi:consumes
+           interface-name="notifyService:notifyTraveling"
+           service-name="notifyService:notifyTravelingService">
+         <petalsCDK:timeout>15000</petalsCDK:timeout>
+         <petalsCDK:operation>notifyService:newTravelingRequest</petalsCDK:operation>
+         <petalsCDK:mep>RobustInOnly</petalsCDK:mep>
+      </jbi:consumes>
+      
+      <!-- The service consumer configuration associated to the service tasks notifying approved traveling request -->
+      <jbi:consumes
+           interface-name="notifyService:notifyTraveling"
+           service-name="notifyService:notifyTravelingService">
+         <petalsCDK:timeout>15000</petalsCDK:timeout>
+         <petalsCDK:operation>notifyService:travelingRequestApproved</petalsCDK:operation>
+         <petalsCDK:mep>RobustInOnly</petalsCDK:mep>
+      </jbi:consumes>
+      
+      <!-- The service consumer configuration associated to the service tasks notifying rejected traveling request -->
+      <jbi:consumes
+           interface-name="notifyService:notifyTraveling"
+           service-name="notifyService:notifyTravelingService">
+         <petalsCDK:timeout>15000</petalsCDK:timeout>
+         <petalsCDK:operation>notifyService:travelingRequestRejected</petalsCDK:operation>
+         <petalsCDK:mep>RobustInOnly</petalsCDK:mep>
+      </jbi:consumes>
+         
+      <!-- SE Flowable specific fields -->
+      <petals-se-flowable:tenant_id>my-tenant</petals-se-flowable:tenant_id>
+      <petals-se-flowable:category_id>samples</petals-se-flowable:category_id>
+      <petals-se-flowable:process_file1>travelingProcess.bpmn20.xml</petals-se-flowable:process_file1>
+      <petals-se-flowable:version1>1</petals-se-flowable:version1>
+   </jbi:services>
+</jbi:jbi>
