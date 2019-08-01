@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019-2020 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<jbi:jbi version="1.0"
+   xmlns:bookingService="http://petals.ow2.org/samples/se-flowable/traveling/bookingService"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:soap="http://petals.ow2.org/components/soap/version-4"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	
+   <jbi:services binding-component="false">
+	
+	  <jbi:provides interface-name="bookingService:booking"
+         service-name="bookingService:bookingService"
+         endpoint-name="autogenerate">
+	
+		 <!-- CDK specific elements -->
+         <petalsCDK:timeout>30000</petalsCDK:timeout>
+         <petalsCDK:validate-wsdl>true</petalsCDK:validate-wsdl>
+         <petalsCDK:forward-security-subject>false</petalsCDK:forward-security-subject>
+         <petalsCDK:forward-message-properties>false</petalsCDK:forward-message-properties>
+         <petalsCDK:forward-attachments>false</petalsCDK:forward-attachments>
+         <petalsCDK:wsdl>bookingService.wsdl</petalsCDK:wsdl>
+      
+         <!-- Component specific elements -->
+         <soap:address>${bookingService.url}</soap:address>
+         <soap:soap-version>1.1</soap:soap-version>
+         <soap:chunked-mode>false</soap:chunked-mode>
+         <soap:mode>SOAP</soap:mode>
+
+      </jbi:provides>
+   </jbi:services>
+</jbi:jbi>

@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019-2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<wsdl:definitions name="bookingService"
+   targetNamespace="http://petals.ow2.org/samples/se-flowable/traveling/bookingService"
+
+   xmlns:bookingService="http://petals.ow2.org/samples/se-flowable/traveling/bookingService"
+
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+   
+   <!-- TODO: JAX-WS Wrapped mode is mandatory. We could be able to work with Bare mode
+        JAX-WS Wrapped requires:
+           - The operation's input and output message (if present) each contain only a single part
+           - The input message part refers to a global element declaration whose local name is equal to the operation name
+           - The output message part refers to a global element declaration
+           - wrapper element should be pure complex type
+           - element reference is not permitted for wrapper element
+     -->
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/traveling/bookingService">
+         
+         <xsd:element name="booksTrains">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="train" minOccurs="1" maxOccurs="unbounded">
+                     <xsd:complexType>
+                        <xsd:sequence>
+                           <xsd:element name="startFrom" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="endTo" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="date" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+                        </xsd:sequence>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="booksPlanes">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="plane" minOccurs="1" maxOccurs="unbounded">
+                     <xsd:complexType>
+                        <xsd:sequence>
+                           <xsd:element name="startFrom" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="endTo" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="date" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+                        </xsd:sequence>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="booksHotels">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="hotel" minOccurs="1" maxOccurs="unbounded">
+                     <xsd:complexType>
+                        <xsd:sequence>
+                           <xsd:element name="address" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="startDate" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+                           <xsd:element name="endDate" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+                        </xsd:sequence>
+                     </xsd:complexType>
+                  </xsd:element>
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:element name="getReservations">
+            <xsd:complexType>
+               <xsd:sequence />
+            </xsd:complexType>
+         </xsd:element>
+         
+         <xsd:complexType name="TReservations">
+            <xsd:sequence>
+               <xsd:element name="reservation" minOccurs="0" maxOccurs="unbounded">
+                  <xsd:complexType>
+                     <xsd:sequence>
+                        <xsd:element name="type" type="xsd:string" minOccurs="1" maxOccurs="1" />
+                        <xsd:element name="date" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
+                        <xsd:element name="price" type="xsd:double" minOccurs="1" maxOccurs="1" />
+                     </xsd:sequence>
+                  </xsd:complexType>
+               </xsd:element>
+            </xsd:sequence>
+         </xsd:complexType>
+         
+         <xsd:element name="getReservationsResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="reservations" type="bookingService:TReservations" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+         
+         
+      </xsd:schema>
+   </wsdl:types>
+   
+   <wsdl:message name="booksTrainsMessage">
+      <wsdl:part name="booksTrainsPart" element="bookingService:booksTrains" />
+   </wsdl:message>
+   <wsdl:message name="booksPlanesMessage">
+      <wsdl:part name="booksPlanesPart" element="bookingService:booksPlanes" />
+   </wsdl:message>
+   <wsdl:message name="booksHotelsMessage">
+      <wsdl:part name="booksHotelsPart" element="bookingService:booksHotels" />
+   </wsdl:message>
+   <wsdl:message name="getReservationsMessage">
+      <wsdl:part name="getReservations" element="bookingService:getReservations" />
+   </wsdl:message>
+   <wsdl:message name="getReservationsResponseMessage">
+      <wsdl:part name="getReservationsResponse" element="bookingService:getReservationsResponse" />
+   </wsdl:message>
+
+   <wsdl:portType name="booking">
+      <wsdl:operation name="booksTrains">
+         <wsdl:input message="bookingService:booksTrainsMessage" name="booksTrainsInput"/>
+      </wsdl:operation>
+      <wsdl:operation name="booksPlanes">
+         <wsdl:input message="bookingService:booksPlanesMessage" name="booksPlanesInput"/>
+      </wsdl:operation>
+      <wsdl:operation name="booksHotels">
+         <wsdl:input message="bookingService:booksHotelsMessage" name="booksHotelsInput"/>
+      </wsdl:operation>
+      <wsdl:operation name="getReservations">
+         <wsdl:input message="bookingService:getReservationsMessage" name="getReservationsInput"/>
+         <wsdl:output message="bookingService:getReservationsResponseMessage" name="getReservationsOutput"/>
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="bookingBinding" type="bookingService:booking">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="booksTrains">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/traveling/bookingService/booksTrains" />
+         <wsdl:input name="booksTrainsInput">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="booksPlanes">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/traveling/bookingService/booksPlanes" />
+         <wsdl:input name="booksPlanesInput">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="booksHotels">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/traveling/bookingService/booksHotels" />
+         <wsdl:input name="booksHotelsInput">
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+      <wsdl:operation name="getReservations">
+         <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/traveling/bookingService/getReservations" />
+         <wsdl:input name="getReservationsInput">
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output name="getReservationsOutput">
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="bookingService">
+      <wsdl:port name="autogenerate" binding="bookingService:bookingBinding">
+         <!-- TODO: We should use an XML binding instead of SOAP binding to avoid to rework SOAP enveloppe on requests/replies
+                    exchanged between Flowable and Petals -->
+         <!-- TODO: Trouver un formalisme pour l'URL Petals: "petals:///interfacename[:servicename[:endpointname]]" -->
+         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/traveling/bookingService}booking" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

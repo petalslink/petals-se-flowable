@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019-2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   xmlns:flowable="http://flowable.org/bpmn"
+   
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/structured-variable"
+   xmlns:process="http://petals.ow2.org/se-flowable/unit-test/structured-variable"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath">
+
+   <import location="structured-variable.wsdl"
+      namespace="http://petals.ow2.org/se-flowable/unit-test/structured-variable"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <process id="structured-variable" name="Process requiring a structured variable" isExecutable="true">
+      <startEvent id="startevent" name="Start">
+         <extensionElements>
+            <!-- 
+               "request": {
+                  numberOfDays: 3,
+                  startDate: xxxx,
+                  vacationMotivation: "yyyyyy"
+               }
+             -->
+            <activiti:formProperty id="request" name="Request as structured variable" type="json"
+               required="true" />
+         </extensionElements>
+      </startEvent>
+      <sequenceFlow id="flow01" sourceRef="startevent" targetRef="initiVacationMotivation" />
+      <scriptTask id="initiVacationMotivation" name="Init vacationMotivation" scriptFormat="Groovy">
+         <script><![CDATA[
+            execution.setVariable("vacationMotivation", request.vacationMotivation.asText())]]></script>
+      </scriptTask>
+      <sequenceFlow id="flow11" sourceRef="initiVacationMotivation" targetRef="handleRequest" />
+      <userTask id="handleRequest" name="Handle vacation request">
+         <documentation>
+            ${structuredVariable1.employeeName} would like to take ${structuredVariable1.numberOfDays} day(s) of vacation (Motivation: ${structuredVariable1.vacationMotivation}).
+         </documentation>
+         <extensionElements>
+            <!-- 
+               "approvementStatus": {
+                  vacationApproved: false,
+                  managerMotivation: "too long"
+               }
+             -->
+            <activiti:formProperty id="approvementStatus" name="Do you approve this vacation"
+               type="json" required="true" />
+         </extensionElements>
+         <potentialOwner>
+            <resourceAssignmentExpression>
+               <formalExpression>group(management)</formalExpression>
+            </resourceAssignmentExpression>
+         </potentialOwner>
+      </userTask>
+      <sequenceFlow id="flow21" sourceRef="handleRequest" targetRef="messageIntermediateCatchEventId" />
+      <intermediateCatchEvent id="messageIntermediateCatchEventId" name="MessageCatchEventName"
+         activiti:async="true">
+         <!-- Execution of the intermediate catch event is set to asynchronous to force its execution by the async
+              executor of the SE Flowable and not by the Flowable client of the unit test -->
+         <messageEventDefinition id="messageEvtDefId" messageRef="process:myMessageId" />
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow31" sourceRef="messageIntermediateCatchEventId" targetRef="initVar1Var2" />
+      <scriptTask id="initVar1Var2" name="Init var-1 &amp; var-2" scriptFormat="Groovy">
+         <script><![CDATA[
+            execution.setVariable("var1", variable1.var1.asText());
+            execution.setVariable("var2", variable1.var2.asText());]]></script>
+      </scriptTask>
+      <sequenceFlow id="flow41" sourceRef="initVar1Var2" targetRef="endevent1" />
+      <endEvent id="endevent1" name="End" />
+   </process>
+
+   <message id="myMessageId" name="myMessageName" itemRef="process:myMessageItem" />
+   <itemDefinition id="myMessageItem" structureRef="process:Start" />
+</definitions>

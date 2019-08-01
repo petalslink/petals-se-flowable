@@ -55,6 +55,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.AnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.AnnotatedWsdlParser;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationException;
 import org.ow2.petals.flowable.utils.BpmnReader;
+import org.ow2.petals.flowable.utils.LogErrorListener;
 import org.ow2.petals.jbi.descriptor.JBIDescriptorException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -122,7 +123,7 @@ public class Assert {
                     provides);
             final Document wsdlDocument = WSDLUtilImpl.convertDescriptionToDocument(wsdlDescription);
             final List<AnnotatedOperation> annotatedOperations = annotatedWdslParser.parse(wsdlDocument, bpmnModels,
-                    jbiDescriptorFile.getParent());
+                    jbiDescriptorFile.getParent(), new LogErrorListener(LOGGER, "flowable-unit-test-su-name"));
             // Log all WSDL errors before to assert annotated operations
             if (LOGGER.isLoggable(Level.WARNING)) {
                 for (final InvalidAnnotationException encounteredError : annotatedWdslParser.getEncounteredErrors()) {

@@ -51,6 +51,11 @@
          <outputDirectory>/resources</outputDirectory>
          <fileMode>644</fileMode>
       </fileSet>
+      <fileSet>
+         <directory>${project.build.directory}/configured-artifacts</directory>
+         <outputDirectory>/deployables</outputDirectory>
+         <fileMode>644</fileMode>
+      </fileSet>
    </fileSets>
 </assembly>
 

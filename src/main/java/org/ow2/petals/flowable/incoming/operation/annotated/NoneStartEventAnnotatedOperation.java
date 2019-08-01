@@ -32,6 +32,7 @@ import org.flowable.bpmn.model.StartEvent;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnnotationForOperationException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoNoneStartEventIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoneStartEventIdNotFoundInModelException;
+import org.ow2.petals.flowable.incoming.variable.VariableDefinition;
 
 /**
  * The BPMN operation 'none start event' extracted from WDSL according to BPMN annotations. This operation is used to
@@ -67,7 +68,7 @@ public class NoneStartEventAnnotatedOperation extends StartEventAnnotatedOperati
      */
     public NoneStartEventAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
             final String noneStartEventId, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+            final Map<String, VariableDefinition> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates);
         this.noneStartEventId = noneStartEventId;
@@ -86,30 +87,11 @@ public class NoneStartEventAnnotatedOperation extends StartEventAnnotatedOperati
         if (this.noneStartEventId == null || this.noneStartEventId.trim().isEmpty()) {
             throw new NoNoneStartEventIdMappingException(this.wsdlOperation);
         }
-
-        // The mapping defining the none start event identifier must be declared in the process definition
-        final List<FormProperty> formPropertyList = this.findFormPropertiesOfStartEvent(model);
-        if (formPropertyList == null) {
-            throw new NoneStartEventIdNotFoundInModelException(this.getWsdlOperation(), this.noneStartEventId,
-                    this.getProcessDefinitionId());
-        } else {
-            for (final FormProperty formPropertie : formPropertyList) {
-                // add the FormProperty to the Map <bpmnvar, FormProperty>
-                this.getVariableTypes().put(formPropertie.getId(), formPropertie);
-            }
-        }
     }
 
-    /**
-     * Find form properties of the current start event step
-     * 
-     * @param model
-     *            BPMN model containing the process definition with the current start event step
-     * @return The form properties of the current start event step, or {@code null} if no start event step exists with
-     *         the given non start event identifier ({@link #noneStartEventId}).
-     */
-    @SuppressWarnings("squid:S1168")
-    private List<FormProperty> findFormPropertiesOfStartEvent(final BpmnModel model) {
+    @Override
+    protected List<FormProperty> getVariablesFromModel(final BpmnModel model)
+            throws InvalidAnnotationForOperationException {
         final Process process = model.getProcessById(this.getProcessDefinitionId());
         for (final FlowElement flowElt : process.getFlowElements()) {
             // search the None Start Event step
@@ -119,7 +101,8 @@ public class NoneStartEventAnnotatedOperation extends StartEventAnnotatedOperati
                 return startEvent.getFormProperties();
             }
         }
-        return null;
+        throw new NoneStartEventIdNotFoundInModelException(this.getWsdlOperation(), this.noneStartEventId,
+                this.getProcessDefinitionId());
     }
 
 }

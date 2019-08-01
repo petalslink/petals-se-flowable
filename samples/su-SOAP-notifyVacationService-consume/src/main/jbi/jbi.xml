@@ -33,7 +33,7 @@
          <petalsCDK:mep xsi:nil="true" />
 
          <!-- Component specific elements -->
-         <soap:service-name>notifyService</soap:service-name>
+         <soap:service-name>notifyVacationService</soap:service-name>
          <soap:mode>SOAP</soap:mode>
          <soap:enable-http-transport>true</soap:enable-http-transport>
          <soap:enable-jms-transport>false</soap:enable-jms-transport>

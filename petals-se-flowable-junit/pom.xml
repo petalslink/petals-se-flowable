@@ -34,10 +34,10 @@
    <description>JUnit framework for service unit of the BPMN Service Engine based on Flowable</description>
 
    <properties>
-      <flowable.version>6.4.2</flowable.version>
-      <flowable.groupId>org.flowable</flowable.groupId>
-      <!-- flowable.version>6.2.1-PETALS-0</flowable.version>
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId!-->
+      <!--flowable.version>6.4.2</flowable.version-->
+      <!--flowable.groupId>org.flowable</flowable.groupId-->
+      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
 
       <petals-se-flowable.version>1.4.0-SNAPSHOT</petals-se-flowable.version>
    </properties>

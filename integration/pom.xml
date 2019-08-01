@@ -32,6 +32,7 @@
     <module>parent</module>
     <module>launcher-ha-flowable</module>
     <module>sa-SOAP-vacationRequest</module>
+    <module>sa-flowable-traveling</module>
   </modules>
 
   <scm>

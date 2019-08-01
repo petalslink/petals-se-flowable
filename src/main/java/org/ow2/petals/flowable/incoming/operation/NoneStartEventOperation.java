@@ -27,8 +27,10 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
 
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The operation to create a new instance of a process
@@ -56,14 +58,19 @@ public class NoneStartEventOperation extends StartEventOperation {
      *            A UUID generator
      * @param placeholders
      *            Placeholders defined at component level
+     * @param jacksonObjectMapper
+     *            String to JSON converter of Jackson library.
      * @param logger
+     * @throws VariableUnsupportedTypeException
+     *             A variable definition contains an unsupported type.
      */
     public NoneStartEventOperation(final NoneStartEventAnnotatedOperation annotatedOperation,
             final IdentityService identityService, final RuntimeService runtimeService,
             final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
-            final Properties placeholders, final Logger logger) {
+            final Properties placeholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
+            throws VariableUnsupportedTypeException {
         super(annotatedOperation, identityService, runtimeService, historyService, simpleUUIDGenerator, placeholders,
-                logger);
+                jacksonObjectMapper, logger);
         this.noneStartEventId = annotatedOperation.getNoneStartEventId();
     }
 

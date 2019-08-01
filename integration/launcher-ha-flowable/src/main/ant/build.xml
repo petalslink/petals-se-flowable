@@ -83,7 +83,7 @@
       <!-- Create the properties file for BC SOAP -->
       <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
             file="${bc-soap.properties}" />
-      <echo message="notifyService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+      <echo message="notifyVacationService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
             file="${bc-soap.properties}"
             append="true" />
    </target>
@@ -203,8 +203,12 @@
    <!-- Target : Run -->
    <target name="run">
       <echo message="Launching Flowable component tests..." />
+      
+      <input />
 
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
+      
+      <input />
 
       <petals-soapui-load-test testCase="Nominal TestCase without adjustment"
                                loadTest="Loop on concurrent WS clients" />

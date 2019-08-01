@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019-2020 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>petals-flowable-parent</artifactId>
+      <groupId>org.ow2.petals.samples.flowable</groupId>
+      <version>1.4.0-1.0.0-SNAPSHOT</version>
+      <relativePath>../pom.xml</relativePath>
+   </parent>
+
+    <artifactId>su-flowable-travelingService-provide</artifactId>
+   <packaging>jbi-service-unit</packaging>
+   <name>su-flowable-travelingService-provide</name>
+   <!-- No version set -->
+   <description>su-flowable-travelingService-provide description.</description>
+
+   <properties>
+      <!-- flowable.groupId>org.flowable</flowable.groupId>
+      <flowable.version>6.4.2</flowable.version-->
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
+   </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable</artifactId>
+         <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals.samples.flowable</groupId>
+         <artifactId>su-SOAP-notifyTravelingService-provide</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-unit</type>
+         <scope>provided</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals.samples.flowable</groupId>
+         <artifactId>su-SOAP-bookingService-provide</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-unit</type>
+         <scope>provided</scope>
+      </dependency>
+      
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable-junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+      
+      <!-- To test the process definition we must use our own Flowable engine-->
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-engine</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-cxf</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-task-service-api</artifactId>
+         <version>${flowable.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-simple</artifactId>
+         <version>1.7.28</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <version>1.4.178</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.fasterxml.jackson.core</groupId>
+         <artifactId>jackson-databind</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.awaitility</groupId>
+         <artifactId>awaitility</artifactId>
+         <version>3.1.0</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.groovy</groupId>
+         <artifactId>groovy</artifactId>
+         <version>2.5.8</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.groovy</groupId>
+         <artifactId>groovy-jsr223</artifactId>
+         <version>2.5.8</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.jvnet.jaxb2_commons</groupId>
+         <artifactId>jaxb2-basics-runtime</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.bind</groupId>
+         <artifactId>jakarta.xml.bind-api</artifactId>
+         <version>2.3.2</version>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+
+   <pluginRepositories>
+      <pluginRepository>
+         <id>smartbear-sweden-plugin-repository</id>
+         <url>http://www.soapui.org/repository/maven2/</url>
+         <releases>
+            <enabled>true</enabled>
+         </releases>
+         <snapshots>
+            <enabled>false</enabled>
+         </snapshots>
+      </pluginRepository>
+   </pluginRepositories>
+   
+   <build>
+      <plugins>
+         <plugin>
+            <!-- Don't forget to clean files unzipped during build process by maven-dependency-plugin -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+               <filesets>
+                  <fileset>
+                     <directory>${basedir}/src/main/resources/jbi</directory>
+                     <includes>
+                        <include>notifyTravelingService.wsdl</include>
+                        <include>bookingService.wsdl</include>
+                     </includes>
+                  </fileset>
+               </filesets>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>generate-resources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>org.ow2.petals.samples.flowable</groupId>
+                           <artifactId>su-SOAP-notifyTravelingService-provide</artifactId>
+                           <version>${project.version}</version>
+                           <type>jbi-service-unit</type>
+                           <outputDirectory>${basedir}/src/main/resources/jbi</outputDirectory>
+                           <includes>notifyTravelingService.wsdl</includes>
+                           <overWrite>true</overWrite>
+                        </artifactItem>
+                        <artifactItem>
+                           <groupId>org.ow2.petals.samples.flowable</groupId>
+                           <artifactId>su-SOAP-bookingService-provide</artifactId>
+                           <version>${project.version}</version>
+                           <type>jbi-service-unit</type>
+                           <outputDirectory>${basedir}/src/main/resources/jbi</outputDirectory>
+                           <includes>bookingService.wsdl</includes>
+                           <overWrite>true</overWrite>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- These following dependencies are needed at compile time but are not directly used in source code -->
+                        <usedDependency>org.ow2.petals.samples.flowable:su-SOAP-notifyTravelingService-provide</usedDependency>
+                        <usedDependency>org.ow2.petals.samples.flowable:su-SOAP-bookingService-provide</usedDependency>
+                        <!-- The following dependency is needed because it's the JBI component on which this SU runs -->
+                        <usedDependency>org.ow2.petals:petals-se-flowable</usedDependency>
+                        <!-- These following dependencies are needed at runtime -->
+                        <usedDependency>org.codehaus.groovy:groovy</usedDependency>
+                        <usedDependency>org.codehaus.groovy:groovy-jsr223</usedDependency>
+                        <!-- These following dependencies are needed for unit test -->
+                        <usedDependency>${flowable.groupId}:flowable-cxf</usedDependency>
+                        <usedDependency>com.h2database:h2</usedDependency>
+                        <usedDependency>org.slf4j:slf4j-simple</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.jvnet.jaxb2.maven2</groupId>
+            <artifactId>maven-jaxb2-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>wsdl</id>
+                  <goals>
+                     <goal>generate</goal>
+                  </goals>
+                  <phase>process-test-resources</phase>
+                  <configuration>
+                     <extension>true</extension>
+                     <schemas>
+                        <schema>
+                           <fileset>
+                              <directory>${basedir}/src/main/resources/jbi</directory>
+                              <includes>
+                                 <include>traveling.wsdl</include>
+                              </includes>
+                           </fileset>
+                        </schema>
+                     </schemas>
+                     <generateDirectory>${basedir}/target/generated-test-sources/xjc</generateDirectory>
+                     <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-maven-plugin</artifactId>
+            <configuration>
+               <jbiDirectory>src/main/resources/jbi</jbiDirectory>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>enforce-no-duplicate-classes</id>
+                  <configuration>
+                     <exceptions>
+                        <exception>
+                           <conflictingDependencies>
+                              <dependency>
+                                 <groupId>org.ow2.petals</groupId>
+                                 <artifactId>petals-se-flowable</artifactId>
+                                 <type>jar</type>
+                                 <scope>test</scope>
+                              </dependency>
+                           </conflictingDependencies>
+                           <!-- Current project is the actual project being checked, not this parent pom -->
+                           <currentProject>true</currentProject>
+                           <resources>
+                              <resource>jbi/jbi.xml</resource>
+                           </resources>
+                        </exception>
+                     </exceptions>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui-maven-plugin</artifactId>
+            <version>5.4.0</version>
+            <executions>
+               <execution>
+                  <id>startup-mock-notify</id>
+                  <configuration>
+                     <projectFile>${basedir}/src/test/soapui/su-flowable-travelingService-provide-soapui-project.xml</projectFile>
+                     <mockService>notifyTravelingBinding MockService</mockService>
+                     <noBlock>true</noBlock>
+                  </configuration>
+                  <goals>
+                     <goal>mock</goal>
+                  </goals>
+                  <phase>process-test-classes</phase>
+               </execution>
+               <execution>
+                  <id>startup-mock-booking</id>
+                  <configuration>
+                     <projectFile>${basedir}/src/test/soapui/su-flowable-travelingService-provide-soapui-project.xml</projectFile>
+                     <mockService>bookingBinding MockService</mockService>
+                     <noBlock>true</noBlock>
+                  </configuration>
+                  <goals>
+                     <goal>mock</goal>
+                  </goals>
+                  <phase>process-test-classes</phase>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
+     <tag>HEAD</tag>
+  </scm>
+</project>

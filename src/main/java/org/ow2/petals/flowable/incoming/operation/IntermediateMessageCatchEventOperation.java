@@ -45,7 +45,10 @@ import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingF
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceEndedException;
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
+import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
 import org.w3c.dom.Document;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The operation to create a new instance of a process
@@ -83,12 +86,17 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
     /**
      * @param annotatedOperation
      *            Annotations of the operation to create
+     * @param jacksonObjectMapper
+     *            String to JSON converter of Jackson library.
      * @param logger
+     * @throws VariableUnsupportedTypeException
+     *             A variable definition contains an unsupported type.
      */
     public IntermediateMessageCatchEventOperation(
             final IntermediateMessageCatchEventAnnotatedOperation annotatedOperation,
-            final RuntimeService runtimeService, final HistoryService historyService, final Logger logger) {
-        super(annotatedOperation, null, logger);
+            final RuntimeService runtimeService, final HistoryService historyService,
+            final ObjectMapper jacksonObjectMapper, final Logger logger) throws VariableUnsupportedTypeException {
+        super(annotatedOperation, null, jacksonObjectMapper, logger);
         this.runtimeService = runtimeService;
         this.historyService = historyService;
         this.proccesInstanceIdXPathExpr = annotatedOperation.getProcessInstanceIdHolder();

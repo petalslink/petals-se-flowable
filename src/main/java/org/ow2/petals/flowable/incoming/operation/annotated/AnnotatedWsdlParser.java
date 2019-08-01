@@ -28,9 +28,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.Source;
@@ -68,12 +70,19 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.OutputXslN
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.ProcessInstanceIdMappingExpressionException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.UnsupportedActionException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.UserIdMappingExpressionException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableJsonNsMappingPrefixMissingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableMappingExpressionException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableNameMissingException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.XslInvalidException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.XslNotFileException;
+import org.ow2.petals.flowable.incoming.operation.annotated.exception.XslNotFoundException;
+import org.ow2.petals.flowable.incoming.variable.VariableDefinition;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.ebmwebsourcing.easycommons.xml.QNameHelper;
 
 /**
  * The parser to read anotation included into the WSDL
@@ -149,9 +158,45 @@ public class AnnotatedWsdlParser {
     private static final String BPMN_ANNOTATION_VARIABLE_NAME = "name";
 
     /**
-     * Local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE} containing the variable name
+     * Local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE} containing the variable type
      */
     private static final String BPMN_ANNOTATION_VARIABLE_TYPE = "type";
+
+    /**
+     * For variable type 'json', local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE} containing the XSL
+     * pre-transformaing the XML payload before conversion in JSON.
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE_JSON_PRE_XML_TRANSFORMATION = "json-pre-xsl";
+
+    /**
+     * For variable type 'json', local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE} containing the flag
+     * defining if the output of the XSL pre-transformaing the XML payload is in XML or JSON.
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE_JSON_IS_PRE_XML_TRANSFORMATION_RESULT_JSON = "json-pre-xsl-result-json";
+
+    /**
+     * For variable type 'json', local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE} containing the virtual
+     * root to use converting the variable as XML into JSON
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE_JSON_VIRTUAL_ROOT = "json-virtual-root";
+
+    /**
+     * For variable type 'json', local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE} containing the use of
+     * multiple process instructions to convert the variable as XML into JSON
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE_JSON_MULTIPLE_PI = "json-multiple-pi";
+
+    /**
+     * For variable type 'json', local part of the annotation tag associated to the namespace mapping definition of a
+     * variable ({@link #BPMN_ANNOTATION_VARIABLE}), to convert the variable as XML into JSON
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE_JSON_NAMESPACE_MAPPING = "json-ns-mapping";
+
+    /**
+     * For variable type 'json', local part of the attribute of {@link #BPMN_ANNOTATION_VARIABLE_JSON_NAMESPACE_MAPPING}
+     * defining the prefix of a namespace mapping definition used to convert the variable as XML into JSON
+     */
+    private static final String BPMN_ANNOTATION_VARIABLE_JSON_NS_MAPPING_PREFIX = "prefix";
 
     /**
      * Local part of the annotation tag associated an output
@@ -218,10 +263,14 @@ public class AnnotatedWsdlParser {
      *            The WSDL to parse containing BPMN annotation. Not {@code null}.
      * @param bpmnModels
      *            BPMN models embedded into the service unit. Not {@code null}.
+     * @param suRootPath
+     *            The root directory of the service unit
+     * @param logErrorListener
+     *            Error listener of the XSL engine. Not {@code null}.
      * @return For each operation of the WSDL, the associated annotated operation is returned.
      */
     public List<AnnotatedOperation> parse(final Document annotatedWsdl, final List<BpmnModel> bpmnModels,
-            final String suRootPath) {
+            final String suRootPath, final ErrorListener logErrorListener) {
 
         assert annotatedWsdl != null;
         assert bpmnModels != null;
@@ -248,7 +297,7 @@ public class AnnotatedWsdlParser {
             for (int j = 0; j < wsdlOperations.getLength(); j++) {
                 try {
                     annotatedOperations.add(this.parseOperation(wsdlOperations.item(j), targetNamespace, xpathBuilder,
-                            suRootPath, bpmnModels));
+                            suRootPath, bpmnModels, logErrorListener));
                 } catch (final InvalidAnnotationForOperationException e) {
                     this.encounteredErrors.add(e);
                 }
@@ -276,14 +325,16 @@ public class AnnotatedWsdlParser {
      *            The root directory of the service unit
      * @param bpmnModels
      *            BPMN models embedded into the service unit
+     * @param logErrorListener
+     *            Error listener of the XSL engine. Not {@code null}.
      * @return The annotated operation associated to the WSDL binding operation
      * @throws An
      *             error occurs during the parsing of the binding operation
      */
     private AnnotatedOperation parseOperation(final Node wsdlOperation, final String targetNamespace,
-            final XPath xpathBuilder, final String suRootPath, final List<BpmnModel> bpmnModels)
-            throws InvalidAnnotationForOperationException {
-        
+            final XPath xpathBuilder, final String suRootPath, final List<BpmnModel> bpmnModels,
+            final ErrorListener logErrorListener) throws InvalidAnnotationForOperationException {
+
         final QName wsdlOperationName = new QName(targetNamespace, ((Element) wsdlOperation).getAttribute("name"));
 
         // Get the node "bpmn:operation"
@@ -308,11 +359,8 @@ public class AnnotatedWsdlParser {
         final XPathExpression bpmnUserId = this.getUserIdXpathExpr(wsdlOperation, wsdlOperationName, xpathBuilder);
 
         // Get the list of nodes "bpmn:variable"
-        final Map<String, XPathExpression> bpmnOperationVariables = getVariableXpathExpr(wsdlOperation,
-                wsdlOperationName, xpathBuilder);
-
-        // Get the variable types
-        final Map<String, String> bpmnOperationVariableTypes = getVariableTypes(wsdlOperation);
+        final Map<String, VariableDefinition> bpmnOperationVariables = this.getVariables(wsdlOperation,
+                wsdlOperationName, xpathBuilder, suRootPath, logErrorListener);
 
         // Get the output "bpmn:output"
         final Templates bpmnOutputTemplate = this.getOutputTemplate(wsdlOperation, wsdlOperationName, suRootPath);
@@ -334,12 +382,10 @@ public class AnnotatedWsdlParser {
 
             if (!noneStartEventId.isEmpty() && startEventMessageName.isEmpty()) {
                 annotatedOperation = new NoneStartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
-                        noneStartEventId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate,
-                        bpmnFaultTemplates);
+                        noneStartEventId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate, bpmnFaultTemplates);
             } else if (noneStartEventId.isEmpty() && !startEventMessageName.isEmpty()) {
                 annotatedOperation = new MessageStartEventAnnotatedOperation(wsdlOperationName, processDefinitionKey,
-                        startEventMessageName, this.tenantId, bpmnUserId, bpmnOperationVariables,
-                        bpmnOutputTemplate,
+                        startEventMessageName, this.tenantId, bpmnUserId, bpmnOperationVariables, bpmnOutputTemplate,
                         bpmnFaultTemplates);
             } else {
                 throw new InvalidBpmnActionAttributesException(wsdlOperationName,
@@ -368,7 +414,7 @@ public class AnnotatedWsdlParser {
 
             annotatedOperation = new IntermediateMessageCatchEventAnnotatedOperation(wsdlOperationName,
                     processDefinitionKey, bpmnProcessInstanceId, messageEventId, bpmnOperationVariables,
-                    bpmnOperationVariableTypes, bpmnFaultTemplates);
+                    bpmnFaultTemplates);
 
         } else {
             throw new UnsupportedActionException(wsdlOperationName, action);
@@ -396,8 +442,8 @@ public class AnnotatedWsdlParser {
     private XPathExpression getProcessInstanceIdXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
             final XPath xpathBuilder) throws InvalidAnnotationForOperationException {
 
-        final Node processInstanceId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
-                BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
+        final Node processInstanceId = ((Element) wsdlOperation)
+                .getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_PROCESS_INSTANCE_ID_HOLDER).item(0);
         final XPathExpression bpmnProcessInstanceId;
         if (processInstanceId != null) {
             final String xpathExpr = processInstanceId.getTextContent();
@@ -432,8 +478,8 @@ public class AnnotatedWsdlParser {
     private XPathExpression getUserIdXpathExpr(final Node wsdlOperation, final QName wsdlOperationName,
             final XPath xpathBuilder) throws InvalidAnnotationForOperationException {
 
-        final Node userId = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
-                BPMN_ANNOTATION_USER_ID_HOLDER).item(0);
+        final Node userId = ((Element) wsdlOperation)
+                .getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_USER_ID_HOLDER).item(0);
         final XPathExpression bpmnUserId;
         if (userId != null) {
             final String xpathExpr = userId.getTextContent();
@@ -462,70 +508,138 @@ public class AnnotatedWsdlParser {
      *            The name of the binding operation
      * @param xpathBuilder
      *            The XPath expression builder
+     * @param suRootPath
+     *            Root directory of the service unit deployed
+     * @param logErrorListener
+     *            Error listener of the XSL engine. Not {@code null}.
      * @return The XPath expression for each variable defined
      * @throws InvalidAnnotationForOperationException
      */
-    private static Map<String, XPathExpression> getVariableXpathExpr(final Node wsdlOperation,
-            final QName wsdlOperationName, final XPath xpathBuilder) throws InvalidAnnotationForOperationException {
+    private Map<String, VariableDefinition> getVariables(final Node wsdlOperation, final QName wsdlOperationName,
+            final XPath xpathBuilder, final String suRootPath, final ErrorListener logErrorListener)
+            throws InvalidAnnotationForOperationException {
 
         final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
                 BPMN_ANNOTATION_VARIABLE);
-        final Map<String, XPathExpression> bpmnOperationVariables = new HashMap<>();
+        final Map<String, VariableDefinition> bpmnOperationVariables = new HashMap<>();
         for (int k = 0; k < bpmnVariableList.getLength(); k++) {
             final Node bpmnVariable = bpmnVariableList.item(k);
-            // test name declaration of variable
+
             final String bpmnVariableName = ((Element) bpmnVariable).getAttribute(BPMN_ANNOTATION_VARIABLE_NAME);
             if (bpmnVariableName == null || bpmnVariableName.trim().isEmpty()) {
                 throw new VariableNameMissingException(wsdlOperationName);
             }
-            // test unicity of declared variable for the operation
+            // Check unicity of the declared variable for this operation
             if (bpmnOperationVariables.containsKey(bpmnVariableName)) {
                 throw new DuplicatedVariableException(wsdlOperationName, bpmnVariableName);
             }
 
             final XPathExpression bpmnVariableXPath;
-            final String xpathExpr = bpmnVariable.getTextContent();
-            if (xpathExpr.trim().isEmpty()) {
+            final Node xpathExprNode = bpmnVariable.getFirstChild();
+            if (xpathExprNode == null) {
                 throw new NoVariableMappingException(wsdlOperationName, bpmnVariableName);
             } else {
-                try {
-                    bpmnVariableXPath = xpathBuilder.compile(xpathExpr);
-                } catch (final XPathExpressionException e) {
-                    throw new VariableMappingExpressionException(wsdlOperationName, bpmnVariableName, e);
+                final String xpathExpr = bpmnVariable.getFirstChild().getTextContent();
+                if (xpathExpr.trim().isEmpty()) {
+                    throw new NoVariableMappingException(wsdlOperationName, bpmnVariableName);
+                } else {
+                    try {
+                        bpmnVariableXPath = xpathBuilder.compile(xpathExpr.trim());
+                    } catch (final XPathExpressionException e) {
+                        throw new VariableMappingExpressionException(wsdlOperationName, bpmnVariableName, e);
+                    }
                 }
             }
 
-            bpmnOperationVariables.put(bpmnVariableName, bpmnVariableXPath);
+            final String bpmnVariableType = ((Element) bpmnVariable).getAttribute(BPMN_ANNOTATION_VARIABLE_TYPE);
+
+            final VariableDefinition variableDefinition;
+            if (bpmnVariableType != null && !bpmnVariableType.trim().isEmpty()) {
+                variableDefinition = new VariableDefinition(bpmnVariableName, bpmnVariableXPath,
+                        bpmnVariableType.trim());
+            } else {
+                variableDefinition = new VariableDefinition(bpmnVariableName, bpmnVariableXPath);
+            }
+
+            final String preXmlTransformationStr = ((Element) bpmnVariable)
+                    .getAttribute(BPMN_ANNOTATION_VARIABLE_JSON_PRE_XML_TRANSFORMATION);
+            if (preXmlTransformationStr != null && !preXmlTransformationStr.trim().isEmpty()) {
+                variableDefinition.setPreXmlTransformation(this.buildXslTemplate(wsdlOperationName, bpmnVariableName,
+                        suRootPath, preXmlTransformationStr.trim(), logErrorListener));
+            }
+
+            final String isPreXmlTranformationResultJsonStr = ((Element) bpmnVariable)
+                    .getAttribute(BPMN_ANNOTATION_VARIABLE_JSON_IS_PRE_XML_TRANSFORMATION_RESULT_JSON);
+            if (isPreXmlTranformationResultJsonStr != null && !isPreXmlTranformationResultJsonStr.trim().isEmpty()) {
+                variableDefinition.setPreXmlTranformationResultJson(
+                        Boolean.parseBoolean(isPreXmlTranformationResultJsonStr.toLowerCase()));
+            } else {
+                variableDefinition.setPreXmlTranformationResultJson(false);
+            }
+
+            final String virtRootStr = ((Element) bpmnVariable)
+                    .getAttribute(BPMN_ANNOTATION_VARIABLE_JSON_VIRTUAL_ROOT);
+            if (virtRootStr != null && !virtRootStr.trim().isEmpty()) {
+                variableDefinition
+                        .setVirtualRoot(
+                                QNameHelper.fromString(bpmnVariable, virtRootStr.trim(), XMLConstants.NULL_NS_URI));
+            }
+
+            final String multiplePiStr = ((Element) bpmnVariable)
+                    .getAttribute(BPMN_ANNOTATION_VARIABLE_JSON_MULTIPLE_PI);
+            if (multiplePiStr != null && !multiplePiStr.trim().isEmpty()) {
+                variableDefinition.setMultiplePi(Optional.of(Boolean.parseBoolean(multiplePiStr)));
+            }
+
+            final NodeList namespaceMappingNodes = ((Element) bpmnVariable)
+                    .getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS, BPMN_ANNOTATION_VARIABLE_JSON_NAMESPACE_MAPPING);
+            final Map<String, String> namespaceMappings = new HashMap<>(namespaceMappingNodes.getLength());
+            for (int i = 0; i < namespaceMappingNodes.getLength(); i++) {
+                final Node namespaceMappingNode = namespaceMappingNodes.item(i);
+                if (namespaceMappingNode instanceof Element) {
+                    final String prefix = ((Element) namespaceMappingNode)
+                            .getAttribute(BPMN_ANNOTATION_VARIABLE_JSON_NS_MAPPING_PREFIX);
+                    if (prefix == null || prefix.trim().isEmpty()) {
+                        throw new VariableJsonNsMappingPrefixMissingException(wsdlOperationName, bpmnVariableName);
+                    }
+
+                    final String uri = namespaceMappingNode.getTextContent();
+
+                    namespaceMappings.put(prefix, uri);
+                }
+            }
+            variableDefinition.setNamespaceMappings(namespaceMappings);
+
+            bpmnOperationVariables.put(bpmnVariableName, variableDefinition);
         }
 
         return bpmnOperationVariables;
     }
 
-    /**
-     * Parse the variable types defined for the binding operation
-     * 
-     * @param wsdlOperation
-     *            The node of the binding operation to parse
-     * @return The type of each variable defined
-     * @throws InvalidAnnotationForOperationException
-     */
-    private static Map<String, String> getVariableTypes(final Node wsdlOperation)
+    private Templates buildXslTemplate(final QName wsdlOperationName, final String bpmnVariableName,
+            final String suRootPath, final String xslFileName, final ErrorListener logErrorListener)
             throws InvalidAnnotationForOperationException {
 
-        final NodeList bpmnVariableList = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
-                BPMN_ANNOTATION_VARIABLE);
-        final Map<String, String> bpmnOperationVariables = new HashMap<>();
-        for (int k = 0; k < bpmnVariableList.getLength(); k++) {
-            final Node bpmnVariable = bpmnVariableList.item(k);
-            final String bpmnVariableName = ((Element) bpmnVariable).getAttribute(BPMN_ANNOTATION_VARIABLE_NAME);
-            // Variable name is not null because it was previously checked. See #getVariableXpathExpr()
-            final String bpmnVariableType = ((Element) bpmnVariable).getAttribute(BPMN_ANNOTATION_VARIABLE_TYPE);
-            if (bpmnVariableType != null && !bpmnVariableType.trim().isEmpty()) {
-                bpmnOperationVariables.put(bpmnVariableName, bpmnVariableType);
-            }
+        // The XSL style-sheet file must exist
+        final File xslFile = new File(suRootPath, xslFileName);
+        if (!xslFile.exists()) {
+            throw new XslNotFoundException(wsdlOperationName, bpmnVariableName, xslFile.getAbsolutePath());
         }
 
-        return bpmnOperationVariables;
+        // The XSL style-sheet file must be a regular file
+        if (!xslFile.isFile()) {
+            throw new XslNotFileException(wsdlOperationName, bpmnVariableName, xslFile.getAbsolutePath());
+        }
+
+        // The XSL style-sheet file must be a buildable XSL
+        final Source xslSource = new StreamSource(xslFile);
+        final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setErrorListener(logErrorListener);
+        try {
+            return transformerFactory.newTemplates(xslSource);
+        } catch (final TransformerConfigurationException e) {
+            throw new XslInvalidException(wsdlOperationName, bpmnVariableName, xslFile.getAbsolutePath(), e);
+        }
     }
 
     /**
@@ -583,8 +697,8 @@ public class AnnotatedWsdlParser {
         final NodeList wsdlFaults = ((Element) wsdlOperation).getElementsByTagNameNS(SCHEMA_WSDL, "fault");
         for (int j = 0; j < wsdlFaults.getLength(); j++) {
             final Node wsdlFault = wsdlFaults.item(j);
-            final String wsdlFaultName = ((Element)wsdlFault).getAttribute("name");
-            
+            final String wsdlFaultName = ((Element) wsdlFault).getAttribute("name");
+
             final NodeList bpmnFaults = ((Element) wsdlFault).getElementsByTagNameNS(SCHEMA_BPMN_ANNOTATIONS,
                     BPMN_ANNOTATION_FAULT);
             if (bpmnFaults.getLength() == 1) {
@@ -606,7 +720,7 @@ public class AnnotatedWsdlParser {
                 throw new DuplicatedFaultMappingException(wsdlOperationName, wsdlFaultName);
             }
         }
-        
+
         return faultTemplates;
     }
 

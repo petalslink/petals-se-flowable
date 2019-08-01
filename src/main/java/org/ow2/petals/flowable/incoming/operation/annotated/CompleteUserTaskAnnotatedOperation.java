@@ -41,6 +41,7 @@ import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingF
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
 import org.ow2.petals.flowable.incoming.operation.exception.TaskCompletedException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedUserException;
+import org.ow2.petals.flowable.incoming.variable.VariableDefinition;
 
 /**
  * The BPMN operation 'complete user task' extracted from WDSL according to BPMN annotations. This operation is used to
@@ -98,7 +99,7 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
      */
     public CompleteUserTaskAnnotatedOperation(final QName wsdlOperationName, final String processDefinitionId,
             final String userTaskId, final XPathExpression processInstanceIdHolder, final XPathExpression userIdHolder,
-            final Map<String, XPathExpression> variables, final Templates outputTemplate,
+            final Map<String, VariableDefinition> variables, final Templates outputTemplate,
             final Map<String, Templates> faultTemplates) throws InvalidAnnotationForOperationException {
         super(wsdlOperationName, processDefinitionId, userIdHolder, variables, outputTemplate, faultTemplates, true);
         this.userTaskId = userTaskId;
@@ -115,11 +116,6 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
 
         super.doAnnotationCoherenceCheck(model);
 
-        // The user task identifier is required
-        if (this.userTaskId == null || this.userTaskId.trim().isEmpty()) {
-            throw new NoUserTaskIdMappingException(this.wsdlOperation);
-        }
-
         // The mapping defining the user id is required
         if (this.userIdHolder == null) {
             throw new NoUserIdMappingException(this.wsdlOperation);
@@ -129,29 +125,17 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
         if (this.processInstanceIdHolder == null) {
             throw new NoProcessInstanceIdMappingException(this.wsdlOperation);
         }
-
-        // The mapping defining the user task identifier must be declared in the process definition
-        final List<FormProperty> formPropertyList = this.findFormPropertiesOfUserTask(model);
-        if (formPropertyList == null) {
-            throw new UserTaskIdNotFoundInModelException(this.wsdlOperation, this.userTaskId,
-                    this.getProcessDefinitionId());
-        } else {
-            for (final FormProperty formPropertie : formPropertyList) {
-                this.getVariableTypes().put(formPropertie.getId(), formPropertie);
-            }
-        }
     }
 
-    /**
-     * Find form properties of the current user task
-     * 
-     * @param model
-     *            BPMN model containing the process definition with the current user task
-     * @return The form properties of the current user task, or {@code null} if no user task exists with the given
-     *         user task identifier ({@link #userTaskId}).
-     */
-    @SuppressWarnings("squid:S1168")
-    private List<FormProperty> findFormPropertiesOfUserTask(final BpmnModel model) {
+    @Override
+    protected List<FormProperty> getVariablesFromModel(final BpmnModel model)
+            throws InvalidAnnotationForOperationException {
+
+        // The user task identifier is required
+        if (this.userTaskId == null || this.userTaskId.trim().isEmpty()) {
+            throw new NoUserTaskIdMappingException(this.wsdlOperation);
+        }
+
         final Process process = model.getProcessById(this.getProcessDefinitionId());
         for (final FlowElement flowElt : process.getFlowElements()) {
             // search the user task
@@ -160,7 +144,8 @@ public class CompleteUserTaskAnnotatedOperation extends AnnotatedOperationWithOu
                 return userTask.getFormProperties();
             }
         }
-        return null;
+        throw new UserTaskIdNotFoundInModelException(this.wsdlOperation, this.userTaskId,
+                this.getProcessDefinitionId());
     }
 
     @Override

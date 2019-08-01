@@ -32,10 +32,10 @@
    <version>1.4.0-SNAPSHOT</version>
 
    <properties>
-      <flowable.version>6.4.2</flowable.version>
-      <flowable.groupId>org.flowable</flowable.groupId>
-      <!--flowable.version>6.2.1-PETALS-0</flowable.version-->
-      <!--flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
+      <!--flowable.version>6.4.2</flowable.version-->
+      <!--flowable.groupId>org.flowable</flowable.groupId-->
+      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
 
    <dependencyManagement>
