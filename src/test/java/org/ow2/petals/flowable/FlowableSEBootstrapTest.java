@@ -176,7 +176,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 FlowableSEConstants.ENGINE_REST_API_PORT);
         params.add(eltEngineRestApiPort);
         final Element eltEngineRestApiAccessGroup = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP);
+                FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE);
         params.add(eltEngineRestApiAccessGroup);
 
         this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
@@ -627,7 +627,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         params.add(eltEngineRestApiPort);
 
         final Element eltEngineRestApiAccessGroup = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
-                FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP);
+                FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE);
         final String engineRestApiAccessGroup = "test-group";
         eltEngineRestApiAccessGroup.setTextContent(engineRestApiAccessGroup);
         params.add(eltEngineRestApiAccessGroup);
@@ -681,7 +681,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         assertEquals(engineRestApiPort,
                 this.jmxClient.getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_PORT));
         assertEquals(engineRestApiAccessGroup, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP));
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ACCESS_PRIVILEGE));
 
         // TODO: What to do with this config parameter not available at Mbean level ?
         // assertEquals(jobExecutorMaxTimerJobsPerAcquisition,
@@ -770,8 +770,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ADDRESS));
         assertEquals(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT,
                 this.jmxClient.getBootstrapAttributeAsInt(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_PORT));
-        assertEquals(FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_GROUP, this.jmxClient
-                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP));
+        assertEquals(FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_PRIVILEGE, this.jmxClient
+                .getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_ACCESS_PRIVILEGE));
     }
 
     /**

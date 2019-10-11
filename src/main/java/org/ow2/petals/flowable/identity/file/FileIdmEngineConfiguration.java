@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2019 Linagora
+ * Copyright (c) 2019 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -15,16 +15,27 @@
  * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.flowable.identity;
+package org.ow2.petals.flowable.identity.file;
 
-import java.io.File;
-import java.util.logging.Logger;
+import org.flowable.idm.engine.IdmEngineConfiguration;
+import org.flowable.ldap.LdapIdmEngineConfiguration;
 
-import org.flowable.engine.common.EngineConfigurator;
+/**
+ * Lightweight {@link IdmEngineConfiguration} to be used when running with a file-based identity service.
+ * 
+ * Inspired by {@link LdapIdmEngineConfiguration}
+ * 
+ * @author Christophe DENEUX - Linagora
+ */
+public class FileIdmEngineConfiguration extends IdmEngineConfiguration {
 
-public interface SeFlowableIdmServiceConfigurator extends EngineConfigurator {
+    public FileIdmEngineConfiguration() {
+        this.setUsingRelationalDatabase(false);
+    }
 
-    public void setConfigurationFile(final File configurationFile);
+    @Override
+    public void initDataManagers() {
+        // No need to initialize data managers when using a file-based identity service
+    }
 
-    public void setLogger(final Logger logger);
 }

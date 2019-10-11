@@ -21,7 +21,7 @@
    <parent>
       <artifactId>petals-flowable-parent</artifactId>
       <groupId>org.ow2.petals.samples.flowable</groupId>
-      <version>1.2.0-1.0.0-SNAPSHOT</version>
+      <version>1.3.0-1.0.0-SNAPSHOT</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
 
@@ -29,11 +29,6 @@
    <packaging>jbi-service-unit</packaging>
    <name>su-SOAP-vacationService-consume</name>
    <!-- No version set -->
-
-   <properties>
-      <!-- Skip dependency check for service unit. -->
-      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
-   </properties>
 
    <dependencies>
       <dependency>
@@ -45,6 +40,23 @@
 
    <build>
       <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- The copmponent on which the SU is running -->
+                        <usedDependency>org.ow2.petals:petals-bc-soap</usedDependency>
+                        <!-- No unit test in this SU -->
+                        <usedDependency>junit:junit</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
          <plugin>
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-maven-plugin</artifactId>

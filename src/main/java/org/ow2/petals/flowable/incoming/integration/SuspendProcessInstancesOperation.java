@@ -23,9 +23,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.flowable.common.engine.api.FlowableException;
+import org.flowable.common.engine.api.FlowableObjectNotFoundException;
 import org.flowable.engine.RuntimeService;
-import org.flowable.engine.common.api.FlowableException;
-import org.flowable.engine.common.api.FlowableObjectNotFoundException;
 import org.ow2.petals.components.flowable.generic._1.AdjournmentResult;
 import org.ow2.petals.components.flowable.generic._1.InvalidRequest;
 import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;

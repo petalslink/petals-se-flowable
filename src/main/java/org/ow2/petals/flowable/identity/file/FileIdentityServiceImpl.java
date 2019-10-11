@@ -20,9 +20,11 @@ package org.ow2.petals.flowable.identity.file;
 import java.util.List;
 import java.util.Map;
 
-import org.flowable.engine.common.api.FlowableException;
+import org.flowable.common.engine.api.FlowableException;
 import org.flowable.idm.api.Group;
 import org.flowable.idm.api.GroupQuery;
+import org.flowable.idm.api.Privilege;
+import org.flowable.idm.api.PrivilegeQuery;
 import org.flowable.idm.api.User;
 import org.flowable.idm.api.UserQuery;
 import org.flowable.idm.engine.impl.IdmIdentityServiceImpl;
@@ -44,11 +46,17 @@ public class FileIdentityServiceImpl extends IdmIdentityServiceImpl {
      */
     private final Map<String, List<Group>> groupsByUser;
 
+    /**
+     * Privileges by user into a map: key=user-id, value=list of privileges
+     */
+    private final Map<String, List<Privilege>> privilegesByUser;
+
     public FileIdentityServiceImpl(final Map<String, User> users, final Map<String, List<String>> groups,
-            final Map<String, List<Group>> groupsByUser) {
+            final Map<String, List<Group>> groupsByUser, final Map<String, List<Privilege>> privilegesByUser) {
         this.users = users;
         this.groups = groups;
         this.groupsByUser = groupsByUser;
+        this.privilegesByUser = privilegesByUser;
     }
 
     @Override
@@ -59,6 +67,11 @@ public class FileIdentityServiceImpl extends IdmIdentityServiceImpl {
     @Override
     public GroupQuery createGroupQuery() {
         return new FileGroupQueryImpl(this.groupsByUser);
+    }
+
+    @Override
+    public PrivilegeQuery createPrivilegeQuery() {
+        return new FilePrivilegeQueryImpl(this.privilegesByUser);
     }
 
     @Override
@@ -102,4 +115,5 @@ public class FileIdentityServiceImpl extends IdmIdentityServiceImpl {
         throw new FlowableException(
                 "The group manager of the identity service based on file doesn't support deleting a group");
     }
+
 }

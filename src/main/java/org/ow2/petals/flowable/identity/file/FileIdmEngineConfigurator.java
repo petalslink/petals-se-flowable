@@ -33,19 +33,23 @@ import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
-import org.flowable.engine.common.AbstractEngineConfiguration;
-import org.flowable.engine.impl.util.EngineServiceUtil;
+import org.flowable.common.engine.impl.AbstractEngineConfiguration;
+import org.flowable.common.engine.impl.interceptor.EngineConfigurationConstants;
 import org.flowable.idm.api.Group;
+import org.flowable.idm.api.Privilege;
 import org.flowable.idm.api.User;
+import org.flowable.idm.engine.IdmEngineConfiguration;
+import org.flowable.idm.engine.impl.IdmIdentityServiceImpl;
 import org.flowable.idm.engine.impl.persistence.entity.GroupEntityImpl;
+import org.flowable.idm.engine.impl.persistence.entity.PrivilegeEntityImpl;
 import org.flowable.idm.engine.impl.persistence.entity.UserEntityImpl;
 import org.ow2.petals.flowable.identity.AbstractProcessEngineConfigurator;
-import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmEngineConfigurator;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceResourceNotFoundException;
 
 /**
- * A {@link SeFlowableIdmServiceConfigurator} that integrates an identity management engine based on files.
+ * A {@link SeFlowableIdmEngineConfigurator} that integrates an identity management engine based on files.
  * 
  * @author Christophe DENEUX - Linagora
  */
@@ -62,6 +66,11 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
     private static final String DEFAULT_CFG_RESOURCE_GROUPS = "/file-idm-configurator-groups.properties";
 
     /**
+     * The resource used as default configuration file of the identity service, it contains the priviliege list
+     */
+    private static final String DEFAULT_CFG_RESOURCE_PRIVILEGES = "/file-idm-configurator-privileges.properties";
+
+    /**
      * Property name of the identity service containing declaration of users
      */
     public static final String PROP_USERS_FILE_NAME = "users-file";
@@ -70,6 +79,11 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
      * Property name of the identity service containing declaration of groups
      */
     public static final String PROP_GROUPS_FILE_NAME = "groups-file";
+
+    /**
+     * Property name of the identity service containing declaration of privileges
+     */
+    public static final String PROP_PRIVILEGES_FILE_NAME = "privileges-file";
 
     /**
      * Users list into a map: key=user-id, value=user-password
@@ -82,12 +96,29 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
     private final Map<String, List<String>> groups = new ConcurrentHashMap<>();
 
     /**
+     * Privileges list into a map: key=privilege-id, value=list of user-id
+     */
+    private final Map<String, List<String>> privileges = new ConcurrentHashMap<>();
+
+    /**
      * Groups by user into a map: key=user-id, value=list of group-id
      */
     private final Map<String, List<Group>> groupsByUser = new ConcurrentHashMap<>();
 
+    /**
+     * Groups by privilege into a map: key=user-id, value=list of privilege
+     */
+    private final Map<String, List<Privilege>> privilegesByUser = new ConcurrentHashMap<>();
+
+    @Override
+    public void beforeInit(final AbstractEngineConfiguration engineConfiguration) {
+        // Nothing to do
+    }
+
     @Override
     public void configure(final AbstractEngineConfiguration processEngineConfiguration) {
+
+        this.idmEngineConfiguration = new FileIdmEngineConfiguration();
 
         try {
             this.loadFiles();
@@ -105,14 +136,36 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
                 }
             }
 
+            // Compute the map "Privileges by user"
+            for (final String user : this.users.keySet()) {
+                final List<Privilege> privilegesList = new ArrayList<>();
+                this.privilegesByUser.put(user, privilegesList);
+                for (final Entry<String, List<String>> privilegeEntry : this.privileges.entrySet()) {
+                    if (privilegeEntry.getValue().contains(user)) {
+                        final PrivilegeEntityImpl privilege = new PrivilegeEntityImpl();
+                        privilege.setId(privilegeEntry.getKey());
+                        privilege.setName(privilegeEntry.getKey());
+                        privilegesList.add(privilege);
+                    }
+                }
+            }
+
             super.configure(processEngineConfiguration);
 
-            EngineServiceUtil.getIdmEngineConfiguration(processEngineConfiguration)
-                    .setIdmIdentityService(new FileIdentityServiceImpl(this.users, this.groups, this.groupsByUser));
+            final IdmIdentityServiceImpl idmIdentityServiceImpl = new FileIdentityServiceImpl(this.users, this.groups,
+                    this.groupsByUser, this.privilegesByUser);
+            getIdmEngineConfiguration(processEngineConfiguration)
+                    .setIdmIdentityService(idmIdentityServiceImpl);
 
         } catch (final IdentityServiceInitException e) {
             this.logger.log(Level.WARNING, "An error occurs loading files of the file-based IDM engine.", e);
         }
+    }
+
+    protected static IdmEngineConfiguration getIdmEngineConfiguration(
+            final AbstractEngineConfiguration engineConfiguration) {
+        return (IdmEngineConfiguration) engineConfiguration.getEngineConfigurations()
+                .get(EngineConfigurationConstants.KEY_IDM_ENGINE_CONFIG);
     }
 
     private void loadFiles() throws IdentityServiceInitException {
@@ -139,9 +192,17 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
                             "The file containing the declarations of groups is not defined in the identity service configuration file.");
                 }
                 this.readGroupsFile(groupsFileName);
+
+                final String privilegesFileName = props.getProperty(PROP_PRIVILEGES_FILE_NAME);
+                if (privilegesFileName == null || privilegesFileName.trim().isEmpty()) {
+                    throw new IdentityServiceInitException(
+                            "The file containing the declarations of privileges is not defined in the identity service configuration file.");
+                }
+                this.readPrivilegesFile(privilegesFileName);
             } else {
                 this.readUsersResource(DEFAULT_CFG_RESOURCE_USERS);
                 this.readGroupsResource(DEFAULT_CFG_RESOURCE_GROUPS);
+                this.readPrivilegesResource(DEFAULT_CFG_RESOURCE_PRIVILEGES);
             }
         } catch (final IOException e) {
             throw new IdentityServiceInitException(e);
@@ -210,7 +271,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
 
         final File tmpFile = new File(groupsFileName.trim());
         if (!tmpFile.isAbsolute()) {
-            readGroupsResource(groupsFileName);
+            this.readGroupsResource(groupsFileName);
         } else if (!tmpFile.exists()) {
             try {
                 this.readGroupsResource(groupsFileName);
@@ -223,6 +284,43 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         } else {
             try (final InputStream groupsFileInputStream = new FileInputStream(tmpFile)) {
                 this.readGroups(groupsFileInputStream);
+            } catch (final FileNotFoundException e) {
+                throw new IdentityServiceInitException(e);
+            } catch (final IOException e) {
+                throw new IdentityServiceInitException(String
+                        .format("An error occurs closing resource '%s'. Error skipped.", tmpFile.getAbsolutePath()), e);
+            }
+        }
+    }
+
+    /**
+     * Read a file containing the privilege declarations. If the file is not an absolute file, it is read a resource.
+     * 
+     * @param privilegesFileName
+     *            The file name or resource name
+     * @throws IdentityServiceInitException
+     *             An error occurs reading the file.
+     */
+    private void readPrivilegesFile(final String privilegesFileName) throws IdentityServiceInitException {
+
+        assert privilegesFileName != null;
+
+        final File tmpFile = new File(privilegesFileName.trim());
+        if (!tmpFile.isAbsolute()) {
+            this.readPrivilegesResource(privilegesFileName);
+        } else if (!tmpFile.exists()) {
+            try {
+                this.readPrivilegesResource(privilegesFileName);
+            } catch (final IdentityServiceResourceNotFoundException e) {
+                throw new IdentityServiceInitException(
+                        "The file declaring privileges (" + privilegesFileName + ") does not exist.");
+            }
+        } else if (!tmpFile.isFile()) {
+            throw new IdentityServiceInitException(
+                    "The file declaring privileges (" + privilegesFileName + ") is not a file.");
+        } else {
+            try (final InputStream privilegesFileInputStream = new FileInputStream(tmpFile)) {
+                this.readPrivileges(privilegesFileInputStream);
             } catch (final FileNotFoundException e) {
                 throw new IdentityServiceInitException(e);
             } catch (final IOException e) {
@@ -278,7 +376,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
 
         final InputStream groupsInputStream = this.getClass().getResourceAsStream(groupsResourceName);
         assert groupsInputStream != null : "Resource [" + groupsResourceName
-                + "] containing group declaration not found";
+                + "] containing group declarations not found";
         try {
             this.readGroups(groupsInputStream);
         } finally {
@@ -287,6 +385,34 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
             } catch (final IOException e) {
                 throw new IdentityServiceInitException(
                         String.format("An error occurs closing resource '%s'. Error skipped.", groupsResourceName), e);
+            }
+        }
+    }
+
+    /**
+     * Read a resource containing the privileges declarations
+     * 
+     * @param privilegesResourceName
+     *            The resource name
+     * @throws IdentityServiceInit
+     *             An error occurs reading the resource.
+     */
+    private void readPrivilegesResource(final String privilegesResourceName) throws IdentityServiceInitException {
+
+        assert privilegesResourceName != null;
+
+        final InputStream privilegesInputStream = this.getClass().getResourceAsStream(privilegesResourceName);
+        assert privilegesInputStream != null : "Resource [" + privilegesResourceName
+                + "] containing privilege declarations not found";
+        try {
+            this.readPrivileges(privilegesInputStream);
+        } finally {
+            try {
+                privilegesInputStream.close();
+            } catch (final IOException e) {
+                throw new IdentityServiceInitException(
+                        String.format("An error occurs closing resource '%s'. Error skipped.", privilegesResourceName),
+                        e);
             }
         }
     }
@@ -318,11 +444,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         for (final Entry<Object, Object> entry : groupsProps.entrySet()) {
             final String groupId = (String) entry.getKey();
             final String usersOfGroup = (String) entry.getValue();
-            List<String> userList = this.groups.get(groupId);
-            if (userList == null) {
-                userList = new ArrayList<>();
-                this.groups.put(groupId, userList);
-            }
+            final List<String> userList = this.groups.computeIfAbsent(groupId, k -> new ArrayList<>());
             final StringTokenizer tokenizer = new StringTokenizer(usersOfGroup);
             while (tokenizer.hasMoreTokens()) {
                 userList.add(tokenizer.nextToken());
@@ -330,4 +452,28 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
         }
     }
 
+    private void readPrivileges(final InputStream privilegesInputStream) throws IdentityServiceInitException {
+        final Properties privilegesProps = new Properties();
+        try {
+            privilegesProps.load(privilegesInputStream);
+        } catch (final IOException e) {
+            throw new IdentityServiceInitException(e);
+        }
+
+        for (final Entry<Object, Object> entry : privilegesProps.entrySet()) {
+            final String privilegeId = (String) entry.getKey();
+            final String usersOrGroupsOfPrivilege = (String) entry.getValue();
+            final List<String> privilegeList = this.privileges.computeIfAbsent(privilegeId, k -> new ArrayList<>());
+            final StringTokenizer tokenizer = new StringTokenizer(usersOrGroupsOfPrivilege);
+            while (tokenizer.hasMoreTokens()) {
+                final String item = tokenizer.nextToken();
+                final List<String> groupMembers = this.groups.get(item);
+                if (groupMembers == null) {
+                    privilegeList.add(item);
+                } else {
+                    privilegeList.addAll(groupMembers);
+                }
+            }
+        }
+    }
 }

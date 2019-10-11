@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
 
-import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmEngineConfigurator;
 
 /**
  * Utility class to get the right value of component parameter. If the value of a parameter is invalid, a default value
@@ -72,9 +72,9 @@ public class FlowableParameterReader {
                 try {
                     idmEngineConfiguratorClass = FlowableSE.class.getClassLoader().loadClass(
                             idmEngineConfiguratorClassNameConfigured.trim());
-                    if (!SeFlowableIdmServiceConfigurator.class.isAssignableFrom(idmEngineConfiguratorClass)) {
+                    if (!SeFlowableIdmEngineConfigurator.class.isAssignableFrom(idmEngineConfiguratorClass)) {
                         log.warning("IDM engine configurator does not implement "
-                                + SeFlowableIdmServiceConfigurator.class.getName()
+                                + SeFlowableIdmEngineConfigurator.class.getName()
                                 + ". Default value used.");
                         return FlowableSE.class.getClassLoader().loadClass(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME);
                     } else {

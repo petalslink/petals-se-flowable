@@ -19,8 +19,8 @@ package org.ow2.petals.flowable.event;
 
 import java.util.logging.Logger;
 
+import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.HistoryService;
-import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 
 /**
  * Base class for listeners about process events
