@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.flowable.rest;
 
+import java.io.File;
 import java.net.URL;
 
 import javax.ws.rs.core.Response;
@@ -30,18 +31,20 @@ import org.junit.rules.TestRule;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
+import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.flowable.FlowableSEConstants;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Class for unit tests about the use of the REST API
+ * Class for unit tests about the use of the REST API with the default privilege configuration
  * 
  * @author Victor NOEL - Linagora
  * @author Jordy CABANNES - Linagora
+ * @author Christophe DENEUX - Linagora
  */
-public class RestApiTest extends AbstractRestTestEnvironment {
+public class RestApiDefaultPrivConfigTest extends AbstractRestTestEnvironment {
 
     protected static final String INONLY_SU = "in-only";
 
@@ -57,6 +60,20 @@ public class RestApiTest extends AbstractRestTestEnvironment {
 
     protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
             .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
+            .setParameter(
+                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
+                    // Generate identity service configuration files
+                    new ParameterGenerator() {
+
+                        @Override
+                        public String generate() throws Exception {
+                            final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
+                                    .getResource("rest/idm-engine-configurator.properties");
+                            assertNotNull("IDM engine configurator config file is missing !", idmEngineConfiguratorCfg);
+                            return new File(idmEngineConfiguratorCfg.toURI()).getAbsolutePath();
+                        }
+
+                    })
             .registerServiceToDeploy(INONLY_SU, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -122,18 +139,18 @@ public class RestApiTest extends AbstractRestTestEnvironment {
 
     /**
      * Check that we cannot access to REST API with login/password of a user who does not belong to the
-     * ENGINE_REST_API_ACCESS_GROUP.
+     * ENGINE_REST_API_ACCESS_PRIVILEGE.
      */
     @Test
     public void getOnApiIncorrectLogin() {
         final Response response = deployments("fozzie", "fozzie").get();
 
-        assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 
     /**
      * Check that we can access to REST API with login/password of a user who belongs to the
-     * ENGINE_REST_API_ACCESS_GROUP.
+     * ENGINE_REST_API_ACCESS_PRIVILEGE.
      */
     @Test
     public void getOnApiCorrectLogin() {

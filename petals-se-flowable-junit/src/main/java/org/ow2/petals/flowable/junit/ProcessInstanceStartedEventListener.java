@@ -22,9 +22,9 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PL
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.flowable.common.engine.api.delegate.event.FlowableEvent;
+import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.RuntimeService;
-import org.flowable.engine.common.api.delegate.event.FlowableEvent;
-import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.delegate.event.impl.FlowableProcessStartedEventImpl;
 
 /**
@@ -74,5 +74,15 @@ public class ProcessInstanceStartedEventListener implements FlowableEventListene
     @Override
     public boolean isFailOnException() {
         return false;
+    }
+
+    @Override
+    public boolean isFireOnTransactionLifecycleEvent() {
+        return false;
+    }
+
+    @Override
+    public String getOnTransaction() {
+        return null;
     }
 }

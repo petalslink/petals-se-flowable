@@ -17,9 +17,9 @@
  */
 package org.ow2.petals.flowable.rest.config;
 
-import org.flowable.engine.FlowableTaskAlreadyClaimedException;
-import org.flowable.rest.exception.BaseExceptionHandlerAdvice;
-import org.flowable.rest.exception.ErrorInfo;
+import org.flowable.common.engine.api.FlowableTaskAlreadyClaimedException;
+import org.flowable.common.rest.exception.BaseExceptionHandlerAdvice;
+import org.flowable.common.rest.exception.ErrorInfo;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -41,6 +41,7 @@ public class RestExceptionHandlerAdvice extends BaseExceptionHandlerAdvice {
     @ResponseStatus(HttpStatus.CONFLICT) // 409
     @ExceptionHandler(FlowableTaskAlreadyClaimedException.class)
     @ResponseBody
+    @Override
     public ErrorInfo handleTaskAlreadyClaimed(final FlowableTaskAlreadyClaimedException e) {
         return new ErrorInfo("Task was already claimed", e);
     }

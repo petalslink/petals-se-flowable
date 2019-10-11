@@ -15,26 +15,16 @@
  * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.flowable.event;
+package org.ow2.petals.flowable.identity;
 
+import java.io.File;
 import java.util.logging.Logger;
 
-import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
-import org.flowable.engine.TaskService;
+import org.flowable.common.engine.impl.EngineConfigurator;
 
-/**
- * Base class for listeners about task events
- * 
- * @author Christophe DENEUX - Linagora
- *
- */
-public abstract class AbstractTaskEventListener extends AbstractMonitDirectLoggerEventListener {
+public interface SeFlowableIdmEngineConfigurator extends EngineConfigurator {
 
-    protected final TaskService taskService;
+    public void setConfigurationFile(final File configurationFile);
 
-    public AbstractTaskEventListener(final FlowableEngineEventType listenEventType, final TaskService taskService,
-            final Logger log) {
-        super(listenEventType, log);
-        this.taskService = taskService;
-    }
+    public void setLogger(final Logger logger);
 }

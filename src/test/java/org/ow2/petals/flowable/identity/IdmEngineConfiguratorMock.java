@@ -17,8 +17,9 @@
  */
 package org.ow2.petals.flowable.identity;
 
-import org.flowable.engine.common.AbstractEngineConfiguration;
-import org.flowable.engine.impl.util.EngineServiceUtil;
+import org.flowable.common.engine.impl.AbstractEngineConfiguration;
+import org.flowable.common.engine.impl.interceptor.EngineConfigurationConstants;
+import org.flowable.idm.engine.IdmEngineConfiguration;
 
 public class IdmEngineConfiguratorMock extends AbstractProcessEngineConfigurator {
 
@@ -27,7 +28,13 @@ public class IdmEngineConfiguratorMock extends AbstractProcessEngineConfigurator
 
         super.configure(processEngineConfiguration);
 
-        EngineServiceUtil.getIdmEngineConfiguration(processEngineConfiguration).setIdmIdentityService(null);
+        getIdmEngineConfiguration(processEngineConfiguration).setIdmIdentityService(null);
+    }
+
+    protected static IdmEngineConfiguration getIdmEngineConfiguration(
+            final AbstractEngineConfiguration engineConfiguration) {
+        return (IdmEngineConfiguration) engineConfiguration.getEngineConfigurations()
+                .get(EngineConfigurationConstants.KEY_IDM_ENGINE_CONFIG);
     }
 
 }

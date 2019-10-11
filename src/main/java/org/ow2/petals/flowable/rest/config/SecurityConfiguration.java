@@ -30,8 +30,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 
 /**
- * This defines the REST API security by configuring the user group (from the Flowable engine identity service) that can
- * access the API. Inspired by flowable-rest-app code (org.flowable.rest.conf.SecurityConfiguration).
+ * This defines the REST API security by configuring the user privilege (from the Flowable engine identity service) that
+ * can access the API. Inspired by flowable-rest-app code (org.flowable.rest.conf.SecurityConfiguration).
  * 
  * @author Victor NOEL - Linagora
  * @author Jordy CABANNES - Linagora
@@ -40,18 +40,20 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableWebSecurity
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
-    public static final String FLOWABLE_REST_API_ACCESS_GROUP_QUALIFIER = "org.ow2.petals.flowable.rest.RestApiAccessGroup";
+    public static final String FLOWABLE_REST_API_ACCESS_PRIVILEGE_QUALIFIER = "org.ow2.petals.flowable.rest.RestApiAccessPrivilege";
 
     /**
      * This is injected by the SE (see {@link FlowableSE#createRestApi()}).
      */
     @Autowired
-    @Qualifier(FLOWABLE_REST_API_ACCESS_GROUP_QUALIFIER)
-    private String accessGroup;
+    @Qualifier(FLOWABLE_REST_API_ACCESS_PRIVILEGE_QUALIFIER)
+    private String accessPrivilege;
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        return new BasicAuthenticationProvider();
+        final BasicAuthenticationProvider authProvider = new BasicAuthenticationProvider();
+        authProvider.setVerifyRestApiPrivilege(true);
+        return authProvider;
     }
 
     @Override
@@ -60,11 +62,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().csrf().disable();
 
         // let's protect ourselves from potential security risks!
-        if (accessGroup == null || accessGroup.trim().isEmpty()) {
+        if (this.accessPrivilege == null || this.accessPrivilege.trim().isEmpty()) {
             throw new AssertionError("impossible");
         }
 
-        httpSecurity.authorizeRequests().anyRequest().hasAuthority(accessGroup).and().httpBasic();
+        httpSecurity.authorizeRequests().anyRequest().hasAuthority(this.accessPrivilege).and().httpBasic();
     }
 
 }

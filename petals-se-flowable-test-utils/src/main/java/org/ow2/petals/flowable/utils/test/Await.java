@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2018 Linagora
+ * Copyright (c) 2017-2019 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.ws.Holder;
 
+import org.flowable.common.engine.api.query.Query;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ManagementService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
-import org.flowable.engine.common.api.query.Query;
 import org.flowable.engine.history.HistoricActivityInstanceQuery;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.runtime.ExecutionQuery;
