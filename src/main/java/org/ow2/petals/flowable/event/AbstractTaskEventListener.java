@@ -17,8 +17,8 @@
  */
 package org.ow2.petals.flowable.event;
 
+import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.engine.TaskService;
-import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
 import org.ow2.petals.component.framework.AbstractComponent;
 
 /**

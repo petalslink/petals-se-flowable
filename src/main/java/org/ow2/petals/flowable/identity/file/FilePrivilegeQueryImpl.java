@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2017-2019 Linagora
+ * Copyright (c) 2019 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -22,20 +22,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.flowable.common.engine.impl.interceptor.CommandContext;
-import org.flowable.idm.api.Group;
-import org.flowable.idm.engine.impl.GroupQueryImpl;
+import org.flowable.idm.api.Privilege;
+import org.flowable.idm.engine.impl.PrivilegeQueryImpl;
 
-public class FileGroupQueryImpl extends GroupQueryImpl {
+public class FilePrivilegeQueryImpl extends PrivilegeQueryImpl {
 
-    private static final long serialVersionUID = 5582339899992117499L;
+    private static final long serialVersionUID = -1082728490171094344L;
 
     /**
-     * Groups by user into a map: key=user-id, value=list of group-id
+     * Privileges by user into a map: key=user-id, value=list of privilege
      */
-    private final transient Map<String, List<Group>> groupsByUser;
+    private final Map<String, List<Privilege>> privilegesByUser;
 
-    public FileGroupQueryImpl(final Map<String, List<Group>> groupsByUser) {
-        this.groupsByUser = groupsByUser;
+    public FilePrivilegeQueryImpl(final Map<String, List<Privilege>> privilegesByUser) {
+        this.privilegesByUser = privilegesByUser;
     }
 
     @Override
@@ -44,23 +44,23 @@ public class FileGroupQueryImpl extends GroupQueryImpl {
     }
 
     @Override
-    public List<Group> executeList(final CommandContext commandContext) {
+    public List<Privilege> executeList(final CommandContext commandContext) {
         return executeQuery();
     }
 
-    protected List<Group> executeQuery() {
+    protected List<Privilege> executeQuery() {
         if (this.getUserId() != null) {
-            final List<Group> results = new ArrayList<>();
-            if (this.groupsByUser.containsKey(this.getUserId())) {
-                results.addAll(this.groupsByUser.get(this.getUserId()));
+            final List<Privilege> results = new ArrayList<>();
+            if (this.privilegesByUser.containsKey(this.getUserId())) {
+                results.addAll(this.privilegesByUser.get(this.getUserId()));
             }
             return results;
         } else {
-            final List<Group> results = new ArrayList<>();
-            for (final List<Group> entry : this.groupsByUser.values()) {
-                for (final Group group : entry) {
-                    if (!results.contains(group)) {
-                        results.add(group);
+            final List<Privilege> results = new ArrayList<>();
+            for (final List<Privilege> entry : this.privilegesByUser.values()) {
+                for (final Privilege privilege : entry) {
+                    if (!results.contains(privilege)) {
+                        results.add(privilege);
                     }
                 }
             }

@@ -17,7 +17,9 @@
  */
 package org.ow2.petals.flowable.rest;
 
+import java.io.File;
 import java.net.ConnectException;
+import java.net.URL;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.core.Response;
@@ -30,15 +32,17 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
+import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.flowable.FlowableSEConstants;
 
 /**
- * Class for unit tests about the REST API config
+ * Class for unit tests about the use of the REST API with the default privilege configuration
  * 
  * @author Victor NOEL - Linagora
  * @author Jordy CABANNES - Linagora
+ * @author Christophe DENEUX - Linagora
  */
-public class RestConfigTest extends AbstractRestTestEnvironment {
+public class RestApiCustomizedPrivConfigTest extends AbstractRestTestEnvironment {
 
     private static final int CUSTOMIZED_PORT = 8085;
 
@@ -47,8 +51,22 @@ public class RestConfigTest extends AbstractRestTestEnvironment {
             .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
                     String.valueOf(CUSTOMIZED_PORT))
             .setParameter(
-                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP),
-                    "user");
+                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
+                    // Generate identity service configuration files
+                    new ParameterGenerator() {
+
+                        @Override
+                        public String generate() throws Exception {
+                            final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
+                                    .getResource("rest/idm-engine-configurator.properties");
+                            assertNotNull("IDM engine configurator config file is missing !", idmEngineConfiguratorCfg);
+                            return new File(idmEngineConfiguratorCfg.toURI()).getAbsolutePath();
+                        }
+
+                    })
+            .setParameter(
+                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE),
+                    "customized-rest-access-api-privilege");
 
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
@@ -61,31 +79,45 @@ public class RestConfigTest extends AbstractRestTestEnvironment {
 
     /**
      * Check that we can access to the REST API with the new configuration (customized ENGINE_REST_API_PORT and
-     * ENGINE_REST_API_ACCESS_GROUP).
+     * ENGINE_REST_API_ACCESS_PRIVILEGE).
      */
     @Test
     public void getOnApiCorrectConfig() {
-        final Response response = deployments("fozzie", "fozzie", CUSTOMIZED_PORT).get();
+        final Response response = deployments("customized-rest-api-user", "customized-user-api-rest-password",
+                CUSTOMIZED_PORT).get();
 
         assertEquals(Status.OK.getStatusCode(), response.getStatus());
     }
 
     /**
      * Check that we cannot access to REST API with login/password of a user who does not belong to the customized
-     * ENGINE_REST_API_ACCESS_GROUP.
+     * ENGINE_REST_API_ACCESS_PRIVILEGE because of incorrect login/password.
      */
     @Test
-    public void getOnApiIncorrectLogin() {
-        final Response response = deployments("rest-api-user", "user-api-rest-password", CUSTOMIZED_PORT).get();
+    public void getOnApiWithIncorrectLogin() {
+        final Response response = deployments("fozzie", "fozzie", CUSTOMIZED_PORT).get();
 
-        assertEquals(Status.FORBIDDEN.getStatusCode(), response.getStatus());
+        assertEquals(Status.UNAUTHORIZED.getStatusCode(), response.getStatus());
     }
 
     /**
-     * Check that we cannot access to the REST API on the default port.
+     * Check that we cannot access to the REST API on the default port with login/password of a user who does not belong
+     * to the customized ENGINE_REST_API_ACCESS_PRIVILEGE because the REST API is listening on another port.
      */
     @Test
-    public void getOnOriginalPortFails() {
+    public void getOnApiDefaultPortWithIncorrectLogin() {
+        expected.expect(ProcessingException.class);
+        expected.expectCause(IsInstanceOf.<ConnectException> instanceOf(ConnectException.class));
+
+        deployments("fozzie", "fozzie").get();
+    }
+
+    /**
+     * Check that we cannot access to the REST API with the default configuration (ENGINE_REST_API_PORT and
+     * ENGINE_REST_API_ACCESS_PRIVILEGE) because the REST API is listening on another port.
+     */
+    @Test
+    public void getOnApiDefaultWithCorrectLogin() {
         expected.expect(ProcessingException.class);
         expected.expectCause(IsInstanceOf.<ConnectException> instanceOf(ConnectException.class));
 

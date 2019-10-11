@@ -31,7 +31,7 @@
          service-name="vacationService:vacationService" >
 
          <!-- CDK specific elements -->
-         <petalsCDK:timeout />
+         <petalsCDK:timeout>180000</petalsCDK:timeout>
          <petalsCDK:mep xsi:nil="true" />
 
          <!-- Component specific elements -->

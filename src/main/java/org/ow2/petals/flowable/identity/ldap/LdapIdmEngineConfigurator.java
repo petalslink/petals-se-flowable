@@ -26,19 +26,19 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.flowable.engine.common.AbstractEngineConfiguration;
+import org.flowable.common.engine.impl.AbstractEngineConfiguration;
 import org.flowable.ldap.LDAPConfiguration;
 import org.flowable.ldap.LDAPConfigurator;
-import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmEngineConfigurator;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
 import org.ow2.petals.flowable.identity.exception.IdentityServiceResourceNotFoundException;
 
 /**
- * A {@link SeFlowableIdmServiceConfigurator} that integrates an identity management engine based on LDAP.
+ * A {@link SeFlowableIdmEngineConfigurator} that integrates an identity management engine based on LDAP.
  * 
  * @author Christophe DENEUX - Linagora
  */
-public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlowableIdmServiceConfigurator {
+public class LdapIdmEngineConfigurator extends LDAPConfigurator implements SeFlowableIdmEngineConfigurator {
 
     /**
      * The resource used as default configuration file of the identity service, it contains the LDAP configuration

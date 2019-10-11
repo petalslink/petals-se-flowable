@@ -19,6 +19,9 @@ package org.ow2.petals.flowable.rest;
 
 import java.util.List;
 
+import org.flowable.common.rest.multipart.PutAwareStandardServletMultiPartResolver;
+import org.flowable.common.rest.resolver.ContentTypeResolver;
+import org.flowable.common.rest.resolver.DefaultContentTypeResolver;
 import org.flowable.engine.FormService;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.IdentityService;
@@ -28,11 +31,7 @@ import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
-import org.flowable.rest.application.ContentTypeResolver;
-import org.flowable.rest.application.DefaultContentTypeResolver;
-import org.flowable.rest.service.api.PutAwareCommonsMultipartResolver;
 import org.flowable.rest.service.api.RestResponseFactory;
-import org.ow2.petals.flowable.FlowableSE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -70,7 +69,17 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
     public static final String FLOWABLE_REST_PROCESS_ENGINE_QUALIFIER = "processEngine";
 
     /**
-     * This is injected by the SE (see {@link FlowableSE#createRestApi()}).
+     * Note: this name is used by Flowable code, so we can't change it!
+     */
+    public static final String FLOWABLE_REST_DYNAMIC_BPMN_SERVICE_QUALIFIER = "dynamicBpmnService";
+
+    /**
+     * Note: this name is used by Flowable code, so we can't change it!
+     */
+    public static final String FLOWABLE_REST_IDM_IDENTITY_SERVICE_QUALIFIER = "idmIdentityService";
+
+    /**
+     * This is injected by the SE during REST API creation (FlowableSE#createRestApi(ProcessEngineConfigurationImpl)).
      */
     @Autowired
     @Qualifier(FLOWABLE_REST_PROCESS_ENGINE_QUALIFIER)
@@ -94,7 +103,7 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
 
     @Bean
     public RestResponseFactory processResponseFactory() {
-        return new RestResponseFactory();
+        return new RestResponseFactory(this.objectMapper());
     }
 
     @Bean
@@ -111,7 +120,7 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
 
     @Bean
     public MultipartResolver multipartResolver() {
-        return new PutAwareCommonsMultipartResolver();
+        return new PutAwareStandardServletMultiPartResolver();
     }
 
     @Bean
@@ -130,7 +139,7 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
         for (final HttpMessageConverter<?> converter : converters) {
             if (converter instanceof MappingJackson2HttpMessageConverter) {
                 final MappingJackson2HttpMessageConverter jackson2HttpMessageConverter = (MappingJackson2HttpMessageConverter) converter;
-                jackson2HttpMessageConverter.setObjectMapper(objectMapper());
+                jackson2HttpMessageConverter.setObjectMapper(this.objectMapper());
                 break;
             }
         }

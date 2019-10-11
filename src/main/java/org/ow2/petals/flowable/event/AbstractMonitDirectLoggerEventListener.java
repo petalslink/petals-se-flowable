@@ -21,8 +21,8 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_EX
 
 import java.util.Map;
 
-import org.flowable.engine.common.api.delegate.event.FlowableEngineEventType;
-import org.flowable.engine.common.api.delegate.event.FlowableEventListener;
+import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
+import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;

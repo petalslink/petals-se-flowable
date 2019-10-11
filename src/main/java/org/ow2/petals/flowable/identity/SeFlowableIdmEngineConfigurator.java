@@ -15,25 +15,16 @@
  * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.flowable.event;
+package org.ow2.petals.flowable.identity;
 
-import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
-import org.flowable.engine.HistoryService;
-import org.ow2.petals.component.framework.AbstractComponent;
+import java.io.File;
+import java.util.logging.Logger;
 
-/**
- * Base class for listeners about process events
- * 
- * @author Christophe DENEUX - Linagora
- *
- */
-public abstract class AbstractProcessEventListener extends AbstractMonitDirectLoggerEventListener {
+import org.flowable.common.engine.impl.EngineConfigurator;
 
-    protected final HistoryService historyService;
+public interface SeFlowableIdmEngineConfigurator extends EngineConfigurator {
 
-    public AbstractProcessEventListener(final FlowableEngineEventType listenEventType,
-            final HistoryService historyService, final AbstractComponent component) {
-        super(listenEventType, component);
-        this.historyService = historyService;
-    }
+    public void setConfigurationFile(final File configurationFile);
+
+    public void setLogger(final Logger logger);
 }

@@ -29,7 +29,7 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXE
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_QUEUESIZE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
-import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_GROUP;
+import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_PRIVILEGE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_ADDRESS;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME;
@@ -46,7 +46,7 @@ import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_MA
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME;
-import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP;
+import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_ADDRESS;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_ENABLE;
 import static org.ow2.petals.flowable.FlowableSEConstants.ENGINE_REST_API_PORT;
@@ -77,7 +77,7 @@ import javax.jbi.JBIException;
 import javax.management.InvalidAttributeValueException;
 
 import org.ow2.petals.component.framework.DefaultBootstrap;
-import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmEngineConfigurator;
 import org.ow2.petals.flowable.utils.ConfigurationValueParser;
 
 /**
@@ -146,7 +146,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
 
     public static final String ATTR_NAME_ENGINE_REST_API_PORT = "engineRestApiPort";
 
-    public static final String ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP = "engineRestApiAccessGroup";
+    public static final String ATTR_NAME_ENGINE_REST_API_ACCESS_PRIVILEGE = "engineRestApiAccessPrivilege";
 
     @Override
     public Collection<String> getMBeanAttributesNames() {
@@ -188,7 +188,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
             attributes.add(ATTR_NAME_ENGINE_REST_API_ENABLE);
             attributes.add(ATTR_NAME_ENGINE_REST_API_ADDRESS);
             attributes.add(ATTR_NAME_ENGINE_REST_API_PORT);
-            attributes.add(ATTR_NAME_ENGINE_REST_API_ACCESS_GROUP);
+            attributes.add(ATTR_NAME_ENGINE_REST_API_ACCESS_PRIVILEGE);
 
             return attributes;
         } finally {
@@ -743,7 +743,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
      * 
      * @param value
      *            the IDM engine configurator class name. Must be a loadable class implementing
-     *            {@link SeFlowableIdmServiceConfigurator}
+     *            {@link SeFlowableIdmEngineConfigurator}
      * @throws InvalidAttributeValueException
      */
     public void setIdmEngineConfiguratorClassName(final String value) throws InvalidAttributeValueException {
@@ -753,7 +753,7 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
             this.setParam(IDM_ENGINE_CONFIGURATOR_CLASS_NAME, null);
         } else {
             this.setParamAsImplementationClassURI(IDM_ENGINE_CONFIGURATOR_CLASS_NAME, value,
-                    SeFlowableIdmServiceConfigurator.class);
+                    SeFlowableIdmEngineConfigurator.class);
         }
     }
 
@@ -829,11 +829,11 @@ public class FlowableSEBootstrap extends DefaultBootstrap {
         this.setParamAsPositiveInteger(ENGINE_REST_API_PORT, value);
     }
 
-    public String getEngineRestApiAccessGroup() {
-        return this.getParamAsString(ENGINE_REST_API_ACCESS_GROUP, DEFAULT_ENGINE_REST_API_ACCESS_GROUP);
+    public String getEngineRestApiAccessPrivilege() {
+        return this.getParamAsString(ENGINE_REST_API_ACCESS_PRIVILEGE, DEFAULT_ENGINE_REST_API_ACCESS_PRIVILEGE);
     }
 
-    public void setEngineRestApiAccessGroup(final String value) {
-        this.setParam(ENGINE_REST_API_ACCESS_GROUP, value);
+    public void setEngineRestApiAccessPrivilege(final String value) {
+        this.setParam(ENGINE_REST_API_ACCESS_PRIVILEGE, value);
     }
 }

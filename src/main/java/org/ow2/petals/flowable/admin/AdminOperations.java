@@ -20,8 +20,8 @@ package org.ow2.petals.flowable.admin;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.flowable.common.engine.api.FlowableObjectNotFoundException;
 import org.flowable.engine.ProcessEngine;
-import org.flowable.engine.common.api.FlowableObjectNotFoundException;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.ProcessDefinition;

@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.ws.Holder;
 
+import org.flowable.common.engine.api.query.Query;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ManagementService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
-import org.flowable.engine.common.api.query.Query;
 import org.flowable.engine.history.HistoricActivityInstanceQuery;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.runtime.ExecutionQuery;

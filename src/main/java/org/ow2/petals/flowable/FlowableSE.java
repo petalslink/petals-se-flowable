@@ -83,14 +83,15 @@ import org.eclipse.jetty.security.IdentityService;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.flowable.common.engine.api.FlowableException;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
-import org.flowable.engine.common.api.FlowableException;
 import org.flowable.engine.impl.bpmn.parser.factory.XMLImporterFactory;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.impl.util.EngineServiceUtil;
 import org.flowable.engine.parse.BpmnParseHandler;
 import org.flowable.job.service.impl.asyncexecutor.AsyncExecutor;
 import org.flowable.job.service.impl.asyncexecutor.DefaultAsyncJobExecutor;
@@ -115,7 +116,7 @@ import org.ow2.petals.flowable.event.ProcessInstanceStartedEventListener;
 import org.ow2.petals.flowable.event.ServiceTaskStartedEventListener;
 import org.ow2.petals.flowable.event.UserTaskCompletedEventListener;
 import org.ow2.petals.flowable.event.UserTaskStartedEventListener;
-import org.ow2.petals.flowable.identity.SeFlowableIdmServiceConfigurator;
+import org.ow2.petals.flowable.identity.SeFlowableIdmEngineConfigurator;
 import org.ow2.petals.flowable.incoming.FlowableService;
 import org.ow2.petals.flowable.incoming.integration.ActivateProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.GetExecutionsOperation;
@@ -353,7 +354,12 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             this.registersIntegrationOperations();
 
             if (this.getRestApiEnable()) {
-                this.createRestApi();
+                if (pecImpl != null) {
+                    this.createRestApi(pecImpl);
+                } else {
+                    this.getLogger().warning(
+                            "The implementation of the process engine configuration is not the expected one ! Flowable REST API cannot be enabled !");
+                }
             } else {
                 this.getLogger().config("Flowable REST API configuration: disabled");
             }
@@ -364,14 +370,20 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
         }
     }
 
-    private void createRestApi() throws Exception {
+    private void createRestApi(final ProcessEngineConfigurationImpl pecImpl) throws Exception {
         // contains the singleton, it needs to be a parent of the application context to work...
         final AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
         rootContext.refresh();
         rootContext.getBeanFactory().registerSingleton(
                 FlowableProcessApiConfiguration.FLOWABLE_REST_PROCESS_ENGINE_QUALIFIER, this.flowableEngine);
-        rootContext.getBeanFactory().registerSingleton(SecurityConfiguration.FLOWABLE_REST_API_ACCESS_GROUP_QUALIFIER,
-                getRestApiAccessGroup());
+        rootContext.getBeanFactory().registerSingleton(SecurityConfiguration.FLOWABLE_REST_API_ACCESS_PRIVILEGE_QUALIFIER,
+                getRestApiAccessPrivilege());
+        rootContext.getBeanFactory().registerSingleton(
+                FlowableProcessApiConfiguration.FLOWABLE_REST_DYNAMIC_BPMN_SERVICE_QUALIFIER,
+                pecImpl.getDynamicBpmnService());
+        rootContext.getBeanFactory().registerSingleton(
+                FlowableProcessApiConfiguration.FLOWABLE_REST_IDM_IDENTITY_SERVICE_QUALIFIER,
+                EngineServiceUtil.getIdmIdentityService(pecImpl));
 
         final AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
         applicationContext.setParent(rootContext);
@@ -385,7 +397,7 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
         this.getLogger().config("Flowable REST API configuration: enabled");
         this.getLogger().config("   - address: " + this.getRestApiAddress());
         this.getLogger().config("   - port. " + this.getRestApiPort());
-        this.getLogger().config("   - access group: " + this.getRestApiAccessGroup());
+        this.getLogger().config("   - access privilege: " + this.getRestApiAccessPrivilege());
 
         final FilterRegistration.Dynamic security = context.getServletContext().addFilter("springSecurityFilterChain",
                 new DelegatingFilterProxy());
@@ -655,14 +667,14 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
 
         assert pec != null : "pec can not be null";
         assert idmEngineConfiguratorClass != null : "idmEngineConfiguratorClass can not be null";
-        assert SeFlowableIdmServiceConfigurator.class.isAssignableFrom(
+        assert SeFlowableIdmEngineConfigurator.class.isAssignableFrom(
                 idmEngineConfiguratorClass) : "The IDM engine configurator service class defining which IDM engine will be used does not implement AbstractProcessEngineConfigurator";
 
         final Object idmEngineConfiguratorObj;
         try {
             idmEngineConfiguratorObj = idmEngineConfiguratorClass.newInstance();
-            assert idmEngineConfiguratorObj instanceof SeFlowableIdmServiceConfigurator;
-            final SeFlowableIdmServiceConfigurator idmEngineConfigurator = (SeFlowableIdmServiceConfigurator) idmEngineConfiguratorObj;
+            assert idmEngineConfiguratorObj instanceof SeFlowableIdmEngineConfigurator;
+            final SeFlowableIdmEngineConfigurator idmEngineConfigurator = (SeFlowableIdmEngineConfigurator) idmEngineConfiguratorObj;
 
             if (pec instanceof ProcessEngineConfigurationImpl) {
                 ((ProcessEngineConfigurationImpl) pec).setDisableIdmEngine(false);
@@ -1113,9 +1125,9 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
                 FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT);
     }
 
-    private String getRestApiAccessGroup() {
-        return this.getParameterAsNotEmptyTrimmedString(FlowableSEConstants.ENGINE_REST_API_ACCESS_GROUP,
-                FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_GROUP);
+    private String getRestApiAccessPrivilege() {
+        return this.getParameterAsNotEmptyTrimmedString(FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE,
+                FlowableSEConstants.DEFAULT_ENGINE_REST_API_ACCESS_PRIVILEGE);
     }
 
     private boolean getRestApiEnable() {

@@ -355,9 +355,9 @@ public final class FlowableSEConstants {
     public static final String ENGINE_REST_API_ENABLE = "engine-rest-api-enable";
 
     /**
-     * Tag name of the group of users who are allowed to use the Flowable REST API
+     * Tag name of the privilege of users who are allowed to use the Flowable REST API
      */
-    public static final String ENGINE_REST_API_ACCESS_GROUP = "engine-rest-api-access-group";
+    public static final String ENGINE_REST_API_ACCESS_PRIVILEGE = "engine-rest-api-access-privilege";
 
     /**
      * Tag name of the port number to access to the Flowable REST API
@@ -380,9 +380,9 @@ public final class FlowableSEConstants {
     public static final boolean DEFAULT_ENGINE_REST_API_ENABLE = true;
 
     /**
-     * Default value of {@link #ENGINE_REST_API_ACCESS_GROUP}
+     * Default value of {@link #ENGINE_REST_API_ACCESS_PRIVILEGE}
      */
-    public static final String DEFAULT_ENGINE_REST_API_ACCESS_GROUP = "rest-api-users";
+    public static final String DEFAULT_ENGINE_REST_API_ACCESS_PRIVILEGE = "rest-access-api";
 
     /**
      * Default value of {@link #ENGINE_REST_API_ADDRESS}
