@@ -79,7 +79,7 @@
       <petals-se-flowable:idm-engine-configurator-config-file />
       <petals-se-flowable:engine-rest-api-enable />
       <petals-se-flowable:engine-rest-api-port />
-      <petals-se-flowable:engine-rest-api-access-group />
+      <petals-se-flowable:engine-rest-api-access-privilege />
       <petals-se-flowable:engine-rest-api-address />
 
    </jbi:component>
