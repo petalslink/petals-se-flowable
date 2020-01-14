@@ -529,6 +529,12 @@
          <groupId>com.jayway.awaitility</groupId>
          <artifactId>awaitility</artifactId>
       </dependency>
+      <dependency>
+         <groupId>org.codehaus.groovy</groupId>
+         <artifactId>groovy-all</artifactId>
+         <version>2.4.15</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <build>
@@ -544,8 +550,9 @@
                         <!-- These dependencies are needed for runtime -->
                         <usedDependency>org.glassfish.jersey.media:jersey-media-json-jackson</usedDependency>
                         <usedDependency>org.springframework.security:spring-security-web</usedDependency>
-                        <!-- These dependencies are needed for test -->
+                        <!-- These dependencies are needed for test at runtime -->
                         <usedDependency>org.glassfish.jersey.inject:jersey-hk2</usedDependency>
+                        <usedDependency>org.codehaus.groovy:groovy-all</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>
@@ -591,6 +598,7 @@
                         <include>su/call-activity/archivageService.wsdl</include>
                         <include>su/call-activity/coreService.wsdl</include>
                         <include>su/intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
+			<include>su/intermediate-message-catch-event/intermediate-message-catch-event-loop.wsdl</include>
                         <include>su/placeholders/placeholders.wsdl</include>
                         <include>su/placeholders/archivageService.wsdl</include>
                         <include>su/in-only/in-only.wsdl</include>
