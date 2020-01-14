@@ -25,17 +25,16 @@ import javax.xml.namespace.QName;
 import org.ow2.petals.flowable.incoming.operation.FlowableOperation;
 
 /**
- * The intermediate message was alreday received by the BPMN engine to complete an intermediate message catch event on
- * BPMN engine side.
+ * The process instance is ended, so no intermediate message is expected.
  * 
  * @author Christophe DENEUX - Linagora
  * 
  */
-public class MessageEventReceivedException extends OperationProcessingFault {
+public class ProcessInstanceEndedException extends OperationProcessingFault {
 
     private static final long serialVersionUID = -3341958102272906016L;
 
-    private static final String MESSAGE_PATTERN = "Intermediate message event '%s' already received on the process instance '%s' by the BPMN engine";
+    private static final String MESSAGE_PATTERN = "The process instance '%s' is ended, so no intermediate message event '%s' is expected.";
 
     /**
      * The message name of the intermediate message event already received
@@ -53,9 +52,9 @@ public class MessageEventReceivedException extends OperationProcessingFault {
      * @param messageEventName
      *            The message name of the intermediate message event already received
      */
-    public MessageEventReceivedException(final QName wsdlOperation, final String processInstanceId,
+    public ProcessInstanceEndedException(final QName wsdlOperation, final String processInstanceId,
             final String messageEventName) {
-        super(wsdlOperation, String.format(MESSAGE_PATTERN, messageEventName, processInstanceId));
+        super(wsdlOperation, String.format(MESSAGE_PATTERN, processInstanceId, messageEventName));
         this.processInstanceId = processInstanceId;
         this.messageEventName = messageEventName;
     }

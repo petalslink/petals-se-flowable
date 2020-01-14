@@ -611,6 +611,7 @@
                         <include>call-activity/archivageService.wsdl</include>
                         <include>call-activity/coreService.wsdl</include>
                         <include>intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
+                        <include>intermediate-message-catch-event/intermediate-message-catch-event-loop.wsdl</include>
                         <include>placeholders/placeholders.wsdl</include>
                         <include>placeholders/archivageService.wsdl</include>
                         <include>in-only/in-only.wsdl</include>

@@ -40,7 +40,7 @@ import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.components.flowable.generic._1.GetExecutions;
 import org.ow2.petals.components.flowable.generic._1.GetExecutionsResponse;
-import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
+import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceEndedException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
 import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
 import org.ow2.petals.flowable.monitoring.IntermediateCatchMessageEventFlowStepBeginLogData;
@@ -265,7 +265,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             COMPONENT_UNDER_TEST.pushRequestToProvider(request);
             final StatusMessage response = COMPONENT_UNDER_TEST.pollStatusFromProvider();
             assertEquals(ExchangeStatus.ERROR, response.getStatus());
-            assertTrue(response.getError() instanceof MessageEventReceivedException);
+            assertTrue(response.getError() instanceof ProcessInstanceEndedException);
         }
         {
             final Unlock unlockRequest = new Unlock();

@@ -180,7 +180,7 @@
             <soap:fault name="noMasterProcessWaitingNotification" use="literal" />
          </wsdl:fault>
          <wsdl:fault name="masterProcessAlreadyNotified">
-            <bpmn:fault name="MessageEventReceivedException">masterProcessAlreadyNotified.xsl</bpmn:fault>
+            <bpmn:fault name="ProcessInstanceEndedException">masterProcessAlreadyNotified.xsl</bpmn:fault>
             <soap:fault name="masterProcessAlreadyNotified" use="literal" />
          </wsdl:fault>
       </wsdl:operation>
