@@ -38,7 +38,7 @@ import org.ow2.petals.flowable.incoming.operation.annotated.exception.InvalidAnn
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoIntermediateMessageCatchEventIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.NoProcessInstanceIdMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.VariableTypeRequiredException;
-import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
+import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceEndedException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
@@ -61,7 +61,7 @@ public class IntermediateMessageCatchEventAnnotatedOperation extends AnnotatedOp
         EXCEPTIONS_MAPPED = new ArrayList<>();
         for (final Class<OperationProcessingFault> exception : new Class[] { ProcessInstanceNotFoundException.class,
                 NoProcessInstanceIdValueException.class, UnexpectedMessageEventException.class,
-                MessageEventReceivedException.class }) {
+                ProcessInstanceEndedException.class }) {
             EXCEPTIONS_MAPPED.add(exception.getSimpleName());
         }
     }

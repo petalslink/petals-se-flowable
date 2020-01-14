@@ -31,7 +31,6 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
-import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ExecutionQuery;
 import org.ow2.petals.commons.log.FlowAttributes;
@@ -40,10 +39,10 @@ import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
 import org.ow2.petals.flowable.incoming.operation.annotated.IntermediateMessageCatchEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.InvalidMEPException;
-import org.ow2.petals.flowable.incoming.operation.exception.MessageEventReceivedException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingFault;
+import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceEndedException;
 import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceNotFoundException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
 import org.w3c.dom.Document;
@@ -160,9 +159,9 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
      * <p>
      * Several possible causes:
      * </ul>
-     * <li>the process instance id does not exist,</li>
      * <li>the process instance is finished,</li>
-     * <li>the event was received with a previous service call.</li>
+     * <li>no process instance with the given identifier is running,</li>
+     * <li>no subscription exists for the event.</li>
      * </ul>
      * </p>
      * 
@@ -175,23 +174,16 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
      */
     private OperationProcessingException investigateMissingExecution(final String processInstanceId) {
 
-        final HistoricActivityInstance historicActivity;
-
         if (this.historyService.createHistoricProcessInstanceQuery().finished().processInstanceId(processInstanceId)
                 .singleResult() != null) {
             // The process instance is finished, so the message event has been already received !
             // TODO: Add a unit test
-            return new MessageEventReceivedException(this.wsdlOperation, processInstanceId, this.messageEventName);
+            return new ProcessInstanceEndedException(this.wsdlOperation, processInstanceId, this.messageEventName);
         } else if (this.runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId)
                 .singleResult() == null) {
             // No active process instance found for the process instance identifier
             // TODO: Add a unit test
             return new ProcessInstanceNotFoundException(this.wsdlOperation, processInstanceId);
-        } else if ((historicActivity = this.historyService.createHistoricActivityInstanceQuery()
-                .processInstanceId(processInstanceId).activityId(this.messageCatcherActivityId).finished()
-                .singleResult()) != null && historicActivity.getId() != null) {
-            // The message event has been already received
-            return new MessageEventReceivedException(this.wsdlOperation, processInstanceId, this.messageEventName);
         } else if (this.runtimeService.createExecutionQuery().processInstanceId(processInstanceId)
                 .messageEventSubscriptionName(this.messageEventName).singleResult() == null) {
             // The message event is not expected
@@ -199,7 +191,7 @@ public class IntermediateMessageCatchEventOperation extends FlowableOperation {
         } else {
             // This error case should not occur. If this error occurs, it is likely that an business error case is
             // missing from the above conditions
-            return new OperationProcessingException(wsdlOperation,
+            return new OperationProcessingException(this.wsdlOperation,
                     String.format(
                             "The message '%s' is not a current intermediate message catch event for the process instance '%s'.",
                             this.messageEventName, processInstanceId));

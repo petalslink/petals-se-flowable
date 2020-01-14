@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2017-2019 Linagora
+ Copyright (c) 2019 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the GNU Lesser General Public License as published by
@@ -17,10 +17,10 @@
  for the GNU Lesser General Public License version 2.1.
 -->
 <wsdl:definitions
-   name="intermediate-message-catch-event"
-   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event"
+   name="intermediate-message-catch-event-loop"
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop"
    
-   xmlns:tns="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event"
+   xmlns:tns="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop"
    
    xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -28,7 +28,7 @@
    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
 
    <wsdl:types>
-      <xsd:schema targetNamespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event"
+      <xsd:schema targetNamespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop"
          elementFormDefault="qualified">
 
          <xsd:complexType name="TStart">
@@ -119,7 +119,7 @@
       <wsdl:part name="fault" element="tns:alreadyUnlocked" />
    </wsdl:message>
 
-   <wsdl:portType name="intermediate-message-catch-event">
+   <wsdl:portType name="intermediate-message-catch-event-loop">
       <wsdl:operation name="start">
          <wsdl:input message="tns:start" />
          <wsdl:output message="tns:start-response" />
@@ -135,11 +135,11 @@
       </wsdl:operation>
    </wsdl:portType>
 
-   <wsdl:binding name="intermediateMessageCatchEventBinding" type="tns:intermediate-message-catch-event">
+   <wsdl:binding name="intermediateMessageCatchEventLoopBinding" type="tns:intermediate-message-catch-event-loop">
       <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
       <wsdl:operation name="start">
-         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event/start" />
-         <bpmn:operation processDefinitionId="intermediate-message-catch-event" action="startEvent" none-start-event-id="startevent1" />
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop/start" />
+         <bpmn:operation processDefinitionId="intermediate-message-catch-event-loop" action="startEvent" none-start-event-id="startevent1" />
          <bpmn:userId>/*[local-name()='start']/*[local-name()='customer']</bpmn:userId>
          <bpmn:output>
             startResponse.xsl
@@ -152,8 +152,8 @@
          </wsdl:output>
       </wsdl:operation>
       <wsdl:operation name="unlock">
-         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event/unlock" />
-         <bpmn:operation processDefinitionId="intermediate-message-catch-event" action="intermediateMessageCatch" message-event-name="myMessageName" />
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop/unlock" />
+         <bpmn:operation processDefinitionId="intermediate-message-catch-event-loop" action="intermediateMessageCatch" message-event-name="myMessageName" />
          <bpmn:processInstanceId>/*[local-name()='unlock']/*[local-name()='instance-id']</bpmn:processInstanceId>
          <bpmn:variable name="variable-1" type="string">/*[local-name()='unlock']/*[local-name()='var-1']</bpmn:variable>
          <bpmn:variable name="variable-2" type="string">/*[local-name()='unlock']/*[local-name()='var-2']</bpmn:variable>
@@ -175,9 +175,9 @@
       </wsdl:operation>
    </wsdl:binding>
 
-   <wsdl:service name="intermediate-message-catch-event-service">
-      <wsdl:port name="edpIntermediateMessageCatchEvent" binding="tns:intermediateMessageCatchEventBinding">
-         <soap:address location="http://localhost:9003/intermediateMessageCatchEvent" />
+   <wsdl:service name="intermediate-message-catch-event-loop-service">
+      <wsdl:port name="edpIntermediateMessageCatchEventLoop" binding="tns:intermediateMessageCatchEventLoopBinding">
+         <soap:address location="http://localhost:9003/intermediateMessageCatchEventLoop" />
       </wsdl:port>
    </wsdl:service>
 

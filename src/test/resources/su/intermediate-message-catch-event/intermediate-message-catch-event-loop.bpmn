@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2019 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath"
+   
+   xmlns:imcel="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop"
+   targetNamespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop">
+   
+   <import location="intermediate-message-catch-event-loop.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/intermediate-message-catch-event-loop"
+    importType="http://schemas.xmlsoap.org/wsdl/" />
+   
+   <process id="intermediate-message-catch-event-loop"
+      name="Process With Loop based Intermediate Message Catch Event" isExecutable="true">
+      <startEvent id="startevent1" name="Start" />
+      <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="init" />
+      <scriptTask id="init" name="Init Script Task" scriptFormat="groovy" activiti:autoStoreVariables="false">
+         <script><![CDATA[execution.setVariable("isRetry", true)
+execution.setVariable("counter", 0)]]></script>
+      </scriptTask>
+      <sequenceFlow id="flow6" sourceRef="init" targetRef="messageintermediatecatchevent1" />
+      <intermediateCatchEvent id="messageintermediatecatchevent1" name="MessageCatchEventName" activiti:async="true">
+         <!-- Execution of the intermediate catch event is set to asynchronous to force its execution by the async
+              executor of the SE Flowable and not by the Flowable client of the unit test -->
+         <messageEventDefinition id="messageEvtDefId" messageRef="imcel:myMessageId" />
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow2" sourceRef="messageintermediatecatchevent1" targetRef="scripttask1" />
+      <scriptTask id="scripttask1" name="Service Task" scriptFormat="groovy"
+         activiti:autoStoreVariables="false" activiti:async="true">
+         <!-- Execution of the script task is set to asynchronous to force its execution by the async
+              executor of the SE Flowable and not by the Flowable client of the unit test to be able to retry its execution-->
+         <script><![CDATA[if (counter < 1) {
+            execution.setVariable("counter", ++counter)
+         } else {
+            if (ctrl.equals("error")) {
+               throw new Exception("A technical error occurs in script task.")
+            } else {
+               execution.setVariable("isRetry", false)
+            }
+         }]]></script>
+      </scriptTask>
+      <sequenceFlow id="flow3" sourceRef="scripttask1" targetRef="exclusivegateway1" />
+      <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"  default="flow4"/>
+      <sequenceFlow id="flow5" sourceRef="exclusivegateway1" targetRef="messageintermediatecatchevent1">
+         <conditionExpression xsi:type="tFormalExpression"><![CDATA[${isRetry}]]></conditionExpression>
+      </sequenceFlow>
+      <sequenceFlow id="flow4" sourceRef="exclusivegateway1" targetRef="endevent1" />
+      <endEvent id="endevent1" name="End" />
+   </process>
+   
+   <message id="myMessageId" name="myMessageName" itemRef="imcel:myMessageItem" />
+   <itemDefinition id="myMessageItem" structureRef="imcel:Start" />
+   
+   <bpmndi:BPMNDiagram id="BPMNDiagram_intermediate-message-catch-event-loop">
+      <bpmndi:BPMNPlane bpmnElement="intermediate-message-catch-event-loop"
+         id="BPMNPlane_intermediate-message-catch-event-loop">
+         <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="20.0" y="102.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="messageintermediatecatchevent1"
+            id="BPMNShape_messageintermediatecatchevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="240.0" y="101.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+            <omgdc:Bounds height="40.0" width="40.0" x="480.0" y="99.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+            <omgdc:Bounds height="35.0" width="35.0" x="560.0" y="102.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="scripttask1" id="BPMNShape_scripttask1">
+            <omgdc:Bounds height="55.0" width="105.0" x="330.0" y="91.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNShape bpmnElement="init" id="BPMNShape_init">
+            <omgdc:Bounds height="55.0" width="105.0" x="100.0" y="92.0"></omgdc:Bounds>
+         </bpmndi:BPMNShape>
+         <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+            <omgdi:waypoint x="55.0" y="119.0"></omgdi:waypoint>
+            <omgdi:waypoint x="100.0" y="119.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+            <omgdi:waypoint x="275.0" y="118.0"></omgdi:waypoint>
+            <omgdi:waypoint x="330.0" y="118.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+            <omgdi:waypoint x="435.0" y="118.0"></omgdi:waypoint>
+            <omgdi:waypoint x="480.0" y="119.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+            <omgdi:waypoint x="520.0" y="119.0"></omgdi:waypoint>
+            <omgdi:waypoint x="560.0" y="119.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+            <omgdi:waypoint x="500.0" y="139.0"></omgdi:waypoint>
+            <omgdi:waypoint x="499.0" y="184.0"></omgdi:waypoint>
+            <omgdi:waypoint x="257.0" y="184.0"></omgdi:waypoint>
+            <omgdi:waypoint x="257.0" y="136.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+         <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
+            <omgdi:waypoint x="205.0" y="119.0"></omgdi:waypoint>
+            <omgdi:waypoint x="240.0" y="118.0"></omgdi:waypoint>
+         </bpmndi:BPMNEdge>
+      </bpmndi:BPMNPlane>
+   </bpmndi:BPMNDiagram>
+</definitions>

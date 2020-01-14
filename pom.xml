@@ -516,6 +516,12 @@
          <version>2.0.4</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.codehaus.groovy</groupId>
+         <artifactId>groovy-all</artifactId>
+         <version>2.4.15</version>
+         <scope>test</scope>
+      </dependency>
    </dependencies>
 
    <build>
@@ -530,6 +536,8 @@
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
                         <usedDependency>org.glassfish.jersey.media:jersey-media-json-jackson</usedDependency>
+                        <!-- These dependencies are needed for test at runtime -->
+                        <usedDependency>org.codehaus.groovy:groovy-all</usedDependency>
                      </usedDependencies>
                   </configuration>
                </execution>
@@ -575,6 +583,7 @@
                         <include>call-activity/archivageService.wsdl</include>
                         <include>call-activity/coreService.wsdl</include>
                         <include>intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
+                        <include>intermediate-message-catch-event/intermediate-message-catch-event-loop.wsdl</include>
                         <include>placeholders/placeholders.wsdl</include>
                         <include>placeholders/archivageService.wsdl</include>
                         <include>in-only/in-only.wsdl</include>
