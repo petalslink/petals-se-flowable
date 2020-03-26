@@ -316,6 +316,7 @@ public abstract class FlowableOperation implements FlowableService {
      * @param userId
      *            The user identifier. Can be {@code null} if no user id XPath expression is defined for the operation
      * @param processVars
+     *            The BPMN variables coming from incoming payload
      * @param outputNamedValues
      *            The output named values to generate response
      * @param exchange

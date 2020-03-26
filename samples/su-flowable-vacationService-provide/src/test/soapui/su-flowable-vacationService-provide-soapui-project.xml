@@ -296,7 +296,301 @@
     </xsd:sequence>
   </xsd:complexType>
   <xsd:element name="vacationRequestId" type="xsd:string"/>
-</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://cdeneux-laptop:8188/mocknotifyVacationBinding</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-flowable/notifyVacationService}notifyVacation</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}notifyVacation</con:endpoint></con:endpoints><con:operation id="0a2c1109-2817-447a-8a11-4d0237a1b8a9" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/newVacationRequest" name="newVacationRequest" bindingOperationName="newVacationRequest" type="Request-Response" inputName="newVacationRequestInput" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation id="8620527c-af98-4de9-bc63-4c62ef83cb5a" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/vacationRequestApproved" name="vacationRequestApproved" bindingOperationName="vacationRequestApproved" type="Request-Response" inputName="vacationRequestApproved" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation id="bd20ab97-1147-4fd7-9628-2a0d8f10520d" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/vacationRequestUpdated" name="vacationRequestUpdated" bindingOperationName="vacationRequestUpdated" type="Request-Response" inputName="vacationRequestUpdated" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation></con:interface><con:mockService id="44638783-bab1-4dcd-abac-f6acba9563d1" port="8188" path="/mockarchiveSoapBinding" host="cdeneux-laptop" name="archiveSoapBinding MockService" bindToHostOnly="false" docroot=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting></con:settings><con:properties/><con:mockOperation name="archiveVacationRequest" id="8d22f14a-6a93-46a5-a2be-08cf7e18fb30" interface="archiveSoapBinding" operation="archiveVacationRequest"><con:settings/><con:defaultResponse>Response 1</con:defaultResponse><con:dispatchStyle>SEQUENCE</con:dispatchStyle><con:response name="Nominal response" id="332c49d8-06c6-41ef-b84f-85596370e568" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:arc="http://petals.ow2.org/samples/se-flowable/vacation/archiveService">
+</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://cdeneux-laptop:8188/mocknotifyVacationBinding</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-flowable/notifyVacationService}notifyVacation</con:endpoint><con:endpoint>petals:///{http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService}notifyVacation</con:endpoint></con:endpoints><con:operation id="0a2c1109-2817-447a-8a11-4d0237a1b8a9" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/newVacationRequest" name="newVacationRequest" bindingOperationName="newVacationRequest" type="Request-Response" inputName="newVacationRequestInput" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation id="8620527c-af98-4de9-bc63-4c62ef83cb5a" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/vacationRequestApproved" name="vacationRequestApproved" bindingOperationName="vacationRequestApproved" type="Request-Response" inputName="vacationRequestApproved" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation><con:operation id="bd20ab97-1147-4fd7-9628-2a0d8f10520d" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/notifyService/vacationRequestUpdated" name="vacationRequestUpdated" bindingOperationName="vacationRequestUpdated" type="Request-Response" inputName="vacationRequestUpdated" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/></con:operation></con:interface><con:interface xsi:type="con:WsdlInterface" id="61777bdb-c604-4544-9621-fb6d2147b7e4" wsaVersion="NONE" name="vacationBinding" type="wsdl" bindingName="{http://petals.ow2.org/samples/se-flowable/vacation/vacationService}vacationBinding" soapVersion="1_1" anonymous="optional" definition="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-flowable/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacationService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-flowable/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacationService.wsdl"><con:part><con:url>file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-flowable/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacationService.wsdl</con:url><con:content><![CDATA[<!--Copyright (c) 2014-2019 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.-->
+<wsdl:definitions name="vacationService" targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService" xmlns:vacationService="http://petals.ow2.org/samples/se-flowable/vacation/vacationService" xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:import location="vacation.wsdl" namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService"/>
+  <wsdl:binding name="vacationBinding" type="vacationService:vacation">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="new">
+      <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/newVacationRequest"/>
+      <bpmn:operation processDefinitionId="vacationRequest" action="startEvent" none-start-event-id="start"/>
+      <bpmn:userId>/*[local-name()='vacationRequest']/*[local-name()='enquirer']</bpmn:userId>
+      <bpmn:variable name="numberOfDays">/*[local-name()='vacationRequest']/*[local-name()='day-number']</bpmn:variable>
+      <bpmn:variable name="startDate">/*[local-name()='vacationRequest']/*[local-name()='start-date']</bpmn:variable>
+      <bpmn:variable name="vacationMotivation">/*[local-name()='vacationRequest']/*[local-name()='reason']</bpmn:variable>
+      <bpmn:output>newVacationRequestResponse.xsl</bpmn:output>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="validate">
+      <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/handleRequest"/>
+      <bpmn:operation processDefinitionId="vacationRequest" action="userTask" user-task-id="handleVacationRequest"/>
+      <bpmn:processInstanceId>/*[local-name()='validationRequest']/*[local-name()='vacationRequestId']</bpmn:processInstanceId>
+      <bpmn:userId>/*[local-name()='validationRequest']/*[local-name()='approved-by']</bpmn:userId>
+      <bpmn:variable name="vacationApproved">/*[local-name()='validationRequest']/*[local-name()='approval']</bpmn:variable>
+      <bpmn:variable name="managerMotivation">/*[local-name()='validationRequest']/*[local-name()='rejection-reason']</bpmn:variable>
+      <bpmn:output>validationResponse.xsl</bpmn:output>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="vacationRequestIdUnknown">
+        <bpmn:fault name="ProcessInstanceNotFoundException">vacationRequestIdUnknown.xsl</bpmn:fault>
+        <soap:fault name="vacationRequestIdUnknown" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="vacationRequestAlreadyValidated">
+        <bpmn:fault name="TaskCompletedException">vacationRequestAlreadyValidated.xsl</bpmn:fault>
+        <soap:fault name="vacationRequestAlreadyValidated" use="literal"/>
+      </wsdl:fault>
+      <wsdl:fault name="unexpectedUser">
+        <bpmn:fault name="UnexpectedUserException">unexpectedUser.xsl</bpmn:fault>
+        <soap:fault name="unexpectedUser" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="update">
+      <soap:operation soapAction="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/updateVacationRequest"/>
+      <bpmn:operation processDefinitionId="vacationRequest" action="userTask" user-task-id="adjustVacationRequest"/>
+      <bpmn:processInstanceId>/*[local-name()='vacationUpdateRequest']/*[local-name()='vacationRequestId']</bpmn:processInstanceId>
+      <bpmn:userId>/*[local-name()='vacationUpdateRequest']/*[local-name()='enquirer']</bpmn:userId>
+      <bpmn:variable name="numberOfDays">/*[local-name()='vacationUpdateRequest']/*[local-name()='day-number']</bpmn:variable>
+      <bpmn:variable name="startDate">/*[local-name()='vacationUpdateRequest']/*[local-name()='start-date']</bpmn:variable>
+      <bpmn:variable name="vacationMotivation">/*[local-name()='vacationUpdateRequest']/*[local-name()='reason']</bpmn:variable>
+      <bpmn:variable name="resendRequest">/*[local-name()='vacationUpdateRequest']/*[local-name()='confirmed']</bpmn:variable>
+      <bpmn:output>adjustRequestResponse.xsl</bpmn:output>
+      <wsdl:input>
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="vacationRequestIdUnknown">
+        <bpmn:fault name="ProcessInstanceNotFoundException">vacationRequestIdUnknown.xsl</bpmn:fault>
+        <soap:fault name="vacationRequestIdUnknown" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="vacationService">
+    <wsdl:port name="autogenerate" binding="vacationService:vacationBinding">
+      <soap:address location="http://localhost:9003/vacationService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part><con:part><con:url>file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-flowable/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacation.wsdl</con:url><con:content><![CDATA[<!--Copyright (c) 2014-2019 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.-->
+<wsdl:definitions name="vacation" targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService" xmlns:vacationService="http://petals.ow2.org/samples/se-flowable/vacation/vacationService" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationService">
+      <xsd:import namespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" schemaLocation="vacationRequest.xsd"/>
+      <xsd:element name="newVacationResponse">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="validationRequest">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="approved-by" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="rejection-reason" minOccurs="0" maxOccurs="1" type="xsd:string"/>
+            <xsd:element name="approval" minOccurs="1" maxOccurs="1">
+              <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                  <xsd:enumeration id="Approved" value="true"/>
+                  <xsd:enumeration id="Rejected" value="false"/>
+                </xsd:restriction>
+              </xsd:simpleType>
+            </xsd:element>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="validationResponse">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="vacationUpdateRequest">
+        <xsd:complexType>
+          <xsd:complexContent>
+            <xsd:extension base="vacationRequest:vacationRequestType">
+              <xsd:sequence>
+                <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+                <xsd:element name="confirmed" minOccurs="1" maxOccurs="1">
+                  <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                      <xsd:enumeration id="Updated" value="true"/>
+                      <xsd:enumeration id="Canceled" value="false"/>
+                    </xsd:restriction>
+                  </xsd:simpleType>
+                </xsd:element>
+              </xsd:sequence>
+            </xsd:extension>
+          </xsd:complexContent>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="vacationUpdateResponse">
+        <xsd:complexType>
+          <xsd:all>
+            <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+          </xsd:all>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="vacationRequestIdUnknown">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="vacationRequestAlreadyValidated">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="unexpectedUser">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element ref="vacationRequest:vacationRequestId" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="userId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="taskId" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="newVacationRequest">
+    <wsdl:part name="parameters" element="vacationRequest:vacationRequest"/>
+  </wsdl:message>
+  <wsdl:message name="newVacationResponse">
+    <wsdl:part name="parameters" element="vacationService:newVacationResponse"/>
+  </wsdl:message>
+  <wsdl:message name="validationRequest">
+    <wsdl:part name="parameters" element="vacationService:validationRequest"/>
+  </wsdl:message>
+  <wsdl:message name="validationResponse">
+    <wsdl:part name="parameters" element="vacationService:validationResponse"/>
+  </wsdl:message>
+  <wsdl:message name="updateRequest">
+    <wsdl:part name="parameters" element="vacationService:vacationUpdateRequest"/>
+  </wsdl:message>
+  <wsdl:message name="updateResponse">
+    <wsdl:part name="parameters" element="vacationService:vacationUpdateResponse"/>
+  </wsdl:message>
+  <wsdl:message name="vacationRequestIdUnknown">
+    <wsdl:part name="fault" element="vacationService:vacationRequestIdUnknown"/>
+  </wsdl:message>
+  <wsdl:message name="vacationRequestAlreadyValidated">
+    <wsdl:part name="fault" element="vacationService:vacationRequestAlreadyValidated"/>
+  </wsdl:message>
+  <wsdl:message name="unexpectedUser">
+    <wsdl:part name="fault" element="vacationService:unexpectedUser"/>
+  </wsdl:message>
+  <wsdl:portType name="vacation">
+    <wsdl:operation name="new">
+      <wsdl:input message="vacationService:newVacationRequest"/>
+      <wsdl:output message="vacationService:newVacationResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name="validate">
+      <wsdl:input message="vacationService:validationRequest"/>
+      <wsdl:output message="vacationService:validationResponse"/>
+      <wsdl:fault message="vacationService:vacationRequestAlreadyValidated" name="vacationRequestAlreadyValidated"/>
+      <wsdl:fault message="vacationService:vacationRequestIdUnknown" name="vacationRequestIdUnknown"/>
+      <wsdl:fault message="vacationService:unexpectedUser" name="unexpectedUser"/>
+    </wsdl:operation>
+    <wsdl:operation name="update">
+      <wsdl:input message="vacationService:updateRequest"/>
+      <wsdl:output message="vacationService:updateResponse"/>
+      <wsdl:fault message="vacationService:vacationRequestIdUnknown" name="vacationRequestIdUnknown"/>
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part><con:part><con:url>file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-flowable/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacationRequest.xsd</con:url><con:content><![CDATA[<!--Copyright (c) 2015-2019 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ 
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.-->
+<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" elementFormDefault="qualified" jaxb:version="2.1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+  <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
+  <xsd:complexType name="vacationRequestType">
+    <xsd:sequence>
+      <xsd:element name="enquirer" minOccurs="1" maxOccurs="1" type="xsd:string"/>
+      <xsd:element name="day-number" minOccurs="1" maxOccurs="1" type="xsd:long"/>
+      <xsd:element name="start-date" minOccurs="1" maxOccurs="1" type="xsd:dateTime"/>
+      <xsd:element name="reason" minOccurs="0" maxOccurs="1" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="vacationRequestId" type="xsd:string"/>
+</xsd:schema>]]></con:content><con:type>http://www.w3.org/2001/XMLSchema</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:endpoint>http://localhost:9003/vacationService</con:endpoint></con:endpoints><con:operation id="99bb8268-4a51-4d1a-8dbe-d81bbb9feb44" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/newVacationRequest" name="new" bindingOperationName="new" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="f3e72a8b-7658-4d11-8144-767041cab113" name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <vac:vacationRequest>
+         <vac:enquirer>gonzo</vac:enquirer>
+         <vac:day-number>3</vac:day-number>
+         <vac:start-date>2019-04-15</vac:start-date>
+         <!--Optional:-->
+         <vac:reason>Besoin de vacances</vac:reason>
+      </vac:vacationRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/newVacationRequest"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation id="d47a82e3-a079-4cb0-8f7d-1d240dcc0c0f" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/updateVacationRequest" name="update" bindingOperationName="update" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="e64ce637-64e4-44b3-87e0-a8e112610f2f" name="Request 1"><con:settings/><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9003/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationService" xmlns:vac1="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <vac:vacationUpdateRequest>
+         <vac1:enquirer>?</vac1:enquirer>
+         <vac1:day-number>?</vac1:day-number>
+         <vac1:start-date>?</vac1:start-date>
+         <!--Optional:-->
+         <vac1:reason>?</vac1:reason>
+         <vac1:vacationRequestId>?</vac1:vacationRequestId>
+         <confirmed>?</confirmed>
+      </vac:vacationUpdateRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/updateVacationRequest"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation id="55969a6b-2669-42f7-933f-c774a906bf65" isOneWay="false" action="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/handleRequest" name="validate" bindingOperationName="validate" type="Request-Response" inputName="" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call id="b314bacb-5829-49da-a0f0-8bb5d0439867" name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8084/petals/services/vacationService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:vac="http://petals.ow2.org/samples/se-flowable/vacation/vacationService" xmlns:vac1="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <vac:validationRequest>
+         <!--You may enter the following 4 items in any order-->
+         <vac1:vacationRequestId>5</vac1:vacationRequestId>
+         <approved-by>kermit</approved-by>
+         <approval>true</approval>
+      </vac:validationRequest>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>No Authorization</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="http://petals.ow2.org/samples/se-flowable/vacation/vacationService/handleRequest"/><con:wsrmConfig version="1.2"/></con:call></con:operation></con:interface><con:mockService id="44638783-bab1-4dcd-abac-f6acba9563d1" port="8188" path="/mockarchiveSoapBinding" host="cdeneux-laptop" name="archiveSoapBinding MockService" bindToHostOnly="false" docroot=""><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.mock.WsdlMockService@require-soap-action">false</con:setting></con:settings><con:properties/><con:mockOperation name="archiveVacationRequest" id="8d22f14a-6a93-46a5-a2be-08cf7e18fb30" interface="archiveSoapBinding" operation="archiveVacationRequest"><con:settings/><con:defaultResponse>Response 1</con:defaultResponse><con:dispatchStyle>SEQUENCE</con:dispatchStyle><con:response name="Nominal response" id="332c49d8-06c6-41ef-b84f-85596370e568" httpResponseStatus="200" encoding="UTF-8"><con:settings/><con:responseContent><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:arc="http://petals.ow2.org/samples/se-flowable/vacation/archiveService">
    <soapenv:Header/>
    <soapenv:Body>
       <arc:okResponse>

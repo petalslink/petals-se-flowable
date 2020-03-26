@@ -44,8 +44,10 @@ java -jar ${HOME}/.m2/repository/com/h2database/h2/1.4.178/h2-1.4.178.jar -tcp &
 # Generate component configuration files
 #
 cat > ${PETALS_BC_SOAP_PROPERTIES} << EOF
-notifyService.url=http://localhost:8080/samples-SOAP-services-${SAMPLE_VERSION}/services/notifyVacationService
-archiveService.url=http://localhost:8080/samples-SOAP-services-${SAMPLE_VERSION}/services/archiveService
+#notifyService.url=http://localhost:8080/samples-SOAP-services-${SAMPLE_VERSION}/services/notifyVacationService
+notifyService.url=http://localhost:8188/mocknotifyVacationBinding
+#archiveService.url=http://localhost:8080/samples-SOAP-services-${SAMPLE_VERSION}/services/archiveService
+archiveService.url=http://localhost:8188/mockarchiveSoapBinding
 EOF
 
 

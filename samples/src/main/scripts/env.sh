@@ -22,7 +22,7 @@ PETALS_JMX_PWD=petals
 PETALS_HOSTNAME=localhost
 PETALS_JMX_PORT=7700
 
-PETALS_HOME=${HOME}/workspace/petals-trunk/container/petals-esb-default-zip/target/petals-esb-default-zip-5.3.0-SNAPSHOT/petals-esb-default-zip-5.3.0-SNAPSHOT
+PETALS_HOME=${HOME}/workspace/petals-trunk/container/petals-esb-default-zip/target/petals-esb-default-zip-5.2.1-SNAPSHOT/petals-esb-default-zip-5.2.1-SNAPSHOT
 PETALS_DATA=${PETALS_HOME}/data/work
 #PETALS_DATA=/var/lib/petals-esb/sample-0/work
 PETALS_COMPONENT_CONFIG_FILES_HOME=${PETALS_HOME}/conf

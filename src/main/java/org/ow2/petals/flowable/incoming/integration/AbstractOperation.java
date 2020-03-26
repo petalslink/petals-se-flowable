@@ -76,6 +76,7 @@ public abstract class AbstractOperation<T, V> implements FlowableService {
         this.operationName = operationName;
         this.faultActor = faultActor;
 
+        // TODO: Marshaller and Unmarshaller pools should be created at component level and not for each operation
         try {
             final JAXBContext jaxbContext = JAXBContext.newInstance(classesToBeBound);
 
