@@ -69,7 +69,6 @@ import org.ow2.petals.components.flowable.generic._1.Variable;
 import org.ow2.petals.components.flowable.generic._1.Variables;
 import org.ow2.petals.flowable.incoming.operation.exception.NoProcessInstanceIdValueException;
 import org.ow2.petals.flowable.incoming.operation.exception.NoUserIdValueException;
-import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
 import org.ow2.petals.flowable.monitoring.MonitoringMBean;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
 import org.ow2.petals.flowable.monitoring.UserTaskFlowStepBeginLogData;
@@ -365,11 +364,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertEquals(4, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0));
-        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(
+                initialInteractionRequestFlowLogData, monitLogs_1.get(1));
         assertEquals("vacationRequest",
                 processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_DEFINITION_KEY));
         assertEquals(response_1.getNumeroDde(),
@@ -582,13 +578,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertEquals(6, monitLogs_2.size());
         final FlowLogData completionTaskInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
-        final FlowLogData userTaskHandleRequestEndFlowLogData = assertMonitProviderEndLog(
-                userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
-        assertEquals(
-                userTaskHandleRequestEndFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY),
-                completionTaskInteractionRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME));
-        assertEquals(userTaskHandleRequestEndFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY),
-                completionTaskInteractionRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME));
+        assertMonitProviderEndLog(userTaskHandleRequestBeginFlowLogData, completionTaskInteractionRequestFlowLogData,
+                monitLogs_2.get(1));
         assertMonitProviderEndLog(completionTaskInteractionRequestFlowLogData, monitLogs_2.get(2));
         // TODO: Should we have MONIT traces about the service call on the consumer side ?
         // Check the MONIT traces of the invoked services: the service is responsible to generate them, not the SE
@@ -1510,11 +1501,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertEquals(6, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_JIRA, monitLogs_1.get(0));
-        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(
+                initialInteractionRequestFlowLogData, monitLogs_1.get(1));
         assertEquals("jira_PETALSSEACTIVITI-4",
                 processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_DEFINITION_KEY));
         assertEquals(response_1.getNumeroDde(),

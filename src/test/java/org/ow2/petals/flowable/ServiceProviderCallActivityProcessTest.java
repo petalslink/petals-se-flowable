@@ -216,13 +216,13 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
         final LogRecord firstLogOfProcess = new MonitLogFilter(allMonitLogs)
                 .traceCode(TraceCode.CONSUME_EXT_FLOW_STEP_BEGIN)
-                .property(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY, flowInstanceIdProcessService)
+                .property(FlowLogData.CORRELATED_FLOW_INSTANCE_ID_PROPERTY_NAME, flowInstanceIdProcessService)
                 .singleResult();
         final String flowInstanceIdProcess = (String) ((FlowLogData) firstLogOfProcess.getParameters()[0])
                 .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
         final List<LogRecord> processMonitLogs = new MonitLogFilter(allMonitLogs).flowInstanceId(flowInstanceIdProcess)
                 .results();
-        
+
         assertEquals(12, processMonitLogs.size());
         final FlowLogData initialProcessFlowLogData = assertMonitConsumerExtBeginLog(processMonitLogs.get(0));
         final String processInstanceId = (String) initialProcessFlowLogData
@@ -360,7 +360,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
         final LogRecord firstLogOfProcess = new MonitLogFilter(allMonitLogs)
                 .traceCode(TraceCode.CONSUME_EXT_FLOW_STEP_BEGIN)
-                .property(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY, flowInstanceIdProcessService)
+                .property(FlowLogData.CORRELATED_FLOW_INSTANCE_ID_PROPERTY_NAME, flowInstanceIdProcessService)
                 .singleResult();
         final String flowInstanceIdProcess = (String) ((FlowLogData) firstLogOfProcess.getParameters()[0])
                 .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
@@ -369,8 +369,8 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
 
         assertEquals(12, processMonitLogs.size());
         final FlowLogData initialProcessFlowLogData = assertMonitConsumerExtBeginLog(processMonitLogs.get(0));
-        assertEquals("process instance id missing in log trace", processInstance_level1.toString(), initialProcessFlowLogData
-                        .get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
+        assertEquals("process instance id missing in log trace", processInstance_level1.toString(),
+                initialProcessFlowLogData.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
         final FlowLogData firstCallActivity = assertMonitProviderBeginLog(initialProcessFlowLogData, null, null, null,
                 null, processMonitLogs.get(1));
         assertEquals(processInstance_level1.toString(),
@@ -456,7 +456,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
         final LogRecord firstLogOfProcess = new MonitLogFilter(allMonitLogs)
                 .traceCode(TraceCode.CONSUME_EXT_FLOW_STEP_BEGIN)
-                .property(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY, flowInstanceIdProcessService)
+                .property(FlowLogData.CORRELATED_FLOW_INSTANCE_ID_PROPERTY_NAME, flowInstanceIdProcessService)
                 .singleResult();
         final String flowInstanceIdProcess = (String) ((FlowLogData) firstLogOfProcess.getParameters()[0])
                 .get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME);
@@ -485,7 +485,6 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         // This log should be a consulerExtFailureLog
         assertMonitConsumerExtEndLog(firstCallActivity, processMonitLogs.get(4));
         assertMonitConsumerExtEndLog(initialProcessFlowLogData, processMonitLogs.get(5));
-
 
     }
 

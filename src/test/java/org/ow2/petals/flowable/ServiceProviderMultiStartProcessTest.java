@@ -37,7 +37,6 @@ import org.ow2.petals.component.framework.junit.helpers.MessageChecks;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.ResponseToConsumerMessage;
-import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
 import org.ow2.petals.flowable.monitoring.ProcessInstanceFlowStepBeginLogData;
 import org.ow2.petals.se_flowable.unit_test.multi_start.StartByOnlineAgent;
 import org.ow2.petals.se_flowable.unit_test.multi_start.StartByWeb;
@@ -122,11 +121,8 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         assertEquals(6, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(MULTISTART_INTERFACE,
                 MULTISTART_SERVICE, MULTISTART_ENDPOINT, OPERATION_START_BY_WEB, monitLogs_1.get(0));
-        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(
+                initialInteractionRequestFlowLogData, monitLogs_1.get(1));
         assertEquals("multi-start",
                 processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_DEFINITION_KEY));
         assertEquals(caseFileNumber.toString(),
@@ -200,11 +196,8 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         assertEquals(8, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(MULTISTART_INTERFACE,
                 MULTISTART_SERVICE, MULTISTART_ENDPOINT, OPERATION_START_BY_ONLINE_AGENT, monitLogs_1.get(0));
-        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
-        assertEquals(initialInteractionRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
-                processStartedBeginFlowLogData.get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(
+                initialInteractionRequestFlowLogData, monitLogs_1.get(1));
         assertEquals("multi-start",
                 processStartedBeginFlowLogData.get(ProcessInstanceFlowStepBeginLogData.PROCESS_DEFINITION_KEY));
         assertEquals(response_1.getCaseFileNumber(),

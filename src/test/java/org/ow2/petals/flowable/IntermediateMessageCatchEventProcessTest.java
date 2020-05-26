@@ -41,7 +41,6 @@ import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMe
 import org.ow2.petals.components.flowable.generic._1.GetExecutions;
 import org.ow2.petals.components.flowable.generic._1.GetExecutionsResponse;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
-import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
 import org.ow2.petals.flowable.monitoring.IntermediateCatchMessageEventFlowStepBeginLogData;
 import org.ow2.petals.flowable.utils.test.Await;
 import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event.NotLocked;
@@ -237,16 +236,11 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         assertMonitProviderEndLog(getExecutionsRequestFlowLogData, monitLogs_1.get(2));
         final FlowLogData unlockRequestFlowLogData = assertMonitProviderBeginLog(
                 INTERMEDIATE_MESSAGE_CATCH_EVENT_INTERFACE, INTERMEDIATE_MESSAGE_CATCH_EVENT_SERVICE,
-                INTERMEDIATE_MESSAGE_CATCH_EVENT_ENDPOINT, OPERATION_UNLOCK, monitLogs_1.get(3));
+                INTERMEDIATE_MESSAGE_CATCH_EVENT_ENDPOINT, OPERATION_UNLOCK,
+                monitLogs_1.get(3));
         assertMonitProviderEndLog(unlockRequestFlowLogData, monitLogs_1.get(4));
-        final FlowLogData intermediateCatchMessageEventEndFlowLogData = assertMonitProviderEndLog(
-                intermediateCatchMessageEventBeginFlowLogData, monitLogs_1.get(5));
-        assertEquals(unlockRequestFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                intermediateCatchMessageEventEndFlowLogData
-                        .get(FlowableActivityFlowStepData.CORRELATED_FLOW_INSTANCE_ID_KEY));
-        assertEquals(unlockRequestFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
-                intermediateCatchMessageEventEndFlowLogData
-                        .get(FlowableActivityFlowStepData.CORRELATED_FLOW_STEP_ID_KEY));
+        assertMonitProviderEndLog(intermediateCatchMessageEventBeginFlowLogData, unlockRequestFlowLogData,
+                monitLogs_1.get(5));
 
         // ----------------------------------------------------------------------------
         // Send the intermediate message event when it was already processed by the BPMN engine

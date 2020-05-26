@@ -17,24 +17,13 @@
  */
 package org.ow2.petals.flowable.monitoring;
 
+import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.component.framework.logger.AbstractFlowLogData;
 
 /**
  * @author Christophe DENEUX - Linagora
  */
 public class FlowableActivityFlowStepData {
-
-    /**
-     * Name of the MONIT trace attribute containing the flow instance identifier of the interaction request associated
-     * to the activity.
-     */
-    public static final String CORRELATED_FLOW_INSTANCE_ID_KEY = "correlatedFlowInstanceId";
-
-    /**
-     * Name of the MONIT trace attribute containing the flow step identifier of the interaction request associated to
-     * the activity.
-     */
-    public static final String CORRELATED_FLOW_STEP_ID_KEY = "correlatedFlowStepId";
 
     /**
      * Name of the MONIT trace attribute containing the process definition of the process instance created.
@@ -62,8 +51,8 @@ public class FlowableActivityFlowStepData {
 
     public static void addCorrelatedFlowStepData(final AbstractFlowLogData logData,
             final String correlatedFlowInstanceId, final String correlatedFlowStepId) {
-        logData.putData(CORRELATED_FLOW_INSTANCE_ID_KEY, correlatedFlowInstanceId);
-        logData.putData(CORRELATED_FLOW_STEP_ID_KEY, correlatedFlowStepId);
+        logData.putData(FlowLogData.CORRELATED_FLOW_INSTANCE_ID_PROPERTY_NAME, correlatedFlowInstanceId);
+        logData.putData(FlowLogData.CORRELATED_FLOW_STEP_ID_PROPERTY_NAME, correlatedFlowStepId);
     }
 
     public static void addProcessInstanceFlowStepData(final AbstractFlowLogData logData, final String processDefinition,
