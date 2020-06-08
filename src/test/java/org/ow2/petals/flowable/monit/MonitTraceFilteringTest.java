@@ -44,6 +44,7 @@ import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
 import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
+import org.ow2.petals.component.framework.junit.impl.PCServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.monitoring.business.filtering.AbstractMonitTraceFilteringTestForSimpleOrchestration;
@@ -262,16 +263,6 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     }
 
     @Override
-    protected void assertMonitTracesForServiceInvocationWithResponse(final String ruleIdPrefix,
-            final List<LogRecord> monitLogs, final boolean isProvMonitTraceExpected,
-            final boolean isConsMonitTraceExpected, final ProvidesServiceConfiguration providerServiceCfg,
-            final MEPPatternConstants mep) {
-
-        this.assertMonitTraces(ruleIdPrefix, monitLogs, isProvMonitTraceExpected, isConsMonitTraceExpected,
-                providerServiceCfg, mep, false, false);
-    }
-
-    @Override
     protected void executeExchangeReturningFault(final RequestToProviderMessage incomingRequest,
             final ServiceProviderImplementation mock, final MEPPatternConstants mep,
             final Optional<Boolean> expectedFlowTracingActivationState, final String ruleIdPrefix) throws Exception {
@@ -283,16 +274,6 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
         // Wait the invocation of the service task, and mock it
         this.component.receiveRequestAsExternalProvider(mock, SimpleComponent.DEFAULT_SEND_AND_RECEIVE_TIMEOUT, false);
         this.componentUnderTest.pollStatusFromConsumer();
-    }
-
-    @Override
-    protected void assertMonitTracesForServiceInvocationWithFault(final String ruleIdPrefix,
-            final List<LogRecord> monitLogs, final boolean isProvMonitTraceExpected,
-            final boolean isConsMonitTraceExpected, final ProvidesServiceConfiguration providerServiceCfg,
-            final MEPPatternConstants mep) {
-
-        this.assertMonitTraces(ruleIdPrefix, monitLogs, isProvMonitTraceExpected, isConsMonitTraceExpected,
-                providerServiceCfg, mep, true, true);
     }
 
     @Override
@@ -321,16 +302,6 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
             this.getProcessEngine().getRuntimeService().deleteProcessInstance(deadLetterJob.getProcessInstanceId(),
                     "Unrecoverable technical error !!");
         }
-    }
-
-    @Override
-    protected void assertMonitTracesForServiceInvocationWithStatus(final String ruleIdPrefix,
-            final List<LogRecord> monitLogs, final boolean isProvMonitTraceExpected,
-            final boolean isConsMonitTraceExpected, final ProvidesServiceConfiguration providerServiceCfg,
-            final ExchangeStatus statusToReturn, final MEPPatternConstants mep) {
-
-        this.assertMonitTraces(ruleIdPrefix, monitLogs, isProvMonitTraceExpected, isConsMonitTraceExpected,
-                providerServiceCfg, mep, statusToReturn != ExchangeStatus.DONE, false);
     }
 
     @Override
@@ -383,9 +354,12 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
         this.component.sendDoneStatus(response);
     }
 
-    private void assertMonitTraces(String ruleIdPrefix, List<LogRecord> monitLogs, boolean isProvMonitTraceExpected,
-            boolean isConsMonitTraceExpected, ProvidesServiceConfiguration providerServiceCfg,
-            final MEPPatternConstants mep, final boolean isFailureExpected, final boolean faultReturned) {
+    @Override
+    protected void assertMonitTraces(final String ruleIdPrefix,
+            final List<LogRecord> monitLogs,
+            final boolean isProvMonitTraceExpected, final boolean isConsMonitTraceExpected,
+            final PCServiceConfiguration providerServiceCfg, final boolean isFailureExpected,
+            final boolean isFaultExpected, final MEPPatternConstants mep) {
 
         if (isProvMonitTraceExpected) {
             assertTrue(ruleIdPrefix, monitLogs.size() >= 4);
@@ -396,7 +370,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
                     monitLogs.get(0));
             final FlowLogData processBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs.get(1));
             assertMonitProviderEndLog(ruleIdPrefix, providerBeginFlowLogData, monitLogs.get(2));
-            if (isFailureExpected && !faultReturned) {
+            if (isFailureExpected && !isFaultExpected) {
                 assertMonitConsumerExtFailureLog(processBeginFlowLogData, monitLogs.get(5));
             } else {
                 assertMonitConsumerExtEndLog(processBeginFlowLogData, monitLogs.get(5));
