@@ -40,7 +40,6 @@ import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.components.flowable.generic._1.GetExecutions;
 import org.ow2.petals.components.flowable.generic._1.GetExecutionsResponse;
-import org.ow2.petals.flowable.incoming.operation.exception.ProcessInstanceEndedException;
 import org.ow2.petals.flowable.incoming.operation.exception.UnexpectedMessageEventException;
 import org.ow2.petals.flowable.monitoring.FlowableActivityFlowStepData;
 import org.ow2.petals.flowable.monitoring.IntermediateCatchMessageEventFlowStepBeginLogData;
@@ -265,7 +264,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             COMPONENT_UNDER_TEST.pushRequestToProvider(request);
             final StatusMessage response = COMPONENT_UNDER_TEST.pollStatusFromProvider();
             assertEquals(ExchangeStatus.ERROR, response.getStatus());
-            assertTrue(response.getError() instanceof ProcessInstanceEndedException);
+            assertTrue(response.getError() instanceof UnexpectedMessageEventException);
         }
         {
             final Unlock unlockRequest = new Unlock();
@@ -280,8 +279,8 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             final Source fault = response.getFault();
             assertNotNull("No fault returns", fault);
             final Object responseObj = UNMARSHALLER.unmarshal(fault);
-            assertTrue(responseObj instanceof AlreadyUnlocked);
-            final AlreadyUnlocked responseBean = (AlreadyUnlocked) responseObj;
+            assertTrue(responseObj instanceof NotLocked);
+            final NotLocked responseBean = (NotLocked) responseObj;
             assertEquals(processInstanceId.toString(), responseBean.getInstanceId());
             assertEquals(MESSAGE_EVENT_NAME, responseBean.getEventName());
         }
@@ -315,6 +314,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
                 .messageEventSubscriptionName("myMessageName").singleResult();
         this.flowableClient.getRuntimeService().messageEventReceived("myMessageName", execution.getId());
 
+        Await.waitUserTaskAssignment(procInst.getId(), "userTask2", "kermit", this.flowableClient.getTaskService());
         task = this.flowableClient.getTaskService().createTaskQuery().processInstanceId(procInst.getId())
                 .singleResult();
         this.flowableClient.getTaskService().complete(task.getId());

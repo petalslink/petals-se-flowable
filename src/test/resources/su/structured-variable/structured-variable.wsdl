@@ -206,7 +206,7 @@
             <soap:fault name="notLocked" use="literal" />
          </wsdl:fault>
          <wsdl:fault name="alreadyUnlocked">
-            <bpmn:fault name="MessageEventReceivedException">messageEventReceived.xsl</bpmn:fault>
+            <bpmn:fault name="ProcessInstanceEndedException">messageEventReceived.xsl</bpmn:fault>
             <soap:fault name="alreadyUnlocked" use="literal" />
          </wsdl:fault>
       </wsdl:operation>

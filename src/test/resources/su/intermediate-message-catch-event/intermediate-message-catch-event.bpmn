@@ -51,7 +51,13 @@
               executor of the SE Flowable and not by the Flowable client of the unit test -->
          <messageEventDefinition id="messageEvtDefId" messageRef="imce:myMessageId" />
       </intermediateCatchEvent>
-      <sequenceFlow id="flow3" sourceRef="messageIntermediateCatchEventId" targetRef="userTask2"/>
+      <sequenceFlow id="flow3" sourceRef="messageIntermediateCatchEventId" targetRef="timerintermediatecatchevent1"/>
+      <intermediateCatchEvent id="timerintermediatecatchevent1" name="TimerCatchEvent">
+         <timerEventDefinition>
+            <timeDuration>PT1S</timeDuration>
+         </timerEventDefinition>
+      </intermediateCatchEvent>
+      <sequenceFlow id="flow4" sourceRef="timerintermediatecatchevent1" targetRef="userTask2"/>
       <userTask id="userTask2" name="User task 2" >
          <potentialOwner>
            <resourceAssignmentExpression>
@@ -59,7 +65,7 @@
            </resourceAssignmentExpression>
          </potentialOwner>         
       </userTask>
-      <sequenceFlow id="flow4" sourceRef="userTask2" targetRef="endevent1"/>
+      <sequenceFlow id="flow5" sourceRef="userTask2" targetRef="endevent1"/>
       <endEvent id="endevent1" name="End"/>
    </process>
    
