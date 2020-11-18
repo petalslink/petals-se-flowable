@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<jbi:jbi version="1.0" 
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:petals-se-flowable="http://petals.ow2.org/components/petals-se-flowable/1.0"
+   
+   xmlns:basic="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v2"
+   xmlns:logService="http://petals.ow2.org/integration/tests/se-flowable/log/services/v2">
+	
+   <jbi:services binding-component="false">
+		
+		<jbi:provides
+			interface-name="basic:basic"
+			service-name="basic:basicService"
+			endpoint-name="autogenerate">
+			
+        <petalsCDK:wsdl>basic.wsdl</petalsCDK:wsdl>
+
+      </jbi:provides>
+      
+      <jbi:consumes
+           interface-name="logService:log"
+           service-name="logService:logService">
+         <petalsCDK:timeout>${logService-v2.timeout}</petalsCDK:timeout>
+         <petalsCDK:mep>InOnly</petalsCDK:mep>
+         <petalsCDK:operation>logService:log</petalsCDK:operation>
+      </jbi:consumes>
+         
+      <petals-se-flowable:tenant_id>my-tenant</petals-se-flowable:tenant_id>
+      <petals-se-flowable:category_id>samples</petals-se-flowable:category_id>
+      <petals-se-flowable:process_file1>basic.bpmn</petals-se-flowable:process_file1>
+      <petals-se-flowable:version1>10</petals-se-flowable:version1>
+   </jbi:services>
+</jbi:jbi>

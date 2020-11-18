@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+   <parent>
+      <artifactId>parent</artifactId>
+      <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
+      <version>5.2.1-SNAPSHOT</version>
+      <relativePath>../parent/pom.xml</relativePath>
+   </parent>
+
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
+   <artifactId>launcher-multi-deployments</artifactId>
+   <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - Multiple deployments of the same process definition</name>
+   <packaging>pom</packaging>
+
+   <dependencies>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-logService</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-basic-bpmn-v100-su-v100</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-basic-bpmn-v100-su-v101</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-basic-bpmn-v101-su-v101</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-basic-bpmn-v200-su-v200</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-SOAP-basic-v1</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-SOAP-basic-v2</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>sa-flowableIntegrationService</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-assembly</type>
+      </dependency>
+      <dependency>
+         <artifactId>petals-se-flowable</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <artifactId>petals-bc-soap</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <artifactId>petals-se-rmi</artifactId>
+         <groupId>org.ow2.petals</groupId>
+         <type>jbi-component</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-esb-minimal-zip</artifactId>
+         <type>zip</type>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-cli-distrib-zip</artifactId>
+         <type>zip</type>
+      </dependency>
+      <dependency>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <version>1.4.178</version>
+      </dependency>
+      <dependency>
+         <groupId>org.ow2.petals.integration</groupId>
+         <artifactId>petals-integration-rmi-client</artifactId>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <groupId>org.apache.maven.plugins</groupId>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <dependencies>
+               <dependency>
+                  <groupId>org.eclipse.dirigible</groupId>
+                  <artifactId>dirigible-engine-js-nashorn</artifactId>
+                  <version>3.0.5</version>
+               </dependency>
+            </dependencies>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+      <developerConnection>${project.scm.connection}</developerConnection>
+   </scm>
+</project>

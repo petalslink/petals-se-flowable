@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<jbi:jbi version="1.0"
+   xmlns:logService="http://petals.ow2.org/integration/tests/se-flowable/log/services/v2"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:soap="http://petals.ow2.org/components/soap/version-4"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	
+   <jbi:services binding-component="false">
+	
+	   <jbi:provides interface-name="logService:log" service-name="logService:logService"
+         endpoint-name="autogenerate">
+	
+		   <petalsCDK:timeout>30000</petalsCDK:timeout>
+         <petalsCDK:validate-wsdl>true</petalsCDK:validate-wsdl>
+         <petalsCDK:forward-security-subject>false</petalsCDK:forward-security-subject>
+         <petalsCDK:forward-message-properties>false</petalsCDK:forward-message-properties>
+         <petalsCDK:forward-attachments>false</petalsCDK:forward-attachments>
+         <petalsCDK:wsdl>logService.wsdl</petalsCDK:wsdl>
+      
+         <soap:address>${logService-v2.url}</soap:address>
+         <soap:soap-version>1.1</soap:soap-version>
+         <soap:chunked-mode>false</soap:chunked-mode>
+         <soap:mode>SOAP</soap:mode>
+
+      </jbi:provides>
+   </jbi:services>
+</jbi:jbi>

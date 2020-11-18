@@ -1,0 +1,660 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<project name="PEtALS integration - Integration tests about process deployment against SA of Petals SE Flowable"
+         default="all"
+         basedir=".">
+
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/h2.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+
+   <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
+
+   <property name="petals.cli.home"
+             value="${project.build.directory}/${project.artifactId}/petals-cli/${petalsCliDirName}" />
+
+   <property name="container.home" value="${project.build.directory}/${project.artifactId}/container" />
+   <property name="container.name" value="container-0" />
+   <property name="container.port" value="7700" />
+   <property name="container.ip" value="localhost" />
+   <property name="container.username" value="petals" />
+   <property name="container.password" value="petals" />
+   <property name="flowable-db.file" value="/tmp/flowable.db" />
+   <property name="bc-soap.properties" value="${container.home}/conf/bc-soap.properties" />
+   <property name="se-flowable.properties" value="${container.home}/conf/se-flowable.properties" />
+
+   <property name="sa-basic-bpmn-v100-su-v100.name" value="sa-basic-bpmn-v100-su-v100" />
+   <property name="sa-basic-bpmn-v100-su-v101.name" value="sa-basic-bpmn-v100-su-v101" />
+   <property name="sa-basic-bpmn-v101-su-v101.name" value="sa-basic-bpmn-v101-su-v101" />
+   <property name="sa-basic-bpmn-v200-su-v200.name" value="sa-basic-bpmn-v200-su-v200" />
+
+   <!--property name="petals.debug" value="true"/-->
+
+   <property name="soapui.projectFile"
+             value="${project.build.directory}/${project.artifactId}/resources/soapui/Multi-deployments-soapui-project.xml" />
+
+   <target name="prepare">
+      <delete file="${flowable-db.file}.mv.db" />
+
+      <!-- Create the properties file for BC SOAP -->
+      <echo message="logService-v1.url = http://localhost:8088/mocklogBinding${line.separator}"
+            file="${bc-soap.properties}" />
+      <echo message="logService-v2.url = http://localhost:8088/mocklogBindingV2${line.separator}"
+            file="${bc-soap.properties}" append="true"/>
+
+      <!-- Create the properties file for SE Flowable -->
+      <echo message="logService-v1.timeout = 60000${line.separator}" file="${se-flowable.properties}" />
+      <echo message="logService-v2.timeout = 15000${line.separator}" file="${se-flowable.properties}" />
+
+      <echo message="Installing and starting components..." />
+      <parallel>
+         <sequential>
+            <jbi-install-component file="${org.ow2.petals:petals-bc-soap:jbi-component}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}">
+               <param name="propertiesFile" value="file://${bc-soap.properties}" />
+            </jbi-install-component>
+            <jbi-start-component name="petals-bc-soap"
+                                 port="${container.port}"
+                                 host="${container.ip}"
+                                 username="${container.username}"
+                                 password="${container.password}" />
+         </sequential>
+         <sequential>
+            <jbi-install-component file="${org.ow2.petals:petals-se-flowable:jbi-component}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}">
+               <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${flowable-db.file}" />
+               <param name="engineRestApiEnable" value="true" />
+               <param name="propertiesFile" value="file://${se-flowable.properties}" />
+            </jbi-install-component>
+            <jbi-start-component name="petals-se-flowable"
+                                 port="${container.port}"
+                                 host="${container.ip}"
+                                 username="${container.username}"
+                                 password="${container.password}" />
+         </sequential>
+         <sequential>
+            <jbi-install-component file="${org.ow2.petals:petals-se-rmi:jbi-component}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}" />
+            <jbi-start-component name="petals-se-rmi"
+                                 port="${container.port}"
+                                 host="${container.ip}"
+                                 username="${container.username}"
+                                 password="${container.password}" />
+         </sequential>
+      </parallel>
+   </target>
+
+   <target name="deploy">
+      <echo message="Deploying mutualized services..." />
+      <parallel>
+         <sequential>
+            <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-logService:jbi-service-assembly}"
+                                         port="${container.port}"
+                                         host="${container.ip}"
+                                         username="${container.username}"
+                                         password="${container.password}" />
+            <jbi-start-service-assembly name="sa-logService"
+                                        port="${container.port}"
+                                        host="${container.ip}"
+                                        username="${container.username}"
+                                        password="${container.password}" />
+         </sequential>
+         <sequential>
+            <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-flowableIntegrationService:jbi-service-assembly}"
+                                         port="${container.port}"
+                                         host="${container.ip}"
+                                         username="${container.username}"
+                                         password="${container.password}" />
+            <jbi-start-service-assembly name="sa-flowableIntegrationService"
+                                        port="${container.port}"
+                                        host="${container.ip}"
+                                        username="${container.username}"
+                                        password="${container.password}" />
+         </sequential>
+         <sequential>
+            <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-SOAP-basic-v1:jbi-service-assembly}"
+                                         port="${container.port}"
+                                         host="${container.ip}"
+                                         username="${container.username}"
+                                         password="${container.password}" />
+            <jbi-start-service-assembly name="sa-SOAP-basic-v1"
+                                        port="${container.port}"
+                                        host="${container.ip}"
+                                        username="${container.username}"
+                                        password="${container.password}" />
+         </sequential>
+         <sequential>
+            <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-SOAP-basic-v2:jbi-service-assembly}"
+                                         port="${container.port}"
+                                         host="${container.ip}"
+                                         username="${container.username}"
+                                         password="${container.password}" />
+            <jbi-start-service-assembly name="sa-SOAP-basic-v2"
+                                        port="${container.port}"
+                                        host="${container.ip}"
+                                        username="${container.username}"
+                                        password="${container.password}" />
+         </sequential>
+      </parallel>
+   </target>
+
+   <target name="run">
+      <echo message="Launching integration tests about process deployment against SA of Petals SE Flowable" />
+
+      <!-- ******************************************************************** -->
+      <!-- * - 1 - No new process definition deployment on Petals ESB restart * -->
+      <!-- ******************************************************************** -->
+      <echo message="**********************************************************************" />
+      <echo message="1) Check that no new Flowable deployment is done on Petals ESB restart" />
+      <echo message="**********************************************************************" />
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-basic-bpmn-v100-su-v100:jbi-service-assembly}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}" />
+      <jbi-start-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                  port="${container.port}"
+                                  host="${container.ip}"
+                                  username="${container.username}"
+                                  password="${container.password}" />
+
+      <!-- Launch new processes that will be completed later -->
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1a.1" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1a.2" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1a.3" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1a.4" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1a.5" />
+
+      <stopContainer name="${container.name}" home="${container.home}" />
+      <startContainer name="${container.name}" home="${container.home}" jmx.port="${container.port}" />
+
+      <!-- Asserts that no new process deployment was done -->
+      <local name="deployments-after-1st-restart" />
+      <tempfile property="deployments-after-1st-restart.tempfile"
+                prefix="deployments-after-1st-restart"
+                suffix=".json" />
+      <get src="http://localhost:8089/flowable-rest-api/repository/process-definitions"
+           username="rest-api-user"
+           password="user-api-rest-password"
+           dest="${deployments-after-1st-restart.tempfile}" />
+      <json-to-properties file="${deployments-after-1st-restart.tempfile}" prefix="deployments-after-1st-restart" />
+      <echo message="Current number of depoyments: ${deployments-after-1st-restart.total}" />
+      <fail message="Unexpected number of deployments found !!">
+         <condition>
+            <not>
+               <equals arg1="${deployments-after-1st-restart.total}" arg2="1" />
+            </not>
+         </condition>
+      </fail>
+
+      <!-- We should be able to complete the previous process instance -->
+      <!--complete-process-instance process-instance-id="${proc-inst-1a.1}" /-->
+      <complete-process-instance process-instance-id="4" />
+
+      <!-- Launch new processes that will be completed later -->
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1b.1" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1b.2" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1b.3" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-1b.4" />
+
+      <!-- *********************************************************************************** -->
+      <!-- * - 2 - No new process definition deployment on redeploying the same service unit * -->
+      <!-- *********************************************************************************** -->
+      <echo message="************************************************************************************" />
+      <echo message="2) Check that no new Flowable deployment is done on redeploying the same Flowable SU" />
+      <echo message="************************************************************************************" />
+      <jbi-stop-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                 port="${container.port}"
+                                 host="${container.ip}"
+                                 username="${container.username}"
+                                 password="${container.password}" />
+      <jbi-shut-down-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                      port="${container.port}"
+                                      host="${container.ip}"
+                                      username="${container.username}"
+                                      password="${container.password}" />
+      <jbi-undeploy-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                     port="${container.port}"
+                                     host="${container.ip}"
+                                     username="${container.username}"
+                                     password="${container.password}" />
+
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-basic-bpmn-v100-su-v100:jbi-service-assembly}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}" />
+      <jbi-start-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                  port="${container.port}"
+                                  host="${container.ip}"
+                                  username="${container.username}"
+                                  password="${container.password}" />
+
+      <!-- Asserts that no new Flowable deployment was done -->
+      <local name="deployments-after-redeployment" />
+      <tempfile property="deployments-after-redeployment.tempfile"
+                prefix="deployments-after-redeployment"
+                suffix=".json" />
+      <get src="http://localhost:8089/flowable-rest-api/repository/process-definitions"
+           username="rest-api-user"
+           password="user-api-rest-password"
+           dest="${deployments-after-redeployment.tempfile}" />
+      <json-to-properties file="${deployments-after-redeployment.tempfile}" prefix="deployments-after-redeployment" />
+      <echo message="Current number of depoyments: ${deployments-after-redeployment.total}" />
+      <fail message="Unexpected number of deployments found !!">
+         <condition>
+            <not>
+               <equals arg1="${deployments-after-redeployment.total}" arg2="1" />
+            </not>
+         </condition>
+      </fail>
+
+      <!-- We should be able to complete the previous process instances -->
+      <parallel>
+         <complete-process-instance process-instance-id="${proc-inst-1a.2}" />
+         <complete-process-instance process-instance-id="${proc-inst-1b.1}" />
+      </parallel>
+
+      <!-- Launch new processes that will be completed later -->
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-2.1" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-2.2" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-2.3" />
+
+      <!-- ************************************************************************************************* -->
+      <!-- * - 3 - No new process definition deployment on redeploying a new minor version of the Flowable * -->
+      <!-- *       service unit where changes occurs only on JBI part, no changes into BPMN                * -->
+      <!-- ************************************************************************************************* -->
+      <echo message="**************************************************************************************" />
+      <echo message="3) Check processing redeploying a minor version of the Flowable SU (no change on BPMN)" />
+      <echo message="**************************************************************************************" />
+      <jbi-stop-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                 port="${container.port}"
+                                 host="${container.ip}"
+                                 username="${container.username}"
+                                 password="${container.password}" />
+      <jbi-shut-down-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                      port="${container.port}"
+                                      host="${container.ip}"
+                                      username="${container.username}"
+                                      password="${container.password}" />
+      <jbi-undeploy-service-assembly name="${sa-basic-bpmn-v100-su-v100.name}"
+                                     port="${container.port}"
+                                     host="${container.ip}"
+                                     username="${container.username}"
+                                     password="${container.password}" />
+
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-basic-bpmn-v100-su-v101:jbi-service-assembly}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}" />
+      <jbi-start-service-assembly name="${sa-basic-bpmn-v100-su-v101.name}"
+                                  port="${container.port}"
+                                  host="${container.ip}"
+                                  username="${container.username}"
+                                  password="${container.password}" />
+
+      <!-- Asserts that no new Flowable deployment was done -->
+      <local name="deployments-after-minor-version-redeployment" />
+      <tempfile property="deployments-after-minor-version-redeployment.tempfile"
+                prefix="deployments-after-minor-version-redeployment"
+                suffix=".json" />
+      <get src="http://localhost:8089/flowable-rest-api/repository/process-definitions"
+           username="rest-api-user"
+           password="user-api-rest-password"
+           dest="${deployments-after-minor-version-redeployment.tempfile}" />
+      <json-to-properties file="${deployments-after-minor-version-redeployment.tempfile}"
+                       prefix="deployments-after-minor-version-redeployment" />
+      <echo message="Current number of depoyments: ${deployments-after-minor-version-redeployment.total}" />
+      <fail message="Unexpected number of deployments found !!">
+         <condition>
+            <not>
+               <equals arg1="${deployments-after-minor-version-redeployment.total}" arg2="1" />
+            </not>
+         </condition>
+      </fail>
+
+      <!-- We should be able to complete the previous process instances -->
+      <parallel>
+         <complete-process-instance process-instance-id="${proc-inst-1a.3}" />
+         <complete-process-instance process-instance-id="${proc-inst-1b.2}" />
+         <complete-process-instance process-instance-id="${proc-inst-2.1}" />
+      </parallel>
+
+      <!-- Launch new processes that will be completed later -->
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-3.1" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-3.2" />
+
+      <!-- **************************************************************************************************** -->
+      <!-- * - 4 - A new process definition deployment occurs redeploying a new minor version of the Flowable * -->
+      <!-- *       service unit where changes occurs on BPMN definitio                                        * -->
+      <!-- **************************************************************************************************** -->
+      <echo message="****************************************************************************************" />
+      <echo message="4) Check processing redeploying a minor version of the Flowable SU (with change on BPMN)" />
+      <echo message="****************************************************************************************" />
+      <jbi-stop-service-assembly name="${sa-basic-bpmn-v100-su-v101.name}"
+                                 port="${container.port}"
+                                 host="${container.ip}"
+                                 username="${container.username}"
+                                 password="${container.password}" />
+      <jbi-shut-down-service-assembly name="${sa-basic-bpmn-v100-su-v101.name}"
+                                      port="${container.port}"
+                                      host="${container.ip}"
+                                      username="${container.username}"
+                                      password="${container.password}" />
+      <jbi-undeploy-service-assembly name="${sa-basic-bpmn-v100-su-v101.name}"
+                                     port="${container.port}"
+                                     host="${container.ip}"
+                                     username="${container.username}"
+                                     password="${container.password}" />
+
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-basic-bpmn-v101-su-v101:jbi-service-assembly}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}" />
+      <jbi-start-service-assembly name="${sa-basic-bpmn-v101-su-v101.name}"
+                                  port="${container.port}"
+                                  host="${container.ip}"
+                                  username="${container.username}"
+                                  password="${container.password}" />
+
+      <!-- Asserts that a new Flowable deployment was done -->
+      <local name="deployments-after-new-bpmn-version-redeployment" />
+      <tempfile property="deployments-after-new-bpmn-version-redeployment.tempfile"
+                prefix="deployments-after-new-bpmn-version-redeployment"
+                suffix=".json" />
+      <get src="http://localhost:8089/flowable-rest-api/repository/process-definitions"
+           username="rest-api-user"
+           password="user-api-rest-password"
+           dest="${deployments-after-new-bpmn-version-redeployment.tempfile}" />
+      <json-to-properties file="${deployments-after-new-bpmn-version-redeployment.tempfile}"
+                       prefix="deployments-after-new-bpmn-version-redeployment" />
+      <echo message="Current number of depoyments: ${deployments-after-new-bpmn-version-redeployment.total}" />
+      <fail message="Unexpected number of deployments found !!">
+         <condition>
+            <not>
+               <equals arg1="${deployments-after-new-bpmn-version-redeployment.total}" arg2="2" />
+            </not>
+         </condition>
+      </fail>
+
+      <!-- We should be able to complete the previous process instances -->
+      <parallel>
+         <complete-process-instance process-instance-id="${proc-inst-1a.4}" />
+         <complete-process-instance process-instance-id="${proc-inst-1b.3}" />
+         <complete-process-instance process-instance-id="${proc-inst-2.2}" />
+         <complete-process-instance process-instance-id="${proc-inst-3.1}" />
+      </parallel>
+
+      <!-- Launch new processes that will be completed later -->
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-4.1" />
+
+      <!-- ************************************************************************************************ -->
+      <!-- * - 5 - A new process definition deployment occurs redeploying a major version of the Flowable * -->
+      <!-- *       service unit where changes occurs in service and BPMN definition                       * -->
+      <!-- ************************************************************************************************ -->
+      <echo message="*****************************************************************" />
+      <echo message="5) Check processing deploying a major version of the Flowable SU " />
+      <echo message="*****************************************************************" />
+      <jbi-deploy-service-assembly file="${org.ow2.petals.integration.tests.se.flowable:sa-basic-bpmn-v200-su-v200:jbi-service-assembly}"
+                                   port="${container.port}"
+                                   host="${container.ip}"
+                                   username="${container.username}"
+                                   password="${container.password}" />
+      <jbi-start-service-assembly name="${sa-basic-bpmn-v200-su-v200.name}"
+                                  port="${container.port}"
+                                  host="${container.ip}"
+                                  username="${container.username}"
+                                  password="${container.password}" />
+
+      <!-- Asserts that a new Flowable deployment was done -->
+      <local name="deployments-after-new-major-version-deployment" />
+      <tempfile property="deployments-after-new-major-version-deployment.tempfile"
+                prefix="deployments-after-new-major-version-deployment"
+                suffix=".json" />
+      <get src="http://localhost:8089/flowable-rest-api/repository/process-definitions"
+           username="rest-api-user"
+           password="user-api-rest-password"
+           dest="${deployments-after-new-major-version-deployment.tempfile}" />
+      <json-to-properties file="${deployments-after-new-major-version-deployment.tempfile}"
+                       prefix="deployments-after-new-major-version-deployment" />
+      <echo message="Current number of depoyments: ${deployments-after-new-major-version-deployment.total}" />
+      <fail message="Unexpected number of deployments found !!">
+         <condition>
+            <not>
+               <equals arg1="${deployments-after-new-major-version-deployment.total}" arg2="3" />
+            </not>
+         </condition>
+      </fail>
+
+      <!-- We should be able to complete the previous process instances and start a process instance in previous version -->
+      <parallel>
+         <complete-process-instance process-instance-id="${proc-inst-1a.5}" />
+         <complete-process-instance process-instance-id="${proc-inst-1b.4}" />
+         <complete-process-instance process-instance-id="${proc-inst-2.3}" />
+         <complete-process-instance process-instance-id="${proc-inst-3.2}" />
+         <complete-process-instance process-instance-id="${proc-inst-4.1}" />
+      </parallel>
+
+      <!-- Launch new processes ... -->
+      <launch-new-process-su-v20-bpmn-v20 property-name="proc-inst-5.1" />
+      <launch-new-process-su-v10-bpmn-v10 property-name="proc-inst-5.previous-version" />
+      <!-- ... and complete them -->
+      <parallel>
+         <complete-process-instance process-instance-id="${proc-inst-5.1}" />
+         <complete-process-instance process-instance-id="${proc-inst-5.previous-version}" />
+      </parallel>
+
+      <echo message="Integration test completed" />
+   </target>
+
+   <macrodef name="launch-new-process-su-v10-bpmn-v10">
+      <attribute name="property-name" />
+      <sequential>
+         <launch-new-process property-name="@{property-name}" testCase="Launch process instance v1.0 via service v1.0"/>
+      </sequential>
+   </macrodef>
+
+   <macrodef name="launch-new-process-su-v20-bpmn-v20">
+      <attribute name="property-name" />
+      <sequential>
+         <launch-new-process property-name="@{property-name}" testCase="Launch process instance v2.0 via service v2.0"/>
+      </sequential>
+   </macrodef>
+
+   <macrodef name="launch-new-process">
+      <attribute name="property-name" />
+      <attribute name="testCase"/>
+      <sequential>
+         <petals-soapui-test testCase="@{testCase}" />
+
+         <local name="last-process-instance" />
+         <tempfile property="last-process-instance.tempfile" prefix="last-process-instance" suffix=".json" />
+         <!-- Get the last created process instance -->
+         <get src="http://localhost:8089/flowable-rest-api/runtime/process-instances?sort=startTime&amp;order=desc&amp;size=1"
+              username="rest-api-user"
+              password="user-api-rest-password"
+              dest="${last-process-instance.tempfile}" />
+         <json-to-properties file="${last-process-instance.tempfile}" prefix="last-process-instance" />
+         <echo message="Last process instance: ${last-process-instance.data.0.id}" />
+         <property name="@{property-name}" value="${last-process-instance.data.0.id}" />
+      </sequential>
+   </macrodef>
+
+   <macrodef name="complete-process-instance">
+      <attribute name="process-instance-id" />
+      <sequential>
+         <local name="complete-process-instance.@{process-instance-id}.file" />
+         <tempfile property="complete-process-instance.@{process-instance-id}.file" prefix="complete-process-instance.@{process-instance-id}" suffix=".xml" />
+         <copy file="${project.build.directory}/${project.artifactId}/resources/complete-process-instance-v1-template.xml"
+               tofile="${complete-process-instance.@{process-instance-id}.file}" />
+         <replace file="${complete-process-instance.@{process-instance-id}.file}">
+            <replacefilter token="@PROCESS_INSTANCE_ID@" value="@{process-instance-id}" />
+         </replace>
+
+         <java classname="com.ebmwebsoucing.integration.client.rmi.RMIClient"
+               fork="true"
+               resultproperty="result"
+               classpath="${maven.runtime.classpath}">
+            <arg line="-integration '${complete-process-instance.@{process-instance-id}.file}'" />
+         </java>
+
+         <local name="complete-process-instance.@{process-instance-id}.wait.file" />
+         <tempfile property="complete-process-instance.@{process-instance-id}.wait.tempfile" prefix="complete-process-instance.@{process-instance-id}.wait" suffix=".json" />
+         <retry retrycount="60" retrydelay="1000">
+            <sequential>
+               <get src="http://localhost:8089/flowable-rest-api/history/historic-process-instances?processInstanceId=@{process-instance-id}&amp;finished=true"
+                    username="rest-api-user"
+                    password="user-api-rest-password"
+                    dest="${complete-process-instance.@{process-instance-id}.wait.tempfile}" />
+               <json-to-properties file="${complete-process-instance.@{process-instance-id}.wait.tempfile}" prefix="complete-process-instance.@{process-instance-id}.wait" />
+               <fail>
+                  <condition>
+                     <not>
+                        <equals arg1="${complete-process-instance.@{process-instance-id}.wait.total}" arg2="1" />
+                     </not>
+                  </condition>
+               </fail>
+            </sequential>
+         </retry>
+      </sequential>
+   </macrodef>
+
+   <!-- Target : Start Web services -->
+   <target name="startWebservices">
+      <startMocks />
+   </target>
+
+   <!-- Target : Wait Web services -->
+   <target name="waitWebservices">
+      <parallel failonany="yes">
+         <waitMock url="http://localhost:8088/mocklogBinding" />
+         <waitMock url="http://localhost:8088/mocklogBindingV2" />
+      </parallel>
+   </target>
+
+   <!-- Target : Stop Web services -->
+   <target name="stopWebservices">
+      <parallel failonany="yes">
+         <stopMock url="http://localhost:8088/mocklogBinding" />
+         <stopMock url="http://localhost:8088/mocklogBindingV2" />
+      </parallel>
+   </target>
+
+   <target name="launchContainer">
+      <!-- No configuration required, we use the default configuration -->
+      <startContainer name="${container.name}" home="${container.home}" jmx.port="${container.port}" />
+   </target>
+
+   <target name="clean" depends="killAllRegistryMembers, killAllContainers" />
+
+   <target name="cleanAll">
+      <echo message="Cleaning Flowable component tests..." />
+
+      <cleanContainerArtifacts jmx.host="${container.ip}"
+                               jmx.port="${container.port}"
+                               jmx.user="${container.username}"
+                               jmx.pwd="${container.password}" />
+
+   </target>
+
+   <!-- Target : All -->
+   <target name="all2">
+      <antcall target="killAllContainers" />
+      <antcall target="launchContainer" />
+
+      <antcall target="cleanAll" />
+
+      <trycatch>
+         <try>
+            <parallel failonany="yes">
+               <startH2Database />
+               <antcall target="startWebservices" />
+               <sequential>
+                  <trycatch>
+                     <try>
+                        <sequential>
+                           <antcall target="prepare" />
+                           <antcall target="deploy" />
+                           <antcall target="waitWebservices" />
+                           <antcall target="run" />
+                        </sequential>
+                     </try>
+                     <finally>
+                        <trycatch>
+                           <try>
+                              <antcall target="stopWebservices" />
+                           </try>
+                           <catch>
+                              <!-- NOP: avoid to fail the build if an error occurs stopping web-services -->
+                              <echo message="ERROR: an error occurs when stopping web-services" />
+                           </catch>
+                        </trycatch>
+                     </finally>
+                  </trycatch>
+               </sequential>
+            </parallel>
+         </try>
+         <finally>
+            <!-- We force component uninstallation to avoid stack trace logged by SE Flowable when tests fail. The async job
+                 executor of SE Flowable try run SQL query on a database that is not running -->
+            <antcall target="cleanAll" />
+            <stopH2Database />
+         </finally>
+      </trycatch>
+
+      <stopContainer name="${container.name}" home="${container.home}" />
+
+      <echo message="All task finished!" />
+
+   </target>
+
+   <target name="all">
+      <trycatch>
+         <try>
+            <antcall target="all2" />
+         </try>
+         <finally>
+            <antcall target="killAllContainers" />
+            <antcall target="killAllRegistryMembers" />
+         </finally>
+      </trycatch>
+   </target>
+
+</project>

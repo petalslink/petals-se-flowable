@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<wsdl:definitions name="logService"
+   targetNamespace="http://petals.ow2.org/integration/tests/se-flowable/log/services/v1"
+
+   xmlns:logService="http://petals.ow2.org/integration/tests/se-flowable/log/services/v1"
+
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/integration/tests/se-flowable/log/services/v1">
+
+         <xsd:element name="log" type="logService:LogRequestType" />
+         
+         <xsd:complexType name="LogRequestType">
+            <xsd:sequence>
+               <xsd:element name="level" type="xsd:string"  minOccurs="1" maxOccurs="1" />
+               <xsd:element name="message" type="xsd:string"  minOccurs="1" maxOccurs="1" />
+            </xsd:sequence>
+         </xsd:complexType>
+         
+      </xsd:schema>
+   </wsdl:types>
+   
+   <wsdl:message name="logRequestMessage">
+      <wsdl:part name="parameters" element="logService:log" />
+   </wsdl:message>
+
+   <wsdl:portType name="log">
+      <wsdl:operation name="log">
+         <wsdl:input message="logService:logRequestMessage" />
+      </wsdl:operation>
+   </wsdl:portType>
+
+   <wsdl:binding name="logBinding" type="logService:log">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="log">
+         <soap:operation soapAction="http://petals.ow2.org/integration/tests/se-flowable/log/services/v1/log" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="logService">
+      <wsdl:port name="autogenerate" binding="logService:logBinding">
+         <soap:address location="petals:///{http://petals.ow2.org/integration/tests/se-flowable/log/services/v1}log" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

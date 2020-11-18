@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<assembly xmlns="http://maven.apache.org/Assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/Assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0-SNAPSHOT.xsd">
+   <id>full</id>
+   <formats>
+      <format>dir</format>
+   </formats>
+
+   <includeBaseDirectory>false</includeBaseDirectory>
+
+   <dependencySets>
+		<!-- Petals ESB container -->
+      <dependencySet>
+         <outputDirectory>/container</outputDirectory>
+         <includes>
+            <include>org.ow2.petals:petals-esb-minimal-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
+      
+      <!-- Petals CLI -->
+      <dependencySet>
+         <outputDirectory>/petals-cli</outputDirectory>
+         <includes>
+            <include>org.ow2.petals:petals-cli-distrib-zip:zip</include>
+         </includes>
+         <unpack>true</unpack>
+      </dependencySet>
+   </dependencySets>
+
+   <fileSets>
+      <fileSet>
+         <directory>src/main/ant</directory>
+         <outputDirectory>/</outputDirectory>
+         <fileMode>644</fileMode>
+      </fileSet>
+      <fileSet>
+         <directory>src/main/resources</directory>
+         <outputDirectory>/resources</outputDirectory>
+         <fileMode>644</fileMode>
+      </fileSet>
+   </fileSets>
+</assembly>
+
+

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<wsdl:definitions name="basic"
+   targetNamespace="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1"
+
+   xmlns:basic="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1"
+
+   xmlns:bpmn="http://petals.ow2.org/se/flowable/annotations/1.0"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+   <wsdl:types>
+      <xsd:schema targetNamespace="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1">
+
+         <xsd:element name="startBasicProcess">
+            <xsd:complexType>
+               <xsd:sequence />
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="startBasicProcessResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-id" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="complete">
+            <xsd:complexType>
+               <xsd:all>
+                  <xsd:element name="process-instance-id" minOccurs="1" maxOccurs="1" />
+                  <xsd:element name="completed-by" minOccurs="1" maxOccurs="1" type="xsd:string" />
+               </xsd:all>
+            </xsd:complexType>
+         </xsd:element>
+
+         <xsd:element name="completeResponse">
+            <xsd:complexType>
+               <xsd:sequence>
+                  <xsd:element name="process-instance-id" minOccurs="1" maxOccurs="1" />
+               </xsd:sequence>
+            </xsd:complexType>
+         </xsd:element>
+      </xsd:schema>
+   </wsdl:types>
+   
+   <wsdl:message name="startBasicProcess">
+      <wsdl:part name="parameters" element="basic:startBasicProcess" />
+   </wsdl:message>
+   <wsdl:message name="startBasicProcessResponse">
+      <wsdl:part name="parameters" element="basic:startBasicProcessResponse" />
+   </wsdl:message>
+   <wsdl:message name="complete">
+      <wsdl:part name="parameters" element="basic:complete" />
+   </wsdl:message>
+   <wsdl:message name="completeResponse">
+      <wsdl:part name="parameters" element="basic:completeResponse" />
+   </wsdl:message>
+   
+   <wsdl:portType name="basic">
+      <wsdl:operation name="startBasicProcess">
+         <wsdl:input message="basic:startBasicProcess" />
+         <wsdl:output message="basic:startBasicProcessResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="complete">
+         <wsdl:input message="basic:complete" />
+         <wsdl:output message="basic:completeResponse" />
+      </wsdl:operation>
+   </wsdl:portType>
+   
+   <wsdl:binding name="basicSoapBinding" type="basic:basic">
+      <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+      <wsdl:operation name="startBasicProcess">
+         <soap:operation
+            soapAction="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1/startBasicProcess"
+            style="document" />
+         <bpmn:operation processDefinitionId="basicProcess" action="startEvent"
+            none-start-event-id="startEventBasicProcess" />
+         <bpmn:output>startBasicProcessResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="complete">
+         <soap:operation
+            soapAction="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1/complete"
+            style="document" />
+         <bpmn:operation processDefinitionId="basicProcess" action="userTask"
+            user-task-id="usertask1" />
+         <bpmn:processInstanceId>/*[local-name()='complete']/*[local-name()='process-instance-id']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='complete']/*[local-name()='completed-by']</bpmn:userId>
+         <bpmn:output>completeResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="basicService">
+      <wsdl:port name="autogenerate" binding="basic:basicSoapBinding">
+         <soap:address location="petals:///{http://petals.ow2.org/samples/se-flowable/basic/services/v1}basic" />
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

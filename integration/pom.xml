@@ -33,6 +33,23 @@
     <module>launcher-ha-flowable</module>
     <module>sa-SOAP-vacationRequest</module>
     <module>sa-flowable-traveling</module>
+    <module>launcher-multi-deployments</module>
+    <module>su-flowable-basic-bpmn-v100-su-v100-provide</module>
+    <module>su-SOAP-basic-su-v1-consume</module>
+    <module>sa-basic-bpmn-v100-su-v100</module>
+    <module>su-SOAP-logService-v1-provide</module>
+    <module>sa-logService</module>
+    <module>sa-flowableIntegrationService</module>
+    <module>su-flowable-basic-bpmn-v100-su-v101-provide</module>
+    <module>sa-basic-bpmn-v100-su-v101</module>
+    <module>su-flowable-basic-bpmn-v101-su-v101-provide</module>
+    <module>sa-basic-bpmn-v101-su-v101</module>
+    <module>su-SOAP-logService-v2-provide</module>
+    <module>su-flowable-basic-bpmn-v200-su-v200-provide</module>
+    <module>su-SOAP-basic-su-v2-consume</module>
+    <module>sa-basic-bpmn-v200-su-v200</module>
+    <module>sa-SOAP-basic-v1</module>
+    <module>sa-SOAP-basic-v2</module>
   </modules>
 
   <scm>

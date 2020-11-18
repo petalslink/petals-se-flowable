@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>parent</artifactId>
+      <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
+      <version>5.2.1-SNAPSHOT</version>
+      <relativePath>../parent/pom.xml</relativePath>
+   </parent>
+
+   <artifactId>su-flowable-basic-bpmn-v101-su-v101-provide</artifactId>
+   <packaging>jbi-service-unit</packaging>
+   <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - SU Flowable Provide (the basic process v1.0.1 with basic services v1.0.1)</name>
+   <!-- No version set -->
+   <description>su-flowable-basic-bpmn-v101-su-v101-provide description.</description>
+
+   <properties>
+      <!--flowable.groupId>org.flowable</flowable.groupId-->
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
+   </properties>
+
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <!-- Align dependencies with those of Flowable -->
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-se-flowable</artifactId>
+            <version>${petals-se-flowable.version}</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+   
+   <dependencies>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+      
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>su-SOAP-logService-v1-provide</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-unit</type>
+      </dependency>
+      
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable</artifactId>
+         <type>jbi-component</type>
+      </dependency>
+      
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable-junit</artifactId>
+      </dependency>
+      
+      <!-- To test the process definition we must use our own Flowable engine-->
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-engine</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-task-service-api</artifactId>
+         <version>${flowable.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${flowable.groupId}</groupId>
+         <artifactId>flowable-cxf</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <!-- To implement a ws-service mock server -->
+         <groupId>org.apache.cxf</groupId>
+         <artifactId>cxf-rt-transports-http-jetty</artifactId>
+         <version>3.3.2</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.bind</groupId>
+         <artifactId>jakarta.xml.bind-api</artifactId>
+         <version>2.3.2</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-jdk14</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <version>1.4.178</version>
+         <scope>test</scope>
+      </dependency>
+   </dependencies>
+   
+   <build>
+      <plugins>
+         <plugin>
+            <!-- Don't forget to clean files unzipped during build process by maven-dependency-plugin -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+               <filesets>
+                  <fileset>
+                     <directory>${basedir}/src/main/resources/jbi</directory>
+                     <includes>
+                        <include>logService.wsdl</include>
+                     </includes>
+                  </fileset>
+               </filesets>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-codegen-plugin</artifactId>
+            <version>3.2.5</version>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>wsdl2java</goal>
+                  </goals>
+                  <phase>process-test-resources</phase>
+                  <configuration>
+                     <sourceRoot>${project.build.directory}/generated-test-sources/cxf</sourceRoot>
+                     <wsdlOptions>
+                        <wsdlOption>
+                           <wsdl>${basedir}/src/main/resources/jbi/basic.wsdl</wsdl>
+                        </wsdlOption>
+                        <wsdlOption>
+                           <wsdl>${basedir}/src/main/resources/jbi/logService.wsdl</wsdl>
+                        </wsdlOption>
+                     </wsdlOptions>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+               <execution>
+                  <id>add-test-sources</id>
+                  <phase>process-test-resources</phase>
+                  <goals>
+                     <goal>add-test-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>${project.build.directory}/generated-test-sources/cxf</source>
+                     </sources>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-maven-plugin</artifactId>
+            <configuration>
+               <jbiDirectory>src/main/resources/jbi</jbiDirectory>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>generate-resources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>${project.groupId}</groupId>
+                           <artifactId>su-SOAP-logService-v1-provide</artifactId>
+                           <version>${project.version}</version>
+                           <type>jbi-service-unit</type>
+                           <outputDirectory>${basedir}/src/main/resources/jbi</outputDirectory>
+                           <includes>logService.wsdl</includes>
+                           <overWrite>true</overWrite>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- These following dependencies are needed at compile time but are not directly used in source code -->
+                        <usedDependency>${project.groupId}:su-SOAP-logService-v1-provide</usedDependency>
+                        <!-- The following dependency is needed because it's the JBI component on which this SU runs -->
+                        <usedDependency>org.ow2.petals:petals-se-flowable</usedDependency>
+                        <!-- These following dependencies are needed for unit test -->
+                        <usedDependency>${flowable.groupId}:flowable-cxf</usedDependency>
+                        <usedDependency>com.h2database:h2</usedDependency>
+                        <usedDependency>org.apache.cxf:cxf-rt-transports-http-jetty</usedDependency>
+                        <usedDependency>org.slf4j:slf4j-jdk14</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.basepom.maven</groupId>
+            <artifactId>duplicate-finder-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>enforce-no-duplicate-classes</id>
+                  <configuration>
+                     <exceptions>
+                        <exception>
+                           <conflictingDependencies>
+                              <dependency>
+                                 <groupId>org.ow2.petals</groupId>
+                                 <artifactId>petals-se-flowable</artifactId>
+                                 <type>jar</type>
+                                 <scope>test</scope>
+                              </dependency>
+                           </conflictingDependencies>
+                           <!-- Current project is the actual project being checked, not this parent pom -->
+                           <currentProject>true</currentProject>
+                           <resources>
+                              <resource>jbi/jbi.xml</resource>
+                           </resources>
+                        </exception>
+                     </exceptions>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
+     <tag>HEAD</tag>
+  </scm>
+</project>

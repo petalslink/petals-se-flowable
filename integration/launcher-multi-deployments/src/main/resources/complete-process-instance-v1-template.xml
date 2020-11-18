@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<tns:integration xmlns:tns="http://org.ow2.petals/RMIClientUtil"
+	xmlns:basic="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<tns:consumer interface="basic:basic">
+		<tns:description>Complete an instance of process Basic v1.0</tns:description>
+
+		<tns:test>
+			<tns:description>Complete an instance of process Basic v1.0</tns:description>
+			<tns:mep>InOut</tns:mep>
+			<tns:operation>basic:complete</tns:operation>
+			<tns:messages>
+				<tns:in>
+					<tns:content><![CDATA[<basic:complete xmlns:basic="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1">
+<process-instance-id>@PROCESS_INSTANCE_ID@</process-instance-id>
+<completed-by>kermit</completed-by></basic:complete>]]></tns:content>
+				</tns:in>
+            <tns:out>
+               <tns:content><![CDATA[<?xml version="1.0" encoding="UTF-8"?><tns:completeResponse xmlns:tns="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v1"><process-instance-id>@PROCESS_INSTANCE_ID@</process-instance-id></tns:completeResponse>]]></tns:content>
+            </tns:out>
+            <tns:outack ack="Done" />
+			</tns:messages>
+		</tns:test>
+	</tns:consumer>
+</tns:integration>

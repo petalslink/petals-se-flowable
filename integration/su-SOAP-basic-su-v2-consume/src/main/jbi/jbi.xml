@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+ 
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<jbi:jbi version="1.0"
+   xmlns:basicService="http://petals.ow2.org/integration/tests/se-flowable/basic/services/v2"
+   xmlns:jbi="http://java.sun.com/xml/ns/jbi"
+   xmlns:petalsCDK="http://petals.ow2.org/components/extensions/version-5"
+   xmlns:soap="http://petals.ow2.org/components/soap/version-4"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+   <jbi:services binding-component="true">
+      <jbi:consumes interface-name="basicService:basic"
+         service-name="basicService:basicService" >
+
+         <petalsCDK:timeout>180000</petalsCDK:timeout>
+         <petalsCDK:mep xsi:nil="true" />
+
+         <soap:service-name>basicService-v2</soap:service-name>
+         <soap:mode>SOAP</soap:mode>
+         <soap:enable-http-transport>true</soap:enable-http-transport>
+         <soap:enable-jms-transport>false</soap:enable-jms-transport>
+      </jbi:consumes>
+   </jbi:services>
+</jbi:jbi>

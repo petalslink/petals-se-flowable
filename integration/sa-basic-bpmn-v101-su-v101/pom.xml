@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2020 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the New BSD License (3-clause license).
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the New BSD License (3-clause license)
+ for more details.
+
+ You should have received a copy of the New BSD License (3-clause license)
+ along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
+ for the New BSD License (3-clause license).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <modelVersion>4.0.0</modelVersion>
+   <parent>
+      <artifactId>parent</artifactId>
+      <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
+      <version>5.2.1-SNAPSHOT</version>
+      <relativePath>../parent/pom.xml</relativePath>
+   </parent>
+
+   <artifactId>sa-basic-bpmn-v101-su-v101</artifactId>
+   <packaging>jbi-service-assembly</packaging>
+   <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - SA (the basic process v1.0.1 with basic services v1.0.1)</name>
+   <description>sa-basic-bpmn-v101-su-v101 description</description>
+   <!-- No version set -->
+
+   <properties>
+      <!-- Skip dependency check for service assembly because it has Java no source code. -->
+      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
+
+      <jbi-sa.build.legal-dir>${project.build.directory}/legal-additionals</jbi-sa.build.legal-dir>
+   </properties>
+
+   <dependencies>
+      <dependency>
+         <groupId>${project.groupId}</groupId>
+         <artifactId>su-flowable-basic-bpmn-v101-su-v101-provide</artifactId>
+         <version>${project.version}</version>
+         <type>jbi-service-unit</type>
+      </dependency>
+   </dependencies>
+
+   <build>
+      <plugins>
+         <plugin>
+            <groupId>org.ow2.petals</groupId>
+            <artifactId>petals-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>default-jbi-package</id>
+                  <configuration>
+                     <!-- We force to identify SU by their artifactId and the major part of the version -->
+                     <serviceUnitNameMappingInSA>su-flowable-basic-1</serviceUnitNameMappingInSA>
+                     <serviceAssemblyNameMapping>${project.artifactId}</serviceAssemblyNameMapping>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+      </plugins>
+   </build>
+
+   <scm>
+      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+      <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
+      <tag>HEAD</tag>
+   </scm>
+</project>
