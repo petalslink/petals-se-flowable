@@ -14,8 +14,8 @@
  along with this program/library; If not, see http://directory.fsf.org/wiki/License:BSD_3Clause/
  for the New BSD License (3-clause license).
 -->
-<assembly xmlns="http://maven.apache.org/Assembly/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/Assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0-SNAPSHOT.xsd">
+<assembly xmlns="http://maven.apache.org/assembly/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/assembly/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
    <id>full</id>
    <formats>
       <format>dir</format>
