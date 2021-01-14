@@ -17,10 +17,10 @@
  */
 package org.ow2.petals.flowable.monit;
 
-import static com.jayway.awaitility.Awaitility.await;
-import static com.jayway.awaitility.Duration.TEN_SECONDS;
+import static org.awaitility.Awaitility.await;
 
 import java.net.URL;
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.LogRecord;
@@ -293,7 +293,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
         // MONIT trace
         if (statusToReturn == ExchangeStatus.ERROR) {
             // Wait that the job is put as dead letter job before to cancel the process instance
-            await().atMost(TEN_SECONDS).until(() -> {
+            await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
                 assertEquals(1,
                         this.getProcessEngine().getManagementService().createDeadLetterJobQuery().list().size());
             });
@@ -312,7 +312,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
         final MonitoringMBean monitoringMbean = (MonitoringMBean) this.componentUnderTest.getComponentObject()
                 .getMonitoringBean();
 
-        await().atMost(TEN_SECONDS).until(() -> {
+        await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             try {
                 final TabularData processMetrics = monitoringMbean.getProcessDefinitions();
                 final CompositeData processInstances = processMetrics
