@@ -30,12 +30,38 @@
    <name>su-flowable-collaboration-provide</name>
    <!-- No version set -->
    <description>su-flowable-collaboration-provide description.</description>
-
+   
    <properties>
-      <!--flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <jetty.version>9.4.31.v20200723</jetty.version>
+      <!-- CXF version aligned with the one provided by flowable-cxf -->
+      <cxf.version>3.4.0</cxf.version>
    </properties>
    
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <!-- Align Jetty version over Apache CXF and Flowable. -->
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-bom</artifactId>
+            <version>${jetty.version}</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency>
+         <dependency>
+            <!-- Align version between Flowable, CXF and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+         <dependency>
+            <!-- Align version between Flowable, CXF and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -64,13 +90,36 @@
          <!-- To implement a ws-service mock server -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-rt-transports-http-jetty</artifactId>
-         <version>3.3.2</version>
+         <version>${cxf.version}</version>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
-         <version>2.3.2</version>
+         <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.ws</groupId>
+         <artifactId>jakarta.xml.ws-api</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.jws</groupId>
+         <artifactId>jakarta.jws-api</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -91,7 +140,7 @@
          <plugin>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-codegen-plugin</artifactId>
-            <version>3.2.5</version>
+            <version>${cxf.version}</version>
             <executions>
                <execution>
                   <goals>
@@ -177,6 +226,21 @@
                            </resources>
                         </exception>
                      </exceptions>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>attach-javadocs</id>
+                  <goals>
+                     <goal>jar</goal>
+                  </goals>
+                  <configuration>
+                     <excludePackageNames>org.ow2.petals.samples.se_flowable.collaboration.services</excludePackageNames>
                   </configuration>
                </execution>
             </executions>

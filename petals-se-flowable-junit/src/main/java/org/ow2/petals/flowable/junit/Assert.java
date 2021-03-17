@@ -229,7 +229,7 @@ public class Assert {
 
         final Diff diff = DiffBuilder.compare(Input.fromURL(resultXmlUrl))
                 .withTest(Input.fromStream(new ByteArrayInputStream(baos.toByteArray()))).checkForSimilar()
-                .ignoreComments().build();
+                .ignoreComments().ignoreWhitespace().build();
         assertFalse(String.format("Unexpected XML result: %s%n%s", baos.toString(), diff.toString()),
                 diff.hasDifferences());
     }

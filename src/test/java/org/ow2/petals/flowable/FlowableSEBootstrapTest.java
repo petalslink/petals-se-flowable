@@ -30,6 +30,7 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.MalformedObjectNameException;
 import javax.xml.parsers.DocumentBuilder;
 
+import org.flowable.common.engine.impl.async.DefaultAsyncTaskExecutor;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
@@ -1110,10 +1111,13 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             // (https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.22.2)
             assertTrue(jobExecutorEnableJobExecutor != (pec.getAsyncExecutor() == null));
 
-            assertEquals(jobExecutorCorePoolSize, defaultAsyncExecutor.getCorePoolSize());
-            assertEquals(jobExecutorMaxPoolSize, defaultAsyncExecutor.getMaxPoolSize());
-            assertEquals(jobExecutorKeepAliveTime, defaultAsyncExecutor.getKeepAliveTime());
-            assertEquals(jobExecutorQueueSize, defaultAsyncExecutor.getQueueSize());
+            assertTrue(defaultAsyncExecutor.getTaskExecutor() instanceof DefaultAsyncTaskExecutor);
+            final DefaultAsyncTaskExecutor defaultAsyncTaskExecutor = (DefaultAsyncTaskExecutor) defaultAsyncExecutor
+                    .getTaskExecutor();
+            assertEquals(jobExecutorCorePoolSize, defaultAsyncTaskExecutor.getCorePoolSize());
+            assertEquals(jobExecutorMaxPoolSize, defaultAsyncTaskExecutor.getMaxPoolSize());
+            assertEquals(jobExecutorKeepAliveTime, defaultAsyncTaskExecutor.getKeepAliveTime());
+            assertEquals(jobExecutorQueueSize, defaultAsyncTaskExecutor.getQueueSize());
             assertEquals(jobExecutorMaxTimerJobsPerAcquisition, defaultAsyncExecutor.getMaxTimerJobsPerAcquisition());
             assertEquals(jobExecutorMaxAsyncJobsDuePerAcquisition,
                     defaultAsyncExecutor.getMaxAsyncJobsDuePerAcquisition());

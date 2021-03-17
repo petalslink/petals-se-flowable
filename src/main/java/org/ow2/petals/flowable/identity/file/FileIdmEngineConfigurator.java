@@ -153,7 +153,7 @@ public class FileIdmEngineConfigurator extends AbstractProcessEngineConfigurator
             super.configure(processEngineConfiguration);
 
             final IdmIdentityServiceImpl idmIdentityServiceImpl = new FileIdentityServiceImpl(this.users, this.groups,
-                    this.groupsByUser, this.privilegesByUser);
+                    this.groupsByUser, this.privilegesByUser, this.idmEngineConfiguration);
             getIdmEngineConfiguration(processEngineConfiguration)
                     .setIdmIdentityService(idmIdentityServiceImpl);
 

@@ -32,9 +32,6 @@
    <description>sa-flowable-vacation-sample description</description>
 
    <properties>
-      <!-- Skip dependency check for service assembly because it has Java no source code. -->
-      <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
-
       <jbi-sa.build.legal-dir>${project.build.directory}/legal-additionals</jbi-sa.build.legal-dir>
    </properties>
 
@@ -101,6 +98,27 @@
                <additionalJBIResourceDirectory>${jbi-sa.build.legal-dir}</additionalJBIResourceDirectory>
                <verbose>true</verbose>
             </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <usedDependencies>
+                        <!-- The service units of this SA -->
+                        <usedDependency>org.ow2.petals.samples.flowable:su-flowable-vacationService-provide</usedDependency>
+                        <usedDependency>org.ow2.petals.samples.flowable:su-SOAP-vacationService-consume</usedDependency>
+                        <usedDependency>org.ow2.petals.samples.flowable:su-SOAP-flowableIntegrationService-consume</usedDependency>
+                        <usedDependency>org.ow2.petals.samples.flowable:su-SOAP-notifyVacationService-provide</usedDependency>
+                        <usedDependency>org.ow2.petals.samples.flowable:su-SOAP-archiveService-provide</usedDependency>
+                        <!-- No unit tests for a SA -->
+                        <usedDependency>junit:junit</usedDependency>
+                     </usedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

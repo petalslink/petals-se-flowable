@@ -32,20 +32,49 @@
    <description>Sample web-services used by Petals SE Flowable sample</description>
 
    <properties>
-      <cxf.version>3.3.2</cxf.version>
+      <!-- CXF version aligned with the one provided by flowable-cxf -->
+      <cxf.version>3.4.0</cxf.version>
    </properties>
 
    <dependencies>
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
-         <version>2.3.2</version>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Apache CXF -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.ws</groupId>
+         <artifactId>jakarta.xml.ws-api</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Apache CXF -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.jws</groupId>
+         <artifactId>jakarta.jws-api</artifactId>
       </dependency>
       <dependency>
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-rt-frontend-jaxws</artifactId>
          <version>${cxf.version}</version>
          <scope>runtime</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Apache CXF-->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.apache.cxf</groupId>

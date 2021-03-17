@@ -27,6 +27,7 @@ import org.flowable.idm.api.Privilege;
 import org.flowable.idm.api.PrivilegeQuery;
 import org.flowable.idm.api.User;
 import org.flowable.idm.api.UserQuery;
+import org.flowable.idm.engine.IdmEngineConfiguration;
 import org.flowable.idm.engine.impl.IdmIdentityServiceImpl;
 
 public class FileIdentityServiceImpl extends IdmIdentityServiceImpl {
@@ -52,7 +53,9 @@ public class FileIdentityServiceImpl extends IdmIdentityServiceImpl {
     private final Map<String, List<Privilege>> privilegesByUser;
 
     public FileIdentityServiceImpl(final Map<String, User> users, final Map<String, List<String>> groups,
-            final Map<String, List<Group>> groupsByUser, final Map<String, List<Privilege>> privilegesByUser) {
+            final Map<String, List<Group>> groupsByUser, final Map<String, List<Privilege>> privilegesByUser,
+            final IdmEngineConfiguration idmEngineConfiguration) {
+        super(idmEngineConfiguration);
         this.users = users;
         this.groups = groups;
         this.groupsByUser = groupsByUser;

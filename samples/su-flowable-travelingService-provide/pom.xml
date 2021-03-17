@@ -30,13 +30,23 @@
    <name>su-flowable-travelingService-provide</name>
    <!-- No version set -->
    <description>su-flowable-travelingService-provide description.</description>
-
-   <properties>
-      <!-- flowable.groupId>org.flowable</flowable.groupId>
-      <flowable.version>6.4.2</flowable.version-->
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
-      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
-   </properties>
+   
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <!-- Align version between Flowable, CXF and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+         <dependency>
+            <!-- Align version between Flowable, CXF and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
 
    <dependencies>
       <dependency>
@@ -75,6 +85,13 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -125,8 +142,14 @@
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
-         <version>2.3.2</version>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
    </dependencies>
 
@@ -305,6 +328,21 @@
                      <goal>mock</goal>
                   </goals>
                   <phase>process-test-classes</phase>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>attach-javadocs</id>
+                  <goals>
+                     <goal>jar</goal>
+                  </goals>
+                  <configuration>
+                     <excludePackageNames>org.ow2.petals.samples.se_flowable.traveling.travelingservice</excludePackageNames>
+                  </configuration>
                </execution>
             </executions>
          </plugin>

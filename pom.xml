@@ -62,73 +62,39 @@
    </developers>
 
    <properties>
-      <!-- flowable.version>6.4.2</flowable.version>
-      <flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <flowable.version>6.6.0</flowable.version>
+      <flowable.groupId>org.flowable</flowable.groupId>
+      <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId -->
       
-      <jersey.version>2.29.1</jersey.version>
-      <fasterxml.version>2.9.9</fasterxml.version>
+      <jetty.version>9.4.18.v20190429</jetty.version>
+      <spring-framework.version>5.2.11.RELEASE</spring-framework.version>
+      <spring-security.version>5.3.5.RELEASE</spring-security.version>
+      <jersey.version>2.33</jersey.version>
+      <jackson.version>2.11.3</jackson.version>
    </properties>
 
    <dependencyManagement>
       <dependencies>
          <dependency>
-            <!-- Align flowable-rest dependency with the one of CDK -->
+            <!-- Align Commons IO version over Flowable and Petals CDK -->
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <version>2.8.0</version>
          </dependency>
          <dependency>
-            <!-- Align JAXB-Runtime dependency over Flowable artefacts -->
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.2</version>
-         </dependency>
-         <dependency>
-            <!-- Align JAXB-XJC dependency over Flowable artefacts -->
-            <groupId>org.glassfish.jaxb</groupId>
-            <artifactId>jaxb-xjc</artifactId>
-            <version>2.3.2</version>
-         </dependency>
-         <dependency>
-            <!-- Align JAXB coming with EasyWSDL with the one provided with Flowable artefacts -->
-            <groupId>org.ow2.easywsdl</groupId>
-            <artifactId>easywsdl-wsdl</artifactId>
-            <version>2.8.0-SNAPSHOT</version>
-            <exclusions>
-               <exclusion>
-                  <!-- We prefer to use JaxB 2.3.2 coming with Flowable -->
-                  <!-- TODO: This exclusion could be removed moving Petals to Java 9 or higher if included in JDK-->
-                  <groupId>com.sun.xml.bind</groupId>
-                  <artifactId>jaxb-core</artifactId>
-               </exclusion>
-               <exclusion>
-                  <!-- We prefer to use JaxB 2.3.2 coming with Flowable -->
-                  <!-- TODO: This exclusion could be removed moving Petals to Java 9 or higher if included in JDK -->
-                  <groupId>com.sun.xml.bind</groupId>
-                  <artifactId>jaxb-impl</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <!-- Align flowable-rest dependency with the one of Flowable's Jackson
-                 jackson-annotations is set to 2.9.0 in the bom but some dependencies
-                 are using the full version -->
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <version>${fasterxml.version}</version>
-         </dependency>
-         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${fasterxml.version}</version>
-         </dependency>
+            <!-- Align Jackson version over Flowable and Jersey -->
+            <groupId>com.fasterxml.jackson</groupId>
+            <artifactId>jackson-bom</artifactId>
+            <version>${jackson.version}</version>
+            <scope>import</scope>
+            <type>pom</type>
+         </dependency> 
          <dependency>
             <!-- Align Jetty version over Apache CXF, Flowable and Petals. -->
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-bom</artifactId>
-            <version>9.4.18.v20190429</version>
+            <version>${jetty.version}</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
@@ -136,7 +102,7 @@
             <!-- Align spring dependencies with the ones of Flowable -->
             <groupId>org.springframework</groupId>
             <artifactId>spring-framework-bom</artifactId>
-            <version>5.1.8.RELEASE</version>
+            <version>${spring-framework.version}</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
@@ -144,7 +110,7 @@
             <!-- Align spring dependencies with the ones of Flowable -->
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-bom</artifactId>
-            <version>5.1.5.RELEASE</version>
+            <version>${spring-security.version}</version>
             <scope>import</scope>
             <type>pom</type>
          </dependency>
@@ -154,9 +120,14 @@
             <version>${flowable.version}</version>
             <exclusions>
                <exclusion>
-                  <!-- Already included in Java 8 -->
+                  <!-- Moving to Java 11, we prefer com.sun.activation:jakarta.activation provided by Petals CDK -->
                   <groupId>javax.activation</groupId>
                   <artifactId>activation</artifactId>
+               </exclusion>
+               <exclusion>
+                  <!-- Moving to Java 11, we prefer com.sun.mail:jakarta.mail provided by petals-message-exchange -->
+                  <groupId>com.sun.mail</groupId>
+                  <artifactId>javax.mail</artifactId>
                </exclusion>
                <exclusion>
                   <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
@@ -172,23 +143,10 @@
             </exclusions>
          </dependency>
          <dependency>
-            <!-- flowable-cxf add support of WSDL-based services to the Flowable engine to call Petals services -->
+            <!-- flowable-cxf adds support of WSDL-based services to the Flowable engine to call Petals services -->
             <groupId>${flowable.groupId}</groupId>
             <artifactId>flowable-cxf</artifactId>
             <version>${flowable.version}</version>
-            <exclusions>
-               <exclusion>
-                  <!-- Already included in Java 8 -->
-                  <groupId>javax.xml.bind</groupId>
-                  <artifactId>jaxb-api</artifactId>
-               </exclusion>
-            </exclusions>
-         </dependency>
-         <dependency>
-            <!-- Align dependency 'jakarta.annotation:jakarta.annotation-api' between Jersey and Glassfish HK2 -->
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>1.3.5</version>
          </dependency>
          <dependency>
             <!-- Align dependency 'net.bytebuddy:byte-buddy' between Mockito and embedded-ldap-junit -->
@@ -214,6 +172,12 @@
             <!-- Align dependency 'org.slf4j:slf4j-api' between Petals and embedded-ldap-junit -->
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+         <dependency>
+            <!-- Align version between Flowable and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
             <version>1.7.30</version>
          </dependency>
       </dependencies>
@@ -248,6 +212,17 @@
       <dependency>
          <groupId>org.jvnet.jaxb2_commons</groupId>
          <artifactId>jaxb2-basics-runtime</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.bind</groupId>
+         <artifactId>jakarta.xml.bind-api</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -286,7 +261,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-message-exchange</artifactId>
-         <version>1.3.1-SNAPSHOT</version>
+         <version>1.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.ow2.petals</groupId>
@@ -323,7 +298,7 @@
       <dependency>
          <groupId>org.mybatis</groupId>
          <artifactId>mybatis</artifactId>
-         <version>3.5.1</version>
+         <version>3.5.5</version>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -367,7 +342,7 @@
          <!-- Dependency required by the Petals transporter. The version must be aligned with the CXF embedded by flowable-cxf. -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-core</artifactId>
-         <version>3.3.2</version>
+         <version>3.4.0</version>
       </dependency>
       <dependency>
          <!-- flowable-ldap add support of LDAP integration -->
@@ -412,6 +387,13 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-rest</artifactId>
          <version>${flowable.version}</version>
+         <exclusions>
+            <exclusion>
+               <!-- We prefer jakarta.annotation:jakarta.annotation-api coming with flowable-cxf -->
+               <groupId>javax.annotation</groupId>
+               <artifactId>jsr250-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -443,10 +425,12 @@
          <version>3.1.0</version>
       </dependency>
       <dependency>
-         <!-- TODO: This exclusion could be removed moving Petals to Java 9 or higher if included in JDK -->
-         <groupId>jakarta.xml.bind</groupId>
-         <artifactId>jakarta.xml.bind-api</artifactId>
-         <version>2.3.2</version>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-context</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-beans</artifactId>
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
@@ -457,24 +441,17 @@
          <artifactId>spring-webmvc</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-context</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-beans</artifactId>
+         <groupId>org.springframework.security</groupId>
+         <artifactId>spring-security-config</artifactId>
       </dependency>
       <dependency>
          <groupId>org.springframework.security</groupId>
          <artifactId>spring-security-core</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.springframework.security</groupId>
-         <artifactId>spring-security-config</artifactId>
-      </dependency>
-      <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-web</artifactId>
+        <scope>runtime</scope>
     </dependency>
 
       <dependency>
@@ -526,7 +503,6 @@
       <dependency>
          <groupId>jakarta.ws.rs</groupId>
          <artifactId>jakarta.ws.rs-api</artifactId>
-         <version>2.1.6</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -540,6 +516,13 @@
          <artifactId>jersey-media-json-jackson</artifactId>
          <version>${jersey.version}</version>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
 	     <groupId>org.glassfish.jersey.inject</groupId>
@@ -639,7 +622,7 @@
                         <include>su/call-activity/archivageService.wsdl</include>
                         <include>su/call-activity/coreService.wsdl</include>
                         <include>su/intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
-			<include>su/intermediate-message-catch-event/intermediate-message-catch-event-loop.wsdl</include>
+			               <include>su/intermediate-message-catch-event/intermediate-message-catch-event-loop.wsdl</include>
                         <include>su/placeholders/placeholders.wsdl</include>
                         <include>su/placeholders/archivageService.wsdl</include>
                         <include>su/in-only/in-only.wsdl</include>
@@ -649,36 +632,13 @@
                         <include>su/robustified-in-only/robustified-in-only.wsdl</include>
                         <include>su/robustified-in-only/archivageService.wsdl</include>
                         <include>su/start-stop/start-stop.wsdl</include>
-			<include>su/structured-variable/structured-variable.wsdl</include>
+			               <include>su/structured-variable/structured-variable.wsdl</include>
                         <include>su/timeout/timeout.wsdl</include>
                         <include>su/timeout/archivageService.wsdl</include>
                         <include>org/ow2/petals/flowable/monit/monitFiltering.wsdl</include>
                         <include>org/ow2/petals/flowable/monit/echo.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
-            <groupId>org.basepom.maven</groupId>
-            <artifactId>duplicate-finder-maven-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>enforce-no-duplicate-classes</id>
-                  <configuration>
-                     <!-- these conflicts, but they are only used (and needed!) during tests! -->
-                     <ignoredDependencies>
-                     <dependency>
-                        <!--
-                           This dependency contains duplicate and different classes with javax.annotation:jsr250-api. As
-                           this dependency is used only for unit test, no check is required against javax.annotation:jsr250-api
-                           used at runtime.
-                         -->
-                        <groupId>jakarta.annotation</groupId>
-                        <artifactId>jakarta.annotation-api</artifactId>
-                     </dependency>
-                     </ignoredDependencies>
                   </configuration>
                </execution>
             </executions>

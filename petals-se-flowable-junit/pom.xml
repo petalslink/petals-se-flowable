@@ -34,10 +34,10 @@
    <description>JUnit framework for service unit of the BPMN Service Engine based on Flowable</description>
 
    <properties>
-      <!--flowable.version>6.4.2</flowable.version-->
-      <!--flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <flowable.version>6.6.0</flowable.version>
+      <flowable.groupId>org.flowable</flowable.groupId>
+      <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version-->
+      <!-- flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
 
       <petals-se-flowable.version>1.4.0-SNAPSHOT</petals-se-flowable.version>
    </properties>
@@ -51,6 +51,18 @@
             <version>${petals-se-flowable.version}</version>
             <scope>import</scope>
             <type>pom</type>
+         </dependency>
+         <dependency>
+            <!-- Align version between Flowable and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+         <dependency>
+            <!-- Align version between Flowable and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
@@ -108,7 +120,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-test-utils</artifactId>
-         <version>1.3.0-SNAPSHOT</version>
+         <version>1.4.0-SNAPSHOT</version>
       </dependency>
       <dependency>
          <groupId>org.xmlunit</groupId>

@@ -45,7 +45,6 @@ import org.springframework.web.servlet.config.annotation.ContentNegotiationConfi
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.SessionLocaleResolver;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -77,6 +76,11 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
      * Note: this name is used by Flowable code, so we can't change it!
      */
     public static final String FLOWABLE_REST_IDM_IDENTITY_SERVICE_QUALIFIER = "idmIdentityService";
+
+    /**
+     * Note: this name is used by Flowable code, so we can't change it!
+     */
+    public static final String FLOWABLE_REST_PROCESS_MIGRATION_SERVICE_QUALIFIER = "processMigrationService";
 
     /**
      * This is injected by the SE during REST API creation (FlowableSE#createRestApi(ProcessEngineConfigurationImpl)).
@@ -121,16 +125,6 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
     @Bean
     public MultipartResolver multipartResolver() {
         return new PutAwareStandardServletMultiPartResolver();
-    }
-
-    @Bean
-    @Override
-    public RequestMappingHandlerMapping requestMappingHandlerMapping() {
-        final RequestMappingHandlerMapping requestMappingHandlerMapping = new RequestMappingHandlerMapping();
-        requestMappingHandlerMapping.setUseSuffixPatternMatch(false);
-        final Object[] interceptors = { localeChangeInterceptor() };
-        requestMappingHandlerMapping.setInterceptors(interceptors);
-        return requestMappingHandlerMapping;
     }
 
     @Override

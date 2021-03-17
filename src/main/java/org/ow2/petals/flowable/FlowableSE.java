@@ -65,7 +65,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,6 +83,8 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.flowable.common.engine.api.FlowableException;
+import org.flowable.common.engine.api.async.AsyncTaskExecutor;
+import org.flowable.common.engine.impl.async.DefaultAsyncTaskExecutor;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
@@ -142,6 +143,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.DispatcherServlet;
 
+import com.ebmwebsourcing.easycommons.lang.reflect.ReflectionHelper;
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
 
 /**
@@ -164,7 +166,12 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
     private final Map<ServiceEndpointOperationKey, FlowableService> flowableServices = new ConcurrentHashMap<>();
 
     /**
-     * The Flowable Async Executor service
+     * The Flowable Async TAsk Executor service
+     */
+    private DefaultAsyncTaskExecutor flowableAsyncTaskExecutor = null;
+
+    /**
+     * The Flowable Async Job Executor service
      */
     private AsyncExecutor flowableAsyncExecutor = null;
 
@@ -312,7 +319,8 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             this.addPostBpmnParseHandlers(pec);
 
             // Async executor configuration
-            this.configureAsyncExecutor(pec);
+            this.configureAsyncTaskExecutor(pec);
+            this.configureAsyncJobExecutor(pec);
 
             final ProcessEngineConfigurationImpl pecImpl;
             if (pec instanceof ProcessEngineConfigurationImpl) {
@@ -334,6 +342,8 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
 
             // Configure async executor
             if (this.enableFlowableJobExecutor) {
+                assert pec.getAsyncTaskExecutor() instanceof DefaultAsyncTaskExecutor;
+                this.flowableAsyncTaskExecutor = (DefaultAsyncTaskExecutor) pec.getAsyncTaskExecutor();
                 this.flowableAsyncExecutor = pec.getAsyncExecutor();
             } else {
                 this.flowableAsyncExecutor = null;
@@ -384,6 +394,9 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
         rootContext.getBeanFactory().registerSingleton(
                 FlowableProcessApiConfiguration.FLOWABLE_REST_IDM_IDENTITY_SERVICE_QUALIFIER,
                 EngineServiceUtil.getIdmIdentityService(pecImpl));
+        rootContext.getBeanFactory().registerSingleton(
+                FlowableProcessApiConfiguration.FLOWABLE_REST_PROCESS_MIGRATION_SERVICE_QUALIFIER,
+                pecImpl.getProcessMigrationService());
 
         final AnnotationConfigWebApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
         applicationContext.setParent(rootContext);
@@ -772,6 +785,7 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
                     if (this.flowableAsyncExecutor.isActive()) {
                         this.getLogger().warning("Flowable Job Executor already started !!");
                     } else {
+                        this.flowableAsyncTaskExecutor.start();
                         this.flowableAsyncExecutor.start();
                     }
                     this.configureMonitoringMBeanWithAsyncExecutorThreadPool();
@@ -794,19 +808,43 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
     }
 
     /**
-     * Configure the asynchronous executor
+     * Configure the asynchronous task executor
      */
-    private void configureAsyncExecutor(final ProcessEngineConfiguration pec) {
+    private void configureAsyncTaskExecutor(final ProcessEngineConfiguration pec) {
+
+        final Logger logger = this.getLogger();
+        logger.config("Asynchronous task executor configuration:");
+
+        final int corePoolSize = this.getAsyncJobExecutorCorePoolSize();
+        final int maxPoolSize = this.getAsyncJobExecutorMaxPoolSize();
+        final long keepAliveTime = this.getAsyncJobExecutorKeepAliveTime();
+        final int queueSize = this.getAsyncJobExecutorQueueSize();
+
+        logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE + " = " + corePoolSize);
+        logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE + " = " + maxPoolSize);
+        logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME + " = " + keepAliveTime);
+        logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE + " = " + queueSize);
+
+        final DefaultAsyncTaskExecutor defaultAsyncTaskExecutor = new DefaultAsyncTaskExecutor();
+        defaultAsyncTaskExecutor.setCorePoolSize(corePoolSize);
+        defaultAsyncTaskExecutor.setMaxPoolSize(maxPoolSize);
+        defaultAsyncTaskExecutor.setKeepAliveTime(keepAliveTime);
+        defaultAsyncTaskExecutor.setQueueSize(queueSize);
+
+        pec.setAsyncTaskExecutor(defaultAsyncTaskExecutor);
+
+    }
+
+    /**
+     * Configure the asynchronous job executor
+     */
+    private void configureAsyncJobExecutor(final ProcessEngineConfiguration pec) {
 
         final Logger logger = this.getLogger();
         logger.config("Asynchronous job executor configuration:");
         logger.config("   - " + ENGINE_ENABLE_JOB_EXECUTOR + " = " + this.enableFlowableJobExecutor);
         if (this.enableFlowableJobExecutor) {
 
-            final int corePoolSize = this.getAsyncJobExecutorCorePoolSize();
-            final int maxPoolSize = this.getAsyncJobExecutorMaxPoolSize();
-            final long keepAliveTime = this.getAsyncJobExecutorKeepAliveTime();
-            final int queueSize = this.getAsyncJobExecutorQueueSize();
             final int maxTimerJobsPerAcquisition = this.getAsyncJobExecutorMaxTimerJobsPerAcquisition();
             final int maxAsyncJobsDuePerAcquisition = this.getAsyncJobExecutorMaxAsyncJobsDuePerAcquisition();
             final int asyncJobAcquireWaitTime = this.getAsyncJobExecutorAsyncJobAcquireWaitTime();
@@ -814,10 +852,6 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             final int timerLockTime = this.getAsyncJobExecutorTimerLockTime();
             final int asyncJobLockTime = this.getAsyncJobExecutorAsyncJobLockTime();
 
-            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_COREPOOLSIZE + " = " + corePoolSize);
-            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXPOOLSIZE + " = " + maxPoolSize);
-            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_KEEPALIVETIME + " = " + keepAliveTime);
-            logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_QUEUESIZE + " = " + queueSize);
             logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXTIMERJOBSPERACQUISITION + " = "
                     + maxTimerJobsPerAcquisition);
             logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_MAXASYNCJOBSDUEPERACQUISITION + " = "
@@ -829,12 +863,10 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             logger.config("   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERLOCKTIME + " = " + timerLockTime);
             logger.config(
                     "   - " + FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBLOCKTIME + " = " + asyncJobLockTime);
+            logger.config("   - Using the async task executor configured below.");
 
             final DefaultAsyncJobExecutor defaultAsyncJobExecutor = new DefaultAsyncJobExecutor();
-            defaultAsyncJobExecutor.setCorePoolSize(corePoolSize);
-            defaultAsyncJobExecutor.setMaxPoolSize(maxPoolSize);
-            defaultAsyncJobExecutor.setKeepAliveTime(keepAliveTime);
-            defaultAsyncJobExecutor.setQueueSize(queueSize);
+            defaultAsyncJobExecutor.setTaskExecutor(pec.getAsyncTaskExecutor());
             defaultAsyncJobExecutor.setMaxTimerJobsPerAcquisition(maxTimerJobsPerAcquisition);
             defaultAsyncJobExecutor.setMaxAsyncJobsDuePerAcquisition(maxAsyncJobsDuePerAcquisition);
             defaultAsyncJobExecutor.setDefaultAsyncJobAcquireWaitTimeInMillis(asyncJobAcquireWaitTime);
@@ -844,7 +876,6 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
 
             // Startup and shutdown of the async executor is controlled through startup and stop of the SE Flowable
             pec.setAsyncExecutorActivate(false);
-
             pec.setAsyncExecutor(defaultAsyncJobExecutor);
 
         } else {
@@ -860,21 +891,31 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
 
         if (this.flowableAsyncExecutor != null) {
             if (this.flowableAsyncExecutor instanceof DefaultAsyncJobExecutor) {
-                final ExecutorService executorService = ((DefaultAsyncJobExecutor) this.flowableAsyncExecutor)
-                        .getExecutorService();
-                if (executorService == null) {
+                final AsyncTaskExecutor asyncTaskExecutor = ((DefaultAsyncJobExecutor) this.flowableAsyncExecutor)
+                        .getTaskExecutor();
+                if (asyncTaskExecutor == null) {
                     this.getLogger().warning(
-                            "No executor service available for the asynchronous job executor, so no monitoring available on asynchronous executor !");
-                } else if (executorService instanceof ThreadPoolExecutor) {
-                    ((Monitoring) this.getMonitoringBean())
-                            .setAsyncExecutorTreadPool((ThreadPoolExecutor) executorService);
+                            "No async task executor available for the asynchronous job executor, so no monitoring available on asynchronous job executor !");
+                } else if (asyncTaskExecutor instanceof DefaultAsyncTaskExecutor) {
+                    final Object executorServiceObj = ReflectionHelper.getFieldValue(DefaultAsyncTaskExecutor.class,
+                            asyncTaskExecutor, "executorService", false);
+                    if (executorServiceObj == null) {
+                        this.getLogger().warning(
+                                "No executor service available for the asynchronous task executor, so no monitoring available on asynchronous job executor !");
+                    } else if (executorServiceObj instanceof ThreadPoolExecutor) {
+                        ((Monitoring) this.getMonitoringBean())
+                                .setAsyncExecutorTreadPool((ThreadPoolExecutor) executorServiceObj);
+                    } else {
+                        this.getLogger().warning(
+                                "The implementation of the executor service is not the expected one, so no monitoring available on asynchronous job executor !");
+                    }
                 } else {
                     this.getLogger().warning(
-                            "The implementation of the executor service of the asynchronous job executor is not the expected one ! Failures can occurs on monitoring parts !");
+                            "The implementation of the async task executor of the asynchronous job executor is not the expected one ! Failures can occurs on monitoring parts !");
                 }
             } else {
                 this.getLogger().warning(
-                        "The implementation of the asynchronous job executor is not the expected one, so no monitoring available on asynchronous executor !");
+                        "The implementation of the asynchronous job executor is not the expected one, so no monitoring available on asynchronous job executor !");
             }
         } else {
             this.getLogger().warning(
@@ -921,6 +962,7 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
                 if (this.flowableAsyncExecutor != null) {
                     if (this.flowableAsyncExecutor.isActive()) {
                         this.flowableAsyncExecutor.shutdown();
+                        this.flowableAsyncTaskExecutor.shutdown();
                     } else {
                         this.getLogger().warning("Flowable Job Executor not started !!");
                     }

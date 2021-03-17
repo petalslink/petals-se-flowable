@@ -30,11 +30,23 @@
    <name>su-flowable-vacationService-provide</name>
    <!-- No version set -->
    <description>su-flowable-vacationService-provide description.</description>
-
-   <properties>
-      <!-- flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
-   </properties>
+   
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <!-- Align version between Flowable and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+         <dependency>
+            <!-- Align version between Flowable and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
 
    <dependencies>
       <dependency>
@@ -59,6 +71,13 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>

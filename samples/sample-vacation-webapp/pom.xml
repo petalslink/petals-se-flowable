@@ -35,7 +35,8 @@
       <maven-enforcer-plugin.rules.bannedLogDependencies>false</maven-enforcer-plugin.rules.bannedLogDependencies>
       <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
       
-      <spring-boot.version>1.2.8.RELEASE</spring-boot.version>
+      <!-- Align SpringBoot version with the one defined at Flowable level -->
+      <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
       <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
    </properties>
 
@@ -54,6 +55,12 @@
             <artifactId>jquery</artifactId>
             <version>1.11.3</version>
          </dependency>
+         <dependency>
+            <!-- Align version between Flowable, CXF and Petals -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
@@ -64,7 +71,7 @@
       </dependency>
       <dependency>
          <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-ws</artifactId>
+         <artifactId>spring-boot-starter-web-services</artifactId>
       </dependency>
       <dependency>
          <groupId>org.springframework.boot</groupId>
