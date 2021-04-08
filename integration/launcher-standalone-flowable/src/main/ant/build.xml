@@ -151,8 +151,6 @@
    <target name="run">
       <echo message="Launching Flowable component tests..." />
       
-      <input />
-            
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
       <!-- Wait the end of the process instance execution -->
