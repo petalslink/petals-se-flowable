@@ -20,7 +20,7 @@
     <artifactId>parent</artifactId>
     <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
     <version>5.2.0-SNAPSHOT</version>
-    <relativePath />
+    <relativePath>../parent/pom.xml</relativePath>
   </parent>
   
   <artifactId>sa-flowable-vacationRequest</artifactId>
