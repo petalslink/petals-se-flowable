@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright (c) 2015-2018 Linagora
+ Copyright (c) 2015-2021 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
  it under the terms of the New BSD License (3-clause license).
@@ -83,7 +83,7 @@
       <!-- Create the properties file for BC SOAP -->
       <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
             file="${bc-soap.properties}" />
-      <echo message="notifyService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
+      <echo message="notifyVacationService.url = http://localhost:8088/mockNotifyVacationService${line.separator}"
             file="${bc-soap.properties}"
             append="true" />
    </target>
@@ -203,7 +203,7 @@
    <!-- Target : Run -->
    <target name="run">
       <echo message="Launching Flowable component tests..." />
-
+      
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
 
       <petals-soapui-load-test testCase="Nominal TestCase without adjustment"
