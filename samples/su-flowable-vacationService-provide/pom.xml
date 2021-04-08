@@ -21,7 +21,7 @@
    <parent>
       <artifactId>petals-flowable-parent</artifactId>
       <groupId>org.ow2.petals.samples.flowable</groupId>
-      <version>1.2.1-1.0.0-SNAPSHOT</version>
+      <version>1.2.2-1.0.0-SNAPSHOT</version>
       <relativePath>../pom.xml</relativePath>
    </parent>
 
@@ -35,6 +35,21 @@
       <!--flowable.groupId>org.flowable</flowable.groupId-->
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
+   
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+            <version>1.7.28</version>
+         </dependency>
+         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.28</version>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
 
    <dependencies>
       <dependency>
@@ -46,7 +61,7 @@
       <dependency>
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-junit</artifactId>
-         <version>1.2.1-SNAPSHOT</version>
+         <version>1.2.2-SNAPSHOT</version>
          <scope>test</scope>
       </dependency>
       

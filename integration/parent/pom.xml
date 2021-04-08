@@ -32,10 +32,10 @@
    <properties>
       <!-- We override here the component version defined in the integration test parent POM
            file to defined the version of the component to test. -->
-      <petals-se-flowable.version>1.2.0-SNAPSHOT</petals-se-flowable.version>
+      <petals-se-flowable.version>1.2.2-SNAPSHOT</petals-se-flowable.version>
       
       <!-- Override Flowable sample version for this Git branch -->
-      <petals-samples-flowable.version>1.2.0-1.0.0-SNAPSHOT</petals-samples-flowable.version>
+      <petals-samples-flowable.version>1.2.2-1.0.0-SNAPSHOT</petals-samples-flowable.version>
    </properties>
 
    <dependencyManagement>
