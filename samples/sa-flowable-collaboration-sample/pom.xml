@@ -75,7 +75,7 @@
             <groupId>org.ow2.petals</groupId>
             <artifactId>petals-maven-plugin</artifactId>
             <configuration>
-               <serviceAssemblyNameMapping>${project.artifactId}</serviceAssemblyNameMapping>
+               <serviceAssemblyNameMapping>${dollar}${dollar}{artifactId}</serviceAssemblyNameMapping>
                <!-- Our JBI components include legal information -->
                <additionalJBIResourceDirectory>${jbi-sa.build.legal-dir}</additionalJBIResourceDirectory>
                <verbose>true</verbose>
