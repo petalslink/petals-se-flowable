@@ -34,7 +34,7 @@
    <properties>
       <!--flowable.version>6.2.1</flowable.version-->
       <!--flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.version>6.2.1-PETALS-1-SNAPSHOT</flowable.version>
+      <flowable.version>6.2.1-PETALS-1</flowable.version>
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
 
