@@ -41,6 +41,7 @@ import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
+import org.ow2.petals.component.framework.api.util.Placeholders;
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.StartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
@@ -107,15 +108,16 @@ public abstract class StartEventOperation extends FlowableOperation {
     public StartEventOperation(final StartEventAnnotatedOperation annotatedOperation,
             final IdentityService identityService, final RuntimeService runtimeService,
             final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
-            final Properties componentPlaceholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
+            final Placeholders componentPlaceholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
             throws VariableUnsupportedTypeException {
         super(annotatedOperation, annotatedOperation.getOutputTemplate(), jacksonObjectMapper, logger);
         this.identityService = identityService;
         this.runtimeService = runtimeService;
         this.historyService = historyService;
         this.simpleUUIDGenerator = simpleUUIDGenerator;
-        this.processPlaceholders = new HashMap<>(componentPlaceholders.size());
-        for (final Entry<Object, Object> placeholder : componentPlaceholders.entrySet()) {
+        final Properties componentPlaceholderProperties = componentPlaceholders.toProperties();
+        this.processPlaceholders = new HashMap<>(componentPlaceholderProperties.size());
+        for (final Entry<Object, Object> placeholder : componentPlaceholderProperties.entrySet()) {
             this.processPlaceholders.put((String) placeholder.getKey(), (String) placeholder.getValue());
         }
     }

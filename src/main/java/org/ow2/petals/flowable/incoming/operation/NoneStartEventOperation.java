@@ -18,13 +18,13 @@
 package org.ow2.petals.flowable.incoming.operation;
 
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.ow2.petals.component.framework.api.util.Placeholders;
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
 import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
@@ -67,7 +67,7 @@ public class NoneStartEventOperation extends StartEventOperation {
     public NoneStartEventOperation(final NoneStartEventAnnotatedOperation annotatedOperation,
             final IdentityService identityService, final RuntimeService runtimeService,
             final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
-            final Properties placeholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
+            final Placeholders placeholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
             throws VariableUnsupportedTypeException {
         super(annotatedOperation, identityService, runtimeService, historyService, simpleUUIDGenerator, placeholders,
                 jacksonObjectMapper, logger);
