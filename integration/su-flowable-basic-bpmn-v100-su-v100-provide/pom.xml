@@ -29,12 +29,6 @@
    <!-- No version set -->
    <description>su-flowable-basic-bpmn-v10-su-v10-provide description.</description>
 
-   <properties>
-      <!--flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
-      <flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
-   </properties>
-
    <dependencyManagement>
       <dependencies>
          <dependency>
