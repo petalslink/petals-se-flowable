@@ -206,8 +206,6 @@
       
       <petals-soapui-test testCase="Nominal TestCase without adjustment" />
       
-      <input />
-
       <petals-soapui-load-test testCase="Nominal TestCase without adjustment"
                                loadTest="Loop on concurrent WS clients" />
 
