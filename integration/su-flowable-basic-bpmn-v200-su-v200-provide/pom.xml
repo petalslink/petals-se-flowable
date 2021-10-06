@@ -90,13 +90,22 @@
          <!-- To implement a ws-service mock server -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-rt-transports-http-jetty</artifactId>
-         <version>3.3.2</version>
+         <version>${cxf.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
-         <version>2.3.2</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.jws</groupId>
+         <artifactId>jakarta.jws-api</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>jakarta.xml.ws</groupId>
+         <artifactId>jakarta.xml.ws-api</artifactId>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -132,7 +141,7 @@
          <plugin>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-codegen-plugin</artifactId>
-            <version>3.2.5</version>
+            <version>${cxf.version}</version>
             <executions>
                <execution>
                   <goals>
@@ -243,6 +252,21 @@
                            </resources>
                         </exception>
                      </exceptions>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>attach-javadocs</id>
+                  <goals>
+                     <goal>jar</goal>
+                  </goals>
+                  <configuration>
+                     <excludePackageNames>org.ow2.petals.integration.tests.se_flowable.log.services.v2,org.ow2.petals.integration.tests.se_flowable.basic.services.v2</excludePackageNames>
                   </configuration>
                </execution>
             </executions>
