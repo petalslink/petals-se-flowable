@@ -73,8 +73,12 @@
    <target name="startDatabaseFlowable">
       <delete file="${flowable-db.file}.mv.db" />
       <!-- Start Database Flowable -->
-      <java jar="${com.h2database:h2:jar}" fork="true">
+      <java classname="org.h2.tools.Server" fork="true">
          <arg value="-tcp" />
+         <arg value="-ifNotExists" />
+         <classpath>
+            <pathelement location="${com.h2database:h2:jar}" />
+         </classpath>
       </java>
    </target>
 
