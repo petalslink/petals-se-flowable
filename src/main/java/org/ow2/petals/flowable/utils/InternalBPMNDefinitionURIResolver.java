@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-2021 Linagora
+ * Copyright (c) 2018-2022 Linagora
  * 
  * This program/library is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -65,8 +65,7 @@ public class InternalBPMNDefinitionURIResolver extends URIResolver {
                     String.class, String.class);
             mTryFileSystem.setAccessible(true);
             mTryFileSystem.invoke(this,
-                    new File(suMngr.getSUDataHandler(serviceUnitName).getInstallRoot(), resource).getAbsolutePath(),
-                    uriStr);
+                    new File(suDH.getInstallRoot(), resource).getAbsolutePath(), uriStr);
 
         } catch (final NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
