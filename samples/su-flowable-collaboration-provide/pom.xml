@@ -30,37 +30,6 @@
    <name>su-flowable-collaboration-provide</name>
    <!-- No version set -->
    <description>su-flowable-collaboration-provide description.</description>
-   
-   <properties>
-      <jetty.version>9.4.31.v20200723</jetty.version>
-      <!-- CXF version aligned with the one provided by flowable-cxf -->
-      <cxf.version>3.4.0</cxf.version>
-   </properties>
-   
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <!-- Align Jetty version over Apache CXF and Flowable. -->
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-bom</artifactId>
-            <version>${jetty.version}</version>
-            <scope>import</scope>
-            <type>pom</type>
-         </dependency>
-         <dependency>
-            <!-- Align version between Flowable, CXF and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.32</version>
-         </dependency>
-         <dependency>
-            <!-- Align version between Flowable, CXF and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.32</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
 
    <dependencies>
       <dependency>

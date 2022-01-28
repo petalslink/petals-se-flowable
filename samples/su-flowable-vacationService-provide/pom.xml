@@ -31,23 +31,6 @@
    <!-- No version set -->
    <description>su-flowable-vacationService-provide description.</description>
    
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <!-- Align version between Flowable and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.32</version>
-         </dependency>
-         <dependency>
-            <!-- Align version between Flowable and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.32</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <dependencies>
       <dependency>
          <groupId>org.ow2.petals</groupId>

@@ -42,10 +42,10 @@
 
       <flowable.groupId>org.flowable</flowable.groupId>
       <!-- flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
-      <flowable.version>6.6.0</flowable.version>
+      <flowable.version>6.7.2</flowable.version>
       <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version-->
       
-      <cxf.version>3.4.0</cxf.version>
+      <cxf.version>3.4.2</cxf.version>
    </properties>
 
    <dependencyManagement>

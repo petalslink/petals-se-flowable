@@ -34,7 +34,7 @@
    <description>JUnit framework for service unit of the BPMN Service Engine based on Flowable</description>
 
    <properties>
-      <flowable.version>6.6.0</flowable.version>
+      <flowable.version>6.7.2</flowable.version>
       <flowable.groupId>org.flowable</flowable.groupId>
       <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version-->
       <!-- flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
@@ -51,18 +51,6 @@
             <version>${petals-se-flowable.version}</version>
             <scope>import</scope>
             <type>pom</type>
-         </dependency>
-         <dependency>
-            <!-- Align version between Flowable and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.32</version>
-         </dependency>
-         <dependency>
-            <!-- Align version between Flowable and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.32</version>
          </dependency>
       </dependencies>
    </dependencyManagement>

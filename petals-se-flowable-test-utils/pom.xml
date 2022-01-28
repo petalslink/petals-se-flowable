@@ -32,28 +32,11 @@
    <version>1.4.0-SNAPSHOT</version>
 
    <properties>
-      <flowable.version>6.6.0</flowable.version>
+      <flowable.version>6.7.2</flowable.version>
       <flowable.groupId>org.flowable</flowable.groupId>
       <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version -->
       <!-- flowable.groupId>org.ow2.petals.flowable</flowable.groupId -->
    </properties>
-   
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <!-- Align version between Flowable and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>1.7.30</version>
-         </dependency>
-         <dependency>
-            <!-- Align version between Flowable and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.30</version>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
    
    <dependencies>
       <dependency>
