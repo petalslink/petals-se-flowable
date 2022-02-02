@@ -27,6 +27,7 @@ import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.I
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
@@ -298,7 +299,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final GregorianCalendar now = new GregorianCalendar();
         final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
                 now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
-        requestBean_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
+        requestBean_1.setDateDebutDde(startDate.getTime());
         final String motivation = "hollidays from validStartEventRequest";
         requestBean_1.setMotifDde(motivation);
 
@@ -715,7 +716,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         // Create the 1st valid request
         final Demande request = new Demande();
         request.setNbJourDde(10);
-        request.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request.setDateDebutDde(new Date());
         request.setMotifDde("hollidays");
 
         // Send the request
@@ -763,7 +764,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final Demande request = new Demande();
         request.setDemandeur("");
         request.setNbJourDde(10);
-        request.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request.setDateDebutDde(new Date());
         request.setMotifDde("hollidays");
 
         // Send the request
@@ -824,7 +825,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final Demande request_1 = new Demande();
         request_1.setDemandeur("demandeur");
         request_1.setNbJourDde(10);
-        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setDateDebutDde(new Date());
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
@@ -924,7 +925,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final Demande request_1 = new Demande();
         request_1.setDemandeur("demandeur");
         request_1.setNbJourDde(10);
-        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setDateDebutDde(new Date());
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
@@ -1025,7 +1026,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final Demande request_1 = new Demande();
         request_1.setDemandeur("demandeur");
         request_1.setNbJourDde(10);
-        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setDateDebutDde(new Date());
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
@@ -1124,7 +1125,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final Demande request_1 = new Demande();
         request_1.setDemandeur("demandeur");
         request_1.setNbJourDde(10);
-        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+        request_1.setDateDebutDde(new Date());
         request_1.setMotifDde("hollidays");
 
         // Send the 1st valid request
@@ -1286,7 +1287,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final GregorianCalendar now = new GregorianCalendar();
         final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
                 now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
-        request_1.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
+        request_1.setDateDebutDde(startDate.getTime());
         final String motivation = "hollidays";
         request_1.setMotifDde(motivation);
 

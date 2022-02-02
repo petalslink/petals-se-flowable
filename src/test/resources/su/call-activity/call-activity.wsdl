@@ -35,6 +35,7 @@
             <xsd:sequence>
                <xsd:element name="customer" type="xsd:string" minOccurs="1" maxOccurs="1" />
                <xsd:element name="address" type="xsd:string" minOccurs="1" maxOccurs="1" />
+               <xsd:element name="date" type="xsd:dateTime" minOccurs="1" maxOccurs="1" />
             </xsd:sequence>
          </xsd:complexType>
          <xsd:element name="start">
@@ -128,9 +129,8 @@
          <bpmn:operation processDefinitionId="processLevel1" action="startEvent" none-start-event-id="startevent1" />
          <bpmn:userId>/*[local-name()='start']/*[local-name()='customer']</bpmn:userId>
          <bpmn:variable name="address">/*[local-name()='start']/*[local-name()='address']</bpmn:variable>
-         <bpmn:output>
-            startResponse.xsl
-         </bpmn:output>
+         <bpmn:variable name="date">/*[local-name()='start']/*[local-name()='date']</bpmn:variable>
+         <bpmn:output>startResponse.xsl</bpmn:output>
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>

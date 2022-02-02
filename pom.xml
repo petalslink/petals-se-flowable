@@ -553,6 +553,18 @@
    <build>
       <plugins>
          <plugin>
+            <!-- Clean unzipped files through maven-dependency-plugin -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+               <filesets>
+                  <fileset>
+                     <directory>${basedir}/src/test/resources/xjc</directory>
+                  </fileset>
+               </filesets>
+            </configuration>
+         </plugin>
+         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
@@ -567,6 +579,26 @@
                         <usedDependency>org.glassfish.jersey.inject:jersey-hk2</usedDependency>
                         <usedDependency>org.codehaus.groovy:groovy-jsr223</usedDependency>
                      </usedDependencies>
+                  </configuration>
+               </execution>
+               <execution>
+                  <!-- Don't forget to clean all unzipped files with maven-clean-plugin -->
+                  <id>unpacking-for-tests</id>
+                  <phase>generate-test-resources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>${flowable.groupId}</groupId>
+                           <artifactId>flowable-cxf</artifactId>
+                           <version>${flowable.version}</version>
+                           <outputDirectory>${basedir}/src/test/resources/xjc</outputDirectory>
+                           <includes>flowable-bindings.xjc</includes>
+                           <overWrite>true</overWrite>
+                        </artifactItem>
+                     </artifactItems>
                   </configuration>
                </execution>
             </executions>
@@ -596,10 +628,16 @@
                   <goals>
                      <goal>generate</goal>
                   </goals>
-                  <phase>generate-test-sources</phase>
+                  <phase>process-test-resources</phase>
                   <configuration>
                      <addCompileSourceRoot>false</addCompileSourceRoot>
                      <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
+                     <bindingDirectory>${basedir}/src/test/resources/xjc</bindingDirectory>
+                     <bindingIncludes>
+                        <!-- As required by flowable-cxf, the JAXB binding must manage dates with type 
+                             'Date' instead of default type 'XMLGregorianCalendar' -->
+                        <include>flowable-bindings.xjc</include>
+                     </bindingIncludes>
                      <schemaDirectory>${basedir}/src/test/resources/su/</schemaDirectory>
                      <schemaIncludes>
                         <include>vacation/vacationRequest.wsdl</include>
@@ -626,6 +664,12 @@
                         <include>timeout/archivageService.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
+                     <defaultOptions>
+                        <bindingFiles>
+                           <!-- As required by flowable-cxf, JaxB must handle date as 'java.util.Date' iunstead of 'XMLGregorianCalendar' -->
+                           <bindingFile>${basedir}/src/test/resources/xjc/flowable-bindings.xjc</bindingFile>
+                        </bindingFiles>
+                     </defaultOptions>
                   </configuration>
                </execution>
             </executions>

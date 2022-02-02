@@ -35,9 +35,14 @@
       <startEvent id="startevent1" name="Start" activiti:initiator="customer">
          <extensionElements>
             <activiti:formProperty id="address" name="Customer adress" type="string" required="true" />
+            <activiti:formProperty id="date" name="Date" datePattern="dd-MM-yyyy hh:mm:ss" type="date" required="true" />
          </extensionElements>
       </startEvent>
-      <callActivity id="callactivity1" name="Call activity" calledElement="processLevel2"></callActivity>
+      <callActivity id="callactivity1" name="Call activity" calledElement="processLevel2">
+         <extensionElements>
+            <activiti:in sourceExpression="${date:format(date)}" target="dateLevel2" />
+         </extensionElements>
+      </callActivity>
       <sequenceFlow id="flow2" sourceRef="callactivity1" targetRef="endSucceeded" />
       <endEvent id="endSucceeded" name="Completed Succesfully" />
 
