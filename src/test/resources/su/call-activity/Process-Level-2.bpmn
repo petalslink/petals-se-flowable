@@ -50,7 +50,11 @@
    <itemDefinition id="archiverResponseItem" structureRef="archivage:archiverResponse" />
    
    <process id="processLevel2" name="Process level 2" isExecutable="true">
-      <startEvent id="startevent1" name="Start"/>
+      <startEvent id="startevent1" name="Start">
+         <extensionElements>
+            <activiti:formProperty id="dateLevel2" name="Date (yyyy-MM-dd'T'HH:mm:ss.SSSXXX)" type="string" required="true" />
+         </extensionElements>
+      </startEvent>
       <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="servicetask1"/>
       <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"
          operationRef="process:archiveOperation">
@@ -67,6 +71,11 @@
             <assignment>
                <from>${execution.processInstanceId}</from>
                <to>${dataInputOfServiceTaskArchiveAttachment.item}</to>
+            </assignment>
+            <assignment>
+               <!-- The date pattern is driven by java.text.SimpleDateFormat -->
+               <from>${date:parse(dateLevel2, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachment.date}</to>
             </assignment>
          </dataInputAssociation>
       </serviceTask>

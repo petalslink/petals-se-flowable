@@ -24,7 +24,6 @@ import java.util.List;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
@@ -318,7 +317,7 @@ public class DeploymentTest extends AbstractVacationProcessTestEnvironment {
         final GregorianCalendar now = new GregorianCalendar();
         final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
                 now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
-        requestBean.setDateDebutDde(DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate));
+        requestBean.setDateDebutDde(startDate.getTime());
         final String motivation = "hollidays from validStartEventRequest";
         requestBean.setMotifDde(motivation);
 

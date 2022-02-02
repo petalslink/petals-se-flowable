@@ -58,6 +58,7 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -128,6 +129,7 @@ import org.ow2.petals.flowable.incoming.integration.SearchGroupsOperation;
 import org.ow2.petals.flowable.incoming.integration.SearchUsersOperation;
 import org.ow2.petals.flowable.incoming.integration.SuspendProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
+import org.ow2.petals.flowable.juel.FlowableDateParseFunctionDelegate;
 import org.ow2.petals.flowable.monitoring.Monitoring;
 import org.ow2.petals.flowable.outgoing.PetalsSender;
 import org.ow2.petals.flowable.outgoing.WSDLImporterForFlowableFactory;
@@ -298,6 +300,7 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             final ProcessEngineConfiguration pec = ProcessEngineConfiguration
                     .createStandaloneProcessEngineConfiguration();
 
+            this.configureFlowableCustomFunctionDelegates(pec);
             this.configureFlowableEngineDatabase(pec);
             this.configureFlowableEngineOtherParams(pec);
             this.configureFlowableIdmEngine(pec);
@@ -464,6 +467,22 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
         pec.setAsyncFailedJobWaitTime(asyncFailedJobWaitTime);
         pec.setDefaultFailedJobWaitTime(defaultFailedJobWaitTime);
 
+    }
+
+    private void configureFlowableCustomFunctionDelegates(final ProcessEngineConfiguration pec) {
+        if (pec instanceof ProcessEngineConfigurationImpl) {
+            final ProcessEngineConfigurationImpl pecImpl = (ProcessEngineConfigurationImpl) pec;
+
+            // We register a custom JUEL function to parse a string as Date
+            // TODO: This custom JUEL function should be provided directly by Flowable. Move it to Flowable when custom
+            // JUEL functions will be put in a common library for all engines. Today with v6.4.2, each Flowable engine
+            // has its own
+            // custom JUEL functions.
+            pecImpl.setCustomFlowableFunctionDelegates(Arrays.asList(new FlowableDateParseFunctionDelegate()));
+        } else {
+            this.getLogger().warning(
+                    "The implementation of the process engine configuration is not the expected one ! Custom JUEL function not added !");
+        }
     }
 
     private void configureFlowableEngineDatabase(final ProcessEngineConfiguration pec) throws JBIException {

@@ -19,6 +19,9 @@ package org.ow2.petals.flowable;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -27,6 +30,8 @@ import javax.jbi.messaging.MessageExchange;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.job.api.DeadLetterJobQuery;
 import org.flowable.job.api.Job;
 import org.junit.Ignore;
@@ -93,6 +98,8 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
     @Test
     public void nominal() throws Exception {
 
+        final GregorianCalendar now = new GregorianCalendar();
+
         // Create a new instance of the process definition
         final StringBuilder callActivityId_level1 = new StringBuilder();
         final StringBuilder callActivityId_level2 = new StringBuilder();
@@ -100,6 +107,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
             final Start start = new Start();
             start.setCustomer(BPMN_USER);
             start.setAddress(CUSTOMER_ADRESS);
+            start.setDate(now.getTime());
 
             // Send the 1st valid request for start event 'request
             final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
@@ -108,7 +116,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
 
             // Assert the response of the 1st valid request
             final ServiceProviderImplementation archiverServiceImpl = this
-                    .getArchiveAttachmentsServiceImpl(new ArchiverResponse(), callActivityId_level2);
+                    .getArchiveAttachmentsServiceImpl(new ArchiverResponse(), now, callActivityId_level2);
             COMPONENT.sendAndCheckResponseAndSendStatus(request_1, archiverServiceImpl, new MessageChecks() {
 
                 @Override
@@ -149,6 +157,27 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         // assertProcessInstanceFinished(callActivityId_level3);
         this.waitUserTaskAssignment(callActivityId_level2.toString(), "usertask1", BPMN_USER);
         this.assertCurrentUserTask(callActivityId_level2.toString(), "usertask1", BPMN_USER);
+
+        // Check some variables of process instances
+        {
+            final ProcessInstanceQuery processInstQuery = this.flowableClient.getRuntimeService()
+                    .createProcessInstanceQuery();
+            final ProcessInstance processInstance = processInstQuery.processInstanceId(callActivityId_level1.toString())
+                    .includeProcessVariables().singleResult();
+            assertNotNull(processInstance.getProcessVariables().get("date"));
+            // 'date' is a java.util.Date
+            assertEquals(now.getTime(), processInstance.getProcessVariables().get("date"));
+        }
+        {
+            final ProcessInstanceQuery processInstQuery = this.flowableClient.getRuntimeService()
+                    .createProcessInstanceQuery();
+            final ProcessInstance processInstance = processInstQuery.processInstanceId(callActivityId_level2.toString())
+                    .includeProcessVariables().singleResult();
+            assertNotNull(processInstance.getProcessVariables().get("dateLevel2"));
+            // 'dateLevel2' is a date represented as a String using ISO format
+            assertEquals(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(now.getTime()),
+                    processInstance.getProcessVariables().get("dateLevel2"));
+        }
 
         // Retrieve the user task basket using integration service
         {
@@ -283,6 +312,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
             final Start start = new Start();
             start.setCustomer(BPMN_USER);
             start.setAddress(CUSTOMER_ADRESS);
+            start.setDate(new Date());
 
             // Send the 1st valid request for start event 'request
             final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
@@ -489,7 +519,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
     }
 
     private ServiceProviderImplementation getArchiveAttachmentsServiceImpl(final ArchiverResponse responseBean,
-            final StringBuilder callActivityId_level1) {
+            final GregorianCalendar now, final StringBuilder callActivityId_level1) {
 
         return new ServiceProviderImplementation() {
             private MessageExchange msgExchange;
@@ -502,6 +532,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
                 assertTrue(requestObj instanceof Archiver);
                 callActivityId_level1.append(((Archiver) requestObj).getItem());
+                assertEquals(now.getTime(), ((Archiver) requestObj).getDate());
 
                 // Returns the reply of the service provider to the Flowable service task
                 return new ResponseToConsumerMessage(requestMsg, toByteArray(responseBean));

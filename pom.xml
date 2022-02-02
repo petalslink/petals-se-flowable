@@ -26,9 +26,6 @@
       <version>1.1.1-SNAPSHOT</version>
    </parent>
 
-	<!-- ============== -->
-	<!-- Identification -->
-	<!-- ============== -->
    <name>Petals ESB - Components - SE Flowable (BPMN 2.0)</name>
    <artifactId>petals-se-flowable</artifactId>
    <groupId>org.ow2.petals</groupId>
@@ -532,6 +529,18 @@
    <build>
       <plugins>
          <plugin>
+            <!-- Clean unzipped files through maven-dependency-plugin -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+               <filesets>
+                  <fileset>
+                     <directory>${basedir}/src/test/resources/xjc</directory>
+                  </fileset>
+               </filesets>
+            </configuration>
+         </plugin>
+         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
             <executions>
@@ -546,6 +555,26 @@
                         <usedDependency>org.glassfish.jersey.inject:jersey-hk2</usedDependency>
                         <usedDependency>org.codehaus.groovy:groovy-jsr223</usedDependency>
                      </usedDependencies>
+                  </configuration>
+               </execution>
+               <execution>
+                  <!-- Don't forget to clean all unzipped files with maven-clean-plugin -->
+                  <id>unpacking-for-tests</id>
+                  <phase>generate-test-resources</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>${flowable.groupId}</groupId>
+                           <artifactId>flowable-cxf</artifactId>
+                           <version>${flowable.version}</version>
+                           <outputDirectory>${basedir}/src/test/resources/xjc</outputDirectory>
+                           <includes>flowable-bindings.xjc</includes>
+                           <overWrite>true</overWrite>
+                        </artifactItem>
+                     </artifactItems>
                   </configuration>
                </execution>
             </executions>
@@ -575,10 +604,16 @@
                   <goals>
                      <goal>generate</goal>
                   </goals>
-                  <phase>generate-test-sources</phase>
+                  <phase>process-test-resources</phase>
                   <configuration>
                      <addCompileSourceRoot>false</addCompileSourceRoot>
                      <addTestCompileSourceRoot>true</addTestCompileSourceRoot>
+                     <bindingDirectory>${basedir}/src/test/resources/xjc</bindingDirectory>
+                     <bindingIncludes>
+                        <!-- As required by flowable-cxf, the JAXB binding must manage dates with type 
+                             'Date' instead of default type 'XMLGregorianCalendar' -->
+                        <include>flowable-bindings.xjc</include>
+                     </bindingIncludes>
                      <schemaDirectory>${basedir}/src/test/resources/</schemaDirectory>
                      <schemaIncludes>
                         <include>su/vacation/vacationRequest.wsdl</include>
@@ -590,7 +625,7 @@
                         <include>su/call-activity/archivageService.wsdl</include>
                         <include>su/call-activity/coreService.wsdl</include>
                         <include>su/intermediate-message-catch-event/intermediate-message-catch-event.wsdl</include>
-			               <include>su/intermediate-message-catch-event/intermediate-message-catch-event-loop.wsdl</include>
+                        <include>su/intermediate-message-catch-event/intermediate-message-catch-event-loop.wsdl</include>
                         <include>su/placeholders/placeholders.wsdl</include>
                         <include>su/placeholders/archivageService.wsdl</include>
                         <include>su/in-only/in-only.wsdl</include>
@@ -600,7 +635,7 @@
                         <include>su/robustified-in-only/robustified-in-only.wsdl</include>
                         <include>su/robustified-in-only/archivageService.wsdl</include>
                         <include>su/start-stop/start-stop.wsdl</include>
-			               <include>su/structured-variable/structured-variable.wsdl</include>
+                        <include>su/structured-variable/structured-variable.wsdl</include>
                         <include>su/timeout/timeout.wsdl</include>
                         <include>su/timeout/archivageService.wsdl</include>
                         <include>org/ow2/petals/flowable/monit/monitFiltering.wsdl</include>

@@ -17,10 +17,9 @@
  */
 package org.ow2.petals.flowable;
 
-import java.util.GregorianCalendar;
+import java.util.Date;
 
 import javax.jbi.messaging.ExchangeStatus;
-import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.Source;
 
 import org.flowable.engine.history.HistoricProcessInstance;
@@ -76,7 +75,7 @@ public class StructuredVariableProcessTest extends StructuredVariableTestEnviron
             final Data data = new Data();
             start.setData(data);
             data.setNumberOfDays(10);
-            data.setStartDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar()));
+            data.setStartDate(new Date());
             final String expectedVacationMotivation = "vacation motivation";
             data.setVacationMotivation(expectedVacationMotivation);
 

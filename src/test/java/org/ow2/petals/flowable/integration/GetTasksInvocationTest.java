@@ -177,7 +177,7 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
         final GregorianCalendar startDate = new GregorianCalendar(now.get(GregorianCalendar.YEAR),
                 now.get(GregorianCalendar.MONTH), now.get(GregorianCalendar.DAY_OF_MONTH));
         final XMLGregorianCalendar expectedStartDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(startDate);
-        requestBean_1.setDateDebutDde(expectedStartDate);
+        requestBean_1.setDateDebutDde(startDate.getTime());
         final String expectedMotivation = "hollidays";
         requestBean_1.setMotifDde(expectedMotivation);
 
