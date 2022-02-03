@@ -26,15 +26,16 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-registry.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml"
-                    classpath="${maven.plugin.classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
       <javaresource name="org/ow2/petals/integration/ant/petals-esb-sa.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-se-flowable-cli.xml"
-                    classpath="${maven.plugin.classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-se-flowable-cli.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/h2.xml" classpath="${maven.plugin.classpath}" />
    </import>
 
    <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
@@ -55,16 +56,10 @@
    <property name="soapui.projectFile"
              value="${project.build.directory}/${project.artifactId}/resources/soapui/ServiceInvocations-soapui-project.xml" />
 
-   <target name="startDatabaseFlowable">
-      <delete file="${flowable-db.file}.mv.db" />
-      <!-- Start Database Flowable -->
-      <java jar="${com.h2database:h2:jar}" fork="true">
-         <arg value="-tcp" />
-      </java>
-   </target>
-
    <!-- Target : Prepare -->
    <target name="prepare">
+      <delete file="${flowable-db.file}.mv.db" />
+      
       <!-- Create the properties file for BC SOAP -->
       <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
             file="${bc-soap.properties}" />
@@ -596,9 +591,7 @@
       <trycatch>
          <try>
             <parallel failonany="yes">
-               <daemons>
-                  <antcall target="startDatabaseFlowable" />
-               </daemons>
+               <startH2Database />
                <antcall target="startWebservices" />
                <sequential>
                   <trycatch>
@@ -629,6 +622,7 @@
             <!-- We force component uninstallation to avoid stack trace logged by SE Flowable when tests fail. The async job
                  executor of SE Flowable try run SQL query on a database that is not running -->
             <antcall target="cleanAll" />
+            <stopH2Database />
          </finally>
       </trycatch>
       <stopContainer name="${topology.container.name}" home="${petals.home}" />

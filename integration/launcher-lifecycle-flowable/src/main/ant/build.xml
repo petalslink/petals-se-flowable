@@ -27,6 +27,9 @@
    <import>
       <javaresource name="org/ow2/petals/integration/ant/petals-esb-component.xml" classpath="${maven.plugin.classpath}" />
    </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/h2.xml" classpath="${maven.plugin.classpath}" />
+   </import>
 
    <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
 
@@ -48,21 +51,11 @@
 
    <property name="flowable-db.file" value="/tmp/flowable.db" />
 
-   <target name="startDatabaseFlowable">
-      <delete file="${flowable-db.file}.mv.db" />
-      <!-- Start Database Flowable -->
-      <java classname="org.h2.tools.Server" fork="true">
-         <arg value="-tcp" />
-         <arg value="-ifNotExists" />
-         <classpath>
-            <pathelement location="${com.h2database:h2:jar}" />
-         </classpath>
-      </java>
-   </target>
-
    <target name="clean" depends="killAllRegistryMembers, killAllContainers" />
 
    <target name="prepare">
+      <delete file="${flowable-db.file}.mv.db" />
+      
       <!-- Create the properties file for BC SOAP -->
       <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
             file="${bc-soap.properties}" />
@@ -91,19 +84,18 @@
 
       <trycatch>
          <try>
-            <parallel failonany="yes">
-               <daemons>
-                  <antcall target="startDatabaseFlowable" />
-               </daemons>
-               <sequential>
-                  <antcall target="run" />
-               </sequential>
-            </parallel>
+            <sequential>
+		       <startH2Database />
+
+               <antcall target="prepare" />
+		       <antcall target="run" />
+            </sequential>
          </try>
          <finally>
             <!-- We stop all to avoid stack trace logged by SE Flowable when tests fail. The async job
                  executor of SE Flowable try run SQL query on a database that is not running -->
             <antcall target="clean" />
+            <stopH2Database />
          </finally>
       </trycatch>
 

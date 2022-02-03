@@ -26,8 +26,10 @@
       <javaresource name="org/ow2/petals/integration/ant/petals-soapui.xml" classpath="${maven.plugin.classpath}" />
    </import>
    <import>
-      <javaresource name="org/ow2/petals/integration/ant/petals-se-flowable-cli.xml"
-                    classpath="${maven.plugin.classpath}" />
+      <javaresource name="org/ow2/petals/integration/ant/petals-se-flowable-cli.xml" classpath="${maven.plugin.classpath}" />
+   </import>
+   <import>
+      <javaresource name="org/ow2/petals/integration/ant/h2.xml" classpath="${maven.plugin.classpath}" />
    </import>
 
    <basename property="petalsCliDirName" file="${org.ow2.petals:petals-cli-distrib-zip:zip}" suffix=".zip" />
@@ -65,25 +67,16 @@
    <property name="container-2.password" value="petals" />
 
    <property name="flowable-db.file" value="/tmp/flowable.db" />
+   <property name="jdbcMaxActiveConnections" value="15" />
 
    <!-- Used by soapui tasks -->
    <property name="soapui.projectFile"
              value="${project.build.directory}/${project.artifactId}/resources/soapui/HA-Vacation-Process-soapui-project.xml" />
 
-   <target name="startDatabaseFlowable">
-      <delete file="${flowable-db.file}.mv.db" />
-      <!-- Start Database Flowable -->
-      <java classname="org.h2.tools.Server" fork="true">
-         <arg value="-tcp" />
-         <arg value="-ifNotExists" />
-         <classpath>
-            <pathelement location="${com.h2database:h2:jar}" />
-         </classpath>
-      </java>
-   </target>
-
    <!-- Target : Prepare -->
    <target name="prepare">
+      <delete file="${flowable-db.file}.mv.db" />
+      
       <!-- Create the properties file for BC SOAP -->
       <echo message="archiveService.url = http://localhost:8088/mockArchiveService${line.separator}"
             file="${bc-soap.properties}" />
@@ -113,6 +106,7 @@
                              username="${container-1.username}"
                              password="${container-1.password}">
          <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${flowable-db.file}" />
+         <param name="jdbcMaxActiveConnections" value="${jdbcMaxActiveConnections}" />
          <param name="engineRestApiEnable" value="false" />
       </jbi-install-component>
 
@@ -123,10 +117,9 @@
                              username="${container-2.username}"
                              password="${container-2.password}">
          <param name="jdbcUrl" value="jdbc:h2:tcp://localhost/${flowable-db.file}" />
+         <param name="jdbcMaxActiveConnections" value="${jdbcMaxActiveConnections}" />
          <param name="engineRestApiEnable" value="false" />
       </jbi-install-component>
-
-
 
       <echo message="Starting components..." />
 
@@ -368,9 +361,7 @@
       <trycatch>
          <try>
             <parallel failonany="yes">
-               <daemons>
-                  <antcall target="startDatabaseFlowable" />
-               </daemons>
+               <startH2Database />
                <antcall target="startWebservices" />
                <sequential>
                   <trycatch>
@@ -401,6 +392,7 @@
             <!-- We force component uninstallation to avoid stack trace logged by SE Flowable when tests fail. The async job
                  executor of SE Flowable try run SQL query on a database that is not running -->
             <antcall target="cleanAll" />
+            <stopH2Database />
          </finally>
       </trycatch>
 
