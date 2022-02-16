@@ -76,15 +76,6 @@
          <type>zip</type>
       </dependency>
       <dependency>
-         <!-- 
-            We force the version of SLF4J API to avoid the error "tried to access field
-            org.slf4j.impl.StaticLoggerBinder.SINGLETON from class org.slf4j.LoggerFactory"
-          -->
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-         <version>1.5.10</version>
-      </dependency>
-      <dependency>
          <groupId>com.h2database</groupId>
          <artifactId>h2</artifactId>
          <version>1.4.200</version>

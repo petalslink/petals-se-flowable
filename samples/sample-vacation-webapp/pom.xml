@@ -55,12 +55,6 @@
             <artifactId>jquery</artifactId>
             <version>1.11.3</version>
          </dependency>
-         <dependency>
-            <!-- Align version between Flowable, CXF and Petals -->
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.30</version>
-         </dependency>
       </dependencies>
    </dependencyManagement>
 
