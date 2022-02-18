@@ -64,6 +64,9 @@
       <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId -->
       
+      <!-- Groovy version aligned with the one provided by Flowable -->
+      <groovy.version>3.0.9</groovy.version>
+      
       <jetty.version>9.4.44.v20210927</jetty.version>
       <spring-framework.version>5.3.14</spring-framework.version>
       <spring-security.version>5.5.2</spring-security.version>
@@ -521,7 +524,7 @@
       <dependency>
          <groupId>org.codehaus.groovy</groupId>
          <artifactId>groovy-jsr223</artifactId>
-         <version>2.5.8</version>
+         <version>${groovy.version}</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

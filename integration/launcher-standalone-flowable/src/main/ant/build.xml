@@ -76,7 +76,7 @@
       
       <echo message="Installing shared libraries..." />
       
-      <jbi-install-shared-library file="${org.ow2.petals:petals-sl-groovy-2.5.8:jbi-shared-library}"
+      <jbi-install-shared-library file="${org.ow2.petals:petals-sl-groovy-3.0.9:jbi-shared-library}"
                                         port="${host1.port}"
                                         host="${host1.ip}"
                                         username="${host1.username}"

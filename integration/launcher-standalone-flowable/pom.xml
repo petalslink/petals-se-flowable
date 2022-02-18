@@ -54,11 +54,9 @@
          <type>jbi-component</type>
       </dependency>
       <dependency>
-         <artifactId>petals-sl-groovy-2.5.8</artifactId>
+         <artifactId>petals-sl-groovy-3.0.9</artifactId>
          <groupId>org.ow2.petals</groupId>
          <type>jbi-shared-library</type>
-         <!-- TODO: Version definition must be moved in a parent POM -->
-         <version>1.0.0-SNAPSHOT</version>
       </dependency>
       <dependency>
          <artifactId>petals-bc-soap</artifactId>

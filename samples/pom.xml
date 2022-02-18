@@ -38,6 +38,9 @@
       <flowable.version>6.7.2</flowable.version>
       <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version-->
       
+      <!-- Groovy version aligned with the one provided by Flowable -->
+      <groovy.version>3.0.9</groovy.version>
+      
       <!-- CXF version aligned with the one provided by flowable-cxf -->
       <cxf.version>3.4.2</cxf.version>
    </properties>
