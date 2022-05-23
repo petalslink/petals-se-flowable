@@ -35,18 +35,18 @@
             <xsd:complexType>
                <xsd:sequence>
                   <xsd:element name="customer" type="xsd:string" minOccurs="1" maxOccurs="1" />
-                  <xsd:element name="data" minOccurs="1" maxOccurs="1">
-                     <xsd:complexType>
-                        <xsd:sequence> 
-                           <xsd:element name="numberOfDays" minOccurs="1" maxOccurs="1" type="xsd:long" />
-                           <xsd:element name="startDate" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
-                           <xsd:element name="vacationMotivation" minOccurs="0" maxOccurs="1" type="xsd:string" />
-                        </xsd:sequence>
-                     </xsd:complexType>
-                  </xsd:element>
+                  <xsd:element name="data" minOccurs="1" maxOccurs="1" type="tns:TData" />
                </xsd:sequence>
             </xsd:complexType>
          </xsd:element>
+
+         <xsd:complexType name="TData">
+            <xsd:sequence> 
+               <xsd:element name="numberOfDays" minOccurs="1" maxOccurs="1" type="xsd:long" />
+               <xsd:element name="startDate" minOccurs="1" maxOccurs="1" type="xsd:dateTime" />
+               <xsd:element name="vacationMotivation" minOccurs="0" maxOccurs="1" type="xsd:string" />
+            </xsd:sequence>
+         </xsd:complexType>
 
          <xsd:element name="start-response">
             <xsd:complexType>

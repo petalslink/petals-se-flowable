@@ -71,6 +71,16 @@ public abstract class StructuredVariableTestEnvironment extends AbstractTestEnvi
 
     protected static final QName OPERATION_UNLOCK = new QName(STRUCTURED_VARIABLE_NAMESPACE, "unlock");
 
+    private static final String ALARM_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/structured-variable/alarm";
+
+    protected static final QName ALARM_INTERFACE = new QName(ALARM_NAMESPACE, "alarm");
+
+    protected static final QName ALARM_SERVICE = new QName(ALARM_NAMESPACE, "alarmService");
+
+    protected static final String ALARM_ENDPOINT = "edpAlarm";
+
+    protected static final QName ALARM_CREATE_OPERATION = new QName(ALARM_NAMESPACE, "create");
+
     protected static final String BPMN_PROCESS_DEFINITION_KEY = "structured-variable";
 
     protected static final String BPMN_USER = "kermit";
@@ -132,6 +142,11 @@ public abstract class StructuredVariableTestEnvironment extends AbstractTestEnvi
                     assertNotNull("BPMN file not found", bpmnUrl);
                     serviceConfiguration.addResource(bpmnUrl);
 
+                    final URL alarmWsdlUrl = Thread.currentThread().getContextClassLoader()
+                            .getResource("su/structured-variable/alarm.wsdl");
+                    assertNotNull("Alarm WSDl not found", alarmWsdlUrl);
+                    serviceConfiguration.addResource(alarmWsdlUrl);
+
                     serviceConfiguration.setServicesSectionParameter(
                             new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "structured-variable.bpmn");
                     serviceConfiguration
@@ -171,7 +186,7 @@ public abstract class StructuredVariableTestEnvironment extends AbstractTestEnvi
                 public QName getNativeService() {
                     return ITG_EXECUTIONS_SERVICE;
                 }
-            });
+            }).registerExternalServiceProvider(ALARM_ENDPOINT, ALARM_SERVICE, ALARM_INTERFACE);
 
     @ClassRule
     public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
@@ -187,6 +202,7 @@ public abstract class StructuredVariableTestEnvironment extends AbstractTestEnvi
         try {
             final JAXBContext context = JAXBContext.newInstance(
                     org.ow2.petals.se_flowable.unit_test.structured_variable.ObjectFactory.class,
+                    org.ow2.petals.se_flowable.unit_test.structured_variable.alarm.ObjectFactory.class,
                     org.ow2.petals.components.flowable.generic._1.ObjectFactory.class);
             UNMARSHALLER = context.createUnmarshaller();
             MARSHALLER = context.createMarshaller();

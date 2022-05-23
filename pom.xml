@@ -660,13 +660,14 @@
                         <include>robustified-in-only/archivageService.wsdl</include>
                         <include>start-stop/start-stop.wsdl</include>
                         <include>structured-variable/structured-variable.wsdl</include>
+                        <include>structured-variable/alarm.wsdl</include>
                         <include>timeout/timeout.wsdl</include>
                         <include>timeout/archivageService.wsdl</include>
                      </schemaIncludes>
                      <generateDirectory>${project.build.directory}/generated-test-sources/xjc</generateDirectory>
                      <defaultOptions>
                         <bindingFiles>
-                           <!-- As required by flowable-cxf, JaxB must handle date as 'java.util.Date' iunstead of 'XMLGregorianCalendar' -->
+                           <!-- As required by flowable-cxf, JaxB must handle date as 'java.util.Date' instead of 'XMLGregorianCalendar' -->
                            <bindingFile>${basedir}/src/test/resources/xjc/flowable-bindings.xjc</bindingFile>
                         </bindingFiles>
                      </defaultOptions>
