@@ -639,6 +639,7 @@
                         <include>su/robustified-in-only/archivageService.wsdl</include>
                         <include>su/start-stop/start-stop.wsdl</include>
                         <include>su/structured-variable/structured-variable.wsdl</include>
+                        <include>su/structured-variable/alarm.wsdl</include>
                         <include>su/timeout/timeout.wsdl</include>
                         <include>su/timeout/archivageService.wsdl</include>
                         <include>org/ow2/petals/flowable/monit/monitFiltering.wsdl</include>

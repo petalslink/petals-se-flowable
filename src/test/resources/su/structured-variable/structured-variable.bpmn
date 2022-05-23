@@ -28,6 +28,7 @@
    
    targetNamespace="http://petals.ow2.org/se-flowable/unit-test/structured-variable"
    xmlns:process="http://petals.ow2.org/se-flowable/unit-test/structured-variable"
+   xmlns:alarm="http://petals.ow2.org/se-flowable/unit-test/structured-variable/alarm"
    
    typeLanguage="http://www.w3.org/2001/XMLSchema"
    expressionLanguage="http://www.w3.org/1999/XPath">
@@ -35,6 +36,19 @@
    <import location="structured-variable.wsdl"
       namespace="http://petals.ow2.org/se-flowable/unit-test/structured-variable"
       importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <import location="alarm.wsdl" namespace="http://petals.ow2.org/se-flowable/unit-test/structured-variable/alarm"
+      importType="http://schemas.xmlsoap.org/wsdl/" />
+
+   <interface name="Alarm Service" implementationRef="alarm:alarm">
+      <operation id="alarmCreateOperation" name="Alarm Create Operation" implementationRef="alarm:create">
+         <inMessageRef>process:alarmCreateRequestMessage</inMessageRef>
+      </operation>
+   </interface>
+
+   <message id="alarmCreateRequestMessage" itemRef="process:alarmCreateRequestItem" />
+
+   <itemDefinition id="alarmCreateRequestItem" structureRef="alarm:create" />
 
    <process id="structured-variable" name="Process requiring a structured variable" isExecutable="true">
       <startEvent id="startevent" name="Start">
@@ -76,7 +90,25 @@
             </resourceAssignmentExpression>
          </potentialOwner>
       </userTask>
-      <sequenceFlow id="flow21" sourceRef="handleRequest" targetRef="messageIntermediateCatchEventId" />
+      <sequenceFlow id="flow20" sourceRef="handleRequest" targetRef="servicetask1" />
+      <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"
+         operationRef="process:alarmCreateOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:alarmCreateRequestItem" id="dataInputOfServiceTaskCreateAlarm" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskCreateAlarm</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskCreateAlarm</targetRef>
+            <assignment>
+               <from>${date:parse(request.startDate, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")}</from>
+               <to>${dataInputOfServiceTaskCreateAlarm.date}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow21" sourceRef="servicetask1" targetRef="messageIntermediateCatchEventId" />
       <intermediateCatchEvent id="messageIntermediateCatchEventId" name="MessageCatchEventName"
          activiti:async="true">
          <!-- Execution of the intermediate catch event is set to asynchronous to force its execution by the async

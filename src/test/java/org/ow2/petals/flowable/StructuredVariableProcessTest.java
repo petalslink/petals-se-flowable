@@ -20,21 +20,27 @@ package org.ow2.petals.flowable;
 import java.util.Date;
 
 import javax.jbi.messaging.ExchangeStatus;
+import javax.jbi.messaging.MessageExchange;
 import javax.xml.transform.Source;
 
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
+import org.ow2.petals.component.framework.junit.Message;
+import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.StatusMessage;
+import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplementation;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
+import org.ow2.petals.component.framework.junit.impl.message.StatusToConsumerMessage;
 import org.ow2.petals.se_flowable.unit_test.structured_variable.AckResponse;
 import org.ow2.petals.se_flowable.unit_test.structured_variable.Approve;
 import org.ow2.petals.se_flowable.unit_test.structured_variable.Start;
-import org.ow2.petals.se_flowable.unit_test.structured_variable.Start.Data;
 import org.ow2.petals.se_flowable.unit_test.structured_variable.StartResponse;
+import org.ow2.petals.se_flowable.unit_test.structured_variable.TData;
 import org.ow2.petals.se_flowable.unit_test.structured_variable.Unlock;
+import org.ow2.petals.se_flowable.unit_test.structured_variable.alarm.Create;
 
 import com.ebmwebsourcing.easycommons.xml.SourceHelper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -69,13 +75,14 @@ public class StructuredVariableProcessTest extends StructuredVariableTestEnviron
 
         // Create a new instance of the process definition
         final StringBuilder processInstanceId = new StringBuilder();
+        final Date vacationDate = new Date();
         {
             final Start start = new Start();
             start.setCustomer(BPMN_USER);
-            final Data data = new Data();
+            final TData data = new TData();
             start.setData(data);
             data.setNumberOfDays(10);
-            data.setStartDate(new Date());
+            data.setStartDate(vacationDate);
             final String expectedVacationMotivation = "vacation motivation";
             data.setVacationMotivation(expectedVacationMotivation);
 
@@ -119,8 +126,33 @@ public class StructuredVariableProcessTest extends StructuredVariableTestEnviron
                     STRUCTURED_VARIABLE_SU, OPERATION_APPROVE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                     approveRequest, MARSHALLER);
 
-            COMPONENT_UNDER_TEST.pushRequestToProvider(request);
-            final ResponseMessage response = COMPONENT_UNDER_TEST.pollResponseFromProvider();
+            final ResponseMessage response = COMPONENT.sendAndGetResponse(request, new ServiceProviderImplementation() {
+
+                @Override
+                public Message provides(final RequestMessage alarmRequestMsg) throws Exception {
+                    // Assert the 1st request sent by Flowable on orchestrated service
+                    final MessageExchange alarmMessageExchange = alarmRequestMsg.getMessageExchange();
+                    assertEquals(ALARM_INTERFACE, alarmMessageExchange.getInterfaceName());
+                    assertEquals(ALARM_SERVICE, alarmMessageExchange.getService());
+                    assertNotNull(alarmMessageExchange.getEndpoint());
+                    assertEquals(ALARM_ENDPOINT, alarmMessageExchange.getEndpoint().getEndpointName());
+                    assertEquals(ALARM_CREATE_OPERATION, alarmMessageExchange.getOperation());
+                    assertEquals(alarmMessageExchange.getStatus(), ExchangeStatus.ACTIVE);
+                    final Object alarmCreateRequestObj = UNMARSHALLER.unmarshal(alarmRequestMsg.getPayload());
+                    assertTrue(alarmCreateRequestObj instanceof Create);
+                    final Create alaramCreateRequest = (Create) alarmCreateRequestObj;
+                    assertEquals(vacationDate, alaramCreateRequest.getDate());
+
+                    // Returns the reply of the service provider to the Flowable service task
+                    return new StatusToConsumerMessage(alarmRequestMsg, ExchangeStatus.DONE);
+                }
+
+                @Override
+                public boolean statusExpected() {
+                    return false;
+                }
+            });
+
             final Source fault = response.getFault();
             assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
             assertNotNull("No XML payload in response", response.getPayload());
