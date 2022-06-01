@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
+import org.flowable.engine.impl.test.PetalsSEJunitTestHelper;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
@@ -48,6 +49,11 @@ public class PetalsFlowableRule extends FlowableRule {
     public PetalsFlowableRule(final Map<String, String> placeholders) {
         super();
         this.placeholders = placeholders;
+    }
+
+    @Override
+    protected void initializeProcessEngine() {
+        this.processEngine = PetalsSEJunitTestHelper.createProcessEngine(this.configurationResource);
     }
 
     @Override
