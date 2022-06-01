@@ -20,8 +20,11 @@ package org.ow2.petals.flowable.junit;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.runtime.Execution;
@@ -31,6 +34,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PetalsFlowableRuleTest {
 
@@ -100,6 +106,37 @@ public class PetalsFlowableRuleTest {
             final Execution execution = this.flowableRule.assertCurrentIntermediateCatchMessageEvent(
                     processInst.getId(), "IntermediateMessageCatchEventMsg");
             this.flowableRule.signalIntermediateCatchMessageEvent(execution, "IntermediateMessageCatchEventMsg");
+
+            this.flowableRule.waitEndOfProcessInstance(processInst.getProcessInstanceId());
+
+            final HistoricProcessInstance procHistInst = this.flowableRule.getHistoryService()
+                    .createHistoricProcessInstanceQuery().processInstanceId(processInst.getId()).finished()
+                    .singleResult();
+            assertNotNull(procHistInst);
+        }
+    }
+
+    /**
+     * Check that the JUEL function date:parse is available into the SE Flowable JUnit framework
+     */
+    @Test
+    @Deployment(resources = { "date-parse.bpmn" })
+    public void dateParse() throws InterruptedException, IOException {
+
+        // Assertion about the deployment of processes
+        assertNotNull(this.flowableRule.getRepositoryService().createProcessDefinitionQuery()
+                .processDefinitionKey("dateParse").singleResult());
+
+        final String jsonString = "{ \"id\" : \"XY2563\", \"date\" :\"2022-05-31T17:59:53\"}";
+        final ObjectMapper mapper = new ObjectMapper();
+        final JsonNode jsonObj = mapper.readTree(jsonString);
+
+        {
+            final Map<String, Object> variables = new HashMap<>();
+            variables.put("data", jsonObj);
+            final ProcessInstance processInst = this.flowableRule.getRuntimeService()
+                    .startProcessInstanceByKey("dateParse", variables);
+            assertNotNull(processInst);
 
             this.flowableRule.waitEndOfProcessInstance(processInst.getProcessInstanceId());
 
