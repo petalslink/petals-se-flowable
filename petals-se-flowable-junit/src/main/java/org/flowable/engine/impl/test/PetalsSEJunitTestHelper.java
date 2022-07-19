@@ -17,28 +17,41 @@
  */
 package org.flowable.engine.impl.test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.logging.Logger;
 
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.parse.BpmnParseHandler;
+import org.ow2.petals.flowable.CallActivityForceAsyncParseHandler;
+import org.ow2.petals.flowable.ServiceTaskForceAsyncParseHandler;
 import org.ow2.petals.flowable.juel.FlowableDateParseFunctionDelegate;
 
 public class PetalsSEJunitTestHelper {
 
-    public static ProcessEngine createProcessEngine(final String configurationResource) {
+    public static ProcessEngine createProcessEngine(final String configurationResource, final Logger log) {
         ProcessEngine processEngine = TestHelper.processEngines.get(configurationResource);
         if (processEngine == null) {
             final ProcessEngineConfiguration processEngineCfg = ProcessEngineConfiguration
                     .createProcessEngineConfigurationFromResource(configurationResource);
             if (processEngineCfg instanceof ProcessEngineConfigurationImpl) {
+
+                // Add support of custom JUEL functions
                 final ProcessEngineConfigurationImpl pecImpl = (ProcessEngineConfigurationImpl) processEngineCfg;
                 pecImpl.setCustomFlowableFunctionDelegates(Arrays.asList(new FlowableDateParseFunctionDelegate()));
+
+                // Add post BPMN parse handlers
+                final List<BpmnParseHandler> postBpmnParseHandlers = new ArrayList<>();
+                postBpmnParseHandlers.add(new ServiceTaskForceAsyncParseHandler(log));
+                postBpmnParseHandlers.add(new CallActivityForceAsyncParseHandler(log));
+                pecImpl.setPostBpmnParseHandlers(postBpmnParseHandlers);
             }
             processEngine = processEngineCfg.buildProcessEngine();
             TestHelper.processEngines.put(configurationResource, processEngine);
         }
         return processEngine;
     }
-
 }

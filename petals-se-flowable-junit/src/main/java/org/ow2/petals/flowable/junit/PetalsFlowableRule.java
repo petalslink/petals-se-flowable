@@ -53,7 +53,7 @@ public class PetalsFlowableRule extends FlowableRule {
 
     @Override
     protected void initializeProcessEngine() {
-        this.processEngine = PetalsSEJunitTestHelper.createProcessEngine(this.configurationResource);
+        this.processEngine = PetalsSEJunitTestHelper.createProcessEngine(this.configurationResource, LOG);
     }
 
     @Override
