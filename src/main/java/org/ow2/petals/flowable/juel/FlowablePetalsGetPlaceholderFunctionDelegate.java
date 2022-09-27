@@ -22,33 +22,30 @@ import java.lang.reflect.Method;
 import org.flowable.common.engine.impl.el.AbstractFlowableFunctionDelegate;
 
 /**
- * A date function mapper that can be used in EL expressions to parse date.
+ * A petals function that can be used in EL expressions to get a placeholder value.
  * 
  * @author Christophe DENEUX
  */
-// TODO: This custom JUEL function should be provided directly by Flowable. Move it to Flowable when custom
-// JUEL functions will be put in a common library for all engines. Today with v6.4.2, each Flowable engine
-// has its own custom JUEL functions.
-public class FlowableDateParseFunctionDelegate extends AbstractFlowableFunctionDelegate {
+public class FlowablePetalsGetPlaceholderFunctionDelegate extends AbstractFlowableFunctionDelegate {
 
     @Override
     public String prefix() {
-        return "date";
+        return "petals";
     }
 
     @Override
     public String localName() {
-        return "parse";
+        return "getPlaceholder";
     }
 
     @Override
     public Class<?> functionClass() {
-        return DateUtil.class;
+        return PetalsUtil.class;
     }
 
     @Override
     public Method functionMethod() {
-        return getTwoObjectParameterMethod();
+        return getSingleObjectParameterMethod();
     }
 
 }

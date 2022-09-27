@@ -140,6 +140,8 @@ public abstract class StartEventOperation extends FlowableOperation {
         processVars.put(VAR_PETALS_CORRELATED_FLOW_INSTANCE_ID, exchangeFlowAttibutes.getFlowInstanceId());
         processVars.put(VAR_PETALS_CORRELATED_FLOW_STEP_ID, exchangeFlowAttibutes.getFlowStepId());
 
+        // TODO: with the custom JUEL function 'petals:getPlaceholder', the Flowable variable associated to placeholder
+        // is deprecated and will be remove later.
         // We add all placeholders as a map process variable
         processVars.put(VAR_PETALS_PLACEHOLDERS, this.processPlaceholders);
 
