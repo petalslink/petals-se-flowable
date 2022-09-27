@@ -70,6 +70,12 @@ public abstract class PlaceholdersProcessTestEnvironment extends AbstractTestEnv
 
     protected static final QName OPERATION_UNLOCK = new QName(PLACEHOLDERS_NAMESPACE, "unlock");
 
+    protected static final QName OPERATION_REUNLOCK = new QName(PLACEHOLDERS_NAMESPACE, "re-unlock");
+
+    protected static final QName DEPRECATED_OPERATION_START = new QName(PLACEHOLDERS_NAMESPACE, "deprecated-start");
+
+    protected static final QName DEPRECATED_OPERATION_UNLOCK = new QName(PLACEHOLDERS_NAMESPACE, "deprecated-unlock");
+
     private static final String ARCHIVE_NAMESPACE = "http://petals.ow2.org/se-flowable/unit-test/placeholders/archivageService";
 
     protected static final QName ARCHIVE_INTERFACE = new QName(ARCHIVE_NAMESPACE, "archiver");
@@ -82,13 +88,15 @@ public abstract class PlaceholdersProcessTestEnvironment extends AbstractTestEnv
 
     protected static final String BPMN_PROCESS_DEFINITION_KEY = "placeholders";
 
+    protected static final String DEPRECATED_BPMN_PROCESS_DEFINITION_KEY = "deprecated-placeholders";
+
     protected static final String BPMN_USER = "kermit";
 
     protected static final String USER_TASK_1 = "userTask1";
 
     protected static final String USER_TASK_2 = "userTask2";
 
-    protected static final String USER_TASK_3 = "userTask3";
+    protected static final String DEPRECATED_USER_TASK_1 = "deprecated-userTask1";
 
     protected static String getFileIdmEngineConfiguratorCfgFile() {
         return null;

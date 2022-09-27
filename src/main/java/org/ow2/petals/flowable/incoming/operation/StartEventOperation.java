@@ -148,6 +148,8 @@ public abstract class StartEventOperation extends FlowableOperation {
         // service providers.
         processVars.put(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE, isFlowTracingEnabled);
 
+        // TODO: with the custom JUEL function 'petals:getPlaceholder', the Flowable variable associated to placeholder
+        // is deprecated and will be remove later.
         // We add all placeholders as a map process variable
         processVars.put(VAR_PETALS_PLACEHOLDERS, this.processPlaceholders);
 

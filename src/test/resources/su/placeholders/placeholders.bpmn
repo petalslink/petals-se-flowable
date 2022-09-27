@@ -55,22 +55,22 @@
       <serviceTask id="servicetask1" name="Service Task" implementation="##WebService"
          operationRef="process:archiveOperation">
          <ioSpecification>
-            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveAttachment1" />
-            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTaskArchiveAttachment1" />
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTask1ArchiveAttachment1" />
+            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTask1ArchiveAttachment1" />
             <inputSet>
-               <dataInputRefs>dataInputOfServiceTaskArchiveAttachment1</dataInputRefs>
+               <dataInputRefs>dataInputOfServiceTask1ArchiveAttachment1</dataInputRefs>
             </inputSet>
             <outputSet />
          </ioSpecification>
          <dataInputAssociation>
-            <targetRef>dataInputOfServiceTaskArchiveAttachment1</targetRef>
+            <targetRef>dataInputOfServiceTask1ArchiveAttachment1</targetRef>
             <assignment>
                <from>${execution.processInstanceId}</from>
-               <to>${dataInputOfServiceTaskArchiveAttachment1.item}</to>
+               <to>${dataInputOfServiceTask1ArchiveAttachment1.item}</to>
             </assignment>
             <assignment>
-               <from>${empty execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1 ? "default-value-1" : execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1}</from>
-               <to>${dataInputOfServiceTaskArchiveAttachment1.item2}</to>
+               <from>${petals:getPlaceholder('placeholderValue1')}</from>
+               <to>${dataInputOfServiceTask1ArchiveAttachment1.item2}</to>
             </assignment>
          </dataInputAssociation>
       </serviceTask>
@@ -85,7 +85,38 @@
       <sequenceFlow id="flow13" sourceRef="userTask1" targetRef="callactivity1" />
       <!-- We force the call activity to be asynchronous to be executed by the SE instead of the Flowable client -->
       <callActivity id="callactivity1" name="Call activity" calledElement="subProcess" flowable:async="true"/>
-      <sequenceFlow id="flow14" sourceRef="callactivity1" targetRef="endevent1" />
+      <sequenceFlow id="flow14" sourceRef="callactivity1" targetRef="userTask2" />
+      <userTask id="userTask2" name="User task 2">
+         <potentialOwner>
+            <resourceAssignmentExpression>
+               <formalExpression>group(management)</formalExpression>
+            </resourceAssignmentExpression>
+         </potentialOwner>
+      </userTask>
+      <sequenceFlow id="flow15" sourceRef="userTask2" targetRef="servicetask3" />
+      <serviceTask id="servicetask3" name="Service Task 2" implementation="##WebService"
+         operationRef="process:archiveOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTask2ArchiveAttachment1" />
+            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTask2ArchiveAttachment1" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTask2ArchiveAttachment1</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTask2ArchiveAttachment1</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTask2ArchiveAttachment1.item}</to>
+            </assignment>
+            <assignment>
+               <from>${petals:getPlaceholder('placeholderValue1')}</from>
+               <to>${dataInputOfServiceTask2ArchiveAttachment1.item2}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="flow16" sourceRef="servicetask3" targetRef="endevent1" />
       <endEvent id="endevent1" name="End" />
    </process>
    
@@ -109,12 +140,81 @@
                <to>${dataInputOfServiceTaskArchiveAttachment2.item}</to>
             </assignment>
             <assignment>
-               <from>${empty execution.variableInstances.petalsPlaceholders.getValue().placeholderValue2 ? "default-value-2" : execution.variableInstances.petalsPlaceholders.getValue().placeholderValue2}</from>
+               <from>${petals:getPlaceholderWithDefault('placeholderValue2', 'default-value-2')}</from>
                <to>${dataInputOfServiceTaskArchiveAttachment2.item2}</to>
             </assignment>
          </dataInputAssociation>
       </serviceTask>
       <sequenceFlow id="flow23" sourceRef="servicetask2" targetRef="endevent2" />
       <endEvent id="endevent2" name="End" />
+   </process>
+   
+   <process id="deprecated-placeholders" name="Process using placeholders (deprecated version using a Flowable variable to store placeholders)" isExecutable="true">
+      <startEvent id="deprecated-startevent1" name="Start" flowable:initiator="customer" />
+      <sequenceFlow id="deprecated-flow11" sourceRef="deprecated-startevent1" targetRef="deprecated-servicetask1" />
+      <serviceTask id="deprecated-servicetask1" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveAttachmentDeprecated1" />
+            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTaskArchiveAttachmentDeprecated1" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentDeprecated1</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentDeprecated1</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentDeprecated1.item}</to>
+            </assignment>
+            <assignment>
+               <from>${empty execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1 ? "default-value-1" : execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentDeprecated1.item2}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="deprecated-flow12" sourceRef="deprecated-servicetask1" targetRef="deprecated-userTask1" />
+      <userTask id="deprecated-userTask1" name="User task 1">
+         <potentialOwner>
+            <resourceAssignmentExpression>
+               <formalExpression>group(management)</formalExpression>
+            </resourceAssignmentExpression>
+         </potentialOwner>
+      </userTask>
+      <sequenceFlow id="deprecated-flow13" sourceRef="deprecated-userTask1" targetRef="deprecated-callactivity1" />
+      <!-- We force the call activity to be asynchronous to be executed by the SE instead of the Flowable client -->
+      <callActivity id="deprecated-callactivity1" name="Call activity" calledElement="deprecated-subProcess" flowable:async="true"/>
+      <sequenceFlow id="deprecated-flow14" sourceRef="deprecated-callactivity1" targetRef="deprecated-endevent1" />
+      <endEvent id="deprecated-endevent1" name="End" />
+   </process>
+   
+   <process id="deprecated-subProcess" name="Sub Process (deprecated version using a Flowable variable to store placeholders)" isExecutable="true">
+      <startEvent id="deprecated-startevent2" name="Start" />
+      <sequenceFlow id="deprecated-flow21" sourceRef="deprecated-startevent2" targetRef="deprecated-servicetask2"/>
+      <serviceTask id="deprecated-servicetask2" name="Service Task" implementation="##WebService"
+         operationRef="process:archiveOperation">
+         <ioSpecification>
+            <dataInput itemSubjectRef="process:archiverRequestItem" id="dataInputOfServiceTaskArchiveAttachmentDeprecated2" />
+            <dataOutput itemSubjectRef="process:archiverRequestItem" id="dataOutputOfServiceTaskArchiveAttachmentDeprecated2" />
+            <inputSet>
+               <dataInputRefs>dataInputOfServiceTaskArchiveAttachmentDeprecated2</dataInputRefs>
+            </inputSet>
+            <outputSet />
+         </ioSpecification>
+         <dataInputAssociation>
+            <targetRef>dataInputOfServiceTaskArchiveAttachmentDeprecated2</targetRef>
+            <assignment>
+               <from>${execution.processInstanceId}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentDeprecated2.item}</to>
+            </assignment>
+            <assignment>
+               <from>${empty execution.variableInstances.petalsPlaceholders.getValue().placeholderValue2 ? "default-value-2" : execution.variableInstances.petalsPlaceholders.getValue().placeholderValue2}</from>
+               <to>${dataInputOfServiceTaskArchiveAttachmentDeprecated2.item2}</to>
+            </assignment>
+         </dataInputAssociation>
+      </serviceTask>
+      <sequenceFlow id="deprecated-flow23" sourceRef="deprecated-servicetask2" targetRef="deprecated-endevent2" />
+      <endEvent id="deprecated-endevent2" name="End" />
    </process>
 </definitions>

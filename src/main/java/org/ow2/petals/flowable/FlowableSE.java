@@ -130,6 +130,9 @@ import org.ow2.petals.flowable.incoming.integration.SearchUsersOperation;
 import org.ow2.petals.flowable.incoming.integration.SuspendProcessInstancesOperation;
 import org.ow2.petals.flowable.incoming.integration.exception.OperationInitializationException;
 import org.ow2.petals.flowable.juel.FlowableDateParseFunctionDelegate;
+import org.ow2.petals.flowable.juel.FlowablePetalsGetPlaceholderFunctionDelegate;
+import org.ow2.petals.flowable.juel.FlowablePetalsGetPlaceholderWithDefaultValueFunctionDelegate;
+import org.ow2.petals.flowable.juel.PetalsUtil;
 import org.ow2.petals.flowable.monitoring.Monitoring;
 import org.ow2.petals.flowable.outgoing.PetalsSender;
 import org.ow2.petals.flowable.outgoing.WSDLImporterForFlowableFactory;
@@ -473,12 +476,15 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
         if (pec instanceof ProcessEngineConfigurationImpl) {
             final ProcessEngineConfigurationImpl pecImpl = (ProcessEngineConfigurationImpl) pec;
 
-            // We register a custom JUEL function to parse a string as Date
-            // TODO: This custom JUEL function should be provided directly by Flowable. Move it to Flowable when custom
-            // JUEL functions will be put in a common library for all engines. Today with v6.4.2, each Flowable engine
-            // has its own
-            // custom JUEL functions.
-            pecImpl.setCustomFlowableFunctionDelegates(Arrays.asList(new FlowableDateParseFunctionDelegate()));
+            // We configure custom JUEL functions ...
+            PetalsUtil.init(this.getPlaceHolders());
+
+            // ... and we register them.
+            pecImpl.setCustomFlowableFunctionDelegates(
+                    Arrays.asList(
+                            new FlowableDateParseFunctionDelegate(),
+                            new FlowablePetalsGetPlaceholderFunctionDelegate(),
+                            new FlowablePetalsGetPlaceholderWithDefaultValueFunctionDelegate()));
         } else {
             this.getLogger().warning(
                     "The implementation of the process engine configuration is not the expected one ! Custom JUEL function not added !");
@@ -1034,6 +1040,9 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
             } catch (final Exception e) {
                 exception.addSuppressed(e);
             }
+
+            // We clean custom JUEL functions ...
+            PetalsUtil.clean();
 
             exception.throwIfNeeded();
         } finally {

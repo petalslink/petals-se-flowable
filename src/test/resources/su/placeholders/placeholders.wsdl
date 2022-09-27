@@ -119,6 +119,22 @@
          <wsdl:fault message="tns:alreadyUnlocked" name="alreadyUnlocked" />
          <wsdl:fault message="tns:instanceUnknown" name="instanceUnknown" />
       </wsdl:operation>
+      <wsdl:operation name="re-unlock">
+         <wsdl:input message="tns:unlock" />
+         <wsdl:output message="tns:unlockAck" />
+         <wsdl:fault message="tns:alreadyUnlocked" name="alreadyUnlocked" />
+         <wsdl:fault message="tns:instanceUnknown" name="instanceUnknown" />
+      </wsdl:operation>
+      <wsdl:operation name="deprecated-start">
+         <wsdl:input message="tns:start" />
+         <wsdl:output message="tns:start-response" />
+      </wsdl:operation>
+      <wsdl:operation name="deprecated-unlock">
+         <wsdl:input message="tns:unlock" />
+         <wsdl:output message="tns:unlockAck" />
+         <wsdl:fault message="tns:alreadyUnlocked" name="alreadyUnlocked" />
+         <wsdl:fault message="tns:instanceUnknown" name="instanceUnknown" />
+      </wsdl:operation>
    </wsdl:portType>
 
    <wsdl:binding name="placeholdersBinding" type="tns:placeholders">
@@ -138,6 +154,60 @@
       <wsdl:operation name="unlock">
          <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/placeholders/unlock" />
          <bpmn:operation processDefinitionId="placeholders" action="userTask" user-task-id="userTask1" />
+         <bpmn:processInstanceId>/*[local-name()='unlock']/*[local-name()='process-instance-id']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='unlock']/*[local-name()='unlocker']</bpmn:userId>
+         <bpmn:output>unlockAckResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="instanceUnknown">
+            <bpmn:fault name="ProcessInstanceNotFoundException">instanceUnknown.xsl</bpmn:fault>
+            <soap:fault name="instanceUnknown" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="alreadyUnlocked">
+            <bpmn:fault name="TaskCompletedException">alreadyUnlocked.xsl</bpmn:fault>
+            <soap:fault name="alreadyUnlocked" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="re-unlock">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/placeholders/re-unlock" />
+         <bpmn:operation processDefinitionId="placeholders" action="userTask" user-task-id="userTask2" />
+         <bpmn:processInstanceId>/*[local-name()='unlock']/*[local-name()='process-instance-id']</bpmn:processInstanceId>
+         <bpmn:userId>/*[local-name()='unlock']/*[local-name()='unlocker']</bpmn:userId>
+         <bpmn:output>unlockAckResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+         <wsdl:fault name="instanceUnknown">
+            <bpmn:fault name="ProcessInstanceNotFoundException">instanceUnknown.xsl</bpmn:fault>
+            <soap:fault name="instanceUnknown" use="literal" />
+         </wsdl:fault>
+         <wsdl:fault name="alreadyUnlocked">
+            <bpmn:fault name="TaskCompletedException">alreadyUnlocked.xsl</bpmn:fault>
+            <soap:fault name="alreadyUnlocked" use="literal" />
+         </wsdl:fault>
+      </wsdl:operation>
+      <wsdl:operation name="deprecated-start">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/placeholders/deprecated-start" />
+         <bpmn:operation processDefinitionId="deprecated-placeholders" action="startEvent" none-start-event-id="deprecated-startevent1" />
+         <bpmn:userId>/*[local-name()='start']/*[local-name()='customer']</bpmn:userId>
+         <bpmn:output>startResponse.xsl</bpmn:output>
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="deprecated-unlock">
+         <soap:operation soapAction="http://petals.ow2.org/se-flowable/unit-test/placeholders/deprecated-unlock" />
+         <bpmn:operation processDefinitionId="deprecated-placeholders" action="userTask" user-task-id="deprecated-userTask1" />
          <bpmn:processInstanceId>/*[local-name()='unlock']/*[local-name()='process-instance-id']</bpmn:processInstanceId>
          <bpmn:userId>/*[local-name()='unlock']/*[local-name()='unlocker']</bpmn:userId>
          <bpmn:output>unlockAckResponse.xsl</bpmn:output>
