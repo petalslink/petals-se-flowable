@@ -80,6 +80,32 @@ public class Assert extends org.junit.Assert {
 
     /**
      * <p>
+     * Assertion to check that a single user task can be completed by a user.
+     * </p>
+     * 
+     * @param processInstanceId
+     *            The process instance identifier
+     * @param taskDefinitionKey
+     *            The process definition key
+     * @param taskService
+     *            The Flowable's task service used to request the Flowable engine about task instances.
+     * @return The task to complete
+     */
+    public static Task assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey,
+            final TaskService taskService) {
+
+        final TaskQuery taskQuery = taskService.createTaskQuery();
+        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskDefinitionKey(taskDefinitionKey)
+                .singleResult();
+        assertNotNull(nextTask);
+        assertEquals(processInstanceId, nextTask.getProcessInstanceId());
+        assertEquals(taskDefinitionKey, nextTask.getTaskDefinitionKey());
+
+        return nextTask;
+    }
+
+    /**
+     * <p>
      * Assertion to check that a single user task can be completed by the given user.
      * </p>
      * <p>
@@ -100,8 +126,8 @@ public class Assert extends org.junit.Assert {
             final String user, final TaskService taskService) {
 
         final TaskQuery taskQuery = taskService.createTaskQuery();
-        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskCandidateOrAssigned(user)
-                .singleResult();
+        final Task nextTask = taskQuery.processInstanceId(processInstanceId).taskDefinitionKey(taskDefinitionKey)
+                .taskCandidateOrAssigned(user).singleResult();
         assertNotNull(nextTask);
         assertEquals(processInstanceId, nextTask.getProcessInstanceId());
         assertEquals(taskDefinitionKey, nextTask.getTaskDefinitionKey());

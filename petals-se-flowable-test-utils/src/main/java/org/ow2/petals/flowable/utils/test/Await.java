@@ -211,6 +211,20 @@ public class Await {
     }
 
     /**
+     * Wait that a user task of a process instance is assigned to a user. If the waiting time is upper than 60s, an
+     * {@link AssertionError} is thrown.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its assignment.
+     * @param taskDefinitionKey
+     *            The user task identifier in the process definition
+     */
+    public static void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
+            final TaskService taskService) throws InterruptedException {
+        Await.waitUserTaskAssignment(processInstanceId, taskDefinitionKey, taskService, 60);
+    }
+
+    /**
      * Wait that a user task of a process instance is assigned to a candidate user. If the waiting time is upper than
      * 60s, an {@link AssertionError} is thrown.
      * 
@@ -224,6 +238,34 @@ public class Await {
     public static void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
             final String candidateUser, final TaskService taskService) throws InterruptedException {
         Await.waitUserTaskAssignment(processInstanceId, taskDefinitionKey, candidateUser, taskService, 60);
+    }
+
+    /**
+     * Wait that a user task of a process instance is assigned to a user. If the waiting time is upper than the given
+     * one, an {@link AssertionError} is thrown.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its assignment.
+     * @param taskDefinitionKey
+     *            The user task identifier in the process definition
+     * @param duration
+     *            Waiting time in seconds before to throw a {@link AssertionError} to fail the processing
+     */
+    public static void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey,
+            final TaskService taskService, final int duration) throws InterruptedException {
+
+        if (Await.waitSingleResult(new QueryBuilder<TaskQuery>() {
+
+            @Override
+            public TaskQuery createQuery() {
+                return taskService.createTaskQuery().processInstanceId(processInstanceId)
+                        .taskDefinitionKey(taskDefinitionKey);
+            }
+        }, duration) == null) {
+            throw new AssertionError(
+                    String.format("User task '%s' of process instance '%s' not assigned in the waiting time ('%ds').",
+                            taskDefinitionKey, processInstanceId, duration));
+        }
     }
 
     /**
@@ -251,8 +293,9 @@ public class Await {
             }
         }, duration) == null) {
             throw new AssertionError(
-                    String.format("User task '%s' of process instance '%s' not assigned in the waiting time ('%ds').",
-                            taskDefinitionKey, processInstanceId, duration));
+                    String.format(
+                            "User task '%s' of process instance '%s' not assigned to '%s' in the waiting time ('%ds').",
+                            taskDefinitionKey, processInstanceId, candidateUser, duration));
         }
     }
 

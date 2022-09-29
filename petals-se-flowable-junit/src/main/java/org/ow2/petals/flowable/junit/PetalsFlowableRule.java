@@ -115,6 +115,22 @@ public class PetalsFlowableRule extends FlowableRule {
 
     /**
      * <p>
+     * Assertion to check that a single user task can be completed by a user.
+     * </p>
+     * 
+     * @param processInstanceId
+     *            The process instance identifier
+     * @param taskDefinitionKey
+     *            The process definition key
+     * @return The task to complete
+     */
+    public Task assertCurrentUserTask(final String processInstanceId, final String taskDefinitionKey) {
+
+        return Assert.assertCurrentUserTask(processInstanceId, taskDefinitionKey, this.getTaskService());
+    }
+
+    /**
+     * <p>
      * Assertion to check that a single user task can be completed by the given user.
      * </p>
      * <p>
@@ -277,6 +293,20 @@ public class PetalsFlowableRule extends FlowableRule {
             final int duration) throws InterruptedException {
 
         Await.waitEndOfServiceTask(processInstanceId, serviceTaskDefinitionKey, this.getHistoryService(), duration);
+    }
+
+    /**
+     * Wait that a user task of a process instance is assigned to a user. If the waiting time is upper than 60s, an
+     * {@link AssertionError} is thrown.
+     * 
+     * @param processInstanceId
+     *            The process instance identifier of the service task to wait its end.
+     * @param taskDefinitionKey
+     *            The service task identifier (definition key) in the process definition
+     */
+    public void waitUserTaskAssignment(final String processInstanceId, final String taskDefinitionKey)
+            throws InterruptedException {
+        Await.waitUserTaskAssignment(processInstanceId, taskDefinitionKey, this.getTaskService(), 60);
     }
 
     /**
