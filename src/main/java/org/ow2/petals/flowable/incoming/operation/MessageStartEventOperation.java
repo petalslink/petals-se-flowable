@@ -24,7 +24,6 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.IdentityService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.ow2.petals.component.framework.api.util.Placeholders;
 import org.ow2.petals.flowable.incoming.operation.annotated.MessageStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
 import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
@@ -61,8 +60,6 @@ public class MessageStartEventOperation extends StartEventOperation {
      *            The history service of the BPMN engine
      * @param simpleUUIDGenerator
      *            A UUID generator
-     * @param placeholders
-     *            Placeholders defined at component level
      * @param jacksonObjectMapper
      *            String to JSON converter of Jackson library.
      * @param logger
@@ -72,9 +69,8 @@ public class MessageStartEventOperation extends StartEventOperation {
     public MessageStartEventOperation(final MessageStartEventAnnotatedOperation annotatedOperation,
             final IdentityService identityService, final RuntimeService runtimeService,
             final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
-            final Placeholders placeholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
-            throws VariableUnsupportedTypeException {
-        super(annotatedOperation, identityService, runtimeService, historyService, simpleUUIDGenerator, placeholders,
+            final ObjectMapper jacksonObjectMapper, final Logger logger) throws VariableUnsupportedTypeException {
+        super(annotatedOperation, identityService, runtimeService, historyService, simpleUUIDGenerator,
                 jacksonObjectMapper, logger);
         this.startEventMessageName = annotatedOperation.getStartEventMessageName();
         this.tenantId = annotatedOperation.getTenantId();

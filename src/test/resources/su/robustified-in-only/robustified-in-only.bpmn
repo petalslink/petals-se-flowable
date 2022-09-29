@@ -68,7 +68,7 @@
                <to>${dataInputOfServiceTaskArchiveAttachment1.item}</to>
             </assignment>
             <assignment>
-               <from>${empty execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1 ? "default-value-1" : execution.variableInstances.petalsPlaceholders.getValue().placeholderValue1}</from>
+               <from>${petals:getPlaceholderWithDefault('placeholderValue1', 'default-value-1')}</from>
                <to>${dataInputOfServiceTaskArchiveAttachment1.item2}</to>
             </assignment>
          </dataInputAssociation>

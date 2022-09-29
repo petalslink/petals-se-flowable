@@ -17,9 +17,6 @@
  */
 package org.ow2.petals.flowable.junit;
 
-import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
-
-import java.util.Map;
 import java.util.logging.Logger;
 
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -37,14 +34,10 @@ public class ProcessInstanceStartedEventListener implements FlowableEventListene
 
     private final RuntimeService runtimeService;
 
-    private final Map<String, String> placeholders;
-
     private final Logger log;
 
-    public ProcessInstanceStartedEventListener(final RuntimeService runtimeService,
-            final Map<String, String> placeholders, final Logger log) {
+    public ProcessInstanceStartedEventListener(final RuntimeService runtimeService, final Logger log) {
         this.runtimeService = runtimeService;
-        this.placeholders = placeholders;
         this.log = log;
     }
 
@@ -58,9 +51,6 @@ public class ProcessInstanceStartedEventListener implements FlowableEventListene
 
                 final String processInstanceId = eventImpl.getProcessInstanceId();
                 this.log.fine("The process instance '" + processInstanceId + "' is started.");
-
-                // Placeholders must be copied in the call activity scope
-                this.runtimeService.setVariable(eventImpl.getExecutionId(), VAR_PETALS_PLACEHOLDERS, this.placeholders);
 
             } else {
                 // A call activity or a sub-process is started

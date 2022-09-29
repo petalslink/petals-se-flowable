@@ -19,7 +19,6 @@ package org.ow2.petals.flowable.event;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
-import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
 
 import java.util.Map;
 
@@ -103,12 +102,6 @@ public class CallActivityStartedEventListener extends AbstractMonitDirectLoggerE
                         VAR_PETALS_FLOW_INSTANCE_ID, flowInstanceId);
                 this.runtimeService.setVariable(eventImpl.getExecutionId(),
                         VAR_PETALS_FLOW_STEP_ID, flowStepId);
-
-                // TODO: with the custom JUEL function 'petals:getPlaceholder', the Flowable variable associated to
-                // placeholder is deprecated and will be remove later.
-                // Placeholders must be copied in the call activity scope
-                this.runtimeService.setVariable(eventImpl.getExecutionId(), VAR_PETALS_PLACEHOLDERS,
-                        processVariables.get(VAR_PETALS_PLACEHOLDERS));
 
                 final ExecutionEntity parentEntity = callActivityEntity.getParent();
 

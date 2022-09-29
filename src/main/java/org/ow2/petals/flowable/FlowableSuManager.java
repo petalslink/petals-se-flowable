@@ -539,14 +539,14 @@ public class FlowableSuManager extends ServiceEngineServiceUnitManager {
                 return new NoneStartEventOperation((NoneStartEventAnnotatedOperation) annotatedOperation,
                         component.getProcessEngine().getIdentityService(),
                         component.getProcessEngine().getRuntimeService(),
-                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
-                        component.getPlaceHolders(), jacksonObjectMapper, this.logger);
+                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator, jacksonObjectMapper,
+                        this.logger);
             } else if (annotatedOperation instanceof MessageStartEventAnnotatedOperation) {
                 return new MessageStartEventOperation((MessageStartEventAnnotatedOperation) annotatedOperation,
                         component.getProcessEngine().getIdentityService(),
                         component.getProcessEngine().getRuntimeService(),
-                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator,
-                        component.getPlaceHolders(), jacksonObjectMapper, this.logger);
+                        component.getProcessEngine().getHistoryService(), this.simpleUUIDGenerator, jacksonObjectMapper,
+                        this.logger);
             } else if (annotatedOperation instanceof CompleteUserTaskAnnotatedOperation) {
                 return new CompleteUserTaskOperation((CompleteUserTaskAnnotatedOperation) annotatedOperation,
                         component.getProcessEngine().getTaskService(),

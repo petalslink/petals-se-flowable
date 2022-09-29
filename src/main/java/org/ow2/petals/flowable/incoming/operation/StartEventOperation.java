@@ -22,12 +22,9 @@ import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_CO
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID;
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID;
-import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
@@ -41,7 +38,6 @@ import org.ow2.petals.commons.log.FlowAttributes;
 import org.ow2.petals.commons.log.Level;
 import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.message.Exchange;
-import org.ow2.petals.component.framework.api.util.Placeholders;
 import org.ow2.petals.flowable.incoming.operation.annotated.NoneStartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.annotated.StartEventAnnotatedOperation;
 import org.ow2.petals.flowable.incoming.operation.exception.OperationProcessingException;
@@ -82,11 +78,6 @@ public abstract class StartEventOperation extends FlowableOperation {
     private final SimpleUUIDGenerator simpleUUIDGenerator;
 
     /**
-     * Placeholders of the component to configure the BPMN definition
-     */
-    private final Map<String, String> processPlaceholders;
-
-    /**
      * @param annotatedOperation
      *            Annotations of the operation to create
      * @param identityService
@@ -97,8 +88,6 @@ public abstract class StartEventOperation extends FlowableOperation {
      *            The history service of the BPMN engine
      * @param simpleUUIDGenerator
      *            A UUID generator
-     * @param componentPlaceholders
-     *            Placeholders defined at component level
      * @param jacksonObjectMapper
      *            String to JSON converter of Jackson library.
      * @param logger
@@ -108,18 +97,12 @@ public abstract class StartEventOperation extends FlowableOperation {
     public StartEventOperation(final StartEventAnnotatedOperation annotatedOperation,
             final IdentityService identityService, final RuntimeService runtimeService,
             final HistoryService historyService, final SimpleUUIDGenerator simpleUUIDGenerator,
-            final Placeholders componentPlaceholders, final ObjectMapper jacksonObjectMapper, final Logger logger)
-            throws VariableUnsupportedTypeException {
+            final ObjectMapper jacksonObjectMapper, final Logger logger) throws VariableUnsupportedTypeException {
         super(annotatedOperation, annotatedOperation.getOutputTemplate(), jacksonObjectMapper, logger);
         this.identityService = identityService;
         this.runtimeService = runtimeService;
         this.historyService = historyService;
         this.simpleUUIDGenerator = simpleUUIDGenerator;
-        final Properties componentPlaceholderProperties = componentPlaceholders.toProperties();
-        this.processPlaceholders = new HashMap<>(componentPlaceholderProperties.size());
-        for (final Entry<Object, Object> placeholder : componentPlaceholderProperties.entrySet()) {
-            this.processPlaceholders.put((String) placeholder.getKey(), (String) placeholder.getValue());
-        }
     }
 
     @Override
@@ -147,11 +130,6 @@ public abstract class StartEventOperation extends FlowableOperation {
         // process instance execution. We use a process instance variable to store it, and to retrieve it when invoking
         // service providers.
         processVars.put(VAR_PETALS_EXT_FLOW_TRACING_ACTIVATION_STATE, isFlowTracingEnabled);
-
-        // TODO: with the custom JUEL function 'petals:getPlaceholder', the Flowable variable associated to placeholder
-        // is deprecated and will be remove later.
-        // We add all placeholders as a map process variable
-        processVars.put(VAR_PETALS_PLACEHOLDERS, this.processPlaceholders);
 
         final String bpmnProcessIdValue;
         try {

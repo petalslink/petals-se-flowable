@@ -430,13 +430,6 @@ public final class FlowableSEConstants {
          */
         public static final String VAR_PETALS_CORRELATED_FLOW_STEP_ID = "petals.correlated.flow.step.id";
 
-        /**
-         * Prefix of the name of the process variable used to store the Petals placeholders.
-         */
-        // TODO: with the custom JUEL function 'petals:getPlaceholder', the Flowable variable associated to placeholder
-        // is deprecated and will be remove later.
-        public static final String VAR_PETALS_PLACEHOLDERS = "petalsPlaceholders";
-
         private Flowable() {
             // NOP: Utility class => No constructor
         }
