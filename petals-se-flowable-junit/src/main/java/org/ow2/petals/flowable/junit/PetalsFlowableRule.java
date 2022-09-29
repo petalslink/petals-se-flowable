@@ -17,8 +17,8 @@
  */
 package org.ow2.petals.flowable.junit;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -28,6 +28,7 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
 import org.flowable.task.api.Task;
 import org.junit.runner.Description;
+import org.ow2.petals.flowable.juel.PetalsUtil;
 import org.ow2.petals.flowable.utils.test.Assert;
 import org.ow2.petals.flowable.utils.test.Await;
 
@@ -35,7 +36,7 @@ public class PetalsFlowableRule extends FlowableRule {
 
     private static final Logger LOG = Logger.getLogger(PetalsFlowableRule.class.getName());
 
-    private final Map<String, String> placeholders;
+    private final Properties placeholders;
 
     private CallActivityStartedEventListener callActivityStartEventListener = null;
 
@@ -43,16 +44,23 @@ public class PetalsFlowableRule extends FlowableRule {
 
     public PetalsFlowableRule() {
         super();
-        this.placeholders = new HashMap<>();
+        this.placeholders = new Properties();
     }
 
-    public PetalsFlowableRule(final Map<String, String> placeholders) {
+    public PetalsFlowableRule(final Properties placeholders) {
         super();
         this.placeholders = placeholders;
     }
 
+    public PetalsFlowableRule(final Map<String, String> placeholders) {
+        super();
+        this.placeholders = new Properties();
+        this.placeholders.putAll(placeholders);
+    }
+
     @Override
     protected void initializeProcessEngine() {
+        PetalsUtil.init(this.placeholders);
         this.processEngine = PetalsSEJunitTestHelper.createProcessEngine(this.configurationResource, LOG);
     }
 

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2022 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
+<definitions
+   targetNamespace="http://petals.ow2.org/unit-tests/se-flowable-junit/getPlaceholder"
+   xmlns:process="http://petals.ow2.org/unit-tests/se-flowable-junit/getPlaceholder"
+
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:flowable="http://flowable.org/bpmn"
+
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath">
+
+   <process id="getPlaceholder" name="getPlaceholder function" isExecutable="true">
+      <startEvent id="startevent1" name="Start"/>
+      <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="servicetask1"/>
+      <serviceTask id="servicetask1" name="User Task"
+         flowable:class="org.ow2.petals.flowable.junit.tasks.DummyJavaDelegate">
+         <extensionElements>
+            <flowable:field name="param1">
+               <flowable:expression>${petals:getPlaceholder('my-placeholder')}</flowable:expression>
+            </flowable:field>
+         </extensionElements>
+      </serviceTask>
+      <sequenceFlow id="flow2" sourceRef="servicetask1" targetRef="endevent1"/>
+      <endEvent id="endevent1" name="End"/>
+   </process>
+</definitions>

@@ -19,7 +19,10 @@ package org.ow2.petals.flowable.junit;
 
 import static org.ow2.petals.flowable.FlowableSEConstants.Flowable.VAR_PETALS_PLACEHOLDERS;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
@@ -43,10 +46,13 @@ public class CallActivityStartedEventListener implements FlowableEventListener {
 
     private final Logger log;
 
-    public CallActivityStartedEventListener(final RuntimeService runtimeService, final Map<String, String> placeholders,
+    public CallActivityStartedEventListener(final RuntimeService runtimeService, final Properties placeholders,
             final Logger log) {
         this.runtimeService = runtimeService;
-        this.placeholders = placeholders;
+        this.placeholders = new HashMap<>();
+        for (final Entry<Object, Object> prop : placeholders.entrySet()) {
+            this.placeholders.put(prop.getKey().toString(), prop.getValue().toString());
+        }
         this.log = log;
     }
 

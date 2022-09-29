@@ -17,19 +17,19 @@
  */
 package org.ow2.petals.flowable.juel;
 
-import java.util.Properties;
+import java.util.Map;
 
 import org.flowable.common.engine.api.FlowableException;
 
 public class PetalsUtil {
 
-    private static Properties placeholders;
+    private static Map<Object, Object> placeholders;
 
     private PetalsUtil() {
         // Utility class --> no constructor
     }
 
-    public static void init(final Properties compPlaceholders) {
+    public static void init(final Map<Object, Object> compPlaceholders) {
         placeholders = compPlaceholders;
     }
 
@@ -39,7 +39,7 @@ public class PetalsUtil {
 
     public static String getPlaceholder(final Object placeholderStr) {
         if (placeholderStr instanceof String) {
-            return placeholders.getProperty((String) placeholderStr);
+            return (String) (placeholders.get(placeholderStr));
         } else {
             throw new FlowableException(
                     "The custom function 'petals:getPlaceholder('my-placeholder')' requires one argument as String.");
@@ -48,7 +48,8 @@ public class PetalsUtil {
 
     public static String getPlaceholderWithDefault(final Object placeholderStr, final Object defaultValueStr) {
         if ((placeholderStr instanceof String) && (defaultValueStr instanceof String)) {
-            return placeholders.getProperty((String) placeholderStr, (String) defaultValueStr);
+            final Object value = getPlaceholder(placeholderStr);
+            return value == null ? (String) defaultValueStr : value.toString();
         } else {
             throw new FlowableException(
                     "The custom function 'petals:getPlaceholder('my-placeholder', 'default value'))' requires two arguments as String.");

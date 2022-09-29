@@ -24,10 +24,12 @@ import org.flowable.engine.delegate.JavaDelegate;
 
 public class DummyJavaDelegate implements JavaDelegate {
 
+    public static Object result1;
+
     private Expression param1;
 
     public void execute(final DelegateExecution execution) {
-        this.param1.getValue(execution);
+        result1 = this.param1.getValue(execution);
     }
 
 }
