@@ -18,7 +18,9 @@
 package org.ow2.petals.flowable.junit;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -28,6 +30,7 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
 import org.flowable.task.api.Task;
 import org.junit.runner.Description;
+import org.ow2.petals.flowable.juel.PetalsUtil;
 import org.ow2.petals.flowable.utils.test.Assert;
 import org.ow2.petals.flowable.utils.test.Await;
 
@@ -54,6 +57,9 @@ public class PetalsFlowableRule extends FlowableRule {
     @Override
     protected void initializeProcessEngine() {
         this.processEngine = PetalsSEJunitTestHelper.createProcessEngine(this.configurationResource, LOG);
+        final Properties compPlaceholders = new Properties();
+        compPlaceholders.putAll(this.placeholders);
+        PetalsUtil.init(compPlaceholders);
     }
 
     @Override

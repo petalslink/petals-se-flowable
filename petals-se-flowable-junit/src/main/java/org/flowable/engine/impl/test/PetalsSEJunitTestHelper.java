@@ -29,6 +29,9 @@ import org.flowable.engine.parse.BpmnParseHandler;
 import org.ow2.petals.flowable.CallActivityForceAsyncParseHandler;
 import org.ow2.petals.flowable.ServiceTaskForceAsyncParseHandler;
 import org.ow2.petals.flowable.juel.FlowableDateParseFunctionDelegate;
+import org.ow2.petals.flowable.juel.FlowablePetalsGetPlaceholderFunctionDelegate;
+import org.ow2.petals.flowable.juel.FlowablePetalsGetPlaceholderWithDefaultValueFunctionDelegate;
+
 
 public class PetalsSEJunitTestHelper {
 
@@ -41,7 +44,11 @@ public class PetalsSEJunitTestHelper {
 
                 // Add support of custom JUEL functions
                 final ProcessEngineConfigurationImpl pecImpl = (ProcessEngineConfigurationImpl) processEngineCfg;
-                pecImpl.setCustomFlowableFunctionDelegates(Arrays.asList(new FlowableDateParseFunctionDelegate()));
+                pecImpl.setCustomFlowableFunctionDelegates(Arrays.asList(
+                    new FlowableDateParseFunctionDelegate(),
+                    new FlowablePetalsGetPlaceholderFunctionDelegate(),
+                    new FlowablePetalsGetPlaceholderWithDefaultValueFunctionDelegate()
+                ));
 
                 // Add post BPMN parse handlers
                 final List<BpmnParseHandler> postBpmnParseHandlers = new ArrayList<>();
