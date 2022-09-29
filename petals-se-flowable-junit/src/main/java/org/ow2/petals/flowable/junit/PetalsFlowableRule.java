@@ -17,7 +17,6 @@
  */
 package org.ow2.petals.flowable.junit;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -28,6 +27,8 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.FlowableRule;
 import org.flowable.task.api.Task;
 import org.junit.runner.Description;
+import org.ow2.petals.component.framework.api.util.Placeholders;
+import org.ow2.petals.flowable.juel.PetalsUtil;
 import org.ow2.petals.flowable.utils.test.Assert;
 import org.ow2.petals.flowable.utils.test.Await;
 
@@ -35,7 +36,7 @@ public class PetalsFlowableRule extends FlowableRule {
 
     private static final Logger LOG = Logger.getLogger(PetalsFlowableRule.class.getName());
 
-    private final Map<String, String> placeholders;
+    private final Placeholders placeholders;
 
     private CallActivityStartedEventListener callActivityStartEventListener = null;
 
@@ -43,16 +44,19 @@ public class PetalsFlowableRule extends FlowableRule {
 
     public PetalsFlowableRule() {
         super();
-        this.placeholders = new HashMap<>();
+        this.placeholders = new Placeholders();
     }
 
-    public PetalsFlowableRule(final Map<String, String> placeholders) {
+    public PetalsFlowableRule(final Placeholders placeholders) {
         super();
         this.placeholders = placeholders;
     }
 
     @Override
     protected void initializeProcessEngine() {
+        // We configure custom JUEL functions ...
+        PetalsUtil.init(this.placeholders);
+
         this.processEngine = PetalsSEJunitTestHelper.createProcessEngine(this.configurationResource, LOG);
     }
 
@@ -60,13 +64,12 @@ public class PetalsFlowableRule extends FlowableRule {
     public void configureProcessEngine() {
         super.configureProcessEngine();
 
-        this.callActivityStartEventListener = new CallActivityStartedEventListener(
-                this.getRuntimeService(), this.placeholders, LOG);
+        this.callActivityStartEventListener = new CallActivityStartedEventListener(this.getRuntimeService(), LOG);
         this.getRuntimeService().addEventListener(this.callActivityStartEventListener,
                 FlowableEngineEventType.PROCESS_STARTED);
 
         this.processInstanceStartedEventListener = new ProcessInstanceStartedEventListener(this.getRuntimeService(),
-                this.placeholders, LOG);
+                LOG);
         this.getRuntimeService().addEventListener(this.processInstanceStartedEventListener,
                 FlowableEngineEventType.PROCESS_STARTED);
     }
