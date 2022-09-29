@@ -17,6 +17,7 @@
  */
 package org.ow2.petals.flowable.junit;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -25,23 +26,33 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
+import org.awaitility.Awaitility;
+import org.awaitility.Duration;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.Deployment;
+import org.flowable.task.api.Task;
+import org.flowable.task.api.TaskQuery;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
+import org.ow2.petals.component.framework.api.util.Placeholders;
+import org.ow2.petals.flowable.junit.tasks.DummyJavaDelegate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class PetalsFlowableRuleTest {
 
+    private final Placeholders compPlaceholders = new Placeholders();
+
     @Rule
-    public final PetalsFlowableRule flowableRule = new PetalsFlowableRule();
+    public final PetalsFlowableRule flowableRule = new PetalsFlowableRule(this.compPlaceholders);
 
     @BeforeClass
     public static void initLog() throws URISyntaxException {
@@ -53,6 +64,11 @@ public class PetalsFlowableRuleTest {
     @AfterClass
     public static void cleanLog() {
         System.clearProperty("java.util.logging.config.file");
+    }
+
+    @After
+    public void cleanPlaceholders() {
+        this.compPlaceholders.clear();
     }
 
     /**
@@ -144,6 +160,74 @@ public class PetalsFlowableRuleTest {
                     .createHistoricProcessInstanceQuery().processInstanceId(processInst.getId()).finished()
                     .singleResult();
             assertNotNull(procHistInst);
+        }
+    }
+
+    @Test
+    @Deployment(resources = { "getPlaceholderWithDefault.bpmn" })
+    public void getPlaceholderWithDefault() throws InterruptedException {
+
+        // Assertion about the deployment of processes
+        assertNotNull(this.flowableRule.getRepositoryService().createProcessDefinitionQuery()
+                .processDefinitionKey("getPlaceholderWithDefault").singleResult());
+
+        {
+            final Map<String, Object> variables = new HashMap<>();
+            final ProcessInstance processInst = this.flowableRule.getRuntimeService()
+                    .startProcessInstanceByKey("getPlaceholderWithDefault", variables);
+            assertNotNull(processInst);
+
+            Awaitility.await().atMost(Duration.ONE_MINUTE).until(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    final TaskQuery query = flowableRule.getTaskService().createTaskQuery()
+                            .processInstanceId(processInst.getId())
+                            .taskDefinitionKey("usertask1");
+                    return query.singleResult() != null;
+                }
+            });
+            final Task userTask = this.flowableRule.getTaskService().createTaskQuery()
+                    .processInstanceId(processInst.getId()).taskDefinitionKey("usertask1").singleResult();
+
+            assertEquals(DummyJavaDelegate.result1, "my-placeholder-default-value");
+
+            this.compPlaceholders.setPlaceholder("my-placeholder", "my-placeholder-value");
+            this.flowableRule.getTaskService().complete(userTask.getId());
+
+            this.flowableRule.waitEndOfProcessInstance(processInst.getProcessInstanceId());
+
+            final HistoricProcessInstance procHistInst = this.flowableRule.getHistoryService()
+                    .createHistoricProcessInstanceQuery().processInstanceId(processInst.getId()).finished()
+                    .singleResult();
+            assertNotNull(procHistInst);
+
+            assertEquals(DummyJavaDelegate.result1, "my-placeholder-value");
+        }
+    }
+
+    @Test
+    @Deployment(resources = { "getPlaceholder.bpmn" })
+    public void getPlaceholderTest() throws InterruptedException {
+
+        this.compPlaceholders.setPlaceholder("my-placeholder", "my-placeholder-value");
+        // Assertion about the deployment of processes
+        assertNotNull(this.flowableRule.getRepositoryService().createProcessDefinitionQuery()
+                .processDefinitionKey("getPlaceholder").singleResult());
+
+        {
+            final Map<String, Object> variables = new HashMap<>();
+            final ProcessInstance processInst = this.flowableRule.getRuntimeService()
+                    .startProcessInstanceByKey("getPlaceholder", variables);
+            assertNotNull(processInst);
+
+            this.flowableRule.waitEndOfProcessInstance(processInst.getProcessInstanceId());
+
+            final HistoricProcessInstance procHistInst = this.flowableRule.getHistoryService()
+                    .createHistoricProcessInstanceQuery().processInstanceId(processInst.getId()).finished()
+                    .singleResult();
+            assertNotNull(procHistInst);
+
+            assertEquals(DummyJavaDelegate.result1, "my-placeholder-value");
         }
     }
 
