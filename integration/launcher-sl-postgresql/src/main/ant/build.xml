@@ -71,9 +71,28 @@
             </not>
          </condition>
       </fail>
-      
+      <!--
+      <echo message="Set attribute 'jdbcUrl'" />
+      <jmx:set name="org.ow2.petals:type=custom,name=bootstrap_petals-se-flowable"
+                     echo="true"
+                     attribute="jdbcUrl"
+                     value="jdbc:postgresql://192.168.1.6/flowabledb" />
+      <echo message="Set attribute 'jdbcUsername'" />
+      <jmx:set name="org.ow2.petals:type=custom,name=bootstrap_petals-se-flowable"
+                     echo="true"
+                     attribute="jdbcUsername"
+                     value="flowabledbuser" />
+      <echo message="Set attribute 'jdbcPassword'" />
+      <jmx:set name="org.ow2.petals:type=custom,name=bootstrap_petals-se-flowable"
+                     echo="true"
+                     attribute="jdbcPassword"
+                     value="flowabledbpwd" />
+      -->
       <jmx:invoke name="org.ow2.petals:type=installer,name=petals-se-flowable" echo="true" operation="install" />
-
+      <!--
+      <jmx:invoke name="org.ow2.petals:type=engine,name=petals-se-flowable" echo="true" operation="start" />
+      <echo message="Petals SE Flowable started using a PostgreSQL database" />
+      -->
    </target>
 
    <target name="cleanAll">
@@ -119,7 +138,14 @@
    </target>
 
    <target name="launchContainer">
-      <!-- No configuration required, we use the default configuration -->
+      <replaceregexp file="${petals.home}/conf/loggers.properties"
+                     match="org.ow2.petals.log.handler.PetalsFileHandler.level.*"
+                     replace="org.ow2.petals.log.handler.PetalsFileHandler.level=FINEST"
+                     byline="true" />
+      <replaceregexp file="${petals.home}/conf/loggers.properties"
+                     match="Petals.Container.Components.level.*"
+                     replace="Petals.Container.Components.level=FINE"
+                     byline="true" />
 
       <startContainer name="${topology.container.name}" home="${petals.home}" jmx.port="${host1.port}" />
    </target>
