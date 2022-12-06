@@ -39,7 +39,7 @@
       <flowable.version>6.4.2-PETALS-0</flowable.version>
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
       
-      <petals-se-flowable.version>1.3.2</petals-se-flowable.version>
+      <petals-se-flowable.version>1.3.3-SNAPSHOT</petals-se-flowable.version>
    </properties>
 
    <dependencyManagement>
