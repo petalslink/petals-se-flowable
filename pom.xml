@@ -310,7 +310,7 @@
          <!-- Dependency required by the Petals transporter. The version must be aligned with the CXF embedded by flowable-cxf. -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-core</artifactId>
-         <version>3.4.2</version>
+         <version>3.4.10</version>
       </dependency>
       <dependency>
          <!-- flowable-ldap add support of LDAP integration -->
