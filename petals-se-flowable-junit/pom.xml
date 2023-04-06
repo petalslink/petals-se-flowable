@@ -23,7 +23,7 @@
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath />
-      <version>20.3.2</version>
+      <version>20.3.3</version>
    </parent>
 
    <name>Petals ESB - Components - SE Flowable - JUnit framework</name>
