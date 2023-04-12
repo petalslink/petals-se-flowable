@@ -33,7 +33,7 @@
       <!-- We override here the component version defined in the integration test parent POM
            file to defined the version of the component to test. -->
       <petals-se-flowable.base.version>1.4.0</petals-se-flowable.base.version>
-      <petals-se-flowable.version>${petals-se-flowable.base.version}-SNAPSHOT</petals-se-flowable.version>
+      <petals-se-flowable.version>${petals-se-flowable.base.version}</petals-se-flowable.version>
       
       <petals-se-flowable-junit.version>${petals-se-flowable.base.version}-SNAPSHOT</petals-se-flowable-junit.version>
       
