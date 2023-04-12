@@ -67,7 +67,7 @@
             <groupId>org.ow2.petals</groupId>
             <scope>provided</scope>
             <type>jbi-component</type>
-            <version>5.1.0-SNAPSHOT</version>
+            <version>5.1.0</version>
          </dependency>
 
          <dependency>
@@ -85,7 +85,7 @@
             <plugin>
                <artifactId>petals-maven-plugin</artifactId>
                <groupId>org.ow2.petals</groupId>
-               <version>3.3.0-SNAPSHOT</version>
+               <version>3.3.0</version>
                <extensions>true</extensions>
             </plugin>
          </plugins>
