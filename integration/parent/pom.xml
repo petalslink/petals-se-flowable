@@ -35,7 +35,7 @@
       <petals-se-flowable.base.version>1.4.0</petals-se-flowable.base.version>
       <petals-se-flowable.version>${petals-se-flowable.base.version}</petals-se-flowable.version>
       
-      <petals-se-flowable-junit.version>${petals-se-flowable.base.version}-SNAPSHOT</petals-se-flowable-junit.version>
+      <petals-se-flowable-junit.version>${petals-se-flowable.base.version}</petals-se-flowable-junit.version>
       
       <!-- Override Flowable sample version for this Git branch -->
       <petals-samples-flowable.version>${petals-se-flowable.base.version}-1.0.0-SNAPSHOT</petals-samples-flowable.version>
