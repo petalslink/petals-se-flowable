@@ -558,6 +558,11 @@
                         <usedDependency>org.glassfish.jersey.inject:jersey-hk2</usedDependency>
                         <usedDependency>org.codehaus.groovy:groovy-jsr223</usedDependency>
                      </usedDependencies>
+                     <ignoredNonTestScopedDependencies>
+						 <!-- Used directly by unit tests but required transitively at runtime -->
+						 <ignoredNonTestScopedDependency>org.ow2.petals:petals-jbi-descriptor</ignoredNonTestScopedDependency>
+						 <ignoredNonTestScopedDependency>org.flowable:flowable-job-service-api</ignoredNonTestScopedDependency>
+                     </ignoredNonTestScopedDependencies>
                   </configuration>
                </execution>
                <execution>
