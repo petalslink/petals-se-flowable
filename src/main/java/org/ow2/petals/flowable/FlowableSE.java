@@ -923,7 +923,7 @@ public class FlowableSE extends AbstractServiceEngine implements AdminRuntimeSer
                             "No async task executor available for the asynchronous job executor, so no monitoring available on asynchronous job executor !");
                 } else if (asyncTaskExecutor instanceof DefaultAsyncTaskExecutor) {
                     final Object executorServiceObj = ReflectionHelper.getFieldValue(DefaultAsyncTaskExecutor.class,
-                            asyncTaskExecutor, "executorService", false);
+                            asyncTaskExecutor, "executorService");
                     if (executorServiceObj == null) {
                         this.getLogger().warning(
                                 "No executor service available for the asynchronous task executor, so no monitoring available on asynchronous job executor !");

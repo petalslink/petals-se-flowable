@@ -342,7 +342,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
 
     private ProcessEngine getProcessEngine() {
         return (ProcessEngine) ReflectionHelper.getFieldValue(FlowableSE.class,
-                ((FlowableSE) this.componentUnderTest.getComponentObject()), "flowableEngine", false);
+                ((FlowableSE) this.componentUnderTest.getComponentObject()), "flowableEngine");
     }
 
     /**

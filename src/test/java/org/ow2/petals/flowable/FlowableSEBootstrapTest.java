@@ -1131,7 +1131,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             assertEquals(engineEnableBpmnValidation,
                     ReflectionHelper.getFieldValue(FlowableSuManager.class,
                             (FlowableSuManager) flowableComponent.getServiceUnitManager(),
-                            "enableFlowableBpmnValidation", false));
+                            "enableFlowableBpmnValidation"));
             assertEquals(defaultFailedJobWaitTime, pec.getDefaultFailedJobWaitTime());
             assertEquals(asyncFailedJobWaitTime, pec.getAsyncFailedJobWaitTime());
 
