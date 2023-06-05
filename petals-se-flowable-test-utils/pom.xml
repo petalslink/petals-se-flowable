@@ -29,7 +29,7 @@
    <name>Petals ESB - Components - SE Flowable - Utilities for test</name>
    <artifactId>petals-se-flowable-test-utils</artifactId>
    <groupId>org.ow2.petals</groupId>
-   <version>1.4.1-SNAPSHOT</version>
+   <version>1.5.0-SNAPSHOT</version>
 
    <properties>
       <flowable.version>6.7.2</flowable.version>
