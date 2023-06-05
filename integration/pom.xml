@@ -21,7 +21,7 @@
   <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - Root builder</name>
   <groupId>org.ow2.petals.integration.tests.se.flowable</groupId>
   <artifactId>petals-integration-flowable-rootbuilder</artifactId>
-  <version>5.2.1-SNAPSHOT</version>
+  <version>5.4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <modules>

@@ -29,7 +29,7 @@
    <name>Petals ESB - Components - SE Flowable - JUnit framework</name>
    <artifactId>petals-se-flowable-junit</artifactId>
    <groupId>org.ow2.petals</groupId>
-   <version>1.4.1-SNAPSHOT</version>
+   <version>1.5.0-SNAPSHOT</version>
    <packaging>jar</packaging>
    <description>JUnit framework for service unit of the BPMN Service Engine based on Flowable</description>
 
@@ -39,7 +39,7 @@
       <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version-->
       <!-- flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
 
-      <petals-se-flowable.version>1.4.0</petals-se-flowable.version>
+      <petals-se-flowable.version>1.5.0-SNAPSHOT</petals-se-flowable.version>
    </properties>
 
    <dependencyManagement>
