@@ -21,10 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 
 import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
@@ -43,6 +39,11 @@ import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.NumeroDeman
 import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.Validation;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  * Abstract class for unit tests about request processing

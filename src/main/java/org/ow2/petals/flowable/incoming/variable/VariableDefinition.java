@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Templates;
 import javax.xml.xpath.XPathExpression;
@@ -38,6 +37,8 @@ import org.ow2.petals.flowable.incoming.variable.exception.VariableFormatLongExc
 import org.ow2.petals.flowable.incoming.variable.exception.VariableUnsupportedTypeException;
 import org.ow2.petals.flowable.incoming.variable.exception.VariableValueRequiredException;
 import org.w3c.dom.Document;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * Variable definition used as an internal model of a variable.

@@ -36,8 +36,6 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.Source;
 
@@ -87,6 +85,9 @@ import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.Validation;
 import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.XslParameter;
 
 import com.ebmwebsourcing.easycommons.xml.SourceHelper;
+
+import jakarta.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * Unit tests about request processing of BPMN services, with a component configured with default values

@@ -21,9 +21,6 @@ import java.io.File;
 import java.net.ConnectException;
 import java.net.URL;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.xml.namespace.QName;
 
 import org.hamcrest.core.IsInstanceOf;
@@ -34,6 +31,10 @@ import org.junit.rules.TestRule;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.flowable.FlowableSEConstants;
+
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * Class for unit tests about the use of the REST API with the default privilege configuration

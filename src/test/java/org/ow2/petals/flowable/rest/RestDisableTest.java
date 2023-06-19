@@ -19,7 +19,6 @@ package org.ow2.petals.flowable.rest;
 
 import java.net.ConnectException;
 
-import javax.ws.rs.ProcessingException;
 import javax.xml.namespace.QName;
 
 import org.hamcrest.core.IsInstanceOf;
@@ -29,6 +28,8 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.flowable.FlowableSEConstants;
+
+import jakarta.ws.rs.ProcessingException;
 
 /**
  * Class for unit tests about the REST API activation

@@ -17,17 +17,17 @@
  */
 package org.ow2.petals.flowable.rest;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.ow2.petals.flowable.AbstractTestEnvironment;
 import org.ow2.petals.flowable.FlowableSEConstants;
+
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * @author Victor NOEL - Linagora

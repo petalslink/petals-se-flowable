@@ -113,6 +113,9 @@
       <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
+         <!-- Caution: Even if this dependency is required only for tests in this project, it is required as
+              transitive dependency with scope 'compile'. -->
+         <scope>compile</scope>
       </dependency>
       <dependency>
          <groupId>org.xmlunit</groupId>
@@ -132,6 +135,26 @@
          <scope>test</scope>
       </dependency>
    </dependencies>
+   
+   <build>
+	 <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>analyze</id>
+                  <configuration>
+                     <ignoredNonTestScopedDependencies>
+						 <!-- Used directly by unit tests but required transitively at runtime -->
+						 <ignoredNonTestScopedDependency>com.fasterxml.jackson.core:jackson-databind</ignoredNonTestScopedDependency>
+                     </ignoredNonTestScopedDependencies>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+     </plugins>
+   </build>     
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>

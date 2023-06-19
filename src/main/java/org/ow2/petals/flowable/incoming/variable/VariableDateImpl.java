@@ -19,11 +19,12 @@ package org.ow2.petals.flowable.incoming.variable;
 
 import java.util.logging.Logger;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.xpath.XPathExpression;
 
 import org.ow2.petals.flowable.incoming.variable.exception.VariableException;
 import org.ow2.petals.flowable.incoming.variable.exception.VariableFormatDateException;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * Variable implementation for type {@code double}.

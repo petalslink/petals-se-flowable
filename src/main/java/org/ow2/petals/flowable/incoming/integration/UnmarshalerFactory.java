@@ -17,12 +17,12 @@
  */
 package org.ow2.petals.flowable.incoming.integration;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  * The {@link org.apache.commons.pool2.PooledObjectFactory} to create JAXB unmarshalers

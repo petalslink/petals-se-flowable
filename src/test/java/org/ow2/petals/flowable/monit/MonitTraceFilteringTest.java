@@ -29,9 +29,6 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.TabularData;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.namespace.QName;
 
 import org.flowable.engine.ProcessEngine;
@@ -58,6 +55,10 @@ import org.ow2.petals.unit_tests.se.flowable.monit.filtering.echo.NoWall;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 import com.ebmwebsourcing.easycommons.lang.reflect.ReflectionHelper;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
 
 /**
  * <p>

@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -37,6 +36,8 @@ import javax.xml.transform.stream.StreamSource;
 
 import com.ebmwebsourcing.easycommons.stream.EasyByteArrayOutputStream;
 import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
+
+import jakarta.xml.bind.DatatypeConverter;
 
 public class XslUtils {
 

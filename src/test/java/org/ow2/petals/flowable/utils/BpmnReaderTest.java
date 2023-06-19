@@ -25,14 +25,14 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Logger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
 import org.junit.Test;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.flowable.exception.InvalidSuffixForProcessFileException;
 import org.ow2.petals.flowable.exception.ProcessDefinitionDeclarationException;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  * Unit tests of {@link BpmnReader}

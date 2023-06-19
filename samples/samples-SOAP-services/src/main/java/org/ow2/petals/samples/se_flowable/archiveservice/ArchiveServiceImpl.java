@@ -19,10 +19,11 @@ package org.ow2.petals.samples.se_flowable.archiveservice;
 
 import java.util.logging.Logger;
 
-import javax.jws.WebService;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.ow2.petals.samples.se_flowable.vacation.archiveservice.Archive;
+
+import jakarta.jws.WebService;
 
 @WebService(serviceName = "archiveService", portName = "autogenerate", targetNamespace = "http://petals.ow2.org/samples/se-flowable/vacation/archiveService", wsdlLocation = "classpath:wsdl/archiveService.wsdl", endpointInterface = "org.ow2.petals.samples.se_flowable.vacation.archiveservice.Archive")
 public class ArchiveServiceImpl implements Archive {

@@ -70,8 +70,8 @@
       <jetty.version>9.4.44.v20210927</jetty.version>
       <spring-framework.version>5.3.14</spring-framework.version>
       <spring-security.version>5.5.2</spring-security.version>
-      <jersey.version>2.33</jersey.version>
-      <jackson.version>2.13.1</jackson.version>
+      <jersey.version>3.1.2</jersey.version>
+      <jackson.version>2.14.2</jackson.version>
    </properties>
 
    <dependencyManagement>
@@ -178,8 +178,15 @@
          <artifactId>commons-pool2</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jvnet.jaxb2_commons</groupId>
-         <artifactId>jaxb2-basics-runtime</artifactId>
+         <groupId>org.patrodyne.jvnet</groupId>
+         <artifactId>hisrc-basicjaxb-runtime</artifactId>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
@@ -305,12 +312,31 @@
          <!-- flowable-cxf add support of WSDL-based services to the Flowable engine to call Petals services -->
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
+         <exclusions>
+			 <exclusion>
+				 <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by this dependency -->
+				 <groupId>jakarta.jws</groupId>
+				 <artifactId>jakarta.jws-api</artifactId>
+			 </exclusion>
+		 </exclusions>
       </dependency>
       <dependency>
          <!-- Dependency required by the Petals transporter. The version must be aligned with the CXF embedded by flowable-cxf. -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-core</artifactId>
          <version>3.4.2</version>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+			 <exclusion>
+				 <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by this dependency -->
+				 <groupId>jakarta.jws</groupId>
+				 <artifactId>jakarta.jws-api</artifactId>
+			 </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <!-- flowable-ldap add support of LDAP integration -->
@@ -588,8 +614,8 @@
             </executions>
          </plugin>
          <plugin>
-            <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb2-plugin</artifactId>
+            <groupId>org.patrodyne.jvnet</groupId>
+            <artifactId>hisrc-higherjaxb-maven-plugin</artifactId>
             <executions>
                <execution>
                   <!-- must use the same id as in the parent if not there will be two executions of the plugin -->

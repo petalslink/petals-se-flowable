@@ -20,8 +20,6 @@ package org.ow2.petals.flowable.rest;
 import java.io.File;
 import java.net.URL;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.xml.namespace.QName;
 
 import org.junit.ClassRule;
@@ -36,6 +34,9 @@ import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory
 import org.ow2.petals.flowable.FlowableSEConstants;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 /**
  * Class for unit tests about the use of the REST API with the default privilege configuration

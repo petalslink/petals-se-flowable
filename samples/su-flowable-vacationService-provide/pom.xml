@@ -60,6 +60,11 @@
                <groupId>jakarta.activation</groupId>
                <artifactId>jakarta.activation-api</artifactId>
             </exclusion>
+			<exclusion>
+			   <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by this dependency -->
+			   <groupId>jakarta.jws</groupId>
+			   <artifactId>jakarta.jws-api</artifactId>
+			</exclusion>
          </exclusions>
       </dependency>
       <dependency>

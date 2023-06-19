@@ -19,10 +19,11 @@ package org.ow2.petals.samples.se_flowable.notifyvacationservice;
 
 import java.util.logging.Logger;
 
-import javax.jws.WebService;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.ow2.petals.samples.se_flowable.vacation.notifyvacationservice.NotifyVacation;
+
+import jakarta.jws.WebService;
 
 @WebService(serviceName = "notifyVacationService", portName = "autogenerate", targetNamespace = "http://petals.ow2.org/samples/se-flowable/vacation/notifyVacationService", wsdlLocation = "classpath:wsdl/notifyVacationService.wsdl", endpointInterface = "org.ow2.petals.samples.se_flowable.vacation.notifyvacationservice.NotifyVacation")
 public class NotifyVacationServiceImpl implements NotifyVacation {
