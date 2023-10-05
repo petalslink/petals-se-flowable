@@ -59,19 +59,20 @@
    </developers>
 
    <properties>
-      <flowable.version>6.7.2</flowable.version>
-      <flowable.groupId>org.flowable</flowable.groupId>
-      <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version>
-      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId -->
+      <!-- flowable.version>7.0.0</flowable.version>
+      <flowable.groupId>org.flowable</flowable.groupId -->
+      <flowable.version>7.0.0-PETALS-0-SNAPSHOT</flowable.version>
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
       
       <!-- Groovy version aligned with the one provided by Flowable -->
-      <groovy.version>3.0.9</groovy.version>
+      <groovy.version>4.0.14</groovy.version>
       
-      <jetty.version>9.4.44.v20210927</jetty.version>
-      <spring-framework.version>5.3.14</spring-framework.version>
-      <spring-security.version>5.5.2</spring-security.version>
+      <jetty.version>11.0.16</jetty.version>
+      <jetty-jakarta-servlet-api>5.0.2</jetty-jakarta-servlet-api>
+      <spring-framework.version>6.0.12</spring-framework.version>
+      <spring-security.version>6.0.7</spring-security.version>
       <jersey.version>3.1.2</jersey.version>
-      <jackson.version>2.14.2</jackson.version>
+      <jackson.version>2.15.2</jackson.version>
    </properties>
 
    <dependencyManagement>
@@ -114,25 +115,14 @@
             <version>${flowable.version}</version>
             <exclusions>
                <exclusion>
-                  <!-- Moving to Java 11, we prefer com.sun.activation:jakarta.activation provided by Petals CDK -->
-                  <groupId>javax.activation</groupId>
-                  <artifactId>activation</artifactId>
+                  <!-- Already included in com.sun.activation:jakarta.activation provided by easycommon-util -->
+                  <groupId>jakarta.activation</groupId>
+                  <artifactId>jakarta.activation-api</artifactId>
                </exclusion>
                <exclusion>
-                  <!-- Moving to Java 11, we prefer com.sun.mail:jakarta.mail provided by petals-message-exchange -->
-                  <groupId>com.sun.mail</groupId>
-                  <artifactId>javax.mail</artifactId>
-               </exclusion>
-               <exclusion>
-                  <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                       so commons-logging must be excluded -->
-                  <groupId>commons-logging</groupId>
-                  <artifactId>commons-logging</artifactId>
-               </exclusion>
-               <exclusion>
-                  <!-- We prefer to use the SLF bridge 'jcl-over-slf4j' to redirect JCL calls to SLF4J API -->
-                  <groupId>org.springframework</groupId>
-                  <artifactId>spring-jcl</artifactId>
+                  <!-- Already included in com.sun.mail:jakarta.mail provided by petals-message-exchange -->
+                  <groupId>jakarta.mail</groupId>
+                  <artifactId>jakarta.mail-api</artifactId>
                </exclusion>
             </exclusions>
          </dependency>
@@ -141,12 +131,25 @@
             <groupId>${flowable.groupId}</groupId>
             <artifactId>flowable-cxf</artifactId>
             <version>${flowable.version}</version>
+            <exclusions>
+               <exclusion>
+                  <!-- Already included in com.sun.activation:jakarta.activation provided by easycommon-util -->
+                  <groupId>jakarta.activation</groupId>
+                  <artifactId>jakarta.activation-api</artifactId>
+               </exclusion>
+            </exclusions>
          </dependency>
          <dependency>
-            <!-- Align dependency 'net.bytebuddy:byte-buddy' between Mockito and embedded-ldap-junit -->
-            <groupId>net.bytebuddy</groupId>
-            <artifactId>byte-buddy</artifactId>
-            <version>1.10.19</version>
+            <!-- Align dependency 'org.eclipse.angus:angus-mail' between flowable-engine and flowable-cxf -->
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-mail</artifactId>
+            <version>2.0.2</version>
+         </dependency>
+         <dependency>
+            <!-- Align dependency 'io.micrometer:micrometer-observation' between spring-web and spring-security-core -->
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-observation</artifactId>
+            <version>1.10.11</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
@@ -273,7 +276,7 @@
       <dependency>
          <groupId>org.mybatis</groupId>
          <artifactId>mybatis</artifactId>
-         <version>3.5.7</version>
+         <version>3.5.11</version>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -294,14 +297,6 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-idm-engine</artifactId>
          <version>${flowable.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- The SLF bridge 'jcl-over-slf4j' is used to redirect JCL calls to SLF4J API,
-                    so commons-logging must be excluded -->
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -324,18 +319,13 @@
          <!-- Dependency required by the Petals transporter. The version must be aligned with the CXF embedded by flowable-cxf. -->
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-core</artifactId>
-         <version>3.4.2</version>
+         <version>4.0.2</version>
          <exclusions>
             <exclusion>
                <!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
                <groupId>jakarta.activation</groupId>
                <artifactId>jakarta.activation-api</artifactId>
             </exclusion>
-			 <exclusion>
-				 <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by this dependency -->
-				 <groupId>jakarta.jws</groupId>
-				 <artifactId>jakarta.jws-api</artifactId>
-			 </exclusion>
          </exclusions>
       </dependency>
       <dependency>
@@ -381,13 +371,6 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-rest</artifactId>
          <version>${flowable.version}</version>
-         <exclusions>
-            <exclusion>
-               <!-- We prefer jakarta.annotation:jakarta.annotation-api coming with flowable-cxf -->
-               <groupId>javax.annotation</groupId>
-               <artifactId>jsr250-api</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -414,9 +397,9 @@
          <artifactId>jetty-servlet</artifactId>
       </dependency>
       <dependency>
-         <groupId>javax.servlet</groupId>
-         <artifactId>javax.servlet-api</artifactId>
-         <version>3.1.0</version>
+         <groupId>org.eclipse.jetty.toolchain</groupId>
+         <artifactId>jetty-jakarta-servlet-api</artifactId>
+         <version>${jetty-jakarta-servlet-api}</version>
       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
@@ -445,7 +428,6 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-web</artifactId>
-        <scope>runtime</scope>
       </dependency>
 
       <dependency>
@@ -548,7 +530,7 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.codehaus.groovy</groupId>
+         <groupId>org.apache.groovy</groupId>
          <artifactId>groovy-jsr223</artifactId>
          <version>${groovy.version}</version>
          <scope>test</scope>
@@ -579,15 +561,14 @@
                      <usedDependencies>
                         <!-- These dependencies are needed for runtime -->
                         <usedDependency>org.glassfish.jersey.media:jersey-media-json-jackson</usedDependency>
-                        <usedDependency>org.springframework.security:spring-security-web</usedDependency>
                         <!-- These dependencies are needed for unit test at runtime -->
                         <usedDependency>org.glassfish.jersey.inject:jersey-hk2</usedDependency>
-                        <usedDependency>org.codehaus.groovy:groovy-jsr223</usedDependency>
+                        <usedDependency>org.apache.groovy:groovy-jsr223</usedDependency>
                      </usedDependencies>
                      <ignoredNonTestScopedDependencies>
 						 <!-- Used directly by unit tests but required transitively at runtime -->
 						 <ignoredNonTestScopedDependency>org.ow2.petals:petals-jbi-descriptor</ignoredNonTestScopedDependency>
-						 <ignoredNonTestScopedDependency>org.flowable:flowable-job-service-api</ignoredNonTestScopedDependency>
+						 <ignoredNonTestScopedDependency>${flowable.groupId}:flowable-job-service-api</ignoredNonTestScopedDependency>
                      </ignoredNonTestScopedDependencies>
                   </configuration>
                </execution>

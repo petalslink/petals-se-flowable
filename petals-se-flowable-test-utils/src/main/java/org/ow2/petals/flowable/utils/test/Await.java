@@ -20,8 +20,6 @@ package org.ow2.petals.flowable.utils.test;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.ws.Holder;
-
 import org.flowable.common.engine.api.query.Query;
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.ManagementService;
@@ -33,7 +31,9 @@ import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.job.api.DeadLetterJobQuery;
-import org.flowable.task.api.TaskQuery;;
+import org.flowable.task.api.TaskQuery;
+
+import jakarta.xml.ws.Holder;
 
 /**
  * Awaiting methods to manage Flowable process events

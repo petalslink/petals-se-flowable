@@ -119,7 +119,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
-<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" elementFormDefault="qualified" jaxb:version="2.1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" elementFormDefault="qualified" jaxb:version="3.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
   <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
   <xsd:complexType name="vacationRequestType">
     <xsd:sequence>
@@ -285,7 +285,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
-<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" elementFormDefault="qualified" jaxb:version="2.1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" elementFormDefault="qualified" jaxb:version="3.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
   <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
   <xsd:complexType name="vacationRequestType">
     <xsd:sequence>
@@ -545,7 +545,7 @@
  You should have received a copy of the GNU Lesser General Public License
  along with this program/library; If not, see http://www.gnu.org/licenses/
  for the GNU Lesser General Public License version 2.1.-->
-<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" elementFormDefault="qualified" jaxb:version="2.1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
+<xsd:schema targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest" elementFormDefault="qualified" jaxb:version="3.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb" xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest">
   <xsd:element name="vacationRequest" type="vacationRequest:vacationRequestType"/>
   <xsd:complexType name="vacationRequestType">
     <xsd:sequence>

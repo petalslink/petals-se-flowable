@@ -20,10 +20,10 @@
    targetNamespace="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
    
-   xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+   xmlns:jaxb="https://jakarta.ee/xml/ns/jaxb"
    
    xmlns:vacationRequest="http://petals.ow2.org/samples/se-flowable/vacation/vacationRequest"
-   elementFormDefault="qualified" jaxb:version="2.1">
+   elementFormDefault="qualified" jaxb:version="3.0">
 
  
 

@@ -63,6 +63,13 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- We prefer to use the SLF bridge 'jcl-over-slf4j' to redirect JCL calls to SLF4J API -->
+               <groupId>org.springframework</groupId>
+               <artifactId>spring-jcl</artifactId>
+            </exclusion>
+		 </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -73,6 +80,11 @@
                <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
                <groupId>jakarta.activation</groupId>
                <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+			<exclusion>
+               <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by Petals SE Flowable Junit framework-->
+               <groupId>jakarta.jws</groupId>
+               <artifactId>jakarta.jws-api</artifactId>
             </exclusion>
          </exclusions>
       </dependency>
@@ -102,17 +114,18 @@
       <dependency>
          <groupId>org.awaitility</groupId>
          <artifactId>awaitility</artifactId>
+         <!-- Force version 3.1.0 to avoid to duplicate org.hamcrest:hamcrest-core:1.3 and org.hamcrest:hamcrest:2.1 -->
          <version>3.1.0</version>
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.codehaus.groovy</groupId>
+         <groupId>org.apache.groovy</groupId>
          <artifactId>groovy</artifactId>
          <version>${groovy.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.codehaus.groovy</groupId>
+         <groupId>org.apache.groovy</groupId>
          <artifactId>groovy-jsr223</artifactId>
          <version>${groovy.version}</version>
          <scope>test</scope>
@@ -121,6 +134,13 @@
          <groupId>org.patrodyne.jvnet</groupId>
          <artifactId>hisrc-basicjaxb-runtime</artifactId>
          <scope>test</scope>
+         <exclusions>
+			 <exclusion>
+                <!-- We prefer com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+             </exclusion>
+		 </exclusions>
       </dependency>
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
@@ -209,8 +229,8 @@
                         <!-- The following dependency is needed because it's the JBI component on which this SU runs -->
                         <usedDependency>org.ow2.petals:petals-se-flowable</usedDependency>
                         <!-- These following dependencies are needed at runtime -->
-                        <usedDependency>org.codehaus.groovy:groovy</usedDependency>
-                        <usedDependency>org.codehaus.groovy:groovy-jsr223</usedDependency>
+                        <usedDependency>org.apache.groovy:groovy</usedDependency>
+                        <usedDependency>org.apache.groovy:groovy-jsr223</usedDependency>
                         <!-- These following dependencies are needed for unit test -->
                         <usedDependency>${flowable.groupId}:flowable-cxf</usedDependency>
                         <usedDependency>com.h2database:h2</usedDependency>
@@ -221,8 +241,8 @@
             </executions>
          </plugin>
          <plugin>
-            <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb2-plugin</artifactId>
+            <groupId>org.patrodyne.jvnet</groupId>
+            <artifactId>hisrc-higherjaxb-maven-plugin</artifactId>
             <executions>
                <execution>
                   <id>wsdl</id>

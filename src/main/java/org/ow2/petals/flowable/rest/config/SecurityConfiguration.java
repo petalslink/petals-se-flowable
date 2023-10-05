@@ -24,10 +24,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * This defines the REST API security by configuring the user privilege (from the Flowable engine identity service) that
@@ -36,9 +38,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
  * @author Victor NOEL - Linagora
  * @author Jordy CABANNES - Linagora
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
-public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class SecurityConfiguration {
 
     public static final String FLOWABLE_REST_API_ACCESS_PRIVILEGE_QUALIFIER = "org.ow2.petals.flowable.rest.RestApiAccessPrivilege";
 
@@ -56,17 +58,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         return authProvider;
     }
 
-    @Override
-    protected void configure(final HttpSecurity http) throws Exception {
-        final HttpSecurity httpSecurity = http.authenticationProvider(authenticationProvider()).sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().csrf().disable();
+    @Bean
+    public SecurityFilterChain restApiSecurity(final HttpSecurity http,
+            final AuthenticationProvider authenticationProvider)
+            throws Exception {
+        final HttpSecurity httpSecurity = http.authenticationProvider(authenticationProvider)
+                .sessionManagement(
+                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(CsrfConfigurer::disable);
 
-        // let's protect ourselves from potential security risks!
-        if (this.accessPrivilege == null || this.accessPrivilege.trim().isEmpty()) {
-            throw new AssertionError("impossible");
-        }
+        httpSecurity.authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest()
+                .hasAuthority(this.accessPrivilege));
 
-        httpSecurity.authorizeRequests().anyRequest().hasAuthority(this.accessPrivilege).and().httpBasic();
+        httpSecurity.httpBasic(Customizer.withDefaults());
+
+        return http.build();
     }
 
 }

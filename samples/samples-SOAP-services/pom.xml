@@ -33,7 +33,7 @@
 
    <properties>
       <!-- CXF version aligned with the one provided by flowable-cxf -->
-      <cxf.version>3.4.0</cxf.version>
+      <cxf.version>4.0.2</cxf.version>
    </properties>
 
    <dependencies>
@@ -60,10 +60,6 @@
          </exclusions>
       </dependency>
       <dependency>
-         <groupId>jakarta.jws</groupId>
-         <artifactId>jakarta.jws-api</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.apache.cxf</groupId>
          <artifactId>cxf-rt-frontend-jaxws</artifactId>
          <version>${cxf.version}</version>
@@ -73,6 +69,11 @@
                <!-- Already included in com.sun.activation:jakarta.activation provided by Apache CXF-->
                <groupId>jakarta.activation</groupId>
                <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+            <exclusion>
+               <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by Apache CXF-->
+               <groupId>jakarta.jws</groupId>
+               <artifactId>jakarta.jws-api</artifactId>
             </exclusion>
          </exclusions>
       </dependency>

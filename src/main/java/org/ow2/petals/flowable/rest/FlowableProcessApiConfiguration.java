@@ -19,7 +19,6 @@ package org.ow2.petals.flowable.rest;
 
 import java.util.List;
 
-import org.flowable.common.rest.multipart.PutAwareStandardServletMultiPartResolver;
 import org.flowable.common.rest.resolver.ContentTypeResolver;
 import org.flowable.common.rest.resolver.DefaultContentTypeResolver;
 import org.flowable.engine.FormService;
@@ -41,6 +40,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
@@ -124,7 +124,7 @@ public class FlowableProcessApiConfiguration extends WebMvcConfigurationSupport 
 
     @Bean
     public MultipartResolver multipartResolver() {
-        return new PutAwareStandardServletMultiPartResolver();
+        return new StandardServletMultipartResolver();
     }
 
     @Override

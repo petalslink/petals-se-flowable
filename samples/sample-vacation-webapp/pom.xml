@@ -36,7 +36,7 @@
       <maven-dependency-plugin.failOnWarning>false</maven-dependency-plugin.failOnWarning>
       
       <!-- Align SpringBoot version with the one defined at Flowable level -->
-      <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
+      <spring-boot.version>3.0.7</spring-boot.version>
       <resource.delimiter>@</resource.delimiter> <!-- delimiter that doesn't clash with Spring ${} placeholders -->
    </properties>
 
@@ -51,9 +51,28 @@
             <scope>import</scope>
          </dependency>
          <dependency>
-            <groupId>org.webjars</groupId>
-            <artifactId>jquery</artifactId>
-            <version>1.11.3</version>
+			<!-- Align versions of dependencies hisrc-basicjaxb-runtime and spring-boot-starter-web-services to the upper one --> 
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>angus-activation</artifactId>
+            <version>2.0.1</version>
+         </dependency>
+         <dependency>
+			<!-- Align versions of dependencies hisrc-basicjaxb-runtime and jaxb-runtime to the upper one --> 
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>4.0.3</version>
+         </dependency>
+         <dependency>
+			<!-- Align versions of dependencies hisrc-basicjaxb-runtime and jaxb-runtime to the upper one --> 
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>txw2</artifactId>
+            <version>4.0.3</version>
+         </dependency>
+         <dependency>
+			<!-- Align versions of dependencies hisrc-basicjaxb-runtime and jaxb-runtime to the upper one --> 
+            <groupId>com.sun.istack</groupId>
+            <artifactId>istack-commons-runtime</artifactId>
+            <version>4.1.2</version>
          </dependency>
       </dependencies>
    </dependencyManagement>
@@ -66,7 +85,20 @@
       <dependency>
          <groupId>org.springframework.boot</groupId>
          <artifactId>spring-boot-starter-web-services</artifactId>
+         <exclusions>
+			 <exclusion>
+                <!-- We prefer com.sun.activation:jakarta.activation -->
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+             </exclusion>
+		 </exclusions>
       </dependency>
+      <dependency>
+		  <!-- To repalce jakarta.activation:jakarta.activation-api -->
+		  <groupId>com.sun.activation</groupId>
+          <artifactId>jakarta.activation</artifactId>
+          <scope>runtime</scope>
+	  </dependency>
       <dependency>
          <groupId>org.springframework.boot</groupId>
          <artifactId>spring-boot-starter-tomcat</artifactId>
@@ -76,6 +108,17 @@
       <dependency>
          <groupId>org.patrodyne.jvnet</groupId>
          <artifactId>hisrc-basicjaxb-runtime</artifactId>
+         <exclusions>
+			 <exclusion>
+                <!-- We prefer com.sun.activation:jakarta.activation -->
+                <groupId>jakarta.activation</groupId>
+                <artifactId>jakarta.activation-api</artifactId>
+             </exclusion>
+		 </exclusions>
+      </dependency>
+      <dependency>
+    	 <groupId>jakarta.validation</groupId>
+    	 <artifactId>jakarta.validation-api</artifactId>
       </dependency>
       <dependency>
          <groupId>org.webjars</groupId>
@@ -111,19 +154,8 @@
 
       <plugins>
          <plugin>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-maven-plugin</artifactId>
-            <dependencies>
-               <dependency>
-                  <groupId>org.springframework</groupId>
-                  <artifactId>springloaded</artifactId>
-                  <version>1.2.7.RELEASE</version>
-               </dependency>
-            </dependencies>
-         </plugin>
-         <plugin>
-            <groupId>org.jvnet.jaxb2.maven2</groupId>
-            <artifactId>maven-jaxb2-plugin</artifactId>
+            <groupId>org.patrodyne.jvnet</groupId>
+            <artifactId>hisrc-higherjaxb-maven-plugin</artifactId>
             <executions>
                <execution>
                   <!-- must use the same id as in the parent if not there will be two executions of the plugin -->

@@ -71,8 +71,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jbi.JBIException;
-import javax.servlet.DispatcherType;
-import javax.servlet.FilterRegistration;
 import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
@@ -150,6 +148,9 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import com.ebmwebsourcing.easycommons.lang.reflect.ReflectionHelper;
 import com.ebmwebsourcing.easycommons.uuid.SimpleUUIDGenerator;
+
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.FilterRegistration;
 
 /**
  * The component class of the Flowable BPMN Service Engine.

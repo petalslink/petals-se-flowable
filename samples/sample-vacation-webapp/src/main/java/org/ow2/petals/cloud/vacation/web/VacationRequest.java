@@ -19,11 +19,11 @@ package org.ow2.petals.cloud.vacation.web;
 
 import java.util.Date;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * 

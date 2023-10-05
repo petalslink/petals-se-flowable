@@ -49,17 +49,19 @@
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-engine</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- We prefer to use the SLF bridge 'jcl-over-slf4j' to redirect JCL calls to SLF4J API -->
+               <groupId>org.springframework</groupId>
+               <artifactId>spring-jcl</artifactId>
+            </exclusion>
+		 </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
          <artifactId>flowable-cxf</artifactId>
          <scope>test</scope>
          <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
 			<exclusion>
 			   <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by this dependency -->
 			   <groupId>jakarta.jws</groupId>

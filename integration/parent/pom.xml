@@ -40,12 +40,12 @@
       <!-- Override Flowable sample version for this Git branch -->
       <petals-samples-flowable.version>${petals-se-flowable.base.version}-1.0.0-SNAPSHOT</petals-samples-flowable.version>
 
-      <flowable.groupId>org.flowable</flowable.groupId>
-      <!-- flowable.groupId>org.ow2.petals.flowable</flowable.groupId-->
-      <flowable.version>6.7.2</flowable.version>
-      <!-- flowable.version>6.4.2-PETALS-0-SNAPSHOT</flowable.version-->
+      <!-- flowable.groupId>org.flowable</flowable.groupId-->
+      <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
+      <!-- flowable.version>6.7.2</flowable.version-->
+      <flowable.version>7.0.0-PETALS-0-SNAPSHOT</flowable.version>
       
-      <cxf.version>3.4.2</cxf.version>
+      <cxf.version>4.0.2</cxf.version>
    </properties>
 
    <dependencyManagement>

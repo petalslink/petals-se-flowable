@@ -22,8 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.ws.WebServiceException;
-
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -32,6 +30,8 @@ import org.ow2.petals.samples.se_flowable.collaboration.services.Collaboration;
 import org.ow2.petals.samples.se_flowable.collaboration.services.MasterProcessAlreadyNotified_Exception;
 import org.ow2.petals.samples.se_flowable.collaboration.services.MasterProcessUnknown_Exception;
 import org.ow2.petals.samples.se_flowable.collaboration.services.NoMasterProcessWaitingNotification_Exception;
+
+import jakarta.xml.ws.WebServiceException;
 
 public class CollaborationSvcMock implements Collaboration {
 

@@ -28,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.Endpoint;
 
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
@@ -42,6 +41,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.ow2.petals.flowable.junit.PetalsFlowableRule;
 import org.ow2.petals.samples.flowable.collaboration.mock.CollaborationSvcMock;
+
+import jakarta.xml.ws.Endpoint;
 
 public class ProcessDeploymentTest {
 
