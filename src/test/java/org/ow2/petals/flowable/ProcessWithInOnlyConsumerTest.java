@@ -17,6 +17,17 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtFailureLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderFailureLog;
+
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -24,7 +35,7 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.transform.Source;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.commons.log.FlowLogData;
@@ -47,7 +58,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * Unit tests about request processing of BPMN services with MEP 'InOnly'
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTestEnvironment {
 
@@ -90,7 +100,7 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
                 assertEquals(ExchangeStatus.ACTIVE, this.msgExchange.getStatus());
                 assertEquals(MEPPatternConstants.IN_ONLY, MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, requestObj);
 
                 // Returns the reply of the service provider to the Flowable service task
                 return new StatusToConsumerMessage(requestMsg, ExchangeStatus.DONE);
@@ -106,10 +116,10 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
             public void checks(final Message message) throws Exception {
                 // Check the reply
                 final Source fault = message.getFault();
-                assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                assertNotNull("No XML payload in response", message.getPayload());
+                assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                assertNotNull(message.getPayload(), "No XML payload in response");
                 final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                assertTrue(responseObj instanceof StartResponse);
+                assertInstanceOf(StartResponse.class, responseObj);
                 final StartResponse response = (StartResponse) responseObj;
                 assertNotNull(response.getCaseFileNumber());
                 processInstanceId.append(response.getCaseFileNumber());
@@ -119,7 +129,7 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
         this.waitEndOfProcessInstance(processInstanceId.toString());
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(6, monitLogs.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(INONLY_INTERFACE,
                 INONLY_SERVICE, INONLY_ENDPOINT, OPERATION_START, monitLogs.get(0));
@@ -178,7 +188,7 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
                 assertEquals(ExchangeStatus.ACTIVE, this.msgExchange.getStatus());
                 assertEquals(MEPPatternConstants.IN_ONLY, MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, requestObj);
 
                 // Returns the reply of the service provider to the Flowable service task
                 return new StatusToConsumerMessage(requestMsg,
@@ -198,10 +208,10 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
             public void checks(final Message message) throws Exception {
                 // Check the reply
                 final Source fault = message.getFault();
-                assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                assertNotNull("No XML payload in response", message.getPayload());
+                assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                assertNotNull(message.getPayload(), "No XML payload in response");
                 final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                assertTrue(responseObj instanceof StartResponse);
+                assertInstanceOf(StartResponse.class, responseObj);
                 final StartResponse response = (StartResponse) responseObj;
                 assertNotNull(response.getCaseFileNumber());
                 processInstanceId.append(response.getCaseFileNumber());
@@ -223,7 +233,7 @@ public class ProcessWithInOnlyConsumerTest extends ProcessWithInOnlyConsumerTest
                 "Unrecoverable technical error !!");
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(10, monitLogs.size());
 
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(INONLY_INTERFACE,

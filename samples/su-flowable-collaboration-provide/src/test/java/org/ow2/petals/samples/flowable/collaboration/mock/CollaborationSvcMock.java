@@ -17,15 +17,15 @@
  */
 package org.ow2.petals.samples.flowable.collaboration.mock;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.flowable.engine.test.FlowableRule;
 import org.ow2.petals.samples.se_flowable.collaboration.services.Collaboration;
 import org.ow2.petals.samples.se_flowable.collaboration.services.MasterProcessAlreadyNotified_Exception;
 import org.ow2.petals.samples.se_flowable.collaboration.services.MasterProcessUnknown_Exception;
@@ -35,10 +35,10 @@ import jakarta.xml.ws.WebServiceException;
 
 public class CollaborationSvcMock implements Collaboration {
 
-    private final FlowableRule flowableRule;
+    private final ProcessEngine processEngine;
 
-    public CollaborationSvcMock(final FlowableRule flowableRule) {
-        this.flowableRule = flowableRule;
+    public CollaborationSvcMock(final ProcessEngine processEngine) {
+        this.processEngine = processEngine;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class CollaborationSvcMock implements Collaboration {
 
         final Map<String, Object> variables = new HashMap<>();
         variables.put("processInstanceIdCallback", processInstanceIdCallback);
-        final ProcessInstance childProcInst = this.flowableRule.getRuntimeService()
+        final ProcessInstance childProcInst = this.processEngine.getRuntimeService()
                 .startProcessInstanceByMessage("startChildProcessMsg", variables);
         return childProcInst.getId();
     }
@@ -76,12 +76,11 @@ public class CollaborationSvcMock implements Collaboration {
             throw new WebServiceException(e);
         }
 
-        final ExecutionQuery query = this.flowableRule.getRuntimeService().createExecutionQuery()
+        final ExecutionQuery query = this.processEngine.getRuntimeService().createExecutionQuery()
                 .processInstanceId(processInstanceIdCallback).messageEventSubscriptionName("notifyMasterProcessMsg");
         final Execution execution = query.singleResult();
         assertNotNull(execution);
 
-        this.flowableRule.getRuntimeService().messageEventReceived("notifyMasterProcessMsg", execution.getId());
+        this.processEngine.getRuntimeService().messageEventReceived("notifyMasterProcessMsg", execution.getId());
     }
-
 }

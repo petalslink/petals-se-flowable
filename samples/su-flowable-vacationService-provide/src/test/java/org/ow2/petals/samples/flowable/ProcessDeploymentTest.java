@@ -17,45 +17,40 @@
  */
 package org.ow2.petals.samples.flowable;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.io.File;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.LogManager;
 
+import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.flowable.engine.test.FlowableRule;
 import org.flowable.engine.test.Deployment;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.ow2.petals.flowable.junit.extensions.PetalsFlowableTest;
 
+@PetalsFlowableTest
 public class ProcessDeploymentTest {
-    
-    @BeforeClass
-    public static void initLog() throws URISyntaxException {
-        final URL logCfg = Thread.currentThread().getContextClassLoader().getResource("logging.properties");
-        assertNotNull("Log conf file not found", logCfg);
-        System.setProperty("java.util.logging.config.file", new File(logCfg.toURI()).getAbsolutePath());
-    }
 
-    @AfterClass
-    public static void cleanLog() {
-        System.clearProperty("java.util.logging.config.file");
-    }
+    static {
+        final URL logConfig = ProcessDeploymentTest.class.getResource("/logging.properties");
+        assertNotNull(logConfig, "Logging configuration file not found");
 
-    @Rule
-    public final FlowableRule flowableRule = new FlowableRule();
+        try {
+            LogManager.getLogManager().readConfiguration(logConfig.openStream());
+        } catch (final SecurityException | IOException e) {
+            throw new AssertionError(e);
+        }
+    }
     
     @Test
     @Deployment(resources = {"jbi/vacationRequest.bpmn20.xml"})
-    public void theProcessIsDeployable() {
-        final ProcessDefinition processDefinition = this.flowableRule.getRepositoryService()
+    public void theProcessIsDeployable(final ProcessEngine processEngine) {
+        final ProcessDefinition processDefinition = processEngine.getRepositoryService()
                 .createProcessDefinitionQuery().processDefinitionKey("vacationRequest").singleResult();
         assertNotNull(processDefinition);
 
@@ -63,7 +58,8 @@ public class ProcessDeploymentTest {
         variables.put("numberOfDays", 10);
         variables.put("startDate", new Date());
         variables.put("vacationMotivation", "Vacations");
-        final ProcessInstance processInstance = this.flowableRule.getRuntimeService().startProcessInstanceByKey(
+        final ProcessInstance processInstance = processEngine.getRuntimeService()
+                .startProcessInstanceByKey(
                 "vacationRequest", variables);
         assertNotNull(processInstance);
     }

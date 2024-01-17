@@ -17,6 +17,12 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.util.Date;
 
 import javax.jbi.messaging.ExchangeStatus;
@@ -25,7 +31,7 @@ import javax.xml.transform.Source;
 
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
@@ -50,7 +56,6 @@ import com.fasterxml.jackson.databind.JsonNode;
  * with call a BPMN element 'intermediate message catch event'
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class StructuredVariableProcessTest extends StructuredVariableTestEnvironment {
 
@@ -93,16 +98,16 @@ public class StructuredVariableProcessTest extends StructuredVariableTestEnviron
             COMPONENT_UNDER_TEST.pushRequestToProvider(request_1);
             final ResponseMessage response_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
             final Source fault = response_1.getFault();
-            assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-            assertNotNull("No XML payload in response", response_1.getPayload());
+            assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+            assertNotNull(response_1.getPayload(), "No XML payload in response");
             final Object responseObj = UNMARSHALLER.unmarshal(response_1.getPayload());
-            assertTrue(responseObj instanceof StartResponse);
+            assertInstanceOf(StartResponse.class, responseObj);
             final StartResponse response = (StartResponse) responseObj;
             assertNotNull(response.getCaseFileNumber());
             processInstanceId.append(response.getCaseFileNumber());
 
             // Assert that complementary variable defined by script task is correctly set
-            final ProcessInstance procInst = this.flowableClient.getRuntimeService().createProcessInstanceQuery()
+            final ProcessInstance procInst = FLOWABLE_CLIENT.getRuntimeService().createProcessInstanceQuery()
                     .processInstanceId(processInstanceId.toString()).includeProcessVariables().singleResult();
             assertNotNull(procInst);
             assertEquals(expectedVacationMotivation, procInst.getProcessVariables().get("vacationMotivation"));
@@ -139,7 +144,7 @@ public class StructuredVariableProcessTest extends StructuredVariableTestEnviron
                     assertEquals(ALARM_CREATE_OPERATION, alarmMessageExchange.getOperation());
                     assertEquals(alarmMessageExchange.getStatus(), ExchangeStatus.ACTIVE);
                     final Object alarmCreateRequestObj = UNMARSHALLER.unmarshal(alarmRequestMsg.getPayload());
-                    assertTrue(alarmCreateRequestObj instanceof Create);
+                    assertInstanceOf(Create.class, alarmCreateRequestObj);
                     final Create alaramCreateRequest = (Create) alarmCreateRequestObj;
                     assertEquals(vacationDate, alaramCreateRequest.getDate());
 
@@ -154,17 +159,17 @@ public class StructuredVariableProcessTest extends StructuredVariableTestEnviron
             });
 
             final Source fault = response.getFault();
-            assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-            assertNotNull("No XML payload in response", response.getPayload());
+            assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+            assertNotNull(response.getPayload(), "No XML payload in response");
             final Object responseObj = UNMARSHALLER.unmarshal(response.getPayload());
-            assertTrue(responseObj instanceof AckResponse);
+            assertInstanceOf(AckResponse.class, responseObj);
 
             // Assert that structured variable is correctly set
-            final ProcessInstance procInst = this.flowableClient.getRuntimeService().createProcessInstanceQuery()
+            final ProcessInstance procInst = FLOWABLE_CLIENT.getRuntimeService().createProcessInstanceQuery()
                     .processInstanceId(processInstanceId.toString()).includeProcessVariables().singleResult();
             assertNotNull(procInst);
             final Object variableObj = procInst.getProcessVariables().get("approvementStatus");
-            assertTrue(variableObj instanceof JsonNode);
+            assertInstanceOf(JsonNode.class, variableObj);
             final JsonNode variableJson = (JsonNode) variableObj;
             assertNotNull(variableJson.get("vacationApproved"));
             assertFalse(variableJson.get("vacationApproved").asBoolean());
@@ -201,7 +206,7 @@ public class StructuredVariableProcessTest extends StructuredVariableTestEnviron
         this.assertProcessInstanceFinished(processInstanceId.toString());
 
         // Assert that complementary variables are correctly set
-        final HistoricProcessInstance hisProcInst = this.flowableClient.getHistoryService()
+        final HistoricProcessInstance hisProcInst = FLOWABLE_CLIENT.getHistoryService()
                 .createHistoricProcessInstanceQuery().processInstanceId(processInstanceId.toString())
                 .includeProcessVariables().singleResult();
         assertNotNull(hisProcInst);

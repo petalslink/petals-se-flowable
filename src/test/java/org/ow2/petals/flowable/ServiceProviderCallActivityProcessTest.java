@@ -17,6 +17,16 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderFailureLog;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
 
 import java.text.SimpleDateFormat;
@@ -34,8 +44,8 @@ import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
 import org.flowable.job.api.DeadLetterJobQuery;
 import org.flowable.job.api.Job;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
@@ -75,7 +85,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * with call activity elements
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class ServiceProviderCallActivityProcessTest extends CallActivityProcessTestEnvironment {
 
@@ -123,10 +132,10 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 public void checks(final Message message) throws Exception {
                     // Check the reply
                     final Source fault = message.getFault();
-                    assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                    assertNotNull("No XML payload in response", message.getPayload());
+                    assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                    assertNotNull(message.getPayload(), "No XML payload in response");
                     final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                    assertTrue(responseObj instanceof StartResponse);
+                    assertInstanceOf(StartResponse.class, responseObj);
                     final StartResponse response = (StartResponse) responseObj;
                     assertNotNull(response.getCaseFileNumber());
                     callActivityId_level1.append(response.getCaseFileNumber());
@@ -138,9 +147,9 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         final String callActivityId_level3;
         {
             final RequestMessage coreServiceRequestMsg = COMPONENT_UNDER_TEST.pollRequestFromConsumer();
-            assertNotNull("No XML payload in response", coreServiceRequestMsg.getPayload());
+            assertNotNull(coreServiceRequestMsg.getPayload(), "No XML payload in response");
             final Object coreServiceRequestObj = UNMARSHALLER.unmarshal(coreServiceRequestMsg.getPayload());
-            assertTrue(coreServiceRequestObj instanceof Execute);
+            assertInstanceOf(Execute.class, coreServiceRequestObj);
             final Execute coreServiceRequest = (Execute) coreServiceRequestObj;
             callActivityId_level3 = coreServiceRequest.getOrderId();
 
@@ -160,7 +169,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
 
         // Check some variables of process instances
         {
-            final ProcessInstanceQuery processInstQuery = this.flowableClient.getRuntimeService()
+            final ProcessInstanceQuery processInstQuery = FLOWABLE_CLIENT.getRuntimeService()
                     .createProcessInstanceQuery();
             final ProcessInstance processInstance = processInstQuery.processInstanceId(callActivityId_level1.toString())
                     .includeProcessVariables().singleResult();
@@ -169,7 +178,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
             assertEquals(now.getTime(), processInstance.getProcessVariables().get("date"));
         }
         {
-            final ProcessInstanceQuery processInstQuery = this.flowableClient.getRuntimeService()
+            final ProcessInstanceQuery processInstQuery = FLOWABLE_CLIENT.getRuntimeService()
                     .createProcessInstanceQuery();
             final ProcessInstance processInstance = processInstQuery.processInstanceId(callActivityId_level2.toString())
                     .includeProcessVariables().singleResult();
@@ -191,9 +200,9 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                     toByteArray(getTasksReq));
 
             final ResponseMessage getTaskRespMsg = COMPONENT.sendAndGetResponse(requestM);
-            assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
+            assertNotNull(getTaskRespMsg.getPayload(), "No XML payload in response");
             final Object getTaskRespObj = UNMARSHALLER.unmarshal(getTaskRespMsg.getPayload());
-            assertTrue(getTaskRespObj instanceof GetTasksResponse);
+            assertInstanceOf(GetTasksResponse.class, getTaskRespObj);
             final GetTasksResponse getTaskResp = (GetTasksResponse) getTaskRespObj;
             assertNotNull(getTaskResp.getTasks());
             assertNotNull(getTaskResp.getTasks().getTask());
@@ -218,11 +227,11 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
             COMPONENT.sendStatus(new StatusToProviderMessage(userTaskResponseMsg, ExchangeStatus.DONE), false);
 
             // Check the reply
-            assertNull("Unexpected fault",
-                    (userTaskResponseMsg.isFault() ? SourceHelper.toString(userTaskResponseMsg.getFault()) : null));
-            assertNotNull("No XML payload in response", userTaskResponseMsg.getPayload());
+            assertNull(userTaskResponseMsg.isFault() ? SourceHelper.toString(userTaskResponseMsg.getFault()) : null,
+                    "Unexpected fault");
+            assertNotNull(userTaskResponseMsg.getPayload(), "No XML payload in response");
             final Object userTaskResponseObj = UNMARSHALLER.unmarshal(userTaskResponseMsg.getPayload());
-            assertTrue(userTaskResponseObj instanceof UnlockAck);
+            assertInstanceOf(UnlockAck.class, userTaskResponseObj);
         }
 
         // Wait the end of the process instance
@@ -232,7 +241,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         this.assertProcessInstanceFinished(callActivityId_level1.toString());
 
         // Check MONIT traces
-        final List<LogRecord> allMonitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> allMonitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         final LogRecord firstLogOfProcessService = new MonitLogFilter(allMonitLogs)
                 .traceCode(TraceCode.PROVIDE_FLOW_STEP_BEGIN)
                 .interfaceName(
@@ -274,19 +283,16 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         // service tasks will be checked. See:
         // https://cdeneux.framaboard.org/?controller=TaskViewController&action=show&task_id=251&project_id=1
         /*
-        final FlowLogData secondCallActivity = assertMonitProviderBeginLog(archiverFlowLogData, null, null, null,
-                null, processMonitLogs.get(4));
-        assertEquals(callActivityInstanceId_1,
-                secondCallActivity.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
-        assertEquals("processLevel3",
-                secondCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_DEFINITION_KEY));
-        final String callActivityInstanceId_2 = (String) secondCallActivity
-                .get(FlowableActivityFlowStepData.CALL_ACTIVITY_INSTANCE_ID_KEY);
-        assertNotNull("call activity instance id missing in log trace", callActivityInstanceId_2);
-
-        assertMonitProviderEndLog(assertMonitProviderBeginLog(secondCallActivity, CORE_SVC_INTERFACE, CORE_SVC_SERVICE,
-                CORE_SVC_ENDPOINT, CORE_SVC_OPERATION, processMonitLogs.get(5)), processMonitLogs.get(6));
-        */
+         * final FlowLogData secondCallActivity = assertMonitProviderBeginLog(archiverFlowLogData, null, null, null,
+         * null, processMonitLogs.get(4)); assertEquals(callActivityInstanceId_1,
+         * secondCallActivity.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY)); assertEquals("processLevel3",
+         * secondCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_DEFINITION_KEY)); final String
+         * callActivityInstanceId_2 = (String) secondCallActivity
+         * .get(FlowableActivityFlowStepData.CALL_ACTIVITY_INSTANCE_ID_KEY);
+         * assertNotNull("call activity instance id missing in log trace", callActivityInstanceId_2);
+         * assertMonitProviderEndLog(assertMonitProviderBeginLog(secondCallActivity, CORE_SVC_INTERFACE,
+         * CORE_SVC_SERVICE, CORE_SVC_ENDPOINT, CORE_SVC_OPERATION, processMonitLogs.get(5)), processMonitLogs.get(6));
+         */
 
     }
 
@@ -328,10 +334,10 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 public void checks(final Message message) throws Exception {
                     // Check the reply
                     final Source fault = message.getFault();
-                    assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                    assertNotNull("No XML payload in response", message.getPayload());
+                    assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                    assertNotNull(message.getPayload(), "No XML payload in response");
                     final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                    assertTrue(responseObj instanceof StartResponse);
+                    assertInstanceOf(StartResponse.class, responseObj);
                     final StartResponse response = (StartResponse) responseObj;
                     assertNotNull(response.getCaseFileNumber());
                     processInstance_level1.append(response.getCaseFileNumber());
@@ -359,11 +365,11 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         this.waitProcessInstanceAsDeadLetterJob(callActivityId_level2.toString());
 
         // Resume the dead letter job
-        final DeadLetterJobQuery deadLetterJobQuery = this.flowableClient.getManagementService()
-                .createDeadLetterJobQuery().processInstanceId(callActivityId_level2.toString());
+        final DeadLetterJobQuery deadLetterJobQuery = FLOWABLE_CLIENT.getManagementService().createDeadLetterJobQuery()
+                .processInstanceId(callActivityId_level2.toString());
         final Job deadLetterJob = deadLetterJobQuery.singleResult();
         assertNotNull(deadLetterJob);
-        this.flowableClient.getManagementService().moveDeadLetterJobToExecutableJob(deadLetterJob.getId(), 2);
+        FLOWABLE_CLIENT.getManagementService().moveDeadLetterJobToExecutableJob(deadLetterJob.getId(), 2);
 
         // service task invocation tries after re-activation
         for (int i = 0; i < 2; i++) {
@@ -377,7 +383,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         this.waitProcessInstanceAsDeadLetterJob(callActivityId_level2.toString());
 
         // Check MONIT traces
-        final List<LogRecord> allMonitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> allMonitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         final LogRecord firstLogOfProcessService = new MonitLogFilter(allMonitLogs)
                 .traceCode(TraceCode.PROVIDE_FLOW_STEP_BEGIN)
                 .interfaceName(
@@ -399,25 +405,27 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
 
         assertEquals(12, processMonitLogs.size());
         final FlowLogData initialProcessFlowLogData = assertMonitConsumerExtBeginLog(processMonitLogs.get(0));
-        assertEquals("process instance id missing in log trace", processInstance_level1.toString(),
-                initialProcessFlowLogData.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
+        assertEquals(processInstance_level1.toString(),
+                initialProcessFlowLogData.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY),
+                "process instance id missing in log trace");
         final FlowLogData firstCallActivity = assertMonitProviderBeginLog(initialProcessFlowLogData, null, null, null,
                 null, processMonitLogs.get(1));
         assertEquals(processInstance_level1.toString(),
                 firstCallActivity.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
-        assertEquals("processLevel2", firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_DEFINITION_KEY));
-        assertEquals("call activity instance id missing in log trace", callActivityId_level2.toString(),
-                firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_INSTANCE_ID_KEY));
+        assertEquals(firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_DEFINITION_KEY), "processLevel2");
+        assertEquals(callActivityId_level2.toString(),
+                firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_INSTANCE_ID_KEY),
+                "call activity instance id missing in log trace");
 
         for (int i = 0; i < 5; i++) {
             final FlowLogData archiverFlowLogData = assertMonitProviderBeginLog(firstCallActivity, ARCHIVE_INTERFACE,
                     ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, processMonitLogs.get(2 + 2 * i));
             final FlowLogData archiverFlowLogDataFailure = assertMonitProviderFailureLog(archiverFlowLogData,
                     processMonitLogs.get(3 + 2 * i));
-            assertEquals("Unexpected error message", TECHNICAL_ERROR_MSG,
-                    archiverFlowLogDataFailure.get(ProvideFlowStepFailureLogData.FLOW_STEP_FAILURE_MESSAGE_NAME));
+            assertEquals(TECHNICAL_ERROR_MSG,
+                    archiverFlowLogDataFailure.get(ProvideFlowStepFailureLogData.FLOW_STEP_FAILURE_MESSAGE_NAME),
+                    "Unexpected error message");
         }
-
     }
 
     /**
@@ -433,7 +441,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
      * </ul>
      */
     @Test
-    @Ignore("Until the call activity completion/cancelation is not correctly trapped ! (PETALSSEFLOWABLE-35)")
+    @Disabled("Until the call activity completion/cancelation is not correctly trapped ! (PETALSSEFLOWABLE-35)")
     public void jbiFaultOnServiceTask() throws Exception {
 
         // Create a new instance of the process definition
@@ -458,10 +466,10 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 public void checks(final Message message) throws Exception {
                     // Check the reply
                     final Source fault = message.getFault();
-                    assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                    assertNotNull("No XML payload in response", message.getPayload());
+                    assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                    assertNotNull(message.getPayload(), "No XML payload in response");
                     final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                    assertTrue(responseObj instanceof StartResponse);
+                    assertInstanceOf(StartResponse.class, responseObj);
                     final StartResponse response = (StartResponse) responseObj;
                     assertNotNull(response.getCaseFileNumber());
                     processInstance_level1.append(response.getCaseFileNumber());
@@ -473,7 +481,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
         this.waitEndOfProcessInstance(callActivityId_level2.toString());
 
         // Check MONIT traces
-        final List<LogRecord> allMonitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> allMonitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         final LogRecord firstLogOfProcessService = new MonitLogFilter(allMonitLogs)
                 .traceCode(TraceCode.PROVIDE_FLOW_STEP_BEGIN)
                 .interfaceName(
@@ -495,22 +503,25 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
 
         assertEquals(6, processMonitLogs.size());
         final FlowLogData initialProcessFlowLogData = assertMonitConsumerExtBeginLog(processMonitLogs.get(0));
-        assertEquals("process instance id missing in log trace", processInstance_level1.toString(),
-                initialProcessFlowLogData.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
+        assertEquals(processInstance_level1.toString(),
+                initialProcessFlowLogData.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY),
+                "process instance id missing in log trace");
         final FlowLogData firstCallActivity = assertMonitProviderBeginLog(initialProcessFlowLogData, null, null, null,
                 null, processMonitLogs.get(1));
         assertEquals(processInstance_level1.toString(),
                 firstCallActivity.get(FlowableActivityFlowStepData.PROCESS_INSTANCE_ID_KEY));
         assertEquals("processLevel2", firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_DEFINITION_KEY));
-        assertEquals("call activity instance id missing in log trace", callActivityId_level2.toString(),
-                firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_INSTANCE_ID_KEY));
+        assertEquals(callActivityId_level2.toString(),
+                firstCallActivity.get(FlowableActivityFlowStepData.CALL_ACTIVITY_INSTANCE_ID_KEY),
+                "call activity instance id missing in log trace");
 
         final FlowLogData archiverFlowLogData = assertMonitProviderBeginLog(firstCallActivity, ARCHIVE_INTERFACE,
                 ARCHIVE_SERVICE, ARCHIVE_ENDPOINT, ARCHIVER_OPERATION, processMonitLogs.get(2));
         final FlowLogData archiverFlowLogDataFailure = assertMonitProviderFailureLog(archiverFlowLogData,
                 processMonitLogs.get(3));
-        assertEquals("Unexpected error message", StepLogHelper.BUSINESS_ERROR_MESSAGE,
-                archiverFlowLogDataFailure.get(ProvideFlowStepFailureLogData.FLOW_STEP_FAILURE_MESSAGE_NAME));
+        assertEquals(StepLogHelper.BUSINESS_ERROR_MESSAGE,
+                archiverFlowLogDataFailure.get(ProvideFlowStepFailureLogData.FLOW_STEP_FAILURE_MESSAGE_NAME),
+                "Unexpected error message");
 
         // This log should be a consulerExtFailureLog
         assertMonitConsumerExtEndLog(firstCallActivity, processMonitLogs.get(4));
@@ -530,7 +541,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 this.msgExchange = requestMsg.getMessageExchange();
                 assertIsArchiveServiceRequest(this.msgExchange);
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, requestObj);
                 callActivityId_level1.append(((Archiver) requestObj).getItem());
                 assertEquals(now.getTime(), ((Archiver) requestObj).getDate());
 
@@ -559,7 +570,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
 
                 assertIsArchiveServiceRequest(requestMsg.getMessageExchange());
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, requestObj);
                 callActivityId_level1.append(((Archiver) requestObj).getItem());
 
                 // Returns an error to the Flowable service task
@@ -585,7 +596,7 @@ public class ServiceProviderCallActivityProcessTest extends CallActivityProcessT
                 this.msgExchange = requestMsg.getMessageExchange();
                 assertIsArchiveServiceRequest(this.msgExchange);
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, requestObj);
                 callActivityId_level1.append(((Archiver) requestObj).getItem());
 
                 // Returns a fault to the Flowable service task

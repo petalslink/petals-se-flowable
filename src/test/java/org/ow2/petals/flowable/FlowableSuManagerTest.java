@@ -17,6 +17,12 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -29,28 +35,25 @@ import javax.jbi.JBIException;
 import javax.jbi.management.DeploymentException;
 import javax.xml.namespace.QName;
 
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.ow2.petals.component.framework.junit.extensions.ComponentUnderTestExtension;
+import org.ow2.petals.component.framework.junit.extensions.api.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.flowable.exception.IncoherentProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.exception.InvalidVersionDeclaredException;
 import org.ow2.petals.flowable.exception.NoProcessDefinitionDeclarationException;
 import org.ow2.petals.flowable.exception.UnexistingProcessFileException;
 import org.ow2.petals.jbi.descriptor.JBIDescriptorException;
-import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
+import org.ow2.petals.junit.extensions.log.handler.InMemoryLogHandlerExtension;
 
 /**
  * Unit tests of {@link FlowableSuManager}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class FlowableSuManagerTest extends AbstractTest {
 
@@ -67,29 +70,24 @@ public class FlowableSuManagerTest extends AbstractTest {
     private static final URL A_PROCESS_DEFINITION_URL = Thread.currentThread().getContextClassLoader()
             .getResource(A_PROCESS_DEFINITION_NAME);
 
-    private static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
+    @ComponentUnderTestExtension(inMemoryLogHandler = @InMemoryLogHandlerExtension)
+    private static ComponentUnderTest COMPONENT_UNDER_TEST;
 
-    private static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler());
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(IN_MEMORY_LOG_HANDLER).around(COMPONENT_UNDER_TEST);
-
-    @BeforeClass
+    @BeforeAll
     public static void checkResources() {
-        assertNotNull("Process definition file not found: " + A_PROCESS_DEFINITION_NAME, A_PROCESS_DEFINITION_URL);
-        assertNotNull("Process definition file not found: " + ANOTHER_PROCESS_DEFINITION_NAME,
-                ANOTHER_PROCESS_DEFINITION_NAME);
+        assertNotNull(A_PROCESS_DEFINITION_URL, "Process definition file not found: " + A_PROCESS_DEFINITION_NAME);
+        assertNotNull(ANOTHER_PROCESS_DEFINITION_NAME,
+                "Process definition file not found: " + ANOTHER_PROCESS_DEFINITION_NAME);
     }
 
-    @After
+    @AfterEach
     public void undeployAllServices() {
         COMPONENT_UNDER_TEST.undeployAllServices();
     }
 
-    @After
+    @AfterEach
     public void cleanLogTraces() {
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
     }
 
     /**
@@ -105,30 +103,29 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_NoProcessDefinition() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_NoProcessDefinition() throws SecurityException, IllegalArgumentException, JBIDescriptorException,
+            NoSuchFieldException, IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "no-process-definition";
-        try {
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
                     return new ProvidesServiceConfiguration(INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue("Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(NoProcessDefinitionDeclarationException.MESSAGE));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof NoProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(actualException.getMessage().contains(NoProcessDefinitionDeclarationException.MESSAGE),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(NoProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -144,12 +141,12 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_OneProcessDefinition_MissingVersion() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_OneProcessDefinition_MissingVersion()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "one-process-definition-missing-version";
-        try {
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -158,27 +155,26 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE),
+                            A_PROCESS_DEFINITION_NAME);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
-                                    A_PROCESS_DEFINITION_NAME, null)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(actualException.getMessage().contains(String.format(
+                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, A_PROCESS_DEFINITION_NAME, null)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -194,12 +190,13 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_OneProcessDefinition_EmptyVersion() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_OneProcessDefinition_EmptyVersion()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "one-process-definition-empty-version";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -208,29 +205,28 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE),
+                            A_PROCESS_DEFINITION_NAME);
                     serviceConfiguration
                             .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "");
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
-                                    A_PROCESS_DEFINITION_NAME, "")));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(actualException.getMessage().contains(String.format(
+                IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, A_PROCESS_DEFINITION_NAME, "")),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -246,13 +242,14 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_OneProcessDefinition_InvalidVersion() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_OneProcessDefinition_InvalidVersion()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "one-process-definition-invalid-version";
         final String version = "invalid";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -261,29 +258,30 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION), version);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE),
+                            A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(InvalidVersionDeclaredException.MESSAGE_PATTERN, A_PROCESS_DEFINITION_NAME,
-                                    version)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof InvalidVersionDeclaredException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage()
+                        .contains(String.format(InvalidVersionDeclaredException.MESSAGE_PATTERN,
+                                A_PROCESS_DEFINITION_NAME, version)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(InvalidVersionDeclaredException.class, error.getThrown());
     }
 
     /**
@@ -299,13 +297,14 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_OneProcessDefinition_MissingProcessFile() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_OneProcessDefinition_MissingProcessFile()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "one-process-definition-missing-processfile";
         final String version = "1";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -313,27 +312,26 @@ public class FlowableSuManagerTest extends AbstractTest {
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION), version);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null,
-                                    version)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage().contains(
+                        String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null, version)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -350,13 +348,14 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_OneProcessDefinition_EmptyProcessFile() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_OneProcessDefinition_EmptyProcessFile()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "one-process-definition-empty-processfile";
         final String version = "1";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -364,30 +363,28 @@ public class FlowableSuManagerTest extends AbstractTest {
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE), "");
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION), version);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE), "");
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage()
-                            .contains(
-                                    String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "",
-                                            version)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage().contains(
+                        String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "", version)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -404,14 +401,15 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_OneProcessDefinition_UnknownProcessFile() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_OneProcessDefinition_UnknownProcessFile()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "one-process-definition-unknown-process-file";
         final String version = "1";
         final String processFile = "unexisting-process-file.bpmn";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -419,31 +417,31 @@ public class FlowableSuManagerTest extends AbstractTest {
                     final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE), processFile);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION), version);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE), processFile);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION), version);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(
-                                    UnexistingProcessFileException.MESSAGE_PATTERN,
-                                    new File(COMPONENT_UNDER_TEST.getServiceConfigurationInstallDir(suName),
-                                            processFile).getAbsolutePath())));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof UnexistingProcessFileException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage()
+                        .contains(
+                                String.format(UnexistingProcessFileException.MESSAGE_PATTERN,
+                                        new File(COMPONENT_UNDER_TEST.getServiceConfigurationInstallDir(suName),
+                                                processFile).getAbsolutePath())),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(UnexistingProcessFileException.class, error.getThrown());
     }
 
     /**
@@ -464,13 +462,14 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_MultipleProcessDefinition_MissingVersion() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_MultipleProcessDefinition_MissingVersion()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "multiple-process-definition-missing-version";
         final String version = "1";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -479,32 +478,34 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "1"), version);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "1"),
+                            A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "1"), version);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "2"),
+                            ANOTHER_PROCESS_DEFINITION_NAME);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
-                                    ANOTHER_PROCESS_DEFINITION_NAME, null)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage()
+                        .contains(String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
+                                ANOTHER_PROCESS_DEFINITION_NAME, null)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -524,13 +525,14 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_MultipleProcessDefinition_EmptyVersion() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_MultipleProcessDefinition_EmptyVersion()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "multiple-process-definition-empty-version";
         final String version = "1";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -539,34 +541,36 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "1"), version);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "1"),
+                            A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "1"), version);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "2"), "");
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "2"),
+                            ANOTHER_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "2"), "");
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
-                                    ANOTHER_PROCESS_DEFINITION_NAME, "")));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage()
+                        .contains(String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN,
+                                ANOTHER_PROCESS_DEFINITION_NAME, "")),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -586,14 +590,15 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_MultipleProcessDefinition_InvalidVersion() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_MultipleProcessDefinition_InvalidVersion()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "multiple-process-definition-invalid-version";
         final String version1 = "1";
         final String version2 = "invalid";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -602,34 +607,36 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "1"), version1);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "1"),
+                            A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "1"), version1);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "2"), ANOTHER_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "2"), version2);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "2"),
+                            ANOTHER_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(InvalidVersionDeclaredException.MESSAGE_PATTERN,
-                                    ANOTHER_PROCESS_DEFINITION_NAME, version2)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof InvalidVersionDeclaredException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage()
+                        .contains(String.format(InvalidVersionDeclaredException.MESSAGE_PATTERN,
+                                ANOTHER_PROCESS_DEFINITION_NAME, version2)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(InvalidVersionDeclaredException.class, error.getThrown());
     }
 
     /**
@@ -650,14 +657,15 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_MultipleProcessDefinition_MissingProcessFile() throws SecurityException,
-            IllegalArgumentException, JBIDescriptorException, NoSuchFieldException, IllegalAccessException,
-            IOException, JBIException, URISyntaxException {
+    public void deploy_MultipleProcessDefinition_MissingProcessFile()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "multiple-process-definition-missing-process-file";
         final String version1 = "1";
         final String version2 = "2";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -666,32 +674,32 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "1"), version1);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "1"),
+                            A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "1"), version1);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "2"), version2);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage().contains(
-                            String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null,
-                                    version2)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage().contains(
+                        String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, null, version2)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -711,14 +719,15 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </ul>
      */
     @Test
-    public void deploy_MultipleProcessDefinition_EmptyProcessFile() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_MultipleProcessDefinition_EmptyProcessFile()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "multiple-process-definition-missing-process-file";
         final String version1 = "1";
         final String version2 = "2";
-        try {
+
+        final Exception actualException = assertThrows(DeploymentException.class, () -> {
             COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
                 @Override
                 public ServiceConfiguration create() {
@@ -727,35 +736,34 @@ public class FlowableSuManagerTest extends AbstractTest {
                             INTERFACE_NAME, SERVICE_NAME, ENDPOINT_NAME);
 
                     serviceConfiguration.addResource(A_PROCESS_DEFINITION_URL);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "1"), A_PROCESS_DEFINITION_NAME);
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "1"), version1);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "1"),
+                            A_PROCESS_DEFINITION_NAME);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "1"), version1);
 
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.PROCESS_FILE + "2"), "");
-                    serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU,
-                            FlowableSEConstants.VERSION + "2"), version2);
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.PROCESS_FILE + "2"), "");
+                    serviceConfiguration.setServicesSectionParameter(
+                            new QName(FlowableSEConstants.NAMESPACE_SU, FlowableSEConstants.VERSION + "2"), version2);
 
                     return serviceConfiguration;
                 }
             });
-        } catch (final DeploymentException e) {
-            // Expected exception
-            assertTrue("The deployment succeeds: " + e.getMessage(),
-                    e.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"));
-            assertTrue(
-                    "Unexpected error: " + e.getMessage(),
-                    e.getMessage()
-                            .contains(
-                                    String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "",
-                                            version2)));
+        });
 
-            final List<LogRecord> errors = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.SEVERE);
-            assertEquals(1, errors.size());
-            final LogRecord error = errors.get(0);
-            assertTrue(error.getThrown() instanceof IncoherentProcessDefinitionDeclarationException);
-        }
+        assertTrue(
+                actualException.getMessage().contains("<loc-message>Failed to deploy Service Unit : {1}</loc-message>"),
+                "The deployment succeeds: " + actualException.getMessage());
+        assertTrue(
+                actualException.getMessage().contains(
+                        String.format(IncoherentProcessDefinitionDeclarationException.MESSAGE_PATTERN, "", version2)),
+                "Unexpected error: " + actualException.getMessage());
+
+        final List<LogRecord> errors = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.SEVERE);
+        assertEquals(1, errors.size());
+        final LogRecord error = errors.get(0);
+        assertInstanceOf(IncoherentProcessDefinitionDeclarationException.class, error.getThrown());
     }
 
     /**
@@ -767,9 +775,9 @@ public class FlowableSuManagerTest extends AbstractTest {
      * </p>
      */
     @Test
-    public void deploy_MultipleProcessDefinition() throws SecurityException, IllegalArgumentException,
-            JBIDescriptorException, NoSuchFieldException, IllegalAccessException, IOException, JBIException,
-            URISyntaxException {
+    public void deploy_MultipleProcessDefinition()
+            throws SecurityException, IllegalArgumentException, JBIDescriptorException, NoSuchFieldException,
+            IllegalAccessException, IOException, JBIException, URISyntaxException {
 
         final String suName = "MultipleProcessDefintion";
         COMPONENT_UNDER_TEST.deployService(suName, new ServiceConfigurationFactory() {
@@ -778,57 +786,56 @@ public class FlowableSuManagerTest extends AbstractTest {
 
                 final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "vacationRequest.wsdl");
-                assertNotNull("WSDl not found", wsdlUrl);
+                assertNotNull(wsdlUrl, "WSDl not found");
                 final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                        VacationProcessTestEnvironment.VACATION_INTERFACE, VacationProcessTestEnvironment.VACATION_SERVICE,
+                        VacationProcessTestEnvironment.VACATION_INTERFACE,
+                        VacationProcessTestEnvironment.VACATION_SERVICE,
                         VacationProcessTestEnvironment.VACATION_ENDPOINT, wsdlUrl);
 
                 final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "demanderCongesResponse.xsl");
-                assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
+                assertNotNull(demanderCongesResponseXslUrl, "Output XSL 'demanderCongesResponse.xsl' not found");
                 serviceConfiguration.addResource(demanderCongesResponseXslUrl);
 
                 final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "validerDemandeResponse.xsl");
-                assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
+                assertNotNull(validerDemandeResponseXslUrl, "Output XSL 'validerDemandeResponse.xsl' not found");
                 serviceConfiguration.addResource(validerDemandeResponseXslUrl);
 
                 final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "ajusterDemandeResponse.xsl");
-                assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
+                assertNotNull(ajusterDemandeResponseXslUrl, "Output XSL 'ajusterDemandeResponse.xsl' not found");
                 serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
 
                 final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "numeroDemandeInconnu.xsl");
-                assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
+                assertNotNull(numeroDemandeInconnuXslUrl, "Output XSL 'numeroDemandeInconnu.xsl' not found");
                 serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
 
                 final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "demandeDejaValidee.xsl");
-                assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
+                assertNotNull(demandeDejaValideeXslUrl, "Output XSL 'demandeDejaValidee.xsl' not found");
                 serviceConfiguration.addResource(demandeDejaValideeXslUrl);
 
                 final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "vacationRequest.bpmn20.xml");
-                assertNotNull("BPMN file not found", bpmnUrl);
+                assertNotNull(bpmnUrl, "BPMN file not found");
                 serviceConfiguration.addResource(bpmnUrl);
 
                 final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "archivageService.wsdl");
-                assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                assertNotNull(archivageServiceWsdlUrl, "archivageService WSDL not found");
                 serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                 // First process definition
                 serviceConfiguration.setServicesSectionParameter(
-                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"),
-                        "vacationRequest.bpmn20.xml");
+                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file1"), "vacationRequest.bpmn20.xml");
                 serviceConfiguration
                         .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version1"), "1");
 
                 // 2nd process definition
                 serviceConfiguration.setServicesSectionParameter(
-                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"),
-                        "vacationRequest.bpmn20.xml");
+                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file2"), "vacationRequest.bpmn20.xml");
                 serviceConfiguration
                         .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version2"), "1");
 

@@ -17,6 +17,21 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitFlowInstanceIdNotEquals;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderFailureLog;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_ACTIVATEPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
@@ -39,8 +54,8 @@ import javax.management.openmbean.TabularData;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.transform.Source;
 
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
@@ -93,13 +108,12 @@ import jakarta.xml.bind.JAXBException;
  * Unit tests about request processing of BPMN services, with a component configured with default values
  *
  * @author Christophe DENEUX - Linagora
- *
  */
 public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvironment {
 
-    @AfterClass
+    @AfterAll
     public static void assertTechnicalMonitoringMetrics() throws Exception {
-        assertTrue(COMPONENT_UNDER_TEST.getComponentObject().getMonitoringBean() instanceof MonitoringMBean);
+        assertInstanceOf(MonitoringMBean.class, COMPONENT_UNDER_TEST.getComponentObject().getMonitoringBean());
         final MonitoringMBean monitoringMbean = (MonitoringMBean) COMPONENT_UNDER_TEST.getComponentObject()
                 .getMonitoringBean();
 
@@ -118,12 +132,10 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         assertEquals(0, ((Long) vacationInstances.get("suspensionState")).longValue());
 
         /*
-         * 5 process instances in state 'Pending', the ones created by unit tests:
-         * - userTaskRequest_EmptyProcessInstanceIdValue,
-         * - userTaskRequest_EmptyUserIdValue,
-         * - userTaskRequest_NoUserIdValue,
-         * - userTaskRequest_NoProcessInstanceIdValue,
-         * - userTaskRequest_TaskCompletedFault
+         * 5 process instances in state 'Pending', the ones created by unit tests: -
+         * userTaskRequest_EmptyProcessInstanceIdValue, - userTaskRequest_EmptyUserIdValue, -
+         * userTaskRequest_NoUserIdValue, - userTaskRequest_NoProcessInstanceIdValue, -
+         * userTaskRequest_TaskCompletedFault
          */
         assertEquals(5, ((Long) vacationInstances.get("active")).longValue());
         assertEquals(0, ((Long) vacationInstances.get("suspended")).longValue());
@@ -177,7 +189,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         //
         // Test administration operations about deleting process instances
         //
-        assertTrue(COMPONENT_UNDER_TEST.getComponentObject() instanceof AdminRuntimeService);
+        assertInstanceOf(AdminRuntimeService.class, COMPONENT_UNDER_TEST.getComponentObject());
         final AdminRuntimeService adminRuntimeMbean = (AdminRuntimeService) COMPONENT_UNDER_TEST.getComponentObject();
         assertEquals(2, adminRuntimeMbean.listPurgeableProcessInstances(null, 0).size());
         assertEquals(2, adminRuntimeMbean.listPurgeableProcessInstances("", 0).size());
@@ -213,15 +225,15 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         }
         getProcessInstancesReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                 NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstancesReq));
 
         final ResponseMessage getProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(request);
-        assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
+        assertNotNull(getProcessInstancesRespMsg.getPayload(), "No XML payload in response");
         final Object getProcessInstancesRespObj = UNMARSHALLER.unmarshal(getProcessInstancesRespMsg.getPayload());
-        assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+        assertInstanceOf(GetProcessInstancesResponse.class, getProcessInstancesRespObj);
         final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
         assertNotNull(getProcessInstancesResp.getProcessInstances());
         assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
@@ -282,14 +294,14 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
     @Test
     public void validStartEventRequest() throws Exception {
 
-        assertTrue(this.flowableClient.getIdentityService().checkPassword(BPMN_USER_DEMANDEUR, "demandeur"));
-        assertEquals(BPMN_USER_DEMANDEUR, this.flowableClient.getIdentityService().createUserQuery()
+        assertTrue(FLOWABLE_CLIENT.getIdentityService().checkPassword(BPMN_USER_DEMANDEUR, "demandeur"));
+        assertEquals(BPMN_USER_DEMANDEUR, FLOWABLE_CLIENT.getIdentityService().createUserQuery()
                 .memberOfGroup("employees").singleResult().getId());
-        assertEquals(BPMN_USER_VALIDEUR, this.flowableClient.getIdentityService().createUserQuery()
+        assertEquals(BPMN_USER_VALIDEUR, FLOWABLE_CLIENT.getIdentityService().createUserQuery()
                 .memberOfGroup("management").singleResult().getId());
-        assertEquals("employees", this.flowableClient.getIdentityService().createGroupQuery()
+        assertEquals("employees", FLOWABLE_CLIENT.getIdentityService().createGroupQuery()
                 .groupMember(BPMN_USER_DEMANDEUR).singleResult().getId());
-        assertEquals("management", this.flowableClient.getIdentityService().createGroupQuery()
+        assertEquals("management", FLOWABLE_CLIENT.getIdentityService().createGroupQuery()
                 .groupMember(BPMN_USER_VALIDEUR).singleResult().getId());
 
         // --------------------------------------------------------
@@ -316,10 +328,10 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
         {
@@ -362,7 +374,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         this.assertCurrentUserTask(response_1.getNumeroDde(), BPMN_PROCESS_1ST_USER_TASK_KEY, BPMN_USER_VALIDEUR);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs_1.get(0));
@@ -381,10 +393,10 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check that internal process variables are correctly set
         assertEquals(processStartedBeginFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
-                this.flowableClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
+                FLOWABLE_CLIENT.getRuntimeService().getVariable(response_1.getNumeroDde(),
                         FlowableSEConstants.Flowable.VAR_PETALS_FLOW_INSTANCE_ID));
         assertEquals(processStartedBeginFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME),
-                this.flowableClient.getRuntimeService().getVariable(response_1.getNumeroDde(),
+                FLOWABLE_CLIENT.getRuntimeService().getVariable(response_1.getNumeroDde(),
                         FlowableSEConstants.Flowable.VAR_PETALS_FLOW_STEP_ID));
 
         // Assertions about the process instance state through the SE Flowable
@@ -417,10 +429,10 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstanceByVarReq));
         final ResponseMessage getProcessInstanceByVarRespMsg = COMPONENT.sendAndGetResponse(request);
-        assertNotNull("No XML payload in response", getProcessInstanceByVarRespMsg.getPayload());
+        assertNotNull(getProcessInstanceByVarRespMsg.getPayload(), "No XML payload in response");
         final Object getProcessInstanceByVarRespObj = UNMARSHALLER
                 .unmarshal(getProcessInstanceByVarRespMsg.getPayload());
-        assertTrue(getProcessInstanceByVarRespObj instanceof GetProcessInstancesResponse);
+        assertInstanceOf(GetProcessInstancesResponse.class, getProcessInstanceByVarRespObj);
         final GetProcessInstancesResponse getProcessInstanceByVarResp = (GetProcessInstancesResponse) getProcessInstanceByVarRespObj;
         assertNotNull(getProcessInstanceByVarResp.getProcessInstances());
         assertNotNull(getProcessInstanceByVarResp.getProcessInstances().getProcessInstance());
@@ -472,7 +484,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         requestBean_2.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
 
         final ServiceProviderImplementation service = new ServiceProviderImplementation() {
             private MessageExchange archiveMessageExchange;
@@ -489,7 +501,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 assertEquals(ARCHIVER_OPERATION, this.archiveMessageExchange.getOperation());
                 assertEquals(this.archiveMessageExchange.getStatus(), ExchangeStatus.ACTIVE);
                 final Object archiveRequestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
-                assertTrue(archiveRequestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, archiveRequestObj);
                 final Archiver archiveRequest = (Archiver) archiveRequestObj;
                 assertEquals(response_1.getNumeroDde(), archiveRequest.getItem());
 
@@ -519,10 +531,10 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
-        assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
-        assertNotNull("No XML payload in response", responseMsg_2.getPayload());
+        assertNull(fault_2 == null ? null : SourceHelper.toString(fault_2), "Unexpected fault");
+        assertNotNull(responseMsg_2.getPayload(), "No XML payload in response");
         final Object responseObj_2 = UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
-        assertTrue(responseObj_2 instanceof AckResponse);
+        assertInstanceOf(AckResponse.class, responseObj_2);
         final AckResponse response_2 = (AckResponse) responseObj_2;
         {
             assertEquals(7, response_2.getXslParameter().size());
@@ -576,7 +588,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         this.waitEndOfServiceTask(response_1.getNumeroDde(), "archiverLaDemandeService");
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_2 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(6, monitLogs_2.size());
         final FlowLogData completionTaskInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0));
@@ -608,7 +620,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         // --------------------------------------------------------
         // ---- Try to complete AGAIN the first user task
         // --------------------------------------------------------
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
 
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
@@ -618,17 +630,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final ResponseMessage responseMsg_3 = COMPONENT.sendAndGetResponse(requestM2);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_3 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_3 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_3.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
 
         // Check the reply
-        assertNull("Out in response", responseMsg_3.getOut());
+        assertNull(responseMsg_3.getOut(), "Out in response");
         final Source fault_3 = responseMsg_3.getFault();
-        assertNotNull("No fault returns", fault_3);
+        assertNotNull(fault_3, "No fault returns");
         final Object responseObj_3 = UNMARSHALLER.unmarshal(fault_3);
-        assertTrue(responseObj_3 instanceof DemandeDejaValidee);
+        assertInstanceOf(DemandeDejaValidee.class, responseObj_3);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
 
@@ -651,16 +663,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         variable.setName(variableName);
         variable.setValue(variableValue);
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                 NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstancesReq));
 
         {
             final ResponseMessage getProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(request);
-            assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
+            assertNotNull(getProcessInstancesRespMsg.getPayload(), "No XML payload in response");
             final Object getProcessInstancesRespObj = UNMARSHALLER.unmarshal(getProcessInstancesRespMsg.getPayload());
-            assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+            assertInstanceOf(GetProcessInstancesResponse.class, getProcessInstancesRespObj);
             final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
             assertNotNull(getProcessInstancesResp.getProcessInstances());
             assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
@@ -678,7 +690,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         }
 
         // Check MONIT traces about the service integration invocation
-        final List<LogRecord> monitLogs_getProcessInstances = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_getProcessInstances = COMPONENT_UNDER_TEST.getInMemoryLogHandler()
+                .getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_getProcessInstances.size());
         final FlowLogData providerBegin_getProcessInstances = assertMonitProviderBeginLog(
                 ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
@@ -722,16 +735,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final StatusMessage responseMsg = COMPONENT.sendAndGetStatus(requestM);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
 
         // Check the reply
         final Exception error = responseMsg.getError();
-        assertNotNull("No error returns", error);
-        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg.getOut());
+        assertNotNull(error, "No error returns");
+        assertInstanceOf(NoUserIdValueException.class, error.getCause(), "Unexpected fault");
+        assertNull(responseMsg.getOut(), "XML payload in response");
 
         assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
     }
@@ -770,16 +783,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final StatusMessage responseMsg = COMPONENT.sendAndGetStatus(requestM);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_DEMANDERCONGES, monitLogs.get(0)), monitLogs.get(1));
 
         // Check the reply
         final Exception error = responseMsg.getError();
-        assertNotNull("No error returns", error);
-        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg.getOut());
+        assertNotNull(error, "No error returns");
+        assertInstanceOf(NoUserIdValueException.class, error.getCause(), "Unexpected fault");
+        assertNull(responseMsg.getOut(), "XML payload in response");
 
         assertEquals(currentProcInstNb, this.getProcessInstanceNumber(BPMN_PROCESS_DEFINITION_KEY));
     }
@@ -832,17 +845,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
@@ -859,7 +872,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         request_2.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
 
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
@@ -868,16 +881,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_2 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
-        assertNotNull("No error returns", error);
-        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getOut());
+        assertNotNull(error, "No error returns");
+        assertInstanceOf(NoUserIdValueException.class, error.getCause(), "Unexpected fault");
+        assertNull(responseMsg_2.getOut(), "XML payload in response");
 
         // Assert that the process instance and current user task
         this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -932,17 +945,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
@@ -960,7 +973,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         request_2.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
@@ -968,16 +981,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_2 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
-        assertNotNull("No error returns", error);
-        assertTrue("Unexpected fault", error.getCause() instanceof NoUserIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getOut());
+        assertNotNull(error, "No error returns");
+        assertInstanceOf(NoUserIdValueException.class, error.getCause(), "Unexpected fault");
+        assertNull(responseMsg_2.getOut(), "XML payload in response");
 
         // Assert that the process instance and current user task
         this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -1033,17 +1046,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
@@ -1060,7 +1073,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         request_2.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
@@ -1068,16 +1081,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_2 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
-        assertNotNull("No error returns", error);
-        assertTrue("Unexpected fault", error.getCause() instanceof NoProcessInstanceIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getOut());
+        assertNotNull(error, "No error returns");
+        assertInstanceOf(NoProcessInstanceIdValueException.class, error.getCause(), "Unexpected fault");
+        assertNull(responseMsg_2.getOut(), "XML payload in response");
 
         // Assert that the process instance and current user task
         this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -1132,17 +1145,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
@@ -1160,7 +1173,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         request_2.setApprobation(Boolean.TRUE.toString());
 
         // Send the 2nd valid request
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
@@ -1168,16 +1181,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final StatusMessage responseMsg_2 = COMPONENT.sendAndGetStatus(requestM2);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_2 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_2.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_2.get(0)), monitLogs_2.get(1));
 
         // Check the reply
         final Exception error = responseMsg_2.getError();
-        assertNotNull("No error returns", error);
-        assertTrue("Unexpected fault", error.getCause() instanceof NoProcessInstanceIdValueException);
-        assertNull("XML payload in response", responseMsg_2.getOut());
+        assertNotNull(error, "No error returns");
+        assertInstanceOf(NoProcessInstanceIdValueException.class, error.getCause(), "Unexpected fault");
+        assertNull(responseMsg_2.getOut(), "XML payload in response");
 
         // Assert that the process instance and current user task
         this.assertProcessInstancePending(response_1.getNumeroDde(), BPMN_PROCESS_DEFINITION_KEY);
@@ -1217,18 +1230,18 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
 
         // Check the reply
-        assertNull("Out in response", responseMsg.getOut());
+        assertNull(responseMsg.getOut(), "Out in response");
         final Source fault = responseMsg.getFault();
-        assertNotNull("No fault returns", fault);
+        assertNotNull(fault, "No fault returns");
         final Object responseObj = UNMARSHALLER.unmarshal(fault);
-        assertTrue(responseObj instanceof NumeroDemandeInconnu);
+        assertInstanceOf(NumeroDemandeInconnu.class, responseObj);
         final NumeroDemandeInconnu response = (NumeroDemandeInconnu) responseObj;
         assertEquals(unknownProcessInstanceId, response.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs.get(0)), monitLogs.get(1));
@@ -1295,17 +1308,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg_1);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_1.size());
         final FlowLogData processStartedBeginFlowLogData = assertMonitConsumerExtBeginLog(monitLogs_1.get(1));
         final FlowLogData userTaskHandleRequestBeginFlowLogData = assertMonitProviderBeginLog(
@@ -1329,7 +1342,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         request_2.setMotifRefus("To not finished the process and be able to try to complete again the user task");
 
         // Send the 2nd valid request for the user task 'handleRequest
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM2 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_2));
 
@@ -1338,17 +1351,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_2 = responseMsg_2.getFault();
-        assertNull("Unexpected fault", (fault_2 == null ? null : SourceHelper.toString(fault_2)));
-        assertNotNull("No XML payload in response", responseMsg_2.getPayload());
+        assertNull(fault_2 == null ? null : SourceHelper.toString(fault_2), "Unexpected fault");
+        assertNotNull(responseMsg_2.getPayload(), "No XML payload in response");
         final Object responseObj_2 = UNMARSHALLER.unmarshal(responseMsg_2.getPayload());
-        assertTrue(responseObj_2 instanceof AckResponse);
+        assertInstanceOf(AckResponse.class, responseObj_2);
         final AckResponse response_2 = (AckResponse) responseObj_2;
         assertNotNull(response_2);
 
         COMPONENT.sendDoneStatus(responseMsg_2);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_2 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_2 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(4, monitLogs_2.size());
         assertMonitProviderEndLog(userTaskHandleRequestBeginFlowLogData, monitLogs_2.get(1));
         assertMonitProviderBeginLog(processStartedBeginFlowLogData, null, null, null, null, monitLogs_1.get(2));
@@ -1370,7 +1383,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         request_2.setMotifRefus("On this 2nd call a fault should occur completing the user task");
 
         // Send the 3rd valid request for the user task 'handleRequest'
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM3 = new RequestToProviderMessage(COMPONENT_UNDER_TEST, VACATION_SU,
                 OPERATION_VALIDERDEMANDE, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request_3));
 
@@ -1378,18 +1391,18 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final ResponseMessage responseMsg_3 = COMPONENT.sendAndGetResponse(requestM3);
 
         // Check the reply
-        assertNull("Out in response", responseMsg_3.getOut());
+        assertNull(responseMsg_3.getOut(), "Out in response");
         final Source fault_3 = responseMsg_3.getFault();
-        assertNotNull("No fault returns", fault_3);
+        assertNotNull(fault_3, "No fault returns");
         final Object responseObj_3 = UNMARSHALLER.unmarshal(fault_3);
-        assertTrue(responseObj_3 instanceof DemandeDejaValidee);
+        assertInstanceOf(DemandeDejaValidee.class, responseObj_3);
         final DemandeDejaValidee response_3 = (DemandeDejaValidee) responseObj_3;
         assertEquals(response_1.getNumeroDde(), response_3.getNumeroDde());
 
         COMPONENT.sendDoneStatus(responseMsg_3);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_3 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_3 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_3.size());
         assertMonitProviderFailureLog(assertMonitProviderBeginLog(VACATION_INTERFACE, VACATION_SERVICE,
                 VACATION_ENDPOINT, OPERATION_VALIDERDEMANDE, monitLogs_3.get(0)), monitLogs_3.get(1));
@@ -1426,7 +1439,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
             @Override
             public Message provides(final RequestMessage archiveRequestMsg) throws Exception {
                 // Assert the 1st request sent by Flowable on orchestrated service
-                assertNotNull("No service request received under the given delay", archiveRequestMsg);
+                assertNotNull(archiveRequestMsg, "No service request received under the given delay");
                 this.archiveMessageExchange = archiveRequestMsg.getMessageExchange();
                 assertNotNull(this.archiveMessageExchange);
                 assertEquals(ARCHIVE_INTERFACE, this.archiveMessageExchange.getInterfaceName());
@@ -1436,7 +1449,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
                 assertEquals(ARCHIVER_OPERATION, this.archiveMessageExchange.getOperation());
                 assertEquals(this.archiveMessageExchange.getStatus(), ExchangeStatus.ACTIVE);
                 final Object archiveRequestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
-                assertTrue(archiveRequestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, archiveRequestObj);
                 final Archiver archiveRequest = (Archiver) archiveRequestObj;
                 assertEquals(numberOfDays, archiveRequest.getItem());
 
@@ -1465,10 +1478,10 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
         {
@@ -1499,7 +1512,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         this.waitEndOfProcessInstance(response_1.getNumeroDde());
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(6, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(VACATION_INTERFACE,
                 VACATION_SERVICE, VACATION_ENDPOINT, OPERATION_JIRA, monitLogs_1.get(0));
@@ -1552,16 +1565,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         getProcessInstancesReq.setProcessDefinitionIdentifier(BPMN_PROCESS_DEFINITION_KEY);
         getProcessInstancesReq.setProcessInstanceIdentifier(processInstanceId);
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                 NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_GETPROCESSINSTANCES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(getProcessInstancesReq));
 
         {
             final ResponseMessage getProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(request);
-            assertNotNull("No XML payload in response", getProcessInstancesRespMsg.getPayload());
+            assertNotNull(getProcessInstancesRespMsg.getPayload(), "No XML payload in response");
             final Object getProcessInstancesRespObj = UNMARSHALLER.unmarshal(getProcessInstancesRespMsg.getPayload());
-            assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+            assertInstanceOf(GetProcessInstancesResponse.class, getProcessInstancesRespObj);
             final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
             assertNotNull(getProcessInstancesResp.getProcessInstances());
             assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());
@@ -1598,7 +1611,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         }
 
         // Check MONIT traces about the service integration invocation
-        final List<LogRecord> monitLogs_getProcessInstances = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_getProcessInstances = COMPONENT_UNDER_TEST.getInMemoryLogHandler()
+                .getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_getProcessInstances.size());
         final FlowLogData providerBegin_getProcessInstances = assertMonitProviderBeginLog(
                 ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
@@ -1634,16 +1648,16 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         getTasksReq.setAssignee(user);
         getTasksReq.setProcessInstanceIdentifier(processInstanceId);
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                 NATIVE_TASKS_SVC_CFG, ITG_OP_GETTASKS, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                 toByteArray(getTasksReq));
 
         {
             final ResponseMessage getTaskRespMsg = COMPONENT.sendAndGetResponse(requestM);
-            assertNotNull("No XML payload in response", getTaskRespMsg.getPayload());
+            assertNotNull(getTaskRespMsg.getPayload(), "No XML payload in response");
             final Object getTaskRespObj = UNMARSHALLER.unmarshal(getTaskRespMsg.getPayload());
-            assertTrue(getTaskRespObj instanceof GetTasksResponse);
+            assertInstanceOf(GetTasksResponse.class, getTaskRespObj);
             final GetTasksResponse getTaskResp = (GetTasksResponse) getTaskRespObj;
             assertNotNull(getTaskResp.getTasks());
             assertNotNull(getTaskResp.getTasks().getTask());
@@ -1660,7 +1674,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
             COMPONENT.sendDoneStatus(getTaskRespMsg);
         }
         // Check MONIT traces about the task basket invocation
-        final List<LogRecord> monitLogs_taskBasket = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_taskBasket = COMPONENT_UNDER_TEST.getInMemoryLogHandler()
+                .getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_taskBasket.size());
         final FlowLogData providerBegin_taskBasket = assertMonitProviderBeginLog(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
                 COMPONENT_UNDER_TEST.getNativeEndpointName(ITG_TASK_SERVICE), ITG_OP_GETTASKS,
@@ -1674,7 +1689,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         if (expectedResult == AdjournmentResult.SUSPENDED) {
             // Check at Flowable level that the process instance is suspended
-            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = FLOWABLE_CLIENT
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());
@@ -1684,17 +1699,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final SuspendProcessInstances suspendProcessInstancesReq = new SuspendProcessInstances();
         suspendProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                 NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_SUSPENDPROCESSINSTANCES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(suspendProcessInstancesReq));
 
         {
             final ResponseMessage suspendProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(requestM);
-            assertNotNull("No XML payload in response", suspendProcessInstancesRespMsg.getPayload());
+            assertNotNull(suspendProcessInstancesRespMsg.getPayload(), "No XML payload in response");
             final Object suspendProcessInstancesRespObj = UNMARSHALLER
                     .unmarshal(suspendProcessInstancesRespMsg.getPayload());
-            assertTrue(suspendProcessInstancesRespObj instanceof SuspendProcessInstancesResponse);
+            assertInstanceOf(SuspendProcessInstancesResponse.class, suspendProcessInstancesRespObj);
             final SuspendProcessInstancesResponse suspendProcessInstancesResp = (SuspendProcessInstancesResponse) suspendProcessInstancesRespObj;
             assertNotNull(suspendProcessInstancesResp.getProcessInstanceIdentifier());
             assertEquals(1, suspendProcessInstancesResp.getProcessInstanceIdentifier().size());
@@ -1707,7 +1722,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         }
 
         // Check MONIT traces about the process instance adjournment
-        final List<LogRecord> monitLogs_suspendProcessInstance = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_suspendProcessInstance = COMPONENT_UNDER_TEST.getInMemoryLogHandler()
+                .getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_suspendProcessInstance.size());
         final FlowLogData providerBegin_suspendProcessInstance = assertMonitProviderBeginLog(
                 ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
@@ -1718,7 +1734,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         if (expectedResult == AdjournmentResult.SUSPENDED) {
             // Check at Flowable level that the process instance is suspended
-            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = FLOWABLE_CLIENT
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());
@@ -1731,7 +1747,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         if (expectedResult == ActivationResult.ACTIVATED) {
             // Check at Flowable level that the process instance is activated
-            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = FLOWABLE_CLIENT
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());
@@ -1741,17 +1757,17 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         final ActivateProcessInstances activateProcessInstancesReq = new ActivateProcessInstances();
         activateProcessInstancesReq.getProcessInstanceIdentifier().add(processInstanceId);
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                 NATIVE_PROCESSINSTANCES_SVC_CFG, ITG_OP_ACTIVATEPROCESSINSTANCES,
                 AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(activateProcessInstancesReq));
 
         {
             final ResponseMessage activateProcessInstancesRespMsg = COMPONENT.sendAndGetResponse(requestM);
-            assertNotNull("No XML payload in response", activateProcessInstancesRespMsg.getPayload());
+            assertNotNull(activateProcessInstancesRespMsg.getPayload(), "No XML payload in response");
             final Object activateProcessInstancesRespObj = UNMARSHALLER
                     .unmarshal(activateProcessInstancesRespMsg.getPayload());
-            assertTrue(activateProcessInstancesRespObj instanceof ActivateProcessInstancesResponse);
+            assertInstanceOf(ActivateProcessInstancesResponse.class, activateProcessInstancesRespObj);
             final ActivateProcessInstancesResponse activateProcessInstancesResp = (ActivateProcessInstancesResponse) activateProcessInstancesRespObj;
             assertNotNull(activateProcessInstancesResp.getProcessInstanceIdentifier());
             assertEquals(1, activateProcessInstancesResp.getProcessInstanceIdentifier().size());
@@ -1765,7 +1781,8 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
         }
 
         // Check MONIT traces about the process instance activation
-        final List<LogRecord> monitLogs_activateProcessInstance = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_activateProcessInstance = COMPONENT_UNDER_TEST.getInMemoryLogHandler()
+                .getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs_activateProcessInstance.size());
         final FlowLogData providerBegin_activateProcessInstance = assertMonitProviderBeginLog(
                 ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
@@ -1776,7 +1793,7 @@ public class ServiceProviderVacationProcessTest extends VacationProcessTestEnvir
 
         if (expectedResult == ActivationResult.ACTIVATED) {
             // Check at Flowable level that the process instance is activated
-            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = this.flowableClient
+            final List<org.flowable.engine.runtime.ProcessInstance> processInstances = FLOWABLE_CLIENT
                     .getRuntimeService().createProcessInstanceQuery().processInstanceId(processInstanceId).list();
             assertNotNull(processInstances);
             assertEquals(1, processInstances.size());

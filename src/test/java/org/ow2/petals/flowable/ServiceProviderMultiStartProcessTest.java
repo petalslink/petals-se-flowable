@@ -17,6 +17,14 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitConsumerExtBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderBeginLog;
+
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -24,7 +32,7 @@ import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.transform.Source;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
@@ -53,7 +61,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * with multi start events
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestEnvironment {
 
@@ -100,10 +107,10 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
             public void checks(final Message message) throws Exception {
                 // Check the reply
                 final Source fault = message.getFault();
-                assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                assertNotNull("No XML payload in response", message.getPayload());
+                assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                assertNotNull(message.getPayload(), "No XML payload in response");
                 final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                assertTrue(responseObj instanceof StartResponse);
+                assertInstanceOf(StartResponse.class, responseObj);
                 final StartResponse response = (StartResponse) responseObj;
                 assertNotNull(response.getCaseFileNumber());
                 caseFileNumber.append(response.getCaseFileNumber());
@@ -117,7 +124,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         this.assertProcessInstanceFinished(caseFileNumber.toString());
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(6, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(MULTISTART_INTERFACE,
                 MULTISTART_SERVICE, MULTISTART_ENDPOINT, OPERATION_START_BY_WEB, monitLogs_1.get(0));
@@ -176,10 +183,10 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof StartResponse);
+        assertInstanceOf(StartResponse.class, responseObj_1);
         final StartResponse response_1 = (StartResponse) responseObj_1;
         assertNotNull(response_1.getCaseFileNumber());
 
@@ -192,7 +199,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
         this.assertProcessInstanceFinished(response_1.getCaseFileNumber());
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(8, monitLogs_1.size());
         final FlowLogData initialInteractionRequestFlowLogData = assertMonitProviderBeginLog(MULTISTART_INTERFACE,
                 MULTISTART_SERVICE, MULTISTART_ENDPOINT, OPERATION_START_BY_ONLINE_AGENT, monitLogs_1.get(0));
@@ -224,7 +231,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
                 assertEquals(ARCHIVER_OPERATION, this.msgExchange.getOperation());
                 assertEquals(this.msgExchange.getStatus(), ExchangeStatus.ACTIVE);
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof Archiver);
+                assertInstanceOf(Archiver.class, requestObj);
 
                 // Returns the reply of the service provider to the Flowable service task
                 return new ResponseToConsumerMessage(requestMsg, toByteArray(responseBean));
@@ -259,7 +266,7 @@ public class ServiceProviderMultiStartProcessTest extends MultistartProcessTestE
                 assertEquals(CORE_SVC_OPERATION, this.msgExchange.getOperation());
                 assertEquals(this.msgExchange.getStatus(), ExchangeStatus.ACTIVE);
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof Execute);
+                assertInstanceOf(Execute.class, requestObj);
                 final Execute requestBean = (Execute) requestObj;
                 assertEquals(CUSTOMER_ADRESS, requestBean.getAddress());
                 assertEquals(BPMN_USER, requestBean.getCustomer());

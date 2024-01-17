@@ -17,8 +17,9 @@
  */
 package org.ow2.petals.flowable.admin;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -27,13 +28,13 @@ import java.util.Map;
 import org.flowable.engine.repository.Deployment;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.basisapi.exception.PetalsException;
 import org.ow2.petals.flowable.AbstractVacationProcessTestEnvironment;
-import org.ow2.petals.flowable.junit.FlowableClient;
+import org.ow2.petals.flowable.junit.extensions.FlowableClientExtension;
+import org.ow2.petals.flowable.junit.extensions.api.FlowableClient;
 import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessDefinitionNotFoundException;
 import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessInstanceExistForDefinitionException;
 
@@ -41,22 +42,21 @@ import org.ow2.petals.se.flowable.clientserver.api.admin.exception.ProcessInstan
  * Unit test of {@link AdminOperations}
  * 
  * @author Christophe DENEUX - Linagora
- *
  */
 public class AdminOperationsTest {
 
     public static final String BPMN_PROCESS_DEFINITION_KEY = "adminTestProcess";
 
-    @Rule
-    public FlowableClient flowableClient = new FlowableClient();
+    @FlowableClientExtension
+    public FlowableClient flowableClient;
 
-    @Before
+    @BeforeEach
     public void deployProcessDefinition() {
         this.flowableClient.getRepositoryService().createDeployment().addClasspathResource("adminTestProcess.bpmn")
                 .deploy();
     }
 
-    @After
+    @AfterEach
     public void forceProcessDefUndeploiement() {
 
         // Force process definition undeployment is not undeploy by unit test
@@ -73,13 +73,15 @@ public class AdminOperationsTest {
                 this.flowableClient.getProcessEngine());
     }
 
-    @Test(expected = ProcessDefinitionNotFoundException.class)
+    @Test
     public void undeployProcDefNotFound() throws PetalsException {
-        AdminOperations.undeployProcessDefinition("unexisting-process-definition", 1,
-                this.flowableClient.getProcessEngine());
+        assertThrows(ProcessDefinitionNotFoundException.class, () -> {
+            AdminOperations.undeployProcessDefinition("unexisting-process-definition", 1,
+                    this.flowableClient.getProcessEngine());
+        });
     }
 
-    @Test(expected = ProcessInstanceExistForDefinitionException.class)
+    @Test
     public void undeployProcDefWithExistingActiveProcInst() throws PetalsException {
 
         // Start a process instance
@@ -101,11 +103,13 @@ public class AdminOperationsTest {
                 .processInstanceId(procInst.getId()).singleResult());
 
         // Try to undeploy process definition
-        AdminOperations.undeployProcessDefinition(BPMN_PROCESS_DEFINITION_KEY, 1,
-                this.flowableClient.getProcessEngine());
+        assertThrows(ProcessInstanceExistForDefinitionException.class, () -> {
+            AdminOperations.undeployProcessDefinition(BPMN_PROCESS_DEFINITION_KEY, 1,
+                    this.flowableClient.getProcessEngine());
+        });
     }
 
-    @Test(expected = ProcessInstanceExistForDefinitionException.class)
+    @Test
     public void undeployProcDefWithExistingEndedProcInst() throws PetalsException {
 
         // Start a process instance
@@ -140,7 +144,9 @@ public class AdminOperationsTest {
                 .processInstanceId(procInst.getId()).singleResult());
 
         // Try to undeploy process definition
-        AdminOperations.undeployProcessDefinition(BPMN_PROCESS_DEFINITION_KEY, 1,
-                this.flowableClient.getProcessEngine());
+        assertThrows(ProcessInstanceExistForDefinitionException.class, () -> {
+            AdminOperations.undeployProcessDefinition(BPMN_PROCESS_DEFINITION_KEY, 1,
+                    this.flowableClient.getProcessEngine());
+        });
     }
 }

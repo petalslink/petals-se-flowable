@@ -17,11 +17,14 @@
  */
 package org.ow2.petals.flowable.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETEXECUTIONS;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.components.flowable.generic._1.GetExecutions;
 import org.ow2.petals.components.flowable.generic._1.GetExecutionsResponse;
 import org.ow2.petals.flowable.incoming.integration.GetExecutionsOperation;
@@ -30,7 +33,6 @@ import org.ow2.petals.flowable.incoming.integration.GetExecutionsOperation;
  * Unit tests about request processing of the service {@link GetExecutionsOperation}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class GetExecutionsInvocationTest extends AbstractIntegrationServiceInvokations {
 
@@ -123,10 +125,9 @@ public class GetExecutionsInvocationTest extends AbstractIntegrationServiceInvok
     public void noArguments() throws Exception {
 
         final Object getExecutionsRespObj = this.testRequest(NATIVE_EXECUTIONS_SVC_CFG, ITG_EXECUTIONS_PORT_TYPE,
-                ITG_EXECUTIONS_SERVICE, ITG_OP_GETEXECUTIONS,
-                new GetExecutions());
+                ITG_EXECUTIONS_SERVICE, ITG_OP_GETEXECUTIONS, new GetExecutions());
 
-        assertTrue(getExecutionsRespObj instanceof GetExecutionsResponse);
+        assertInstanceOf(GetExecutionsResponse.class, getExecutionsRespObj);
         final GetExecutionsResponse getExecutionsResp = (GetExecutionsResponse) getExecutionsRespObj;
         assertNotNull(getExecutionsResp.getExecutions());
         assertNotNull(getExecutionsResp.getExecutions().getExecution());

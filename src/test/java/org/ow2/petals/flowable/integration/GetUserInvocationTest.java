@@ -17,11 +17,14 @@
  */
 package org.ow2.petals.flowable.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETUSER;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_SERVICE;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.components.flowable.generic._1.GetUser;
 import org.ow2.petals.components.flowable.generic._1.GetUserResponse;
 import org.ow2.petals.components.flowable.generic._1.UnknownUser;
@@ -32,7 +35,6 @@ import org.ow2.petals.flowable.incoming.integration.GetUserOperation;
  * Unit tests about request processing of the service {@link GetUserOperation}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations {
 
@@ -81,8 +83,8 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
         // We use a response as request
         final GetUserResponse request = new GetUserResponse();
         request.setUser(new User());
-        this.testInvalidRequest_WsdlCompliant(NATIVE_USER_SVC_CFG, ITG_USER_PORT_TYPE, ITG_USER_SERVICE,
-                ITG_OP_GETUSER, request);
+        this.testInvalidRequest_WsdlCompliant(NATIVE_USER_SVC_CFG, ITG_USER_PORT_TYPE, ITG_USER_SERVICE, ITG_OP_GETUSER,
+                request);
     }
 
     /**
@@ -130,7 +132,7 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
         final Object getUserRespObj = this.testRequest(NATIVE_USER_SVC_CFG, ITG_USER_PORT_TYPE, ITG_USER_SERVICE,
                 ITG_OP_GETUSER, bean);
 
-        assertTrue(getUserRespObj instanceof GetUserResponse);
+        assertInstanceOf(GetUserResponse.class, getUserRespObj);
         assertNotNull(((GetUserResponse) getUserRespObj).getUser());
         assertEquals(userId, ((GetUserResponse) getUserRespObj).getUser().getId());
     }
@@ -159,8 +161,7 @@ public class GetUserInvocationTest extends AbstractIntegrationServiceInvokations
         final Object getUserRespObj = this.testRequestWithFault(NATIVE_USER_SVC_CFG, ITG_USER_PORT_TYPE,
                 ITG_USER_SERVICE, ITG_OP_GETUSER, bean);
 
-        assertTrue(getUserRespObj instanceof UnknownUser);
+        assertInstanceOf(UnknownUser.class, getUserRespObj);
         assertEquals(userId, ((UnknownUser) getUserRespObj).getId());
     }
-
 }

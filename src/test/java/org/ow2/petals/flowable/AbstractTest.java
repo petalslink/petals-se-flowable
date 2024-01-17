@@ -17,9 +17,11 @@
  */
 package org.ow2.petals.flowable;
 
-import java.net.URL;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.ow2.petals.component.framework.test.Assert;
+import java.io.IOException;
+import java.net.URL;
+import java.util.logging.LogManager;
 
 /**
  * Abstract class for unit tests about request processing
@@ -27,12 +29,18 @@ import org.ow2.petals.component.framework.test.Assert;
  * @author Christophe DENEUX - Linagora
  * 
  */
-public abstract class AbstractTest extends Assert {
+public abstract class AbstractTest {
 
     protected static final String VACATION_SU_HOME = "su/vacation/";
 
     static {
         final URL logConfig = AbstractTest.class.getResource("/logging.properties");
-        assertNotNull("Logging configuration file not found", logConfig);
+        assertNotNull(logConfig, "Logging configuration file not found");
+
+        try {
+            LogManager.getLogManager().readConfiguration(logConfig.openStream());
+        } catch (final SecurityException | IOException e) {
+            throw new AssertionError(e);
+        }
     }
 }

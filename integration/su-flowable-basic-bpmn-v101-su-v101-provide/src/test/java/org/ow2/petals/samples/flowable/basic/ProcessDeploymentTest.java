@@ -15,7 +15,7 @@
  */
 package org.ow2.petals.samples.flowable.basic;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -36,7 +36,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.flowable.junit.PetalsFlowableRule;
 import org.ow2.petals.samples.flowable.basic.mock.LogServiceMock;
 

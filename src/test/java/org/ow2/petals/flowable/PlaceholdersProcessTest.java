@@ -17,17 +17,23 @@
  */
 package org.ow2.petals.flowable;
 
-import java.io.File;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.Properties;
 
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.transform.Source;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.component.framework.junit.Message;
 import org.ow2.petals.component.framework.junit.RequestMessage;
@@ -49,7 +55,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * Unit tests about request processing of BPMN services using placeholders
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment {
 
@@ -90,9 +95,8 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
             final Start start = new Start();
             start.setCustomer(BPMN_USER);
 
-            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
-                    PLACEHOLDERS_SU, OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                    toByteArray(start));
+            final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST, PLACEHOLDERS_SU,
+                    OPERATION_START, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(start));
 
             COMPONENT.sendAndCheckResponseAndSendStatus(request, new ServiceProviderImplementation() {
                 private MessageExchange msgExchange;
@@ -109,7 +113,7 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
                     assertEquals(ARCHIVER_OPERATION, this.msgExchange.getOperation());
                     assertEquals(this.msgExchange.getStatus(), ExchangeStatus.ACTIVE);
                     final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                    assertTrue(requestObj instanceof Archiver);
+                    assertInstanceOf(Archiver.class, requestObj);
                     assertEquals(PLACEHOLDER_VALUE_1, ((Archiver) requestObj).getItem2());
 
                     // Returns the reply of the service provider to the Flowable service task
@@ -130,10 +134,10 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
                 public void checks(final Message message) throws Exception {
                     // Check the reply
                     final Source fault = message.getFault();
-                    assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                    assertNotNull("No XML payload in response", message.getPayload());
+                    assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                    assertNotNull(message.getPayload(), "No XML payload in response");
                     final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                    assertTrue(responseObj instanceof StartResponse);
+                    assertInstanceOf(StartResponse.class, responseObj);
                     final StartResponse response = (StartResponse) responseObj;
                     assertNotNull(response.getCaseFileNumber());
                     processInstance.append(response.getCaseFileNumber());
@@ -172,7 +176,7 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
                     assertEquals(ARCHIVER_OPERATION, this.msgExchange.getOperation());
                     assertEquals(this.msgExchange.getStatus(), ExchangeStatus.ACTIVE);
                     final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                    assertTrue(requestObj instanceof Archiver);
+                    assertInstanceOf(Archiver.class, requestObj);
                     assertEquals(PLACEHOLDER_VALUE_2, ((Archiver) requestObj).getItem2());
 
                     // Returns the reply of the service provider to the Flowable service task
@@ -193,10 +197,10 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
                 public void checks(final Message message) throws Exception {
                     // Check the reply
                     final Source fault = message.getFault();
-                    assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                    assertNotNull("No XML payload in response", message.getPayload());
+                    assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                    assertNotNull(message.getPayload(), "No XML payload in response");
                     final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                    assertTrue(responseObj instanceof UnlockAck);
+                    assertInstanceOf(UnlockAck.class, responseObj);
                     final UnlockAck response = (UnlockAck) responseObj;
                     assertEquals(processInstance.toString(), response.getAck());
                 }
@@ -209,14 +213,13 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
         // -----------------------------------------------------------------------------------------------------
         // Complete the 2nd user task after reloading placeholders with new values
         // -----------------------------------------------------------------------------------------------------
-        final URL componentPropertiesFile = Thread.currentThread().getContextClassLoader()
-                .getResource("su/placeholders/componentProperties.properties");
-        assertNotNull("Component properties file is missing !", componentPropertiesFile);
         final Properties placeholders = new Properties();
-        placeholders.load(componentPropertiesFile.openStream());
+        try (final InputStream fis = new FileInputStream(COMPONENT_PROPERTIES_FILE)) {
+            placeholders.load(fis);
+        }
         assertEquals(PLACEHOLDER_VALUE_1, placeholders.getProperty(PLACEHOLDER_NAME_1));
         placeholders.setProperty(PLACEHOLDER_NAME_1, PLACEHOLDER_VALUE_1_NEW);
-        try (final OutputStream fos = new FileOutputStream(new File(componentPropertiesFile.toURI()))) {
+        try (final OutputStream fos = new FileOutputStream(COMPONENT_PROPERTIES_FILE)) {
             placeholders.store(fos, "");
         }
         COMPONENT_UNDER_TEST.getComponentObject().reloadPlaceHolders();
@@ -244,7 +247,7 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
                     assertEquals(ARCHIVER_OPERATION, this.msgExchange.getOperation());
                     assertEquals(this.msgExchange.getStatus(), ExchangeStatus.ACTIVE);
                     final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                    assertTrue(requestObj instanceof Archiver);
+                    assertInstanceOf(Archiver.class, requestObj);
                     assertEquals(PLACEHOLDER_VALUE_1_NEW, ((Archiver) requestObj).getItem2());
 
                     // Returns the reply of the service provider to the Flowable service task
@@ -265,10 +268,10 @@ public class PlaceholdersProcessTest extends PlaceholdersProcessTestEnvironment 
                 public void checks(final Message message) throws Exception {
                     // Check the reply
                     final Source fault = message.getFault();
-                    assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                    assertNotNull("No XML payload in response", message.getPayload());
+                    assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                    assertNotNull(message.getPayload(), "No XML payload in response");
                     final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                    assertTrue(responseObj instanceof UnlockAck);
+                    assertInstanceOf(UnlockAck.class, responseObj);
                     final UnlockAck response = (UnlockAck) responseObj;
                     assertEquals(processInstance.toString(), response.getAck());
                 }

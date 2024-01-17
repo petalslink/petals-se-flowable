@@ -18,8 +18,7 @@
 package org.ow2.petals.flowable.rest;
 
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeAll;
 import org.ow2.petals.flowable.AbstractTestEnvironment;
 import org.ow2.petals.flowable.FlowableSEConstants;
 
@@ -34,8 +33,10 @@ import jakarta.ws.rs.core.MediaType;
  */
 public abstract class AbstractRestTestEnvironment extends AbstractTestEnvironment {
 
-    @Rule
-    public final ExpectedException expected = ExpectedException.none();
+    @BeforeAll
+    private static void completesTestEnvConfiguration() throws Exception {
+        FLOWABLE_CLIENT.start();
+    }
 
     protected Client client(final String user, final String password) {
         final ClientBuilder builder = ClientBuilder.newBuilder();

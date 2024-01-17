@@ -17,35 +17,27 @@
  */
 package org.ow2.petals.flowable;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.net.URL;
 
 import javax.xml.namespace.QName;
 
-import org.junit.ClassRule;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.BeforeAll;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
-import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
 import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-
-import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 
 /**
  * Abstract class for unit tests about process invoking InOnly or RobustInOnly services
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public abstract class ProcessWithRobustInOnlyConsumerTestEnvironment extends AbstractTestEnvironment {
 
@@ -75,103 +67,62 @@ public abstract class ProcessWithRobustInOnlyConsumerTestEnvironment extends Abs
 
     protected static final String BPMN_PROCESS_DEFINITION_KEY = "robust-in-only";
 
-    protected static String getFileIdmEngineConfiguratorCfgFile() {
-        return null;
+    @BeforeAll
+    private static void initJaxBTooling() throws JAXBException {
+        final JAXBContext context = JAXBContext.newInstance(
+                org.ow2.petals.se_flowable.unit_test.robust_in_only.ObjectFactory.class,
+                org.ow2.petals.se_flowable.unit_test.robust_in_only.archivageservice.ObjectFactory.class);
+        UNMARSHALLER = context.createUnmarshaller();
+        MARSHALLER = context.createMarshaller();
+        MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
     }
 
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
-                    Boolean.TRUE.toString())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ENABLE),
-                    Boolean.FALSE.toString())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
-                    FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME), "1000")
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
-                    FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME), "1000")
-            .registerServiceToDeploy(ROBUSTINONLY_SU, new ServiceConfigurationFactory() {
-                @Override
-                public ServiceConfiguration create() {
-
-                    final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(ROBUSTINONLY_SU_HOME + "robust-in-only.wsdl");
-                    assertNotNull("WSDL not found", wsdlUrl);
-                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                            ROBUSTINONLY_INTERFACE, ROBUSTINONLY_SERVICE, ROBUSTINONLY_ENDPOINT, wsdlUrl);
-
-                    final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(ROBUSTINONLY_SU_HOME + "startResponse.xsl");
-                    assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
-                    serviceConfiguration.addResource(startResponseXslUrl);
-
-                    final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(ROBUSTINONLY_SU_HOME + "robust-in-only.bpmn");
-                    assertNotNull("BPMN file not found", bpmnUrl);
-                    serviceConfiguration.addResource(bpmnUrl);
-
-                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(ROBUSTINONLY_SU_HOME + "archivageService.wsdl");
-                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
-                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
-
-                    serviceConfiguration.setServicesSectionParameter(
-                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "robust-in-only.bpmn");
-                    serviceConfiguration
-                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
-
-                    final ConsumesServiceConfiguration serviceConsumerCfg = new ConsumesServiceConfiguration(
-                            ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
-                    serviceConsumerCfg.setMEP(MEPType.ROBUST_IN_ONLY);
-                    serviceConsumerCfg.setOperation(ARCHIVER_OPERATION);
-                    serviceConfiguration.addServiceConfigurationDependency(serviceConsumerCfg);
-
-                    return serviceConfiguration;
-                }
-            }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE);
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
-            .around(COMPONENT_UNDER_TEST);
-
-    protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
-
-    protected static Marshaller MARSHALLER;
-
-    protected static Unmarshaller UNMARSHALLER;
-
-    static {
-        try {
-            final JAXBContext context = JAXBContext
-                    .newInstance(
-                            org.ow2.petals.se_flowable.unit_test.robust_in_only.ObjectFactory.class,
-                            org.ow2.petals.se_flowable.unit_test.robust_in_only.archivageservice.ObjectFactory.class);
-            UNMARSHALLER = context.createUnmarshaller();
-            MARSHALLER = context.createMarshaller();
-            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        } catch (final JAXBException e) {
-            throw new UncheckedException(e);
-        }
+    @BeforeAll
+    private static void completesTestEnvConfiguration() throws Exception {
+        FLOWABLE_CLIENT.start();
+        completesComponentUnderTestConfiguration();
     }
 
-    @Override
-    protected ComponentUnderTest getComponentUnderTest() {
-        return COMPONENT_UNDER_TEST;
-    }
+    private static void completesComponentUnderTestConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST.registerServiceToDeploy(ROBUSTINONLY_SU, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
 
-    /**
-     * Convert a JAXB element to bytes
-     * 
-     * @param jaxbElement
-     *            The JAXB element to write as bytes
-     */
-    protected static byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
+                final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(ROBUSTINONLY_SU_HOME + "robust-in-only.wsdl");
+                assertNotNull(wsdlUrl, "WSDL not found");
+                final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                        ROBUSTINONLY_INTERFACE, ROBUSTINONLY_SERVICE, ROBUSTINONLY_ENDPOINT, wsdlUrl);
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            MARSHALLER.marshal(jaxbElement, baos);
-            return baos.toByteArray();
-        } finally {
-            baos.close();
-        }
+                final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(ROBUSTINONLY_SU_HOME + "startResponse.xsl");
+                assertNotNull(startResponseXslUrl, "Output XSL 'startResponse.xsl' not found");
+                serviceConfiguration.addResource(startResponseXslUrl);
+
+                final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(ROBUSTINONLY_SU_HOME + "robust-in-only.bpmn");
+                assertNotNull(bpmnUrl, "BPMN file not found");
+                serviceConfiguration.addResource(bpmnUrl);
+
+                final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(ROBUSTINONLY_SU_HOME + "archivageService.wsdl");
+                assertNotNull(archivageServiceWsdlUrl, "archivageService WSDL not found");
+                serviceConfiguration.addResource(archivageServiceWsdlUrl);
+
+                serviceConfiguration.setServicesSectionParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "robust-in-only.bpmn");
+                serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"),
+                        "1");
+
+                final ConsumesServiceConfiguration serviceConsumerCfg = new ConsumesServiceConfiguration(
+                        ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
+                serviceConsumerCfg.setMEP(MEPType.ROBUST_IN_ONLY);
+                serviceConsumerCfg.setOperation(ARCHIVER_OPERATION);
+                serviceConfiguration.addServiceConfigurationDependency(serviceConsumerCfg);
+
+                return serviceConfiguration;
+            }
+        }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE)
+                .postInitComponentUnderTest();
     }
 }

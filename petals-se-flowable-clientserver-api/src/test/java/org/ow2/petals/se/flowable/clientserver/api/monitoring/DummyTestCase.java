@@ -18,11 +18,11 @@
 package org.ow2.petals.se.flowable.clientserver.api.monitoring;
 
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 // TODO: Add real unit tests
-@Ignore
+@Disabled
 public class DummyTestCase {
 
     @Test

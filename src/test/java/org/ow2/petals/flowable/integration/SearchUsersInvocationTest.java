@@ -17,11 +17,14 @@
  */
 package org.ow2.petals.flowable.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SEARCHUSERS;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_USER_SERVICE;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.components.flowable.generic._1.SearchUsers;
 import org.ow2.petals.components.flowable.generic._1.SearchUsersResponse;
 import org.ow2.petals.flowable.incoming.integration.SearchUsersOperation;
@@ -30,7 +33,6 @@ import org.ow2.petals.flowable.incoming.integration.SearchUsersOperation;
  * Unit tests about request processing of the service {@link SearchUsersOperation}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class SearchUsersInvocationTest extends AbstractIntegrationServiceInvokations {
 
@@ -124,12 +126,12 @@ public class SearchUsersInvocationTest extends AbstractIntegrationServiceInvokat
 
         final SearchUsers bean = new SearchUsers();
         bean.setGroupId("management");
-        final Object SearchUsersRespObj = this.testRequest(NATIVE_USER_SVC_CFG, ITG_USER_PORT_TYPE, ITG_USER_SERVICE,
+        final Object searchUsersRespObj = this.testRequest(NATIVE_USER_SVC_CFG, ITG_USER_PORT_TYPE, ITG_USER_SERVICE,
                 ITG_OP_SEARCHUSERS, bean);
 
-        assertTrue(SearchUsersRespObj instanceof SearchUsersResponse);
-        assertNotNull(((SearchUsersResponse) SearchUsersRespObj).getUserId());
-        assertEquals(1, ((SearchUsersResponse) SearchUsersRespObj).getUserId().size());
-        assertEquals(BPMN_USER_VALIDEUR, ((SearchUsersResponse) SearchUsersRespObj).getUserId().get(0));
+        assertInstanceOf(SearchUsersResponse.class, searchUsersRespObj);
+        assertNotNull(((SearchUsersResponse) searchUsersRespObj).getUserId());
+        assertEquals(1, ((SearchUsersResponse) searchUsersRespObj).getUserId().size());
+        assertEquals(BPMN_USER_VALIDEUR, ((SearchUsersResponse) searchUsersRespObj).getUserId().get(0));
     }
 }

@@ -263,7 +263,7 @@
             <targetRef>dataInputOfBooksPlanes</targetRef>
             <assignment>
                <from>${route.planes}</from>
-               <to>${dataInputOfBooksPlanes}</to>
+               <to>${dataInputOfBooksPlanes.plane}</to>
             </assignment>
          </dataInputAssociation>
       </serviceTask>
@@ -283,7 +283,7 @@
             <targetRef>dataInputOfBooksHotels</targetRef>
             <assignment>
                <from>${route.hotels}</from>
-               <to>${dataInputOfBooksHotels}</to>
+               <to>${dataInputOfBooksHotels.hotel}</to>
             </assignment>
          </dataInputAssociation>
       </serviceTask>

@@ -17,16 +17,15 @@
  */
 package org.ow2.petals.flowable.rest;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.net.ConnectException;
 
 import javax.xml.namespace.QName;
 
-import org.hamcrest.core.IsInstanceOf;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.flowable.FlowableSEConstants;
 
 import jakarta.ws.rs.ProcessingException;
@@ -37,29 +36,25 @@ import jakarta.ws.rs.ProcessingException;
  * @author Victor NOEL - Linagora
  * @author Jordy CABANNES - Linagora
  */
-public class RestDisableTest extends AbstractRestTestEnvironment {
+public class RestDisabledTest extends AbstractRestTestEnvironment {
 
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler()).setParameter(
-                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ENABLE), "false");
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
-            .around(COMPONENT_UNDER_TEST);
-
-    @Override
-    protected ComponentUnderTest getComponentUnderTest() {
-        return COMPONENT_UNDER_TEST;
+    @BeforeAll
+    private static void completesComponentUnderTestConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ENABLE),
+                        Boolean.FALSE.toString())
+                .postInitComponentUnderTest();
     }
 
     /**
      * Check that we cannot access to the REST API if it is not enabled and that the server is not even started.
      */
     @Test
-    public void getOnApiDisable() {
-        expected.expect(ProcessingException.class);
-        expected.expectCause(IsInstanceOf.<ConnectException> instanceOf(ConnectException.class));
+    public void getOnApiDisabled() {
 
-        deployments("rest-api-user", "user-api-rest-password").get();
+        final ProcessingException actualException = assertThrows(ProcessingException.class, () -> {
+            deployments("rest-api-user", "user-api-rest-password").get();
+        });
+        assertInstanceOf(ConnectException.class, actualException.getCause());
     }
 }

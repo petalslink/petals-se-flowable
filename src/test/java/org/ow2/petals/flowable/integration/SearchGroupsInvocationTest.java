@@ -17,11 +17,14 @@
  */
 package org.ow2.petals.flowable.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_GROUP_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_GROUP_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_SEARCHGROUPS;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.components.flowable.generic._1.SearchGroups;
 import org.ow2.petals.components.flowable.generic._1.SearchGroupsResponse;
 import org.ow2.petals.flowable.incoming.integration.SearchGroupsOperation;
@@ -30,7 +33,6 @@ import org.ow2.petals.flowable.incoming.integration.SearchGroupsOperation;
  * Unit tests about request processing of the service {@link SearchGroupsOperation}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class SearchGroupsInvocationTest extends AbstractIntegrationServiceInvokations {
 
@@ -125,13 +127,12 @@ public class SearchGroupsInvocationTest extends AbstractIntegrationServiceInvoka
 
         final SearchGroups bean = new SearchGroups();
         bean.setUserId(BPMN_USER_VALIDEUR);
-        final Object SearchGroupsRespObj = this.testRequest(NATIVE_GROUP_SVC_CFG, ITG_GROUP_PORT_TYPE,
-                ITG_GROUP_SERVICE,
-                ITG_OP_SEARCHGROUPS, bean);
+        final Object searchGroupsRespObj = this.testRequest(NATIVE_GROUP_SVC_CFG, ITG_GROUP_PORT_TYPE,
+                ITG_GROUP_SERVICE, ITG_OP_SEARCHGROUPS, bean);
 
-        assertTrue(SearchGroupsRespObj instanceof SearchGroupsResponse);
-        assertNotNull(((SearchGroupsResponse) SearchGroupsRespObj).getGroupId());
-        assertEquals(1, ((SearchGroupsResponse) SearchGroupsRespObj).getGroupId().size());
-        assertEquals("management", ((SearchGroupsResponse) SearchGroupsRespObj).getGroupId().get(0));
+        assertInstanceOf(SearchGroupsResponse.class, searchGroupsRespObj);
+        assertNotNull(((SearchGroupsResponse) searchGroupsRespObj).getGroupId());
+        assertEquals(1, ((SearchGroupsResponse) searchGroupsRespObj).getGroupId().size());
+        assertEquals("management", ((SearchGroupsResponse) searchGroupsRespObj).getGroupId().get(0));
     }
 }

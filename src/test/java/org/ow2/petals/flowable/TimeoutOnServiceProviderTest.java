@@ -17,11 +17,17 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
 import javax.xml.transform.Source;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.component.framework.api.Constants;
@@ -50,7 +56,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * Unit tests about processing of timeout invoking service provider.
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEnvironment {
 
@@ -83,10 +88,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
 
         // Check the reply
         final Source fault = responseMsg.getFault();
-        assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-        assertNotNull("No XML payload in response", responseMsg.getPayload());
+        assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+        assertNotNull(responseMsg.getPayload(), "No XML payload in response");
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getPayload());
-        assertTrue(responseObj instanceof StartResponse);
+        assertInstanceOf(StartResponse.class, responseObj);
         final StartResponse response = (StartResponse) responseObj;
         assertNotNull(response.getCaseFileNumber());
         processInstanceId.append(response.getCaseFileNumber());
@@ -103,7 +108,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         assertEquals(ExchangeStatus.ACTIVE, msgExchange.getStatus());
         assertEquals(MEPPatternConstants.ROBUST_IN_ONLY, MEPPatternConstants.fromURI(msgExchange.getPattern()));
         final Object requestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
-        assertTrue(requestObj instanceof ArchiverShortSync);
+        assertInstanceOf(ArchiverShortSync.class, requestObj);
 
         // Wait upper than the expected timeout
         Thread.sleep(ARCHIVE_SHORT_TIMEOUT + 5000);
@@ -143,10 +148,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
 
         // Check the reply
         final Source fault = responseMsg.getFault();
-        assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-        assertNotNull("No XML payload in response", responseMsg.getPayload());
+        assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+        assertNotNull(responseMsg.getPayload(), "No XML payload in response");
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getPayload());
-        assertTrue(responseObj instanceof StartResponse);
+        assertInstanceOf(StartResponse.class, responseObj);
         final StartResponse response = (StartResponse) responseObj;
         assertNotNull(response.getCaseFileNumber());
         processInstanceId.append(response.getCaseFileNumber());
@@ -163,7 +168,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         assertEquals(ExchangeStatus.ACTIVE, msgExchange.getStatus());
         assertEquals(MEPPatternConstants.IN_OUT, MEPPatternConstants.fromURI(msgExchange.getPattern()));
         final Object requestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
-        assertTrue(requestObj instanceof ArchiverShortAsync);
+        assertInstanceOf(ArchiverShortAsync.class, requestObj);
 
         // Wait upper than the expected timeout
         Thread.sleep(ARCHIVE_SHORT_TIMEOUT + 5000);
@@ -215,7 +220,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
                 assertEquals(MEPPatternConstants.ROBUST_IN_ONLY,
                         MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof ArchiverLongSync);
+                assertInstanceOf(ArchiverLongSync.class, requestObj);
 
                 // Wait a long timeout (between CXF default timeout and long time out configured at SU level)
                 Thread.sleep((ARCHIVE_LONG_TIMEOUT - 60000) / 2 + 60000);
@@ -234,10 +239,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
             public void checks(final Message message) throws Exception {
                 // Check the reply
                 final Source fault = message.getFault();
-                assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                assertNotNull("No XML payload in response", message.getPayload());
+                assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                assertNotNull(message.getPayload(), "No XML payload in response");
                 final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                assertTrue(responseObj instanceof StartResponse);
+                assertInstanceOf(StartResponse.class, responseObj);
                 final StartResponse response = (StartResponse) responseObj;
                 assertNotNull(response.getCaseFileNumber());
                 processInstanceId.append(response.getCaseFileNumber());
@@ -287,7 +292,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
                 assertEquals(ExchangeStatus.ACTIVE, this.msgExchange.getStatus());
                 assertEquals(MEPPatternConstants.IN_OUT, MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof ArchiverLongAsync);
+                assertInstanceOf(ArchiverLongAsync.class, requestObj);
 
                 // Wait a long timeout (between CXF default timeout and long time out configured at SU level)
                 Thread.sleep((ARCHIVE_LONG_TIMEOUT - 60000) / 2 + 60000);
@@ -312,10 +317,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
             public void checks(final Message message) throws Exception {
                 // Check the reply
                 final Source fault = message.getFault();
-                assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                assertNotNull("No XML payload in response", message.getPayload());
+                assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                assertNotNull(message.getPayload(), "No XML payload in response");
                 final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                assertTrue(responseObj instanceof StartResponse);
+                assertInstanceOf(StartResponse.class, responseObj);
                 final StartResponse response = (StartResponse) responseObj;
                 assertNotNull(response.getCaseFileNumber());
                 processInstanceId.append(response.getCaseFileNumber());
@@ -354,10 +359,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
 
         // Check the reply
         final Source fault = responseMsg.getFault();
-        assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-        assertNotNull("No XML payload in response", responseMsg.getPayload());
+        assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+        assertNotNull(responseMsg.getPayload(), "No XML payload in response");
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getPayload());
-        assertTrue(responseObj instanceof StartResponse);
+        assertInstanceOf(StartResponse.class, responseObj);
         final StartResponse response = (StartResponse) responseObj;
         assertNotNull(response.getCaseFileNumber());
         processInstanceId.append(response.getCaseFileNumber());
@@ -374,7 +379,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         assertEquals(ExchangeStatus.ACTIVE, msgExchange.getStatus());
         assertEquals(MEPPatternConstants.ROBUST_IN_ONLY, MEPPatternConstants.fromURI(msgExchange.getPattern()));
         final Object requestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
-        assertTrue(requestObj instanceof ArchiverLongSync);
+        assertInstanceOf(ArchiverLongSync.class, requestObj);
 
         // Wait upper than the expected timeout
         Thread.sleep(ARCHIVE_LONG_TIMEOUT + 5000);
@@ -424,7 +429,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
                 assertEquals(ExchangeStatus.ACTIVE, this.msgExchange.getStatus());
                 assertEquals(MEPPatternConstants.IN_OUT, MEPPatternConstants.fromURI(this.msgExchange.getPattern()));
                 final Object requestObj = UNMARSHALLER.unmarshal(requestMsg.getPayload());
-                assertTrue(requestObj instanceof ArchiverLongAsync);
+                assertInstanceOf(ArchiverLongAsync.class, requestObj);
 
                 // Wait a long timeout (between CXF default timeout and long time out configured at SU level)
                 Thread.sleep((ARCHIVE_LONG_TIMEOUT - 60000) / 2 + 60000);
@@ -449,10 +454,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
             public void checks(final Message message) throws Exception {
                 // Check the reply
                 final Source fault = message.getFault();
-                assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-                assertNotNull("No XML payload in response", message.getPayload());
+                assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+                assertNotNull(message.getPayload(), "No XML payload in response");
                 final Object responseObj = UNMARSHALLER.unmarshal(message.getPayload());
-                assertTrue(responseObj instanceof StartResponse);
+                assertInstanceOf(StartResponse.class, responseObj);
                 final StartResponse response = (StartResponse) responseObj;
                 assertNotNull(response.getCaseFileNumber());
                 processInstanceId.append(response.getCaseFileNumber());
@@ -491,10 +496,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
 
         // Check the reply
         final Source fault = responseMsg.getFault();
-        assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-        assertNotNull("No XML payload in response", responseMsg.getPayload());
+        assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+        assertNotNull(responseMsg.getPayload(), "No XML payload in response");
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getPayload());
-        assertTrue(responseObj instanceof StartResponse);
+        assertInstanceOf(StartResponse.class, responseObj);
         final StartResponse response = (StartResponse) responseObj;
         assertNotNull(response.getCaseFileNumber());
         processInstanceId.append(response.getCaseFileNumber());
@@ -511,7 +516,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         assertEquals(ExchangeStatus.ACTIVE, msgExchange.getStatus());
         assertEquals(MEPPatternConstants.ROBUST_IN_ONLY, MEPPatternConstants.fromURI(msgExchange.getPattern()));
         final Object requestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
-        assertTrue(requestObj instanceof ArchiverDefaultSync);
+        assertInstanceOf(ArchiverDefaultSync.class, requestObj);
 
         // Wait upper than the expected timeout
         Thread.sleep(Constants.Component.DEFAULT_SEND_TIMEOUT + 5000);
@@ -551,10 +556,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
 
         // Check the reply
         final Source fault = responseMsg.getFault();
-        assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-        assertNotNull("No XML payload in response", responseMsg.getPayload());
+        assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+        assertNotNull(responseMsg.getPayload(), "No XML payload in response");
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getPayload());
-        assertTrue(responseObj instanceof StartResponse);
+        assertInstanceOf(StartResponse.class, responseObj);
         final StartResponse response = (StartResponse) responseObj;
         assertNotNull(response.getCaseFileNumber());
         processInstanceId.append(response.getCaseFileNumber());
@@ -571,7 +576,7 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         assertEquals(ExchangeStatus.ACTIVE, msgExchange.getStatus());
         assertEquals(MEPPatternConstants.IN_OUT, MEPPatternConstants.fromURI(msgExchange.getPattern()));
         final Object requestObj = UNMARSHALLER.unmarshal(archiveRequestMsg.getPayload());
-        assertTrue(requestObj instanceof ArchiverDefaultAsync);
+        assertInstanceOf(ArchiverDefaultAsync.class, requestObj);
 
         // Wait upper than the expected timeout
         Thread.sleep(Constants.Component.DEFAULT_SEND_TIMEOUT + 5000);

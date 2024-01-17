@@ -17,11 +17,11 @@
  */
 package org.ow2.petals.flowable.utils;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.net.URI;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests of {@link InternalBPMNDefinitionURIBuilder}.

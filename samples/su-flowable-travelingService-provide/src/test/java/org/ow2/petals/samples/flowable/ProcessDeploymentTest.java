@@ -17,55 +17,51 @@
  */
 package org.ow2.petals.samples.flowable;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.ow2.petals.flowable.utils.test.Await.waitEndOfProcessInstance;
 
-import java.io.File;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.LogManager;
 
 import org.awaitility.Awaitility;
+import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.Deployment;
 import org.flowable.task.api.Task;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.ow2.petals.flowable.junit.PetalsFlowableRule;
+import org.junit.jupiter.api.Test;
+import org.ow2.petals.flowable.junit.extensions.PetalsFlowableTest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+@PetalsFlowableTest
 public class ProcessDeploymentTest {
     
     private final ObjectMapper mapper = new ObjectMapper();
 
-    @BeforeClass
-    public static void initLog() throws URISyntaxException {
-        final URL logCfg = Thread.currentThread().getContextClassLoader().getResource("logging.properties");
-        assertNotNull("Log conf file not found", logCfg);
-        System.setProperty("java.util.logging.config.file", new File(logCfg.toURI()).getAbsolutePath());
-    }
+    static {
+        final URL logConfig = ProcessDeploymentTest.class.getResource("/logging.properties");
+        assertNotNull(logConfig, "Logging configuration file not found");
 
-    @AfterClass
-    public static void cleanLog() {
-        System.clearProperty("java.util.logging.config.file");
+        try {
+            LogManager.getLogManager().readConfiguration(logConfig.openStream());
+        } catch (final SecurityException | IOException e) {
+            throw new AssertionError(e);
+        }
     }
-
-    @Rule
-    public final PetalsFlowableRule flowableRule = new PetalsFlowableRule();
     
     @Test
     @Deployment(resources = { "jbi/travelingProcess.bpmn20.xml" })
-    public void nominal() throws InterruptedException {
-        final ProcessDefinition processDefinition = this.flowableRule.getRepositoryService()
+    public void nominal(final ProcessEngine processEngine) throws InterruptedException {
+        final ProcessDefinition processDefinition = processEngine.getRepositoryService()
                 .createProcessDefinitionQuery().processDefinitionKey("travelingProcess").singleResult();
         assertNotNull(processDefinition);
 
@@ -95,7 +91,7 @@ public class ProcessDeploymentTest {
         initVariables.put("startDate", new Date());
         initVariables.put("route", routesObj);
         initVariables.put("travelingMotivation", "COTECH 2019");
-        final ProcessInstance processInstance = this.flowableRule.getRuntimeService().startProcessInstanceByKey(
+        final ProcessInstance processInstance = processEngine.getRuntimeService().startProcessInstanceByKey(
                 "travelingProcess", initVariables);
         assertNotNull(processInstance);
 
@@ -104,19 +100,19 @@ public class ProcessDeploymentTest {
 
             @Override
             public Boolean call() throws Exception {
-                final Task task = flowableRule.getTaskService().createTaskQuery()
+                final Task task = processEngine.getTaskService().createTaskQuery()
                         .processInstanceId(processInstance.getId()).taskDefinitionKey("handleTravelRequest")
                         .taskCandidateOrAssigned("kermit").singleResult();
                 return task != null;
             }
         });
-        final Task task = this.flowableRule.getTaskService().createTaskQuery()
+        final Task task = processEngine.getTaskService().createTaskQuery()
                 .processInstanceId(processInstance.getId()).taskDefinitionKey("handleTravelRequest")
                 .taskCandidateOrAssigned("kermit").singleResult();
         final Map<String, Object> userTaskVariables = new HashMap<String, Object>();
         userTaskVariables.put("travelingApproved", true);
-        this.flowableRule.getTaskService().complete(task.getId(), userTaskVariables);
+        processEngine.getTaskService().complete(task.getId(), userTaskVariables);
 
-        this.flowableRule.waitEndOfProcessInstance(processInstance.getId());
+        waitEndOfProcessInstance(processInstance.getId(), processEngine.getHistoryService());
     }
 }

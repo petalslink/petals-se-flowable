@@ -17,18 +17,19 @@
  */
 package org.ow2.petals.flowable.rest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.File;
 import java.net.ConnectException;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
 
-import org.hamcrest.core.IsInstanceOf;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.flowable.FlowableSEConstants;
 
@@ -47,35 +48,34 @@ public class RestApiCustomizedPrivConfigTest extends AbstractRestTestEnvironment
 
     private static final int CUSTOMIZED_PORT = 8085;
 
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
-                    String.valueOf(CUSTOMIZED_PORT))
-            .setParameter(
-                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
-                    // Generate identity service configuration files
-                    new ParameterGenerator() {
+    @BeforeAll
+    private static void completesComponentUnderTestConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
+                        String.valueOf(CUSTOMIZED_PORT))
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ENABLE),
+                        Boolean.TRUE.toString())
+                .setParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_COMP,
+                                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
+                        // Generate identity service configuration files
+                        new ParameterGenerator() {
 
-                        @Override
-                        public String generate() throws Exception {
-                            final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
-                                    .getResource("rest/idm-engine-configurator.properties");
-                            assertNotNull("IDM engine configurator config file is missing !", idmEngineConfiguratorCfg);
-                            return new File(idmEngineConfiguratorCfg.toURI()).getAbsolutePath();
-                        }
+                            @Override
+                            public String generate() throws Exception {
+                                final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
+                                        .getResource("rest/idm-engine-configurator.properties");
+                                assertNotNull(idmEngineConfiguratorCfg,
+                                        "IDM engine configurator config file is missing !");
+                                return new File(idmEngineConfiguratorCfg.toURI()).getAbsolutePath();
+                            }
 
-                    })
-            .setParameter(
-                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE),
-                    "customized-rest-access-api-privilege");
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
-            .around(COMPONENT_UNDER_TEST);
-
-    @Override
-    protected ComponentUnderTest getComponentUnderTest() {
-        return COMPONENT_UNDER_TEST;
+                        })
+                .setParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_COMP,
+                                FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE),
+                        "customized-rest-access-api-privilege")
+                .postInitComponentUnderTest();
     }
 
     /**
@@ -107,10 +107,11 @@ public class RestApiCustomizedPrivConfigTest extends AbstractRestTestEnvironment
      */
     @Test
     public void getOnApiDefaultPortWithIncorrectLogin() {
-        expected.expect(ProcessingException.class);
-        expected.expectCause(IsInstanceOf.<ConnectException> instanceOf(ConnectException.class));
 
-        deployments("fozzie", "fozzie").get();
+        final ProcessingException actualException = assertThrows(ProcessingException.class, () -> {
+            deployments("fozzie", "fozzie").get();
+        });
+        assertInstanceOf(ConnectException.class, actualException.getCause());
     }
 
     /**
@@ -119,9 +120,10 @@ public class RestApiCustomizedPrivConfigTest extends AbstractRestTestEnvironment
      */
     @Test
     public void getOnApiDefaultWithCorrectLogin() {
-        expected.expect(ProcessingException.class);
-        expected.expectCause(IsInstanceOf.<ConnectException> instanceOf(ConnectException.class));
 
-        deployments("rest-api-user", "user-api-rest-password").get();
+        final ProcessingException actualException = assertThrows(ProcessingException.class, () -> {
+            deployments("rest-api-user", "user-api-rest-password").get();
+        });
+        assertInstanceOf(ConnectException.class, actualException.getCause());
     }
 }

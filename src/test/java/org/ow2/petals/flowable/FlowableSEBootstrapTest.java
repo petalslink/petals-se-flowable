@@ -17,17 +17,20 @@
  */
 package org.ow2.petals.flowable;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CFG_FILE;
 import static org.ow2.petals.flowable.FlowableSEConstants.DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import javax.management.InvalidAttributeValueException;
-import javax.management.MalformedObjectNameException;
 import javax.xml.parsers.DocumentBuilder;
 
 import org.flowable.common.engine.impl.async.DefaultAsyncTaskExecutor;
@@ -37,18 +40,20 @@ import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.job.service.impl.asyncexecutor.AsyncExecutor;
 import org.flowable.job.service.impl.asyncexecutor.DefaultAsyncJobExecutor;
 import org.h2.Driver;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.ow2.petals.component.framework.AbstractComponent;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Component;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
+import org.ow2.petals.component.framework.junit.extensions.api.ComponentUnderTest;
+import org.ow2.petals.component.framework.junit.extensions.api.EmbeddedJmxClient;
+import org.ow2.petals.component.framework.junit.extensions.impl.ComponentUnderTestImpl;
+import org.ow2.petals.component.framework.junit.impl.ComponentConfiguration;
 import org.ow2.petals.component.framework.junit.mbean.AbstractBootstrapTest;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.flowable.identity.IdmEngineConfiguratorMock;
 import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
-import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
+import org.ow2.petals.junit.extensions.log.handler.InMemoryLogHandlerExtension;
+import org.ow2.petals.junit.extensions.log.handler.api.InMemoryLogHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -59,19 +64,11 @@ import com.ebmwebsourcing.easycommons.xml.DocumentBuilders;
  * Unit tests of {@link FlowableSEBootstrap}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
-    @ClassRule
-    public static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
-
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
-
-    public FlowableSEBootstrapTest() throws MalformedObjectNameException {
-        // Constructor requires to declare the exception thrown by 'jmxClient'
-    }
+    @InMemoryLogHandlerExtension
+    public static InMemoryLogHandler IN_MEMORY_LOG_HANDLER;
 
     /**
      * Check that the component embeds the right hard-coded default configuration (values of the component JBI
@@ -180,7 +177,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
                 FlowableSEConstants.ENGINE_REST_API_ACCESS_PRIVILEGE);
         params.add(eltEngineRestApiAccessGroup);
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
+        this.jmxClient.getJmxServer().registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
 
         this.assertDefaultConfigurationValues("", "", "", "");
@@ -314,7 +311,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEngineRestApiPort.setTextContent(" ");
         params.add(eltEngineRestApiPort);
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
+        this.jmxClient.getJmxServer().registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
 
         this.assertDefaultConfigurationValues(" ", " ", " ", " ");
@@ -432,7 +429,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEngineRestApiPort.setTextContent("invalid-value");
         params.add(eltEngineRestApiPort);
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
+        this.jmxClient.getJmxServer().registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
 
         this.assertDefaultConfigurationValues(null, null, null, null);
@@ -443,7 +440,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
      * values into the component JBI descriptor.
      */
     @Test
-    public void defaultConfiguration_ValidValues() throws Exception {
+    public void defaultConfiguration_ValidValues(final @TempDir Path tempFolder) throws Exception {
 
         // Create a minimalist JBI descriptor
         final Jbi jbiComponentConfiguration = new Jbi();
@@ -492,8 +489,9 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
 
         final Element eltJdbcUrl = doc.createElementNS(FlowableSEConstants.NAMESPACE_COMP,
                 FlowableSEConstants.DBServer.JDBC_URL);
-        final String jdbcUrl = this.tempFolder.newFile(FlowableSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME)
-                .getAbsolutePath();
+        final String jdbcUrl = Files
+                .createFile(tempFolder.resolve(FlowableSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME))
+                .toFile().getAbsolutePath();
         eltJdbcUrl.setTextContent(jdbcUrl);
         params.add(eltJdbcUrl);
 
@@ -633,7 +631,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
         eltEngineRestApiAccessGroup.setTextContent(engineRestApiAccessGroup);
         params.add(eltEngineRestApiAccessGroup);
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(
+        this.jmxClient.getJmxServer().registerConfigurationInstallerMBean(
                 this.initBootstrap(new FlowableSEBootstrap(), jbiComponentConfiguration));
 
         assertEquals(FlowableSEConstants.DBServer.DEFAULT_JDBC_DRIVER,
@@ -703,7 +701,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     @Test
     public void defaultConfiguration_definedInJbiDescriptor() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         this.assertDefaultConfigurationValues("", "sa", "", "");
     }
@@ -778,12 +777,15 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     /**
      * Check to set an invalid URL as JDBC URL
      */
-    @Test(expected = InvalidAttributeValueException.class)
+    @Test
     public void setJdbcUrl_InvalidURL() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_URL, "// invalid-url/foo:http+ftp");
+        assertThrows(InvalidAttributeValueException.class, () -> {
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_URL, "// invalid-url/foo:http+ftp");
+        });
     }
 
     /**
@@ -792,7 +794,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     @Test
     public void setJdbcUrl_ValidURL() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         // A simple URL
         final String expectedSimpleUrl = "http://path";
@@ -814,7 +817,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     @Test
     public void setJdbcUrl_SpaceURL() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_URL, null);
         assertEquals("", this.jmxClient.getBootstrapAttributeAsString(FlowableSEBootstrap.ATTR_NAME_JDBC_URL));
@@ -829,12 +833,15 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     /**
      * Check to set an unknown class as JDBC driver
      */
-    @Test(expected = InvalidAttributeValueException.class)
+    @Test
     public void setJdbcDriver_Unknown() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_DRIVER, "unknown.class");
+        assertThrows(InvalidAttributeValueException.class, () -> {
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_DRIVER, "unknown.class");
+        });
     }
 
     /**
@@ -843,7 +850,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     @Test
     public void setJdbcDriver_ValidDriver() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         final String expectedDriver = Driver.class.getName();
         this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_DRIVER, expectedDriver);
@@ -866,7 +874,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     @Test
     public void setJdbcDriver_SpaceValue() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_DRIVER, null);
         assertEquals(FlowableSEConstants.DBServer.DEFAULT_JDBC_DRIVER,
@@ -896,7 +905,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     @Test
     public void setEngineIdentityServiceClassName_SpaceValue() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, null);
         assertEquals(DEFAULT_IDM_ENGINE_CONFIGURATOR_CLASS_NAME, this.jmxClient
@@ -914,25 +924,31 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     /**
      * Check to set a not loadable class as identity service class name
      */
-    @Test(expected = InvalidAttributeValueException.class)
+    @Test
     public void setEngineIdentityServiceCfgFile_ClassNotLoadable() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
-                "not-loadable-class");
+        assertThrows(InvalidAttributeValueException.class, () -> {
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
+                    "not-loadable-class");
+        });
     }
 
     /**
      * Check to set a class not implementing {@link IdentityService} as identity service class name
      */
-    @Test(expected = InvalidAttributeValueException.class)
+    @Test
     public void setEngineIdentityServiceCfgFile_ClassNotImplementingIdentityService() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
-                String.class.getName());
+        assertThrows(InvalidAttributeValueException.class, () -> {
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CLASS_NAME,
+                    String.class.getName());
+        });
     }
 
     /**
@@ -941,7 +957,8 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     @Test
     public void setEngineIdentityServiceCfgFile_SpaceValue() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE, null);
         assertEquals(null, this.jmxClient
@@ -959,44 +976,51 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
     /**
      * Check to set an inexisting absolute file as identity service configuration file
      */
-    @Test(expected = InvalidAttributeValueException.class)
-    public void setEngineIdentityServiceCfgFile_InexistingFile() throws Exception {
+    @Test
+    public void setEngineIdentityServiceCfgFile_InexistingFile(final @TempDir File tempFolder) throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
         // Set an unexisting absolute file
-        final File absFile = this.tempFolder.newFile();
-        assertTrue(absFile.delete()); // We must remove the file previously created
+        final File absFile = new File(tempFolder, "unexisting-file");
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE,
-                absFile.getAbsolutePath());
+        assertThrows(InvalidAttributeValueException.class, () -> {
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_IDM_ENGINE_CONFIGURATOR_CFG_FILE,
+                    absFile.getAbsolutePath());
+        });
     }
 
     /**
      * Check to set an invalid tcp port for the REST API (max is 65535)
      */
-    @Test(expected = InvalidAttributeValueException.class)
+    @Test
     public void setEngineRestApiPort_InvalidPort() throws Exception {
 
-        this.embeddedJmxSrvCon.registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
+        this.jmxClient.getJmxServer()
+                .registerConfigurationInstallerMBean(this.initBootstrap(new FlowableSEBootstrap()));
 
-        this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_PORT, 66666);
+        assertThrows(InvalidAttributeValueException.class, () -> {
+            this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_ENGINE_REST_API_PORT, 66666);
+        });
     }
 
     /**
      * Check that valid values set through the component bootstrap through JMX are correctly used by component.
      */
     @Test
-    public void setValuesAreUsed() throws Throwable {
+    public void setValuesAreUsed(final @TempDir Path tempFolder) throws Throwable {
         // To access the component bootstrap through JMX, the component has not to be installed, only loaded
-        final ComponentUnderTest componentUnderTest = new ComponentUnderTest(false, false)
-                .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler()).addEmbeddedJmxSrv(this.embeddedJmxSrvCon);
-        componentUnderTest.create();
+        final ComponentUnderTest componentUnderTest = new ComponentUnderTestImpl(
+                new ComponentConfiguration(EmbeddedJmxClient.COMPONENT_ID), false, false, false, IN_MEMORY_LOG_HANDLER)
+                        .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
+                        .addEmbeddedJmxSrv(this.jmxClient.getJmxServer());
+        componentUnderTest.initComponentUnderTest();
 
         try {
             final AbstractComponent component = componentUnderTest.getComponentObject();
             assertNotNull(component);
-            assertTrue(component instanceof FlowableSE);
+            assertInstanceOf(FlowableSE.class, component);
             final FlowableSE flowableComponent = (FlowableSE) component;
 
             // Set values using the component bootstrap through JMX
@@ -1012,7 +1036,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_USERNAME, jdbcUsername);
             final String jdbcPassword = "my-user-pwd";
             this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_PASSWORD, jdbcPassword);
-            final File databaseFile = this.tempFolder.newFile("my-database.db");
+            final File databaseFile = Files.createFile(tempFolder.resolve("my-database.db")).toFile();
             final String jdbcUrl = String.format("jdbc:h2:%s", databaseFile.toURI().toURL().toExternalForm());
             this.jmxClient.setBootstrapAttribute(FlowableSEBootstrap.ATTR_NAME_JDBC_URL, jdbcUrl);
             final int jdbcMaxActiveConnections = 12;
@@ -1091,7 +1115,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             final ProcessEngineConfiguration pec = processEngine.getProcessEngineConfiguration();
             assertNotNull(pec);
             final AsyncExecutor asyncExecutor = pec.getAsyncExecutor();
-            assertTrue(asyncExecutor instanceof DefaultAsyncJobExecutor);
+            assertInstanceOf(DefaultAsyncJobExecutor.class, asyncExecutor);
             final DefaultAsyncJobExecutor defaultAsyncExecutor = (DefaultAsyncJobExecutor) asyncExecutor;
 
             assertEquals(databaseType, pec.getDatabaseType());
@@ -1111,7 +1135,7 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             // (https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.22.2)
             assertTrue(jobExecutorEnableJobExecutor != (pec.getAsyncExecutor() == null));
 
-            assertTrue(defaultAsyncExecutor.getTaskExecutor() instanceof DefaultAsyncTaskExecutor);
+            assertInstanceOf(DefaultAsyncTaskExecutor.class, defaultAsyncExecutor.getTaskExecutor());
             final DefaultAsyncTaskExecutor defaultAsyncTaskExecutor = (DefaultAsyncTaskExecutor) defaultAsyncExecutor
                     .getTaskExecutor();
             assertEquals(jobExecutorCorePoolSize, defaultAsyncTaskExecutor.getCorePoolSize());
@@ -1128,15 +1152,13 @@ public class FlowableSEBootstrapTest extends AbstractBootstrapTest {
             assertEquals(jobExecutorTimerLockTime, defaultAsyncExecutor.getTimerLockTimeInMillis());
             assertEquals(jobExecutorAsyncJobLockTime, defaultAsyncExecutor.getAsyncJobLockTimeInMillis());
 
-            assertEquals(engineEnableBpmnValidation,
-                    ReflectionHelper.getFieldValue(FlowableSuManager.class,
-                            (FlowableSuManager) flowableComponent.getServiceUnitManager(),
-                            "enableFlowableBpmnValidation"));
+            assertEquals(engineEnableBpmnValidation, ReflectionHelper.getFieldValue(FlowableSuManager.class,
+                    (FlowableSuManager) flowableComponent.getServiceUnitManager(), "enableFlowableBpmnValidation"));
             assertEquals(defaultFailedJobWaitTime, pec.getDefaultFailedJobWaitTime());
             assertEquals(asyncFailedJobWaitTime, pec.getAsyncFailedJobWaitTime());
 
         } finally {
-            componentUnderTest.delete();
+            componentUnderTest.close();
         }
     }
 }

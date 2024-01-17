@@ -17,6 +17,8 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +26,7 @@ import javax.jbi.messaging.ExchangeStatus;
 
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.component.framework.junit.StatusMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
@@ -35,7 +37,6 @@ import org.ow2.petals.se_flowable.unit_test.intermediate_message_catch_event_loo
  * with call a BPMN element 'intermediate message catch event' used in a loop
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class IntermediateMessageCatchEventLoopProcessTest
         extends IntermediateMessageCatchEventLoopProcessTestEnvironment {
@@ -52,11 +53,11 @@ public class IntermediateMessageCatchEventLoopProcessTest
     @Test
     public void execute() throws Exception {
 
-        final ProcessDefinition deployment = this.flowableClient.getRepositoryService().createProcessDefinitionQuery()
+        final ProcessDefinition deployment = FLOWABLE_CLIENT.getRepositoryService().createProcessDefinitionQuery()
                 .processDefinitionKey(BPMN_PROCESS_DEFINITION_KEY).singleResult();
         final Map<String, Object> variables = new HashMap<>();
         variables.put("ctrl", "no-error");
-        final ProcessInstance procInst = this.flowableClient.getRuntimeService()
+        final ProcessInstance procInst = FLOWABLE_CLIENT.getRuntimeService()
                 .startProcessInstanceById(deployment.getId(), variables);
         this.waitIntermediateCatchMessageEvent(procInst.getId(), MESSAGE_EVENT_NAME);
 
@@ -113,11 +114,11 @@ public class IntermediateMessageCatchEventLoopProcessTest
     @Test
     public void error() throws Exception {
 
-        final ProcessDefinition deployment = this.flowableClient.getRepositoryService().createProcessDefinitionQuery()
+        final ProcessDefinition deployment = FLOWABLE_CLIENT.getRepositoryService().createProcessDefinitionQuery()
                 .processDefinitionKey(BPMN_PROCESS_DEFINITION_KEY).singleResult();
         final Map<String, Object> variables = new HashMap<>();
         variables.put("ctrl", "error");
-        final ProcessInstance procInst = this.flowableClient.getRuntimeService()
+        final ProcessInstance procInst = FLOWABLE_CLIENT.getRuntimeService()
                 .startProcessInstanceById(deployment.getId(), variables);
         this.waitIntermediateCatchMessageEvent(procInst.getId(), MESSAGE_EVENT_NAME);
 
@@ -162,8 +163,8 @@ public class IntermediateMessageCatchEventLoopProcessTest
         this.waitProcessInstanceAsDeadLetterJob(procInst.getId());
         this.assertProcessInstancePending(procInst.getId(), BPMN_PROCESS_DEFINITION_KEY);
         // No subscription on event
-        assertEquals(0, this.flowableClient.getRuntimeService().createExecutionQuery()
-                .processInstanceId(procInst.getId()).messageEventSubscriptionName(MESSAGE_EVENT_NAME).list().size());
+        assertEquals(0, FLOWABLE_CLIENT.getRuntimeService().createExecutionQuery().processInstanceId(procInst.getId())
+                .messageEventSubscriptionName(MESSAGE_EVENT_NAME).list().size());
 
     }
 }

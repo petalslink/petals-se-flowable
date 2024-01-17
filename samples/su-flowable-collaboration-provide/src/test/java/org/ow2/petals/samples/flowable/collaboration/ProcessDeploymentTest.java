@@ -17,93 +17,90 @@
  */
 package org.ow2.petals.samples.flowable.collaboration;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.ow2.petals.flowable.utils.test.Await.waitEndOfProcessInstance;
 
-import java.io.File;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.LogManager;
 
 import javax.xml.namespace.QName;
 
+import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.Deployment;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.ow2.petals.flowable.junit.PetalsFlowableRule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.ow2.petals.flowable.junit.extensions.PetalsFlowableTest;
 import org.ow2.petals.samples.flowable.collaboration.mock.CollaborationSvcMock;
 
 import jakarta.xml.ws.Endpoint;
 
+@PetalsFlowableTest
 public class ProcessDeploymentTest {
-
-    @Rule
-    public final PetalsFlowableRule flowableRule = new PetalsFlowableRule();
 
     // -------------------------
     // Prepare service mocks
     // -------------------------
-    private final CollaborationSvcMock collaborationSvcMock = new CollaborationSvcMock(this.flowableRule);
+    private CollaborationSvcMock collaborationSvcMock;
 
     private Endpoint collaborationSvcEdp;
-    
-    @BeforeClass
-    public static void initLog() throws URISyntaxException {
-        final URL logCfg = Thread.currentThread().getContextClassLoader().getResource("logging.properties");
-        assertNotNull("Log conf file not found", logCfg);
-        System.setProperty("java.util.logging.config.file", new File(logCfg.toURI()).getAbsolutePath());
+
+    static {
+        final URL logConfig = ProcessDeploymentTest.class.getResource("/logging.properties");
+        assertNotNull(logConfig, "Logging configuration file not found");
+
+        try {
+            LogManager.getLogManager().readConfiguration(logConfig.openStream());
+        } catch (final SecurityException | IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
-    @Before
-    public void setupEndpoints() throws Exception {
+    @BeforeEach
+    public void setupEndpoints(final ProcessEngine processEngine) throws Exception {
         final ConcurrentMap<QName, URL> endpoints = new ConcurrentHashMap<>();
 
         final String urlCollaboration = "http://localhost:12345/collaboration";
+        this.collaborationSvcMock = new CollaborationSvcMock(processEngine);
         this.collaborationSvcEdp = Endpoint.publish(urlCollaboration, this.collaborationSvcMock);
         endpoints.put(
                 new QName("http://petals.ow2.org/samples/se-flowable/collaboration/services", "autogenerate"),
                 new URL(urlCollaboration));
 
-        ((ProcessEngineConfigurationImpl) this.flowableRule.getProcessEngine().getProcessEngineConfiguration())
+        ((ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration())
                 .setWsOverridenEndpointAddresses(endpoints);
     }
 
-    @After
+    @AfterEach
     public void destroy() {
         this.collaborationSvcEdp.stop();
-    }
-
-    @AfterClass
-    public static void cleanLog() {
-        System.clearProperty("java.util.logging.config.file");
     }
     
     @Test
     @Deployment(resources = { "jbi/collaboration.bpmn" })
-    public void nominal() throws InterruptedException {
+    public void nominal(final ProcessEngine processEngine) throws InterruptedException {
 
         // Assertion about the deployment of processes
-        assertNotNull(this.flowableRule.getRepositoryService().createProcessDefinitionQuery()
+        assertNotNull(processEngine.getRepositoryService().createProcessDefinitionQuery()
                 .processDefinitionKey("masterProcess").singleResult());
-        assertNotNull(this.flowableRule.getRepositoryService().createProcessDefinitionQuery()
+        assertNotNull(processEngine.getRepositoryService().createProcessDefinitionQuery()
                 .processDefinitionKey("childProcess").singleResult());
 
-        final ProcessInstance masterProcessInst = this.flowableRule.getRuntimeService()
+        final ProcessInstance masterProcessInst = processEngine.getRuntimeService()
                 .startProcessInstanceByKey("masterProcess");
         assertNotNull(masterProcessInst);
 
-        this.flowableRule.waitEndOfProcessInstance(masterProcessInst.getProcessInstanceId());
+        waitEndOfProcessInstance(masterProcessInst.getProcessInstanceId(), processEngine.getHistoryService());
         
-        final HistoricProcessInstance masterProcHistInst = this.flowableRule.getHistoryService()
+        final HistoricProcessInstance masterProcHistInst = processEngine.getHistoryService()
                 .createHistoricProcessInstanceQuery().processInstanceId(masterProcessInst.getId())
                 .includeProcessVariables().singleResult();
         assertNotNull(masterProcHistInst);

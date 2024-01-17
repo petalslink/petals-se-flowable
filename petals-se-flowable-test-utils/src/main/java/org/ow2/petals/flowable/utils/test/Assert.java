@@ -17,6 +17,10 @@
  */
 package org.ow2.petals.flowable.utils.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.flowable.engine.HistoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
@@ -37,7 +41,7 @@ import org.flowable.task.api.history.HistoricTaskInstanceQuery;
  * @author Christophe DENEUX - Linagora
  *
  */
-public class Assert extends org.junit.Assert {
+public class Assert {
 
     /**
      * Assertion to check that a process instance is running. The process instance is not finished.
@@ -174,9 +178,8 @@ public class Assert extends org.junit.Assert {
         final ExecutionQuery query = runtimeService.createExecutionQuery().processInstanceId(processInstanceId)
                 .messageEventSubscriptionName(messageEventName);
         final Execution execution = query.singleResult();
-        assertNotNull("No pending intermediate catch message event found.", execution);
+        assertNotNull(execution, "No pending intermediate catch message event found.");
 
         return execution;
     }
-
 }

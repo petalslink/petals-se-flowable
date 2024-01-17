@@ -17,9 +17,9 @@
  */
 package org.ow2.petals.flowable.incoming.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.GregorianCalendar;
 
@@ -27,14 +27,13 @@ import javax.jbi.messaging.MessagingException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.components.flowable.generic._1.Variable;
 
 /**
  * Unit test of utility class {@link Utils}
  * 
  * @author Christophe DENEUX - Linagora
- *
  */
 public class UtilsTest {
 
@@ -51,66 +50,69 @@ public class UtilsTest {
         variable.setName("my-variable");
 
         // Variable as 'string' or default
-        variable.setValue(STRING_VAR_VALUE);
+        {
+            variable.setValue(STRING_VAR_VALUE);
 
-        variable.setAs(null);
-        assertEquals(STRING_VAR_VALUE, Utils.parseVariableValue(variable));
+            variable.setAs(null);
+            assertEquals(STRING_VAR_VALUE, Utils.parseVariableValue(variable));
 
-        variable.setAs("string");
-        assertEquals(STRING_VAR_VALUE, Utils.parseVariableValue(variable));
+            variable.setAs("string");
+            assertEquals(STRING_VAR_VALUE, Utils.parseVariableValue(variable));
+        }
 
         // Variable as 'long'
-        variable.setAs("long");
+        {
+            variable.setAs("long");
 
-        variable.setValue(LONG_VAR_VALUE);
-        assertEquals(Long.parseLong(LONG_VAR_VALUE), Utils.parseVariableValue(variable));
+            variable.setValue(LONG_VAR_VALUE);
+            assertEquals(Long.parseLong(LONG_VAR_VALUE), Utils.parseVariableValue(variable));
 
-        variable.setValue("invalid-value");
-        try {
-            Utils.parseVariableValue(variable);
-            fail("MessagingException not thrown because of invalid long value !!");
-        } catch (final MessagingException e) {
-            assertTrue(e.getCause() instanceof NumberFormatException);
+            variable.setValue("invalid-value");
+            final Exception actualException = assertThrows(MessagingException.class, () -> {
+                Utils.parseVariableValue(variable);
+            }, "MessagingException not thrown because of invalid long value !!");
+            assertInstanceOf(NumberFormatException.class, actualException.getCause());
         }
 
         // Variable as 'double'
-        variable.setAs("double");
+        {
+            variable.setAs("double");
 
-        variable.setValue(DOUBLE_VAR_VALUE);
-        assertEquals(Double.parseDouble(DOUBLE_VAR_VALUE), Utils.parseVariableValue(variable));
+            variable.setValue(DOUBLE_VAR_VALUE);
+            assertEquals(Double.parseDouble(DOUBLE_VAR_VALUE), Utils.parseVariableValue(variable));
 
-        variable.setValue("invalid-value");
-        try {
-            Utils.parseVariableValue(variable);
-            fail("MessagingException not thrown because of invalid long value !!");
-        } catch (final MessagingException e) {
-            assertTrue(e.getCause() instanceof NumberFormatException);
+            variable.setValue("invalid-value");
+            final Exception actualException = assertThrows(MessagingException.class, () -> {
+                Utils.parseVariableValue(variable);
+            }, "MessagingException not thrown because of invalid long value !!");
+            assertInstanceOf(NumberFormatException.class, actualException.getCause());
         }
 
         // Variable as 'boolean'
-        variable.setAs("boolean");
+        {
+            variable.setAs("boolean");
 
-        variable.setValue(Boolean.TRUE.toString());
-        assertEquals(Boolean.TRUE, Utils.parseVariableValue(variable));
+            variable.setValue(Boolean.TRUE.toString());
+            assertEquals(Boolean.TRUE, Utils.parseVariableValue(variable));
 
-        variable.setValue(Boolean.FALSE.toString());
-        assertEquals(Boolean.FALSE, Utils.parseVariableValue(variable));
-
-        // Variable as 'date'
-        variable.setAs("date");
-        final GregorianCalendar calendar = new GregorianCalendar();
-        variable.setValue(DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar).toXMLFormat());
-        assertEquals(calendar.getTime(), Utils.parseVariableValue(variable));
-
-        // Unknown type
-        variable.setAs("unknown-type");
-        try {
-            Utils.parseVariableValue(variable);
-            fail("MessagingException not thrown because of unknown type !!");
-        } catch (final MessagingException e) {
-            // NOP: Expected exception
+            variable.setValue(Boolean.FALSE.toString());
+            assertEquals(Boolean.FALSE, Utils.parseVariableValue(variable));
         }
 
-    }
+        // Variable as 'date'
+        {
+            variable.setAs("date");
+            final GregorianCalendar calendar = new GregorianCalendar();
+            variable.setValue(DatatypeFactory.newInstance().newXMLGregorianCalendar(calendar).toXMLFormat());
+            assertEquals(calendar.getTime(), Utils.parseVariableValue(variable));
+        }
 
+        // Unknown type
+        {
+            variable.setAs("unknown-type");
+            assertThrows(MessagingException.class, () -> {
+                Utils.parseVariableValue(variable);
+            }, "MessagingException not thrown because of unknown type !!");
+        }
+    }
 }

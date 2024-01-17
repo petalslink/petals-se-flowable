@@ -17,6 +17,12 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderEndLog;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_EXECUTIONS_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETEXECUTIONS;
@@ -31,7 +37,7 @@ import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.Level;
@@ -55,7 +61,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * with call a BPMN element 'intermediate message catch event'
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class IntermediateMessageCatchEventProcessTest extends IntermediateMessageCatchEventProcessTestEnvironment {
 
@@ -104,15 +109,14 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             // Send the 1st valid request for start event 'request
             final RequestToProviderMessage request_1 = new RequestToProviderMessage(COMPONENT_UNDER_TEST,
                     INTERMEDIATE_MESSAGE_CATCH_EVENT_SU, OPERATION_START,
-                    AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
-                    toByteArray(start));
+                    AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(start));
             COMPONENT_UNDER_TEST.pushRequestToProvider(request_1);
             final ResponseMessage response_1 = COMPONENT_UNDER_TEST.pollResponseFromProvider();
             final Source fault = response_1.getFault();
-            assertNull("Unexpected fault", (fault == null ? null : SourceHelper.toString(fault)));
-            assertNotNull("No XML payload in response", response_1.getPayload());
+            assertNull(fault == null ? null : SourceHelper.toString(fault), "Unexpected fault");
+            assertNotNull(response_1.getPayload(), "No XML payload in response");
             final Object responseObj = UNMARSHALLER.unmarshal(response_1.getPayload());
-            assertTrue(responseObj instanceof StartResponse);
+            assertInstanceOf(StartResponse.class, responseObj);
             final StartResponse response = (StartResponse) responseObj;
             assertNotNull(response.getCaseFileNumber());
             processInstanceId.append(response.getCaseFileNumber());
@@ -137,7 +141,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             COMPONENT_UNDER_TEST.pushRequestToProvider(request);
             final StatusMessage response = COMPONENT_UNDER_TEST.pollStatusFromProvider();
             assertEquals(ExchangeStatus.ERROR, response.getStatus());
-            assertTrue(response.getError() instanceof UnexpectedMessageEventException);
+            assertInstanceOf(UnexpectedMessageEventException.class, response.getError());
         }
         {
             final Unlock unlockRequest = new Unlock();
@@ -150,9 +154,9 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             final ResponseMessage response = COMPONENT_UNDER_TEST.pollResponseFromProvider();
             assertEquals(ExchangeStatus.ACTIVE, response.getStatus());
             final Source fault = response.getFault();
-            assertNotNull("No fault returns", fault);
+            assertNotNull(fault, "No fault returns");
             final Object responseObj = UNMARSHALLER.unmarshal(fault);
-            assertTrue(responseObj instanceof NotLocked);
+            assertInstanceOf(NotLocked.class, responseObj);
             final NotLocked responseBean = (NotLocked) responseObj;
             assertEquals(processInstanceId.toString(), responseBean.getInstanceId());
             assertEquals(MESSAGE_EVENT_NAME, responseBean.getEventName());
@@ -162,8 +166,8 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         this.waitUserTaskAssignment(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
 
         // Complete the user task
-        IN_MEMORY_LOG_HANDLER.clear();
-        this.flowableClient.completeUserTask(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
+        FLOWABLE_CLIENT.completeUserTask(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
         this.assertUserTaskEnded(processInstanceId.toString(), USER_TASK_1, BPMN_USER);
         this.waitIntermediateCatchMessageEvent(processInstanceId.toString(), MESSAGE_EVENT_NAME);
 
@@ -179,9 +183,9 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
                     NATIVE_EXECUTIONS_SVC_CFG, ITG_OP_GETEXECUTIONS, AbsItfOperation.MEPPatternConstants.IN_OUT.value(),
                     toByteArray(getExecutionsReq));
             final ResponseMessage getExecutionsRespMsg = COMPONENT.sendAndGetResponse(request);
-            assertNotNull("No XML payload in response", getExecutionsRespMsg.getPayload());
+            assertNotNull(getExecutionsRespMsg.getPayload(), "No XML payload in response");
             final Object getExecutionsRespObj = UNMARSHALLER.unmarshal(getExecutionsRespMsg.getPayload());
-            assertTrue(getExecutionsRespObj instanceof GetExecutionsResponse);
+            assertInstanceOf(GetExecutionsResponse.class, getExecutionsRespObj);
             final GetExecutionsResponse getExecutionsResp = (GetExecutionsResponse) getExecutionsRespObj;
             assertNotNull(getExecutionsResp.getExecutions());
             assertNotNull(getExecutionsResp.getExecutions().getExecution());
@@ -211,7 +215,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         this.waitUserTaskAssignment(processInstanceId.toString(), USER_TASK_2, BPMN_USER);
 
         // Assert that complementary variables are correctly set
-        final ProcessInstance procInst = this.flowableClient.getRuntimeService().createProcessInstanceQuery()
+        final ProcessInstance procInst = FLOWABLE_CLIENT.getRuntimeService().createProcessInstanceQuery()
                 .processInstanceId(processInstanceId.toString()).includeProcessVariables().singleResult();
         assertNotNull(procInst);
         assertEquals(VARIABLE_1_VALUE, procInst.getProcessVariables().get("variable-1"));
@@ -220,7 +224,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         // Check MONIT traces. Caution:
         // - as the user task is completed by the Flowable client, no MONIT trace is generated
         // - the last trace is associated to the next user task
-        final List<LogRecord> monitLogs_1 = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs_1 = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(7, monitLogs_1.size());
         final FlowLogData intermediateCatchMessageEventBeginFlowLogData = assertMonitProviderBeginLog(null, null, null,
                 null, monitLogs_1.get(0));
@@ -236,8 +240,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
         assertMonitProviderEndLog(getExecutionsRequestFlowLogData, monitLogs_1.get(2));
         final FlowLogData unlockRequestFlowLogData = assertMonitProviderBeginLog(
                 INTERMEDIATE_MESSAGE_CATCH_EVENT_INTERFACE, INTERMEDIATE_MESSAGE_CATCH_EVENT_SERVICE,
-                INTERMEDIATE_MESSAGE_CATCH_EVENT_ENDPOINT, OPERATION_UNLOCK,
-                monitLogs_1.get(3));
+                INTERMEDIATE_MESSAGE_CATCH_EVENT_ENDPOINT, OPERATION_UNLOCK, monitLogs_1.get(3));
         assertMonitProviderEndLog(unlockRequestFlowLogData, monitLogs_1.get(4));
         assertMonitProviderEndLog(intermediateCatchMessageEventBeginFlowLogData, unlockRequestFlowLogData,
                 monitLogs_1.get(5));
@@ -257,7 +260,7 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             COMPONENT_UNDER_TEST.pushRequestToProvider(request);
             final StatusMessage response = COMPONENT_UNDER_TEST.pollStatusFromProvider();
             assertEquals(ExchangeStatus.ERROR, response.getStatus());
-            assertTrue(response.getError() instanceof UnexpectedMessageEventException);
+            assertInstanceOf(UnexpectedMessageEventException.class, response.getError());
         }
         {
             final Unlock unlockRequest = new Unlock();
@@ -270,16 +273,16 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
             final ResponseMessage response = COMPONENT_UNDER_TEST.pollResponseFromProvider();
             assertEquals(ExchangeStatus.ACTIVE, response.getStatus());
             final Source fault = response.getFault();
-            assertNotNull("No fault returns", fault);
+            assertNotNull(fault, "No fault returns");
             final Object responseObj = UNMARSHALLER.unmarshal(fault);
-            assertTrue(responseObj instanceof NotLocked);
+            assertInstanceOf(NotLocked.class, responseObj);
             final NotLocked responseBean = (NotLocked) responseObj;
             assertEquals(processInstanceId.toString(), responseBean.getInstanceId());
             assertEquals(MESSAGE_EVENT_NAME, responseBean.getEventName());
         }
 
         // Complete the 2nd user task
-        this.flowableClient.completeUserTask(processInstanceId.toString(), USER_TASK_2, BPMN_USER);
+        FLOWABLE_CLIENT.completeUserTask(processInstanceId.toString(), USER_TASK_2, BPMN_USER);
         this.assertUserTaskEnded(processInstanceId.toString(), USER_TASK_2, BPMN_USER);
 
         // Wait the end of the process instance
@@ -292,29 +295,27 @@ public class IntermediateMessageCatchEventProcessTest extends IntermediateMessag
 
     private void createCompletedProcessInstance() throws InterruptedException {
 
-        final ProcessDefinition deployment = this.flowableClient.getRepositoryService().createProcessDefinitionQuery()
+        final ProcessDefinition deployment = FLOWABLE_CLIENT.getRepositoryService().createProcessDefinitionQuery()
                 .processDefinitionKey("intermediate-message-catch-event").singleResult();
-        final ProcessInstance procInst = this.flowableClient.getRuntimeService()
+        final ProcessInstance procInst = FLOWABLE_CLIENT.getRuntimeService()
                 .startProcessInstanceById(deployment.getId());
-        Task task = this.flowableClient.getTaskService().createTaskQuery().processInstanceId(procInst.getId())
+        Task task = FLOWABLE_CLIENT.getTaskService().createTaskQuery().processInstanceId(procInst.getId())
                 .singleResult();
-        this.flowableClient.getTaskService().complete(task.getId());
+        FLOWABLE_CLIENT.getTaskService().complete(task.getId());
 
-        Await.waitIntermediateCatchMessageEvent(procInst.getId(), "myMessageName",
-                this.flowableClient.getRuntimeService());
-        final Execution execution = this.flowableClient.getRuntimeService().createExecutionQuery()
+        Await.waitIntermediateCatchMessageEvent(procInst.getId(), "myMessageName", FLOWABLE_CLIENT.getRuntimeService());
+        final Execution execution = FLOWABLE_CLIENT.getRuntimeService().createExecutionQuery()
                 .processInstanceId(procInst.getId()).activityId("messageIntermediateCatchEventId")
                 .messageEventSubscriptionName("myMessageName").singleResult();
-        this.flowableClient.getRuntimeService().messageEventReceived("myMessageName", execution.getId());
+        FLOWABLE_CLIENT.getRuntimeService().messageEventReceived("myMessageName", execution.getId());
 
-        task = this.flowableClient.getTaskService().createTaskQuery().processInstanceId(procInst.getId())
-                .singleResult();
-        this.flowableClient.getTaskService().complete(task.getId());
+        task = FLOWABLE_CLIENT.getTaskService().createTaskQuery().processInstanceId(procInst.getId()).singleResult();
+        FLOWABLE_CLIENT.getTaskService().complete(task.getId());
 
-        assertEquals(1, this.flowableClient.getHistoryService().createHistoricProcessInstanceQuery()
+        assertEquals(1, FLOWABLE_CLIENT.getHistoryService().createHistoricProcessInstanceQuery()
                 .processInstanceId(procInst.getId()).finished().count());
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
 
     }
 }

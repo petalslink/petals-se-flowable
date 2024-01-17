@@ -17,6 +17,13 @@
  */
 package org.ow2.petals.flowable.incoming.operation.annotated;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,8 +42,8 @@ import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.common.engine.api.io.InputStreamProvider;
 import org.flowable.common.engine.impl.util.io.InputStreamSource;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.flowable.AbstractTest;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedFaultMappingException;
 import org.ow2.petals.flowable.incoming.operation.annotated.exception.DuplicatedOutputMappingException;
@@ -125,10 +132,10 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
 
     private static String SU_ROOT_PATH;
 
-    @BeforeClass
+    @BeforeAll
     public static void setSuRootPath() throws URISyntaxException {
         final URL urlValidXsl = AnnotatedWsdlParserTest.class.getResource("/parser/xsl/valid.xsl");
-        assertNotNull("Valid xsl resource not found", urlValidXsl);
+        assertNotNull(urlValidXsl, "Valid xsl resource not found");
         final File validXsl = new File(urlValidXsl.toURI());
         SU_ROOT_PATH = validXsl.getParentFile().getAbsolutePath();
     }
@@ -142,7 +149,7 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
      */
     private Document readWsdlDocument(final String resourceName) throws SAXException, IOException {
         final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-        assertNotNull("WSDL not found", is);
+        assertNotNull(is, "WSDL not found");
         final DocumentBuilder docBuilder = DocumentBuilders.takeDocumentBuilder();
         try {
             return docBuilder.parse(is);
@@ -160,7 +167,7 @@ public class AnnotatedWsdlParserTest extends AbstractTest {
      */
     private BpmnModel readBpmnModel(final String resourceName) throws SAXException, IOException {
         final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-        assertNotNull("Process definition file not found", is);
+        assertNotNull(is, "Process definition file not found");
         try {
             final InputStreamProvider bpmnInputStreamSource = new InputStreamSource(is);
             return new BpmnXMLConverter().convertToBpmnModel(bpmnInputStreamSource, false, false);

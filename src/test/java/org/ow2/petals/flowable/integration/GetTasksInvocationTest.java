@@ -17,6 +17,12 @@
  */
 package org.ow2.petals.flowable.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETTASKS;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
@@ -28,7 +34,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.transform.Source;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
@@ -46,7 +52,6 @@ import com.ebmwebsourcing.easycommons.xml.SourceHelper;
  * Unit tests about request processing of the service {@link GetTasksOperation}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokations {
 
@@ -140,7 +145,7 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
         final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
                 ITG_OP_GETTASKS, new GetTasks());
 
-        assertTrue(getTasksRespObj instanceof GetTasksResponse);
+        assertInstanceOf(GetTasksResponse.class, getTasksRespObj);
         final GetTasksResponse getTasksResp = (GetTasksResponse) getTasksRespObj;
         assertNotNull(getTasksResp.getTasks());
         assertNotNull(getTasksResp.getTasks().getTask());
@@ -191,10 +196,10 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
 
         // Check the reply
         final Source fault_1 = responseMsg_1.getFault();
-        assertNull("Unexpected fault", (fault_1 == null ? null : SourceHelper.toString(fault_1)));
-        assertNotNull("No XML payload in response", responseMsg_1.getPayload());
+        assertNull(fault_1 == null ? null : SourceHelper.toString(fault_1), "Unexpected fault");
+        assertNotNull(responseMsg_1.getPayload(), "No XML payload in response");
         final Object responseObj_1 = UNMARSHALLER.unmarshal(responseMsg_1.getPayload());
-        assertTrue(responseObj_1 instanceof Numero);
+        assertInstanceOf(Numero.class, responseObj_1);
         final Numero response_1 = (Numero) responseObj_1;
         assertNotNull(response_1.getNumeroDde());
 
@@ -210,7 +215,7 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
             final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
                     ITG_OP_GETTASKS, getTasks);
 
-            assertTrue(getTasksRespObj instanceof GetTasksResponse);
+            assertInstanceOf(GetTasksResponse.class, getTasksRespObj);
             final GetTasksResponse getTasksResp = (GetTasksResponse) getTasksRespObj;
             assertNotNull(getTasksResp.getTasks());
             assertNotNull(getTasksResp.getTasks().getTask());
@@ -237,7 +242,7 @@ public class GetTasksInvocationTest extends AbstractIntegrationServiceInvokation
             final Object getTasksRespObj = this.testRequest(NATIVE_TASKS_SVC_CFG, ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE,
                     ITG_OP_GETTASKS, getTasks);
 
-            assertTrue(getTasksRespObj instanceof GetTasksResponse);
+            assertInstanceOf(GetTasksResponse.class, getTasksRespObj);
             final GetTasksResponse getTasksResp = (GetTasksResponse) getTasksRespObj;
             assertNotNull(getTasksResp.getTasks());
             assertNotNull(getTasksResp.getTasks().getTask());

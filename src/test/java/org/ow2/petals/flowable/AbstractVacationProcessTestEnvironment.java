@@ -17,39 +17,31 @@
  */
 package org.ow2.petals.flowable;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.io.File;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
+import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.components.flowable.generic._1.ObjectFactory;
-import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.Archiver;
-import org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.ArchiverResponse;
-import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.AckResponse;
-import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.Demande;
-import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.DemandeDejaValidee;
-import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.JiraPETALSSEACTIVITI4;
-import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.Numero;
-import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.NumeroDemandeInconnu;
-import org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.Validation;
 
 import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 
 /**
  * Abstract class for unit tests about request processing
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public abstract class AbstractVacationProcessTestEnvironment extends AbstractTestEnvironment {
 
@@ -89,6 +81,49 @@ public abstract class AbstractVacationProcessTestEnvironment extends AbstractTes
 
     protected static final QName ARCHIVER_OPERATION = new QName(ARCHIVE_NAMESPACE, "archiver");
 
+    @BeforeAll
+    private static void initJaxBTooling() {
+        try {
+            final JAXBContext context = JAXBContext.newInstance(
+                    org.ow2.petals.se_flowable.unit_test.vacation.vacationservice.ObjectFactory.class,
+                    org.ow2.petals.se_flowable.unit_test.vacation.archivageservice.ObjectFactory.class,
+                    org.ow2.petals.components.flowable.generic._1.ObjectFactory.class);
+            UNMARSHALLER = context.createUnmarshaller();
+            MARSHALLER = context.createMarshaller();
+            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+        } catch (final JAXBException e) {
+            throw new UncheckedException(e);
+        }
+    }
+
+    @BeforeAll
+    private static void completesFlowableClientIdmEngineConfiguration() throws Exception {
+        FLOWABLE_CLIENT.setIdmEngineConfiguratorCfgFile(
+                getIdmEngineConfiguratorCfgFile(VACATION_SU_HOME + "idm-engine-configurator.properties"));
+    }
+
+    private static File getIdmEngineConfiguratorCfgFile(final String resourceName) throws URISyntaxException {
+        final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
+                .getResource(VACATION_SU_HOME + "idm-engine-configurator.properties");
+        assertNotNull(idmEngineConfiguratorCfg, "IDM engine configurator config file is missing !");
+        return new File(idmEngineConfiguratorCfg.toURI());
+    }
+
+    @BeforeAll
+    private static void componentUnderTestIdmEngineConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST.setParameter(
+                new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
+                // Generate identity service configuration files
+                new ParameterGenerator() {
+
+                    @Override
+                    public String generate() throws Exception {
+                        return getIdmEngineConfiguratorCfgFile(VACATION_SU_HOME + "idm-engine-configurator.properties")
+                                .getAbsolutePath();
+                    }
+                });
+    }
+
     protected static ServiceConfigurationFactory createVacationServiceCfgFactory() {
 
         return createVacationServiceCfgFactory(1);
@@ -102,43 +137,43 @@ public abstract class AbstractVacationProcessTestEnvironment extends AbstractTes
 
                 final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "vacationRequest.wsdl");
-                assertNotNull("WSDl not found", wsdlUrl);
+                assertNotNull(wsdlUrl, "WSDL not found");
                 final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
                         VACATION_INTERFACE, VACATION_SERVICE, VACATION_ENDPOINT, wsdlUrl);
 
                 final URL demanderCongesResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "demanderCongesResponse.xsl");
-                assertNotNull("Output XSL 'demanderCongesResponse.xsl' not found", demanderCongesResponseXslUrl);
+                assertNotNull(demanderCongesResponseXslUrl, "Output XSL 'demanderCongesResponse.xsl' not found");
                 serviceConfiguration.addResource(demanderCongesResponseXslUrl);
 
                 final URL validerDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "validerDemandeResponse.xsl");
-                assertNotNull("Output XSL 'validerDemandeResponse.xsl' not found", validerDemandeResponseXslUrl);
+                assertNotNull(validerDemandeResponseXslUrl, "Output XSL 'validerDemandeResponse.xsl' not found");
                 serviceConfiguration.addResource(validerDemandeResponseXslUrl);
 
                 final URL ajusterDemandeResponseXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "ajusterDemandeResponse.xsl");
-                assertNotNull("Output XSL 'ajusterDemandeResponse.xsl' not found", ajusterDemandeResponseXslUrl);
+                assertNotNull(ajusterDemandeResponseXslUrl, "Output XSL 'ajusterDemandeResponse.xsl' not found");
                 serviceConfiguration.addResource(ajusterDemandeResponseXslUrl);
 
                 final URL numeroDemandeInconnuXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "numeroDemandeInconnu.xsl");
-                assertNotNull("Output XSL 'numeroDemandeInconnu.xsl' not found", numeroDemandeInconnuXslUrl);
+                assertNotNull(numeroDemandeInconnuXslUrl, "Output XSL 'numeroDemandeInconnu.xsl' not found");
                 serviceConfiguration.addResource(numeroDemandeInconnuXslUrl);
 
                 final URL demandeDejaValideeXslUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "demandeDejaValidee.xsl");
-                assertNotNull("Output XSL 'demandeDejaValidee.xsl' not found", demandeDejaValideeXslUrl);
+                assertNotNull(demandeDejaValideeXslUrl, "Output XSL 'demandeDejaValidee.xsl' not found");
                 serviceConfiguration.addResource(demandeDejaValideeXslUrl);
 
                 final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "vacationRequest.bpmn20.xml");
-                assertNotNull("BPMN file not found", bpmnUrl);
+                assertNotNull(bpmnUrl, "BPMN file not found");
                 serviceConfiguration.addResource(bpmnUrl);
 
                 final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
                         .getResource(VACATION_SU_HOME + "archivageService.wsdl");
-                assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
+                assertNotNull(archivageServiceWsdlUrl, "archivageService WSDL not found");
                 serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
                 serviceConfiguration.setServicesSectionParameter(
@@ -156,43 +191,5 @@ public abstract class AbstractVacationProcessTestEnvironment extends AbstractTes
                 return serviceConfiguration;
             }
         };
-    }
-
-    protected static Marshaller MARSHALLER;
-
-    protected static Unmarshaller UNMARSHALLER;
-
-    static {
-        try {
-            final JAXBContext context = JAXBContext.newInstance(Demande.class, Validation.class, Numero.class,
-                    AckResponse.class, NumeroDemandeInconnu.class, DemandeDejaValidee.class, Archiver.class,
-                    ArchiverResponse.class, JiraPETALSSEACTIVITI4.class, ObjectFactory.class);
-            UNMARSHALLER = context.createUnmarshaller();
-            MARSHALLER = context.createMarshaller();
-            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        } catch (final JAXBException e) {
-            throw new UncheckedException(e);
-        }
-    }
-
-    public AbstractVacationProcessTestEnvironment() {
-        super(VACATION_SU_HOME + "idm-engine-configurator.properties");
-    }
-
-    /**
-     * Convert a JAXB element to bytes
-     * 
-     * @param jaxbElement
-     *            The JAXB element to write as bytes
-     */
-    protected static byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
-
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            MARSHALLER.marshal(jaxbElement, baos);
-            return baos.toByteArray();
-        } finally {
-            baos.close();
-        }
     }
 }

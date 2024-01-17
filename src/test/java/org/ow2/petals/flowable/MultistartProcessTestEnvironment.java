@@ -17,52 +17,31 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_TASK_SERVICE;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
 
-import org.apache.mina.util.AvailablePortFinder;
-import org.junit.ClassRule;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
+import org.junit.jupiter.api.BeforeAll;
 import org.ow2.petals.component.framework.junit.impl.ConsumesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.NativeServiceConfigurationFactory;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.components.flowable.generic._1.ActivateProcessInstances;
-import org.ow2.petals.components.flowable.generic._1.ActivateProcessInstancesResponse;
-import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstances;
-import org.ow2.petals.components.flowable.generic._1.SuspendProcessInstancesResponse;
-import org.ow2.petals.se_flowable.unit_test.multi_start.StartByOnlineAgent;
-import org.ow2.petals.se_flowable.unit_test.multi_start.StartByWeb;
-import org.ow2.petals.se_flowable.unit_test.multi_start.StartResponse;
-import org.ow2.petals.se_flowable.unit_test.multi_start.archivageservice.Archiver;
-import org.ow2.petals.se_flowable.unit_test.multi_start.archivageservice.ArchiverResponse;
-import org.ow2.petals.se_flowable.unit_test.multi_start.coreservice.Execute;
-import org.ow2.petals.se_flowable.unit_test.multi_start.coreservice.ExecuteResponse;
-
-import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 
 /**
- * Abstract class for unit tests about request processing
+ * Test environement of unit tests based on multi-start processes
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public abstract class MultistartProcessTestEnvironment extends AbstractTestEnvironment {
 
@@ -107,145 +86,106 @@ public abstract class MultistartProcessTestEnvironment extends AbstractTestEnvir
 
     protected static final QName CORE_SVC_OPERATION = new QName(CORE_SVC_NAMESPACE, "execute");
 
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
-            // A async job executor is required to process service task
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
-                    Boolean.TRUE.toString())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
-                    String.valueOf(
-                            AvailablePortFinder.getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT)))
-            .registerServiceToDeploy(MULTISTART_SU, new ServiceConfigurationFactory() {
-                @Override
-                public ServiceConfiguration create() {
-
-                    final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(MULTISTART_SU_HOME + "multi-start.wsdl");
-                    assertNotNull("WSDl not found", wsdlUrl);
-                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                            MULTISTART_INTERFACE, MULTISTART_SERVICE, MULTISTART_ENDPOINT, wsdlUrl);
-
-                    final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(MULTISTART_SU_HOME + "startResponse.xsl");
-                    assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
-                    serviceConfiguration.addResource(startResponseXslUrl);
-
-                    final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(MULTISTART_SU_HOME + "multi-start.bpmn");
-                    assertNotNull("BPMN file not found", bpmnUrl);
-                    serviceConfiguration.addResource(bpmnUrl);
-
-                    final URL notifyServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(MULTISTART_SU_HOME + "notifyService.wsdl");
-                    assertNotNull("notifyService WSDL not found", notifyServiceWsdlUrl);
-                    serviceConfiguration.addResource(notifyServiceWsdlUrl);
-
-                    final URL coreServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(MULTISTART_SU_HOME + "coreService.wsdl");
-                    assertNotNull("coreService WSDL not found", coreServiceWsdlUrl);
-                    serviceConfiguration.addResource(coreServiceWsdlUrl);
-
-                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(MULTISTART_SU_HOME + "archivageService.wsdl");
-                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
-                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
-
-                    serviceConfiguration.setServicesSectionParameter(
-                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"),
-                            "multi-start.bpmn");
-                    serviceConfiguration
-                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
-
-                    // Consume service 'archiver'
-                    final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(
-                            ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
-                    serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
-
-                    return serviceConfiguration;
-                }
-            }).registerNativeServiceToDeploy(NATIVE_TASKS_SVC_CFG, new NativeServiceConfigurationFactory() {
-
-                @Override
-                public ServiceConfiguration create(final String nativeEndpointName) {
-
-                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("component.wsdl");
-                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
-                    return new ProvidesServiceConfiguration(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE, nativeEndpointName,
-                            nativeServiceWsdlUrl);
-                }
-
-                @Override
-                public QName getNativeService() {
-                    return ITG_TASK_SERVICE;
-                }
-            }).registerNativeServiceToDeploy(NATIVE_PROCESSINSTANCES_SVC_CFG, new NativeServiceConfigurationFactory() {
-
-                @Override
-                public ServiceConfiguration create(final String nativeEndpointName) {
-
-                    final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource("component.wsdl");
-                    assertNotNull("Integration servce WSDl not found", nativeServiceWsdlUrl);
-                    return new ProvidesServiceConfiguration(ITG_PROCESSINSTANCES_PORT_TYPE,
-                            ITG_PROCESSINSTANCES_SERVICE, nativeEndpointName, nativeServiceWsdlUrl);
-                }
-
-                @Override
-                public QName getNativeService() {
-                    return ITG_PROCESSINSTANCES_SERVICE;
-                }
-            }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE)
-            .registerExternalServiceProvider(CORE_SVC_ENDPOINT, CORE_SVC_SERVICE,
-                    CORE_SVC_INTERFACE);
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
-            .around(COMPONENT_UNDER_TEST);
-
-    protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
-
-    protected static Marshaller MARSHALLER;
-
-    protected static Unmarshaller UNMARSHALLER;
-
-    static {
-        try {
-            final JAXBContext context = JAXBContext.newInstance(Archiver.class, ArchiverResponse.class,
-                    StartByWeb.class, StartByOnlineAgent.class, StartResponse.class, Execute.class,
-                    ExecuteResponse.class, SuspendProcessInstances.class, SuspendProcessInstancesResponse.class,
-                    ActivateProcessInstances.class, ActivateProcessInstancesResponse.class);
-            UNMARSHALLER = context.createUnmarshaller();
-            MARSHALLER = context.createMarshaller();
-            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        } catch (final JAXBException e) {
-            throw new UncheckedException(e);
-        }
+    @BeforeAll
+    private static void initJaxBTooling() throws JAXBException {
+        final JAXBContext context = JAXBContext.newInstance(
+                org.ow2.petals.components.flowable.generic._1.ObjectFactory.class,
+                org.ow2.petals.se_flowable.unit_test.multi_start.ObjectFactory.class,
+                org.ow2.petals.se_flowable.unit_test.multi_start.archivageservice.ObjectFactory.class,
+                org.ow2.petals.se_flowable.unit_test.multi_start.coreservice.ObjectFactory.class);
+        UNMARSHALLER = context.createUnmarshaller();
+        MARSHALLER = context.createMarshaller();
+        MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
     }
 
-    public MultistartProcessTestEnvironment() {
-        super(VACATION_SU_HOME + "idm-engine-configurator.properties");
+    @BeforeAll
+    private static void completesTestEnvConfiguration() throws Exception {
+        FLOWABLE_CLIENT.start();
+        completesComponentUnderTestConfiguration();
     }
 
-    @Override
-    protected ComponentUnderTest getComponentUnderTest() {
-        return COMPONENT_UNDER_TEST;
-    }
+    private static void completesComponentUnderTestConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST.registerServiceToDeploy(MULTISTART_SU, new ServiceConfigurationFactory() {
+            @Override
+            public ServiceConfiguration create() {
 
-    /**
-     * Convert a JAXB element to bytes
-     * 
-     * @param jaxbElement
-     *            The JAXB element to write as bytes
-     */
-    protected static byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
+                final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(MULTISTART_SU_HOME + "multi-start.wsdl");
+                assertNotNull(wsdlUrl, "WSDL not found");
+                final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                        MULTISTART_INTERFACE, MULTISTART_SERVICE, MULTISTART_ENDPOINT, wsdlUrl);
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            MARSHALLER.marshal(jaxbElement, baos);
-            return baos.toByteArray();
-        } finally {
-            baos.close();
-        }
+                final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(MULTISTART_SU_HOME + "startResponse.xsl");
+                assertNotNull(startResponseXslUrl, "Output XSL 'startResponse.xsl' not found");
+                serviceConfiguration.addResource(startResponseXslUrl);
+
+                final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(MULTISTART_SU_HOME + "multi-start.bpmn");
+                assertNotNull(bpmnUrl, "BPMN file not found");
+                serviceConfiguration.addResource(bpmnUrl);
+
+                final URL notifyServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(MULTISTART_SU_HOME + "notifyService.wsdl");
+                assertNotNull(notifyServiceWsdlUrl, "notifyService WSDL not found");
+                serviceConfiguration.addResource(notifyServiceWsdlUrl);
+
+                final URL coreServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(MULTISTART_SU_HOME + "coreService.wsdl");
+                assertNotNull(coreServiceWsdlUrl, "coreService WSDL not found");
+                serviceConfiguration.addResource(coreServiceWsdlUrl);
+
+                final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource(MULTISTART_SU_HOME + "archivageService.wsdl");
+                assertNotNull(archivageServiceWsdlUrl, "archivageService WSDL not found");
+                serviceConfiguration.addResource(archivageServiceWsdlUrl);
+
+                serviceConfiguration.setServicesSectionParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "multi-start.bpmn");
+                serviceConfiguration.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"),
+                        "1");
+
+                // Consume service 'archiver'
+                final ConsumesServiceConfiguration consumeServiceConfiguration = new ConsumesServiceConfiguration(
+                        ARCHIVE_INTERFACE, ARCHIVE_SERVICE, ARCHIVE_ENDPOINT);
+                serviceConfiguration.addServiceConfigurationDependency(consumeServiceConfiguration);
+
+                return serviceConfiguration;
+            }
+        }).registerNativeServiceToDeploy(NATIVE_TASKS_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+            @Override
+            public ServiceConfiguration create(final String nativeEndpointName) {
+
+                final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("component.wsdl");
+                assertNotNull(nativeServiceWsdlUrl, "Integration servce WSDl not found");
+                return new ProvidesServiceConfiguration(ITG_TASK_PORT_TYPE, ITG_TASK_SERVICE, nativeEndpointName,
+                        nativeServiceWsdlUrl);
+            }
+
+            @Override
+            public QName getNativeService() {
+                return ITG_TASK_SERVICE;
+            }
+        }).registerNativeServiceToDeploy(NATIVE_PROCESSINSTANCES_SVC_CFG, new NativeServiceConfigurationFactory() {
+
+            @Override
+            public ServiceConfiguration create(final String nativeEndpointName) {
+
+                final URL nativeServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                        .getResource("component.wsdl");
+                assertNotNull(nativeServiceWsdlUrl, "Integration servce WSDl not found");
+                return new ProvidesServiceConfiguration(ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE,
+                        nativeEndpointName, nativeServiceWsdlUrl);
+            }
+
+            @Override
+            public QName getNativeService() {
+                return ITG_PROCESSINSTANCES_SERVICE;
+            }
+        }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE)
+                .registerExternalServiceProvider(CORE_SVC_ENDPOINT, CORE_SVC_SERVICE, CORE_SVC_INTERFACE)
+                .postInitComponentUnderTest();
     }
 }

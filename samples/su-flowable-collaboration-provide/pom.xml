@@ -43,6 +43,11 @@
          <artifactId>petals-se-flowable-junit</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable-test-utils</artifactId>
+         <scope>test</scope>
+      </dependency>
       
       <!-- To test the process definition we must use our own Flowable engine-->
       <dependency>

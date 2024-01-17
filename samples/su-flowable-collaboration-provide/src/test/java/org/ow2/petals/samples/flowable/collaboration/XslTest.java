@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 /**

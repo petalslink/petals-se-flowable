@@ -17,7 +17,8 @@
  */
 package org.ow2.petals.flowable.utils;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Logger;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Jbi;
 import org.ow2.petals.flowable.exception.InvalidSuffixForProcessFileException;
 import org.ow2.petals.flowable.exception.ProcessDefinitionDeclarationException;
@@ -38,7 +39,6 @@ import jakarta.xml.bind.Unmarshaller;
  * Unit tests of {@link BpmnReader}
  * 
  * @author Christophe DENEUX - Linagora
- *
  */
 public class BpmnReaderTest {
 
@@ -47,23 +47,25 @@ public class BpmnReaderTest {
     /**
      * Read a BPMN definition described in a resource file having an unsupported suffix
      */
-    @Test(expected = InvalidSuffixForProcessFileException.class)
+    @Test
     public void readBpmnModels_withUnsupportedSuffix()
             throws JAXBException, IOException, URISyntaxException, ProcessDefinitionDeclarationException {
 
         final URL jbiUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("parser/model-with-invalid-suffix.jbi.xml");
         assertNotNull(jbiUrl);
-        
+
         final JAXBContext jaxbContext = JAXBContext
                 .newInstance(org.ow2.petals.component.framework.jbidescriptor.generated.ObjectFactory.class);
         final Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
         final Jbi jbi = (Jbi) jaxbUnmarshaller.unmarshal(jbiUrl.openStream());
         assertNotNull(jbi);
         assertNotNull(jbi.getServices());
-        
+
         final BpmnReader bpmnReader = new BpmnReader(jbi.getServices(), new File(jbiUrl.toURI()).getParent(), LOG);
-        bpmnReader.readBpmnModels();
+        assertThrows(InvalidSuffixForProcessFileException.class, () -> {
+            bpmnReader.readBpmnModels();
+        });
     }
 
 }

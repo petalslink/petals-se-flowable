@@ -17,18 +17,19 @@
  */
 package org.ow2.petals.flowable.rest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.net.URL;
 
 import javax.xml.namespace.QName;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
 import org.ow2.petals.flowable.FlowableSEConstants;
@@ -59,63 +60,60 @@ public class RestApiDefaultPrivConfigTest extends AbstractRestTestEnvironment {
 
     protected static final String INONLY_ENDPOINT = "edpInOnly";
 
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
-            .setParameter(
-                    new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
-                    // Generate identity service configuration files
-                    new ParameterGenerator() {
+    @BeforeAll
+    private static void completesComponentUnderTestConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ENABLE),
+                        Boolean.TRUE.toString())
+                .setParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_COMP,
+                                FlowableSEConstants.IDM_ENGINE_CONFIGURATOR_CFG_FILE),
+                        // Generate identity service configuration files
+                        new ParameterGenerator() {
 
-                        @Override
-                        public String generate() throws Exception {
-                            final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
-                                    .getResource("rest/idm-engine-configurator.properties");
-                            assertNotNull("IDM engine configurator config file is missing !", idmEngineConfiguratorCfg);
-                            return new File(idmEngineConfiguratorCfg.toURI()).getAbsolutePath();
-                        }
+                            @Override
+                            public String generate() throws Exception {
+                                final URL idmEngineConfiguratorCfg = Thread.currentThread().getContextClassLoader()
+                                        .getResource("rest/idm-engine-configurator.properties");
+                                assertNotNull(idmEngineConfiguratorCfg,
+                                        "IDM engine configurator config file is missing !");
+                                return new File(idmEngineConfiguratorCfg.toURI()).getAbsolutePath();
+                            }
 
-                    })
-            .registerServiceToDeploy(INONLY_SU, new ServiceConfigurationFactory() {
-                @Override
-                public ServiceConfiguration create() {
+                        })
+                .registerServiceToDeploy(INONLY_SU, new ServiceConfigurationFactory() {
+                    @Override
+                    public ServiceConfiguration create() {
 
-                    final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(INONLY_SU_HOME + "in-only.wsdl");
-                    assertNotNull("WSDL not found", wsdlUrl);
-                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                            INONLY_INTERFACE, INONLY_SERVICE, INONLY_ENDPOINT, wsdlUrl);
+                        final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(INONLY_SU_HOME + "in-only.wsdl");
+                        assertNotNull(wsdlUrl, "WSDL not found");
+                        final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                                INONLY_INTERFACE, INONLY_SERVICE, INONLY_ENDPOINT, wsdlUrl);
 
-                    final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(INONLY_SU_HOME + "startResponse.xsl");
-                    assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
-                    serviceConfiguration.addResource(startResponseXslUrl);
+                        final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(INONLY_SU_HOME + "startResponse.xsl");
+                        assertNotNull(startResponseXslUrl, "Output XSL 'startResponse.xsl' not found");
+                        serviceConfiguration.addResource(startResponseXslUrl);
 
-                    final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(INONLY_SU_HOME + "in-only.bpmn");
-                    assertNotNull("BPMN file not found", bpmnUrl);
-                    serviceConfiguration.addResource(bpmnUrl);
+                        final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(INONLY_SU_HOME + "in-only.bpmn");
+                        assertNotNull(bpmnUrl, "BPMN file not found");
+                        serviceConfiguration.addResource(bpmnUrl);
 
-                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(INONLY_SU_HOME + "archivageService.wsdl");
-                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
-                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
+                        final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(INONLY_SU_HOME + "archivageService.wsdl");
+                        assertNotNull(archivageServiceWsdlUrl, "archivageService WSDL not found");
+                        serviceConfiguration.addResource(archivageServiceWsdlUrl);
 
-                    serviceConfiguration.setServicesSectionParameter(
-                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "in-only.bpmn");
-                    serviceConfiguration
-                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
+                        serviceConfiguration.setServicesSectionParameter(
+                                new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "in-only.bpmn");
+                        serviceConfiguration.setServicesSectionParameter(
+                                new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
 
-                    return serviceConfiguration;
-                }
-            });
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
-            .around(COMPONENT_UNDER_TEST);
-
-    @Override
-    protected ComponentUnderTest getComponentUnderTest() {
-        return COMPONENT_UNDER_TEST;
+                        return serviceConfiguration;
+                    }
+                }).postInitComponentUnderTest();
     }
 
     /**
@@ -161,9 +159,8 @@ public class RestApiDefaultPrivConfigTest extends AbstractRestTestEnvironment {
     }
 
     /**
-     * Check that we retrieve correct data through the REST API.
-     * 
-     * Expected result: the process that was instantiated in this class
+     * Check that we retrieve correct data through the REST API. Expected result: the process that was instantiated in
+     * this class
      */
     @Test
     public void hasDeployments() {

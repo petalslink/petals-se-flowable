@@ -17,11 +17,16 @@
  */
 package org.ow2.petals.flowable;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import javax.jbi.messaging.ExchangeStatus;
 
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
@@ -33,7 +38,6 @@ import org.ow2.petals.se_flowable.unit_test.start_stop.StartResponse;
  * Unit tests about request processing of BPMN services against lifecycle transition start/stop of SE Flowable
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class StartStopTest extends StartStopTestEnvironment {
 
@@ -61,11 +65,10 @@ public class StartStopTest extends StartStopTestEnvironment {
 
         // We start a process instance through a Flowable client because the SE Flowable does not process incoming
         // request because it is not started
-        final ProcessDefinition procDef = this.flowableClient.getRepositoryService().createProcessDefinitionQuery()
+        final ProcessDefinition procDef = FLOWABLE_CLIENT.getRepositoryService().createProcessDefinitionQuery()
                 .singleResult();
         assertNotNull(procDef);
-        final ProcessInstance procInst1 = this.flowableClient.getRuntimeService()
-                .startProcessInstanceById(procDef.getId());
+        final ProcessInstance procInst1 = FLOWABLE_CLIENT.getRuntimeService().startProcessInstanceById(procDef.getId());
         assertNotNull(procInst1);
 
         // Wait a potential async executor run: timer duration + 5s. Note: the Async executor is set to be run each 1s
@@ -92,9 +95,9 @@ public class StartStopTest extends StartStopTestEnvironment {
 
         COMPONENT_UNDER_TEST.pushRequestToProvider(request);
         final ResponseMessage response = COMPONENT_UNDER_TEST.pollResponseFromProvider();
-        assertNotNull("No XML payload in response", response.getPayload());
+        assertNotNull(response.getPayload(), "No XML payload in response");
         final Object responseObj = UNMARSHALLER.unmarshal(response.getPayload());
-        assertTrue(responseObj instanceof StartResponse);
+        assertInstanceOf(StartResponse.class, responseObj);
         final StartResponse responseBean = (StartResponse) responseObj;
         assertNotNull(responseBean.getCaseFileNumber());
         procInst2.append(responseBean.getCaseFileNumber());

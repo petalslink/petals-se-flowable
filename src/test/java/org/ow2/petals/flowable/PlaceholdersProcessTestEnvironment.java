@@ -17,41 +17,31 @@
  */
 package org.ow2.petals.flowable;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import javax.xml.namespace.QName;
 
-import org.apache.mina.util.AvailablePortFinder;
-import org.junit.ClassRule;
-import org.junit.rules.RuleChain;
-import org.junit.rules.TestRule;
-import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.io.TempDir;
 import org.ow2.petals.component.framework.junit.impl.ProvidesServiceConfiguration;
 import org.ow2.petals.component.framework.junit.impl.ServiceConfiguration;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
 import org.ow2.petals.component.framework.junit.rule.ParameterGenerator;
 import org.ow2.petals.component.framework.junit.rule.ServiceConfigurationFactory;
-import org.ow2.petals.se_flowable.unit_test.placeholders.Start;
-import org.ow2.petals.se_flowable.unit_test.placeholders.StartResponse;
-import org.ow2.petals.se_flowable.unit_test.placeholders.Unlock;
-import org.ow2.petals.se_flowable.unit_test.placeholders.UnlockAck;
-import org.ow2.petals.se_flowable.unit_test.placeholders.archivageservice.Archiver;
-import org.ow2.petals.se_flowable.unit_test.placeholders.archivageservice.ArchiverResponse;
-
-import com.ebmwebsourcing.easycommons.lang.UncheckedException;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
 
 /**
  * Abstract class for unit tests about request processing
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public abstract class PlaceholdersProcessTestEnvironment extends AbstractTestEnvironment {
 
@@ -91,119 +81,97 @@ public abstract class PlaceholdersProcessTestEnvironment extends AbstractTestEnv
 
     protected static final String USER_TASK_2 = "userTask2";
 
-    protected static String getFileIdmEngineConfiguratorCfgFile() {
-        return null;
+    protected static String COMPONENT_PROPERTIES_FILE;
+
+    @TempDir
+    private static Path tempFolder;
+
+    @BeforeAll
+    private static void initJaxBTooling() throws JAXBException {
+        final JAXBContext context = JAXBContext.newInstance(
+                org.ow2.petals.se_flowable.unit_test.placeholders.ObjectFactory.class,
+                org.ow2.petals.se_flowable.unit_test.placeholders.archivageservice.ObjectFactory.class);
+        UNMARSHALLER = context.createUnmarshaller();
+        MARSHALLER = context.createMarshaller();
+        MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
     }
 
-    protected static final ComponentUnderTest COMPONENT_UNDER_TEST = new ComponentUnderTest()
-            .addLogHandler(IN_MEMORY_LOG_HANDLER.getHandler())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
-                    Boolean.TRUE.toString())
-            .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
-                    String.valueOf(
-                            AvailablePortFinder.getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT)))
-            .setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "properties-file"),
-                    new ParameterGenerator() {
-
-                        @Override
-                        public String generate() throws Exception {
-                            final URL componentPropertiesFile = Thread.currentThread().getContextClassLoader()
-                                    .getResource("su/placeholders/componentProperties.properties");
-                            assertNotNull("Component properties file is missing !", componentPropertiesFile);
-                            return componentPropertiesFile.toString();
-                        }
-
-                    })
-            .registerServiceToDeploy(PLACEHOLDERS_SU, new ServiceConfigurationFactory() {
-                @Override
-                public ServiceConfiguration create() {
-
-                    final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(PLACEHOLDERS_SU_HOME + "placeholders.wsdl");
-                    assertNotNull("WSDL not found", wsdlUrl);
-                    final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
-                            PLACEHOLDERS_INTERFACE, PLACEHOLDERS_SERVICE, PLACEHOLDERS_ENDPOINT, wsdlUrl);
-
-                    final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(PLACEHOLDERS_SU_HOME + "startResponse.xsl");
-                    assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
-                    serviceConfiguration.addResource(startResponseXslUrl);
-
-                    final URL unlockResponseXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(PLACEHOLDERS_SU_HOME + "unlockAckResponse.xsl");
-                    assertNotNull("Output XSL 'unlockAckResponse.xsl' not found", unlockResponseXslUrl);
-                    serviceConfiguration.addResource(unlockResponseXslUrl);
-
-                    final URL alreadyUnlockedXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(PLACEHOLDERS_SU_HOME + "alreadyUnlocked.xsl");
-                    assertNotNull("Output XSL 'alreadyUnlocked.xsl' not found", alreadyUnlockedXslUrl);
-                    serviceConfiguration.addResource(alreadyUnlockedXslUrl);
-
-                    final URL instanceUnknownXslUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(PLACEHOLDERS_SU_HOME + "instanceUnknown.xsl");
-                    assertNotNull("Output XSL 'instanceUnknown.xsl' not found", instanceUnknownXslUrl);
-                    serviceConfiguration.addResource(instanceUnknownXslUrl);
-
-                    final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(PLACEHOLDERS_SU_HOME + "placeholders.bpmn");
-                    assertNotNull("BPMN file not found", bpmnUrl);
-                    serviceConfiguration.addResource(bpmnUrl);
-
-                    final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
-                            .getResource(PLACEHOLDERS_SU_HOME + "archivageService.wsdl");
-                    assertNotNull("archivageService WSDL not found", archivageServiceWsdlUrl);
-                    serviceConfiguration.addResource(archivageServiceWsdlUrl);
-
-                    serviceConfiguration.setServicesSectionParameter(
-                            new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "placeholders.bpmn");
-                    serviceConfiguration
-                            .setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
-
-                    return serviceConfiguration;
-                }
-            }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE);
-
-    @ClassRule
-    public static final TestRule chain = RuleChain.outerRule(TEMP_FOLDER).around(IN_MEMORY_LOG_HANDLER)
-            .around(COMPONENT_UNDER_TEST);
-
-    protected static final SimpleComponent COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
-
-    protected static Marshaller MARSHALLER;
-
-    protected static Unmarshaller UNMARSHALLER;
-
-    static {
-        try {
-            final JAXBContext context = JAXBContext.newInstance(Start.class, StartResponse.class, Unlock.class,
-                    UnlockAck.class, Archiver.class, ArchiverResponse.class);
-            UNMARSHALLER = context.createUnmarshaller();
-            MARSHALLER = context.createMarshaller();
-            MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-        } catch (final JAXBException e) {
-            throw new UncheckedException(e);
-        }
+    @BeforeAll
+    private static void completesTestEnvConfiguration() throws Exception {
+        FLOWABLE_CLIENT.start();
+        completesComponentUnderTestConfiguration();
     }
 
-    @Override
-    protected ComponentUnderTest getComponentUnderTest() {
-        return COMPONENT_UNDER_TEST;
-    }
+    private static void completesComponentUnderTestConfiguration() throws Exception {
+        COMPONENT_UNDER_TEST
+                .setParameter(new QName("http://petals.ow2.org/components/extensions/version-5", "properties-file"),
+                        new ParameterGenerator() {
 
-    /**
-     * Convert a JAXB element to bytes
-     * 
-     * @param jaxbElement
-     *            The JAXB element to write as bytes
-     */
-    protected static byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
+                            @Override
+                            public String generate() throws Exception {
+                                final URL initialComponentPropertiesFile = Thread.currentThread()
+                                        .getContextClassLoader()
+                                        .getResource("su/placeholders/componentProperties.properties");
+                                assertNotNull(initialComponentPropertiesFile, "Component properties file is missing !");
 
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            MARSHALLER.marshal(jaxbElement, baos);
-            return baos.toByteArray();
-        } finally {
-            baos.close();
-        }
+                                final File componentPropertiesFile = Files
+                                        .createFile(tempFolder.resolve("component-properties.properties")).toFile();
+                                IOUtils.copy(initialComponentPropertiesFile, componentPropertiesFile);
+
+                                COMPONENT_PROPERTIES_FILE = componentPropertiesFile.getAbsolutePath();
+                                return COMPONENT_PROPERTIES_FILE;
+
+                            }
+
+                        })
+                .registerServiceToDeploy(PLACEHOLDERS_SU, new ServiceConfigurationFactory() {
+                    @Override
+                    public ServiceConfiguration create() {
+
+                        final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(PLACEHOLDERS_SU_HOME + "placeholders.wsdl");
+                        assertNotNull(wsdlUrl, "WSDL not found");
+                        final ProvidesServiceConfiguration serviceConfiguration = new ProvidesServiceConfiguration(
+                                PLACEHOLDERS_INTERFACE, PLACEHOLDERS_SERVICE, PLACEHOLDERS_ENDPOINT, wsdlUrl);
+
+                        final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(PLACEHOLDERS_SU_HOME + "startResponse.xsl");
+                        assertNotNull(startResponseXslUrl, "Output XSL 'startResponse.xsl' not found");
+                        serviceConfiguration.addResource(startResponseXslUrl);
+
+                        final URL unlockResponseXslUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(PLACEHOLDERS_SU_HOME + "unlockAckResponse.xsl");
+                        assertNotNull(unlockResponseXslUrl, "Output XSL 'unlockAckResponse.xsl' not found");
+                        serviceConfiguration.addResource(unlockResponseXslUrl);
+
+                        final URL alreadyUnlockedXslUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(PLACEHOLDERS_SU_HOME + "alreadyUnlocked.xsl");
+                        assertNotNull(alreadyUnlockedXslUrl, "Output XSL 'alreadyUnlocked.xsl' not found");
+                        serviceConfiguration.addResource(alreadyUnlockedXslUrl);
+
+                        final URL instanceUnknownXslUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(PLACEHOLDERS_SU_HOME + "instanceUnknown.xsl");
+                        assertNotNull(instanceUnknownXslUrl, "Output XSL 'instanceUnknown.xsl' not found");
+                        serviceConfiguration.addResource(instanceUnknownXslUrl);
+
+                        final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(PLACEHOLDERS_SU_HOME + "placeholders.bpmn");
+                        assertNotNull(bpmnUrl, "BPMN file not found");
+                        serviceConfiguration.addResource(bpmnUrl);
+
+                        final URL archivageServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
+                                .getResource(PLACEHOLDERS_SU_HOME + "archivageService.wsdl");
+                        assertNotNull(archivageServiceWsdlUrl, "archivageService WSDL not found");
+                        serviceConfiguration.addResource(archivageServiceWsdlUrl);
+
+                        serviceConfiguration.setServicesSectionParameter(
+                                new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"), "placeholders.bpmn");
+                        serviceConfiguration.setServicesSectionParameter(
+                                new QName(FlowableSEConstants.NAMESPACE_SU, "version"), "1");
+
+                        return serviceConfiguration;
+                    }
+                }).registerExternalServiceProvider(ARCHIVE_ENDPOINT, ARCHIVE_SERVICE, ARCHIVE_INTERFACE)
+                .postInitComponentUnderTest();
     }
 }

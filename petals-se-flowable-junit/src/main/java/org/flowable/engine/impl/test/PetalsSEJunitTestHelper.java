@@ -22,8 +22,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
+import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.parse.BpmnParseHandler;
 import org.ow2.petals.flowable.CallActivityForceAsyncParseHandler;
@@ -31,6 +34,8 @@ import org.ow2.petals.flowable.ServiceTaskForceAsyncParseHandler;
 import org.ow2.petals.flowable.juel.FlowableDateParseFunctionDelegate;
 import org.ow2.petals.flowable.juel.FlowablePetalsGetPlaceholderFunctionDelegate;
 import org.ow2.petals.flowable.juel.FlowablePetalsGetPlaceholderWithDefaultValueFunctionDelegate;
+import org.ow2.petals.flowable.junit.extensions.CallActivityStartedEventListener;
+import org.ow2.petals.flowable.junit.extensions.ProcessInstanceStartedEventListener;
 
 public class PetalsSEJunitTestHelper {
 
@@ -43,11 +48,9 @@ public class PetalsSEJunitTestHelper {
 
                 // Add support of custom JUEL functions
                 final ProcessEngineConfigurationImpl pecImpl = (ProcessEngineConfigurationImpl) processEngineCfg;
-                pecImpl.setCustomFlowableFunctionDelegates(
-                        Arrays.asList(
-                                new FlowableDateParseFunctionDelegate(),
-                                new FlowablePetalsGetPlaceholderFunctionDelegate(),
-                                new FlowablePetalsGetPlaceholderWithDefaultValueFunctionDelegate()));
+                pecImpl.setCustomFlowableFunctionDelegates(Arrays.asList(new FlowableDateParseFunctionDelegate(),
+                        new FlowablePetalsGetPlaceholderFunctionDelegate(),
+                        new FlowablePetalsGetPlaceholderWithDefaultValueFunctionDelegate()));
 
                 // Add post BPMN parse handlers
                 final List<BpmnParseHandler> postBpmnParseHandlers = new ArrayList<>();
@@ -56,6 +59,17 @@ public class PetalsSEJunitTestHelper {
                 pecImpl.setPostBpmnParseHandlers(postBpmnParseHandlers);
             }
             processEngine = processEngineCfg.buildProcessEngine();
+
+            // Add event listeners
+            final RuntimeService runtimeService = processEngine.getRuntimeService();
+            final FlowableEventListener callActivityStartEventListener = new CallActivityStartedEventListener(
+                    runtimeService, log);
+            runtimeService.addEventListener(callActivityStartEventListener, FlowableEngineEventType.PROCESS_STARTED);
+            final FlowableEventListener processInstanceStartedEventListener = new ProcessInstanceStartedEventListener(
+                    runtimeService, log);
+            runtimeService.addEventListener(processInstanceStartedEventListener,
+                    FlowableEngineEventType.PROCESS_STARTED);
+
             TestHelper.processEngines.put(configurationResource, processEngine);
         }
         return processEngine;

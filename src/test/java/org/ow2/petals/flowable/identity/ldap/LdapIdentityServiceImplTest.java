@@ -17,93 +17,100 @@
  */
 package org.ow2.petals.flowable.identity.ldap;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.directory.server.annotations.CreateLdapServer;
+import org.apache.directory.server.annotations.CreateTransport;
+import org.apache.directory.server.core.annotations.ApplyLdifFiles;
+import org.apache.directory.server.core.annotations.CreateDS;
+import org.apache.directory.server.core.annotations.CreatePartition;
+import org.apache.directory.server.core.integ.AbstractLdapTestUnit;
+import org.apache.directory.server.core.integ.ApacheDSTestExtension;
 import org.flowable.engine.IdentityService;
 import org.flowable.idm.api.Group;
 import org.flowable.idm.api.User;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.ow2.petals.flowable.identity.exception.IdentityServiceInitException;
-import org.ow2.petals.flowable.junit.FlowableClient;
-import org.zapodot.junit.ldap.EmbeddedLdapRule;
-import org.zapodot.junit.ldap.EmbeddedLdapRuleBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
+import org.ow2.petals.flowable.junit.extensions.FlowableClientExtension;
+import org.ow2.petals.flowable.junit.extensions.FlowableClientExtension.IdmEngineType;
+import org.ow2.petals.flowable.junit.extensions.api.FlowableClient;
 
-public class LdapIdentityServiceImplTest {
+@ExtendWith(ApacheDSTestExtension.class)
+@CreateDS(partitions = { @CreatePartition(name = "Petals", suffix = LdapIdentityServiceImplTest.DOMAIN_DSN) })
+@CreateLdapServer(transports = { @CreateTransport(protocol = "LDAP") })
+public class LdapIdentityServiceImplTest extends AbstractLdapTestUnit {
+
+    public static final String LDAP_USER = "cn=Petals ESB,ou=users,dc=petals,dc=org";
 
     public static final String DOMAIN_DSN = "dc=petals,dc=org";
 
-    @Rule
-    public EmbeddedLdapRule embeddedLdapRule = EmbeddedLdapRuleBuilder.newInstance().usingDomainDsn(DOMAIN_DSN)
-            .usingBindDSN("cn=Petals ESB").usingBindCredentials("abcdefg")
-            .importingLdifs("users-import.ldif").build();
+    @TempDir
+    private static Path tempFolder;
 
-    @Rule
-    public final TemporaryFolder tempFolder = new TemporaryFolder();
+    @FlowableClientExtension(
+            idmEngineType = IdmEngineType.LDAP, idmEngineConfiguratorCfgFile = FlowableClient.IDM_ENGINE_CONFIGURATION_TO_GENERATE, autoStart = false
+    )
+    private FlowableClient flowableClient;
+
+    @BeforeEach
+    private void completesFlowableClientConfigurationAndStarts() throws Exception {
+        this.generateLdapIdmEngineConfigurationFile();
+        this.flowableClient.start();
+    }
+
+    private void generateLdapIdmEngineConfigurationFile() throws IOException {
+
+        // We generate a configuration from the default one to adjust the port of the LDAP server
+
+        final Properties ldapConfig = new Properties();
+        try (final InputStream defaultCfgInputStream = LdapIdentityServiceImplTest.class
+                .getResourceAsStream("/ldap-idm-configurator.properties")) {
+            assertNotNull(defaultCfgInputStream, "LDAP IDM configuration config file not found");
+            ldapConfig.load(defaultCfgInputStream);
+        }
+
+        ldapConfig.setProperty(LdapIdmEngineConfigurator.PROP_PORT, Integer.toString(ldapServer.getPort()));
+        ldapConfig.setProperty(LdapIdmEngineConfigurator.PROP_USER, LDAP_USER);
+        ldapConfig.setProperty(LdapIdmEngineConfigurator.PROP_PASSWORD, "abcdefg");
+
+        try (final OutputStream osConfigFile = new FileOutputStream(
+                this.flowableClient.getIdmEngineConfigurationFile())) {
+            ldapConfig.store(osConfigFile, "");
+        }
+    }
 
     /**
      * Check the loading of a given configuration.
      */
     @Test
+    @ApplyLdifFiles("users-import.ldif")
     public void givenConfiguration() throws Exception {
 
-        // We generate a configuration from the default one
-        final InputStream defaultCfgInputStream = this.getClass()
-                .getResourceAsStream("/ldap-idm-configurator.properties");
-        assertNotNull("LDAP IDM configuration config file not found", defaultCfgInputStream);
-        final Properties ldapConfig = new Properties();
-        try {
-            ldapConfig.load(defaultCfgInputStream);
-        } catch (final IOException e) {
-            throw new IdentityServiceInitException(e);
-        }
+        final IdentityService identityService = this.flowableClient.getIdentityService();
 
-        ldapConfig.setProperty(LdapIdmEngineConfigurator.PROP_PORT,
-                Integer.toString(this.embeddedLdapRule.embeddedServerPort()));
-        ldapConfig.setProperty(LdapIdmEngineConfigurator.PROP_USER, "cn=Petals ESB");
-        ldapConfig.setProperty(LdapIdmEngineConfigurator.PROP_PASSWORD, "abcdefg");
+        final User kermit = identityService.createUserQuery().userId("kermit").singleResult();
+        assertNotNull(kermit);
+        assertEquals("Flowable", kermit.getLastName());
+        assertEquals("Kermit", kermit.getFirstName());
+        assertEquals("kermit@petals.org", kermit.getEmail());
 
-        final File ldapConfigFile = this.tempFolder.newFile("ldap-idm-configurator.properties");
-        final OutputStream osConfigFile = new FileOutputStream(ldapConfigFile);
-        try {
-            ldapConfig.store(osConfigFile, "");
-        } finally {
-            osConfigFile.close();
-        }
+        assertTrue(identityService.checkPassword("kermit", "abcdefg"));
+        assertFalse(identityService.checkPassword("fozzie", "invalid-pwd"));
 
-        final FlowableClient flowableClient = new FlowableClient(new LdapIdmEngineConfigurator(), ldapConfigFile);
-        flowableClient.create();
-        try {
-            final IdentityService identityService = flowableClient.getIdentityService();
-
-            final User kermit = identityService.createUserQuery().userId("kermit").singleResult();
-            assertNotNull(kermit);
-            assertEquals("Flowable", kermit.getLastName());
-            assertEquals("Kermit", kermit.getFirstName());
-            assertEquals("kermit@petals.org", kermit.getEmail());
-
-            assertTrue(identityService.checkPassword("kermit", "abcdefg"));
-            assertFalse(identityService.checkPassword("fozzie", "invalid-pwd"));
-
-            final List<Group> fozzieGroups = identityService.createGroupQuery()
-                    .groupMember("fozzie").list();
-            assertEquals(2, fozzieGroups.size());
-
-        } finally {
-            flowableClient.delete();
-        }
+        final List<Group> fozzieGroups = identityService.createGroupQuery().groupMember("fozzie").list();
+        assertEquals(2, fozzieGroups.size());
     }
-
 }

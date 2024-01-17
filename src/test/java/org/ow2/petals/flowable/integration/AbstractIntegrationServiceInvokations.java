@@ -17,6 +17,16 @@
  */
 package org.ow2.petals.flowable.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderBeginLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderEndLog;
+import static org.ow2.petals.component.framework.test.Assert.assertMonitProviderFailureLog;
+
 import java.util.List;
 import java.util.logging.LogRecord;
 
@@ -51,23 +61,21 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
      * </ul>
      */
     protected void testInvalidRequest_WsdlUncompliant(final String suName, final QName interfaceName,
-            final QName serviceName,
-            final QName operationName) throws Exception {
+            final QName serviceName, final QName operationName) throws Exception {
 
         final Demande request = new Demande();
 
-        IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, suName, operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, suName,
+                operationName, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
-        assertNull("An error is set in the response", responseMsg.getError());
-        assertNull("An out is set in response", responseMsg.getOut());
-        assertNotNull("No fault in response", responseMsg.getFault());
+        assertNull(responseMsg.getError(), "An error is set in the response");
+        assertNull(responseMsg.getOut(), "An out is set in response");
+        assertNotNull(responseMsg.getFault(), "No fault in response");
 
         final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
-        assertTrue(faultObj instanceof InvalidRequest);
+        assertInstanceOf(InvalidRequest.class, faultObj);
         final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
         assertTrue(invalidRequest.getMessage().endsWith("is unexpected"));
         assertFalse(invalidRequest.getStacktrace().isEmpty());
@@ -84,7 +92,8 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
      * </p>
      * <ul>
      * <li>an invalid request is sent,</li>
-     * <li>the request content is compliant to the XML schema defined in WSDL, for example a response used as request</li>
+     * <li>the request content is compliant to the XML schema defined in WSDL, for example a response used as
+     * request</li>
      * </ul>
      * <p>
      * Expected results:
@@ -95,21 +104,19 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
      * </ul>
      */
     protected void testInvalidRequest_WsdlCompliant(final String suName, final QName interfaceName,
-            final QName serviceName,
-            final QName operationName, final Object request) throws Exception {
+            final QName serviceName, final QName operationName, final Object request) throws Exception {
 
-        IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, suName, operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, suName,
+                operationName, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
-        assertNull("An error is set in the response", responseMsg.getError());
-        assertNull("An out is set in response", responseMsg.getOut());
-        assertNotNull("No fault in response", responseMsg.getFault());
+        assertNull(responseMsg.getError(), "An error is set in the response");
+        assertNull(responseMsg.getOut(), "An out is set in response");
+        assertNotNull(responseMsg.getFault(), "No fault in response");
 
         final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
-        assertTrue(faultObj instanceof InvalidRequest);
+        assertInstanceOf(InvalidRequest.class, faultObj);
         final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
         assertTrue(invalidRequest.getMessage().endsWith("is unexpected"));
         assertFalse(invalidRequest.getStacktrace().isEmpty());
@@ -136,21 +143,19 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
      * </ul>
      */
     protected void testInvalidRequest_Empty(final String suName, final QName interfaceName, final QName serviceName,
-            final QName operationName)
-            throws Exception {
+            final QName operationName) throws Exception {
 
-        IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage request = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, suName, operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), (Source) null);
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
+        final RequestToProviderMessage request = new RequestToProviderMessage(COMPONENT_UNDER_TEST, suName,
+                operationName, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), (Source) null);
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(request);
-        assertNull("An error is set in the response", responseMsg.getError());
-        assertNull("An out is set in response", responseMsg.getOut());
-        assertNotNull("No fault in response", responseMsg.getFault());
+        assertNull(responseMsg.getError(), "An error is set in the response");
+        assertNull(responseMsg.getOut(), "An out is set in response");
+        assertNotNull(responseMsg.getFault(), "No fault in response");
 
         final Object faultObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
-        assertTrue(faultObj instanceof InvalidRequest);
+        assertInstanceOf(InvalidRequest.class, faultObj);
         final InvalidRequest invalidRequest = (InvalidRequest) faultObj;
         assertTrue(invalidRequest.getMessage().endsWith("is empty"));
         assertFalse(invalidRequest.getStacktrace().isEmpty());
@@ -165,25 +170,24 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
      * <p>
      * Check the processing of the integration service operation with the given request. No error and no fault expected.
      */
-    protected Object testRequest(final String suName, final QName interfaceName,
-            final QName serviceName, final QName operationName, final Object request) throws Exception {
+    protected Object testRequest(final String suName, final QName interfaceName, final QName serviceName,
+            final QName operationName, final Object request) throws Exception {
 
-        IN_MEMORY_LOG_HANDLER.clear();
-        final RequestToProviderMessage requestM = new RequestToProviderMessage(
-                COMPONENT_UNDER_TEST, suName, operationName,
-                AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
+        final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, suName,
+                operationName, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
 
-        assertNull("An error is set in the response", responseMsg.getError());
-        assertNull("A fault is set in the response", responseMsg.getFault());
-        assertNotNull("No XML payload in response", responseMsg.getPayload());
+        assertNull(responseMsg.getError(), "An error is set in the response");
+        assertNull(responseMsg.getFault(), "A fault is set in the response");
+        assertNotNull(responseMsg.getPayload(), "No XML payload in response");
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getPayload());
 
         COMPONENT.sendDoneStatus(responseMsg);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
         final FlowLogData providerBegin = assertMonitProviderBeginLog(interfaceName, serviceName,
                 COMPONENT_UNDER_TEST.getNativeEndpointName(serviceName), operationName, monitLogs.get(0));
@@ -199,21 +203,21 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
     protected Object testRequestWithFault(final String suName, final QName interfaceName, final QName serviceName,
             final QName operationName, final Object request) throws Exception {
 
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
         final RequestToProviderMessage requestM = new RequestToProviderMessage(COMPONENT_UNDER_TEST, suName,
                 operationName, AbsItfOperation.MEPPatternConstants.IN_OUT.value(), toByteArray(request));
 
         final ResponseMessage responseMsg = COMPONENT.sendAndGetResponse(requestM);
 
-        assertNull("An error is set in the response", responseMsg.getError());
-        assertTrue("A XML payload is set in the response", responseMsg.isFault());
-        assertNotNull("No fault in response", responseMsg.getFault());
+        assertNull(responseMsg.getError(), "An error is set in the response");
+        assertTrue(responseMsg.isFault(), "A XML payload is set in the response");
+        assertNotNull(responseMsg.getFault(), "No fault in response");
         final Object responseObj = UNMARSHALLER.unmarshal(responseMsg.getFault());
 
         COMPONENT.sendDoneStatus(responseMsg);
 
         // Check MONIT traces
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
         final FlowLogData providerBegin = assertMonitProviderBeginLog(interfaceName, serviceName,
                 COMPONENT_UNDER_TEST.getNativeEndpointName(serviceName), operationName, monitLogs.get(0));
@@ -227,7 +231,7 @@ public abstract class AbstractIntegrationServiceInvokations extends VacationProc
      */
     private void assertMonitLogsWithFailure(final QName interfaceName, final QName serviceName,
             final QName operationName) {
-        final List<LogRecord> monitLogs = IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT);
+        final List<LogRecord> monitLogs = COMPONENT_UNDER_TEST.getInMemoryLogHandler().getAllRecords(Level.MONIT);
         assertEquals(2, monitLogs.size());
         final FlowLogData providerBegin = assertMonitProviderBeginLog(interfaceName, serviceName,
                 COMPONENT_UNDER_TEST.getNativeEndpointName(serviceName), operationName, monitLogs.get(0));

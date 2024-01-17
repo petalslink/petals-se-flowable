@@ -112,9 +112,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
         }
     }
 
-    public MonitTraceFilteringTest() {
-        super();
-
+    protected void completesComponentUnderTestConfiguration() throws Exception {
         this.componentUnderTest
                 // Enable Job executor
                 .setParameter(
@@ -127,6 +125,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
                 // REST API is not needed
                 .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ENABLE),
                         Boolean.FALSE.toString());
+        super.completesComponentUnderTestConfiguration();
     }
 
     @Override
@@ -201,23 +200,23 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
 
         final URL wsdlUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("org/ow2/petals/flowable/monit/monitFiltering.wsdl");
-        assertNotNull("Rule #" + ruleIdx + ": WSDL not found", wsdlUrl);
+        assertNotNull(wsdlUrl, "Rule #" + ruleIdx + ": WSDL not found");
         final ProvidesServiceConfiguration serviceProviderCfg = new ProvidesServiceConfiguration(
                 PROVIDER_START_INTERFACE, PROVIDER_START_SERVICE, PROVIDER_START_ENDPOINT, wsdlUrl);
 
         final URL startResponseXslUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("org/ow2/petals/flowable/monit/startResponse.xsl");
-        assertNotNull("Output XSL 'startResponse.xsl' not found", startResponseXslUrl);
+        assertNotNull(startResponseXslUrl, "Output XSL 'startResponse.xsl' not found");
         serviceProviderCfg.addResource(startResponseXslUrl);
 
         final URL bpmnUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("org/ow2/petals/flowable/monit/monitFiltering.bpmn");
-        assertNotNull("BPMN file not found", bpmnUrl);
+        assertNotNull(bpmnUrl, "BPMN file not found");
         serviceProviderCfg.addResource(bpmnUrl);
 
         final URL echoServiceWsdlUrl = Thread.currentThread().getContextClassLoader()
                 .getResource("org/ow2/petals/flowable/monit/echo.wsdl");
-        assertNotNull("echoService WSDL not found", echoServiceWsdlUrl);
+        assertNotNull(echoServiceWsdlUrl, "echoService WSDL not found");
         serviceProviderCfg.addResource(echoServiceWsdlUrl);
 
         serviceProviderCfg.setServicesSectionParameter(new QName(FlowableSEConstants.NAMESPACE_SU, "process_file"),
@@ -309,7 +308,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
     protected void waitExchangeExecutionEnd(final Optional<ExchangeStatus> statusReturned, final boolean faultReturned,
             final String ruleIdPrefix, final MEPPatternConstants mep) throws Exception {
 
-        assertTrue(this.componentUnderTest.getComponentObject().getMonitoringBean() instanceof MonitoringMBean);
+        assertInstanceOf(MonitoringMBean.class, this.componentUnderTest.getComponentObject().getMonitoringBean());
         final MonitoringMBean monitoringMbean = (MonitoringMBean) this.componentUnderTest.getComponentObject()
                 .getMonitoringBean();
 
@@ -363,7 +362,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
             final boolean isFaultExpected, final MEPPatternConstants mep) {
 
         if (isProvMonitTraceExpected) {
-            assertTrue(ruleIdPrefix, monitLogs.size() >= 4);
+            assertTrue(monitLogs.size() >= 4, ruleIdPrefix);
 
             final FlowLogData providerBeginFlowLogData = assertMonitProviderBeginLog(ruleIdPrefix,
                     providerServiceCfg.getInterfaceName(), providerServiceCfg.getServiceName(),
@@ -378,7 +377,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
             }
 
             if (isConsMonitTraceExpected) {
-                assertEquals(ruleIdPrefix, 6, monitLogs.size());
+                assertEquals(6, monitLogs.size(), ruleIdPrefix);
                 final FlowLogData consumedBeginFlowLogData = assertMonitProviderBeginLog(ruleIdPrefix,
                         processBeginFlowLogData, this.getConsumedServiceInterface(), this.getConsumedServiceName(),
                         this.getConsumedServiceEndpoint(), this.getConsumedServiceOperation(mep), monitLogs.get(3));
@@ -388,13 +387,13 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
                     assertMonitProviderEndLog(ruleIdPrefix, consumedBeginFlowLogData, monitLogs.get(4));
                 }
             } else {
-                assertEquals(ruleIdPrefix, 4, monitLogs.size());
+                assertEquals(4, monitLogs.size(), ruleIdPrefix);
                 assertMonitConsumerExtEndLog(processBeginFlowLogData, monitLogs.get(3));
             }
         } else if (isConsMonitTraceExpected) {
             assert !isProvMonitTraceExpected;
 
-            assertEquals(ruleIdPrefix, 2, monitLogs.size());
+            assertEquals(2, monitLogs.size(), ruleIdPrefix);
             final FlowLogData consumedBeginFlowLogData = assertMonitProviderBeginLog(ruleIdPrefix,
                     this.getConsumedServiceInterface(), this.getConsumedServiceName(),
                     this.getConsumedServiceEndpoint(), this.getConsumedServiceOperation(mep), monitLogs.get(0));
@@ -404,7 +403,7 @@ public class MonitTraceFilteringTest extends AbstractMonitTraceFilteringTestForS
                 assertMonitProviderEndLog(ruleIdPrefix, consumedBeginFlowLogData, monitLogs.get(1));
             }
         } else {
-            assertEquals(ruleIdPrefix, 0, monitLogs.size());
+            assertEquals(0, monitLogs.size(), ruleIdPrefix);
         }
     }
 }

@@ -17,11 +17,14 @@
  */
 package org.ow2.petals.flowable.integration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_OP_GETPROCESSINSTANCES;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_PORT_TYPE;
 import static org.ow2.petals.flowable.FlowableSEConstants.IntegrationOperation.ITG_PROCESSINSTANCES_SERVICE;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.ow2.petals.components.flowable.generic._1.GetProcessInstances;
 import org.ow2.petals.components.flowable.generic._1.GetProcessInstancesResponse;
 import org.ow2.petals.flowable.incoming.integration.GetProcessInstancesOperation;
@@ -30,7 +33,6 @@ import org.ow2.petals.flowable.incoming.integration.GetProcessInstancesOperation
  * Unit tests about request processing of the service {@link GetProcessInstancesOperation}
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public class GetProcessInstanceInvocationTest extends AbstractIntegrationServiceInvokations {
 
@@ -126,7 +128,7 @@ public class GetProcessInstanceInvocationTest extends AbstractIntegrationService
                 ITG_PROCESSINSTANCES_PORT_TYPE, ITG_PROCESSINSTANCES_SERVICE, ITG_OP_GETPROCESSINSTANCES,
                 new GetProcessInstances());
 
-        assertTrue(getProcessInstancesRespObj instanceof GetProcessInstancesResponse);
+        assertInstanceOf(GetProcessInstancesResponse.class, getProcessInstancesRespObj);
         final GetProcessInstancesResponse getProcessInstancesResp = (GetProcessInstancesResponse) getProcessInstancesRespObj;
         assertNotNull(getProcessInstancesResp.getProcessInstances());
         assertNotNull(getProcessInstancesResp.getProcessInstances().getProcessInstance());

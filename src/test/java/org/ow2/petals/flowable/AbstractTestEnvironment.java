@@ -17,32 +17,41 @@
  */
 package org.ow2.petals.flowable;
 
-import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_URL_DATABASE_FILENAME;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.LogRecord;
 
+import javax.xml.namespace.QName;
+
 import org.apache.mina.util.AvailablePortFinder;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.ow2.petals.commons.log.FlowLogData;
 import org.ow2.petals.commons.log.TraceCode;
-import org.ow2.petals.component.framework.junit.rule.ComponentUnderTest;
-import org.ow2.petals.flowable.identity.file.FileIdmEngineConfigurator;
-import org.ow2.petals.flowable.junit.FlowableClient;
+import org.ow2.petals.component.framework.junit.extensions.ComponentUnderTestExtension;
+import org.ow2.petals.component.framework.junit.extensions.api.ComponentUnderTest;
+import org.ow2.petals.component.framework.junit.helpers.SimpleComponent;
+import org.ow2.petals.flowable.junit.extensions.FlowableClientExtension;
+import org.ow2.petals.flowable.junit.extensions.FlowableClientExtension.DatabaseType;
+import org.ow2.petals.flowable.junit.extensions.api.FlowableClient;
 import org.ow2.petals.flowable.utils.test.Await;
-import org.ow2.petals.junit.rules.log.handler.InMemoryLogHandler;
+import org.ow2.petals.junit.extensions.log.handler.InMemoryLogHandlerExtension;
+
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 
 /**
  * Abstract class for unit tests about request processing
  * 
  * @author Christophe DENEUX - Linagora
- * 
  */
 public abstract class AbstractTestEnvironment extends AbstractTest {
 
@@ -56,38 +65,70 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
 
     protected static final String NATIVE_EXECUTIONS_SVC_CFG = "native-executions";
 
-    protected static final InMemoryLogHandler IN_MEMORY_LOG_HANDLER = new InMemoryLogHandler();
-
-    protected static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
-
     protected static final int EMBEDDED_REST_API_HTTP_PORT = AvailablePortFinder
             .getNextAvailable(FlowableSEConstants.DEFAULT_ENGINE_REST_API_PORT);
 
-    @Rule
-    public FlowableClient flowableClient = new FlowableClient(
-            new File(new File(this.getComponentUnderTest().getBaseDirectory(), "work"),
-                    DEFAULT_JDBC_URL_DATABASE_FILENAME),
-            new FileIdmEngineConfigurator(), VACATION_SU_HOME + "idm-engine-configurator.properties");
+    @FlowableClientExtension(
+            databaseType = DatabaseType.FILE_BASED, jdbcUrlPattern = FlowableClient.DEFAULT_H2_FILE_JDBC_URL_PATTERN, autoStart = false
+    )
+    protected static FlowableClient FLOWABLE_CLIENT;
 
-    protected abstract ComponentUnderTest getComponentUnderTest();
+    @ComponentUnderTestExtension(inMemoryLogHandler = @InMemoryLogHandlerExtension, explicitPostInitialization = true)
+    protected static ComponentUnderTest COMPONENT_UNDER_TEST;
 
-    public AbstractTestEnvironment() {
-        this(null);
+    protected static SimpleComponent COMPONENT;
+
+    protected static Marshaller MARSHALLER;
+
+    protected static Unmarshaller UNMARSHALLER;
+
+    @BeforeAll
+    private static void componentUnderTestBaseConfiguration() throws Exception {
+        componentUnderTestDatabaseConfiguration();
+        componentUnderTestAsyncExecConfiguration();
+        componentUnderTestDefaultRestConfiguration();
+
+        COMPONENT = new SimpleComponent(COMPONENT_UNDER_TEST);
     }
 
-    public AbstractTestEnvironment(final String fileIdmEngineConfiguratorCfgFile) {
-        this.flowableClient = new FlowableClient(
-                new File(new File(this.getComponentUnderTest().getBaseDirectory(), "work"),
-                        DEFAULT_JDBC_URL_DATABASE_FILENAME),
-                new FileIdmEngineConfigurator(), fileIdmEngineConfiguratorCfgFile);
+    private static void componentUnderTestDatabaseConfiguration() throws Exception {
+
+        COMPONENT_UNDER_TEST.setParameter(
+                new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.DBServer.JDBC_URL),
+                FLOWABLE_CLIENT.getJdbcUrl());
+    }
+
+    private static void componentUnderTestAsyncExecConfiguration() throws Exception {
+        // An async job executor is required to process service task
+        COMPONENT_UNDER_TEST
+                .setParameter(
+                        new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_ENABLE_JOB_EXECUTOR),
+                        Boolean.TRUE.toString())
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                        FlowableSEConstants.ENGINE_JOB_EXECUTOR_TIMERJOBACQUIREWAITTIME), "1000")
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                        FlowableSEConstants.ENGINE_JOB_EXECUTOR_ASYNCJOBACQUIREWAITTIME), "1000")
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                        FlowableSEConstants.ENGINE_DEFAULT_FAILED_JOB_WAIT_TIME), "1")
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP,
+                        FlowableSEConstants.ENGINE_ASYNC_FAILED_JOB_WAIT_TIME), "1");
+    }
+
+    private static void componentUnderTestDefaultRestConfiguration() throws Exception {
+
+        COMPONENT_UNDER_TEST
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_PORT),
+                        Integer.toString(EMBEDDED_REST_API_HTTP_PORT))
+                .setParameter(new QName(FlowableSEConstants.NAMESPACE_COMP, FlowableSEConstants.ENGINE_REST_API_ENABLE),
+                        Boolean.FALSE.toString());
     }
 
     /**
      * All log traces must be cleared before starting a unit test
      */
-    @Before
+    @BeforeEach
     public void clearLogTraces() {
-        IN_MEMORY_LOG_HANDLER.clear();
+        COMPONENT_UNDER_TEST.getInMemoryLogHandler().clear();
     }
 
     /**
@@ -96,12 +137,28 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      * @return The number of process instances that are not finished and associated to the given process definition
      */
     protected int getProcessInstanceNumber(final String processDefinitionKey) {
-        final ProcessInstanceQuery processInstQuery = this.flowableClient.getRuntimeService()
-                .createProcessInstanceQuery();
+        final ProcessInstanceQuery processInstQuery = FLOWABLE_CLIENT.getRuntimeService().createProcessInstanceQuery();
         final List<ProcessInstance> processInstances = processInstQuery.processDefinitionKey(processDefinitionKey)
                 .list();
         assertNotNull(processInstances);
         return processInstances.size();
+    }
+
+    /**
+     * Convert a JAXB element to bytes
+     * 
+     * @param jaxbElement
+     *            The JAXB element to write as bytes
+     */
+    protected static byte[] toByteArray(final Object jaxbElement) throws JAXBException, IOException {
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try {
+            MARSHALLER.marshal(jaxbElement, baos);
+            return baos.toByteArray();
+        } finally {
+            baos.close();
+        }
     }
 
     /**
@@ -115,7 +172,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     protected void assertProcessInstancePending(final String processInstanceId, final String processDefinitionKey) {
 
         org.ow2.petals.flowable.utils.test.Assert.assertProcessInstancePending(processInstanceId, processDefinitionKey,
-                this.flowableClient.getRuntimeService());
+                FLOWABLE_CLIENT.getRuntimeService());
     }
 
     /**
@@ -127,7 +184,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     protected void assertProcessInstanceFinished(final String processInstanceId) {
 
         org.ow2.petals.flowable.utils.test.Assert.assertProcessInstanceFinished(processInstanceId,
-                this.flowableClient.getHistoryService());
+                FLOWABLE_CLIENT.getHistoryService());
     }
 
     /**
@@ -144,7 +201,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             final String user) {
 
         org.ow2.petals.flowable.utils.test.Assert.assertCurrentUserTask(processInstanceId, taskDefinitionKey, user,
-                this.flowableClient.getTaskService());
+                FLOWABLE_CLIENT.getTaskService());
     }
 
     /**
@@ -161,7 +218,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             final String user) {
 
         org.ow2.petals.flowable.utils.test.Assert.assertUserTaskEnded(processInstanceId, taskDefinitionKey, user,
-                this.flowableClient.getHistoryService());
+                FLOWABLE_CLIENT.getHistoryService());
     }
 
     /**
@@ -172,7 +229,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      *            The process instance identifier of the process instance to wait its placement as dead letter job.
      */
     protected void waitProcessInstanceAsDeadLetterJob(final String processInstanceId) throws InterruptedException {
-        Await.waitProcessInstanceAsDeadLetterJob(processInstanceId, this.flowableClient.getManagementService(), 60);
+        Await.waitProcessInstanceAsDeadLetterJob(processInstanceId, FLOWABLE_CLIENT.getManagementService(), 60);
     }
 
     /**
@@ -197,7 +254,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      */
     protected void waitEndOfProcessInstance(final String processInstanceId, final int duration)
             throws InterruptedException {
-        Await.waitEndOfProcessInstance(processInstanceId, this.flowableClient.getHistoryService(), duration);
+        Await.waitEndOfProcessInstance(processInstanceId, FLOWABLE_CLIENT.getHistoryService(), duration);
     }
 
     /**
@@ -211,7 +268,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
      */
     protected void waitEndOfServiceTask(final String processInstanceId, final String serviceTaskDefinitionKey)
             throws InterruptedException {
-        Await.waitEndOfServiceTask(processInstanceId, serviceTaskDefinitionKey, this.flowableClient.getHistoryService(),
+        Await.waitEndOfServiceTask(processInstanceId, serviceTaskDefinitionKey, FLOWABLE_CLIENT.getHistoryService(),
                 60);
     }
 
@@ -248,7 +305,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
             final String candidateUser, final int duration) throws InterruptedException {
 
         Await.waitUserTaskAssignment(processInstanceId, taskDefinitionKey, candidateUser,
-                this.flowableClient.getTaskService(), duration);
+                FLOWABLE_CLIENT.getTaskService(), duration);
     }
 
     /**
@@ -263,7 +320,7 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
     protected void waitIntermediateCatchMessageEvent(final String processInstanceId, final String messageEventName)
             throws InterruptedException {
         Await.waitIntermediateCatchMessageEvent(processInstanceId, messageEventName,
-                this.flowableClient.getRuntimeService(), 60);
+                FLOWABLE_CLIENT.getRuntimeService(), 60);
     }
 
     /**

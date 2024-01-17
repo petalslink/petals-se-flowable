@@ -15,7 +15,7 @@
  * along with this program/library; If not, see http://www.gnu.org/licenses/
  * for the GNU Lesser General Public License version 2.1.
  */
-package org.ow2.petals.flowable.junit;
+package org.ow2.petals.flowable.junit.extensions;
 
 import java.util.logging.Logger;
 
