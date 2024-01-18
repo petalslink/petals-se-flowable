@@ -22,7 +22,7 @@
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <version>20.4.0-SNAPSHOT</version>
-      <relativePath />
+		<relativePath />
    </parent>
 
    <groupId>org.ow2.petals.samples.flowable</groupId>
@@ -44,85 +44,90 @@
       <cxf.version>4.0.2</cxf.version>
    </properties>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <!-- Align dependencies with those of Flowable -->
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-se-flowable</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
-            <scope>import</scope>
-            <type>pom</type>
-         </dependency>
-         <dependency>
-            <artifactId>petals-se-flowable</artifactId>
-            <groupId>org.ow2.petals</groupId>
-            <scope>provided</scope>
-            <type>jbi-component</type>
-            <version>1.5.0-SNAPSHOT</version>
-         </dependency>
-         <dependency>
-            <artifactId>petals-bc-soap</artifactId>
-            <groupId>org.ow2.petals</groupId>
-            <scope>provided</scope>
-            <type>jbi-component</type>
-            <version>5.2.0-SNAPSHOT</version>
-         </dependency>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<!-- Align dependencies with those of Flowable -->
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-se-flowable</artifactId>
+				<version>1.5.0-SNAPSHOT</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<artifactId>petals-se-flowable</artifactId>
+				<groupId>org.ow2.petals</groupId>
+				<scope>provided</scope>
+				<type>jbi-component</type>
+				<version>1.5.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<artifactId>petals-bc-soap</artifactId>
+				<groupId>org.ow2.petals</groupId>
+				<scope>provided</scope>
+				<type>jbi-component</type>
+				<version>5.2.0-SNAPSHOT</version>
+			</dependency>
 
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-se-flowable-junit</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
-            <scope>test</scope>
-         </dependency>
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-se-flowable-test-utils</artifactId>
-            <version>1.5.0-SNAPSHOT</version>
-            <scope>test</scope>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
+			<dependency>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-se-flowable-junit</artifactId>
+				<version>1.5.0-SNAPSHOT</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-se-flowable-test-utils</artifactId>
+				<version>1.5.0-SNAPSHOT</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2</artifactId>
+				<version>2.2.224</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
-   <build>
-      <pluginManagement>
-         <plugins>
-            <plugin>
-               <artifactId>petals-maven-plugin</artifactId>
-               <groupId>org.ow2.petals</groupId>
-               <version>3.4.0-SNAPSHOT</version>
-               <extensions>true</extensions>
-            </plugin>
-         </plugins>
-      </pluginManagement>
-   </build>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>petals-maven-plugin</artifactId>
+					<groupId>org.ow2.petals</groupId>
+					<version>3.4.0-SNAPSHOT</version>
+					<extensions>true</extensions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 
-   <modules>
-      <module>su-flowable-vacationService-provide</module>
-      <module>sa-flowable-vacation-sample</module>
-      <module>su-SOAP-vacationService-consume</module>
-      <module>su-SOAP-notifyVacationService-provide</module>
-      <module>su-SOAP-archiveService-provide</module>
-      <module>su-SOAP-flowableIntegrationService-consume</module>
-      <module>samples-SOAP-services</module>
-      <module>sample-vacation-webapp</module>
-      <module>su-SOAP-notifyVacationService-consume</module>
-      <module>su-SOAP-archiveService-consume</module>
-      <module>su-flowable-collaboration-provide</module>
-      <module>su-SOAP-collaborationService-consume</module>
-      <module>sa-flowable-collaboration-sample</module>
-      <module>sa-flowable-traveling-sample</module>
-      <module>su-SOAP-notifyTravelingService-provide</module>
-      <module>su-SOAP-notifyTravelingService-consume</module>
-      <module>su-flowable-travelingService-provide</module>
-      <module>su-SOAP-travelingService-consume</module>
-      <module>su-SOAP-bookingService-provide</module>
-      <module>su-SOAP-bookingService-consume</module>
-   </modules>
+	<modules>
+		<module>su-flowable-vacationService-provide</module>
+		<module>sa-flowable-vacation-sample</module>
+		<module>su-SOAP-vacationService-consume</module>
+		<module>su-SOAP-notifyVacationService-provide</module>
+		<module>su-SOAP-archiveService-provide</module>
+		<module>su-SOAP-flowableIntegrationService-consume</module>
+		<module>samples-SOAP-services</module>
+		<module>sample-vacation-webapp</module>
+		<module>su-SOAP-notifyVacationService-consume</module>
+		<module>su-SOAP-archiveService-consume</module>
+		<module>su-flowable-collaboration-provide</module>
+		<module>su-SOAP-collaborationService-consume</module>
+		<module>sa-flowable-collaboration-sample</module>
+		<module>sa-flowable-traveling-sample</module>
+		<module>su-SOAP-notifyTravelingService-provide</module>
+		<module>su-SOAP-notifyTravelingService-consume</module>
+		<module>su-flowable-travelingService-provide</module>
+		<module>su-SOAP-travelingService-consume</module>
+		<module>su-SOAP-bookingService-provide</module>
+		<module>su-SOAP-bookingService-consume</module>
+	</modules>
 
-   <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
-      <developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
-      <tag>petals-samples-flowable-1.4.0-1.0.0</tag>
-   </scm>
+	<scm>
+		<connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+		<developerConnection>scm:git:https://github.com/petalslink/petals-se-flowable.git</developerConnection>
+		<tag>petals-samples-flowable-1.4.0-1.0.0</tag>
+	</scm>
 </project>

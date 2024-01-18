@@ -67,5 +67,15 @@
             </license>
          </licenses>
       </dependency>
+      <dependency>
+         <groupId>com.h2database</groupId>
+         <artifactId>h2</artifactId>
+         <licenses>
+            <license>
+               <name>EPL 1.0</name>
+               <url>https://www.eclipse.org/org/documents/epl-v10.html</url>
+            </license>
+         </licenses>
+      </dependency>
    </dependencies>
 </licenseSummary>

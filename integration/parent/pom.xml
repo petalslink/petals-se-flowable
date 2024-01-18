@@ -21,7 +21,7 @@
       <artifactId>parent</artifactId>
       <groupId>org.ow2.petals.integration.tests</groupId>
       <version>5.4.0-SNAPSHOT</version>
-      <relativePath />
+		<relativePath />
    </parent>
 
    <name>Petals Integration Tests - Tests - Components - Petals SE Flowable - Parent</name>
@@ -48,25 +48,30 @@
       <cxf.version>4.0.2</cxf.version>
    </properties>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <artifactId>petals-se-flowable</artifactId>
-            <groupId>org.ow2.petals</groupId>
-            <version>${petals-se-flowable.version}</version>
-            <type>jbi-component</type>
-         </dependency>
-         <dependency>
-            <groupId>org.ow2.petals</groupId>
-            <artifactId>petals-se-flowable-junit</artifactId>
-            <version>${petals-se-flowable-junit.version}</version>
-            <scope>test</scope>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<artifactId>petals-se-flowable</artifactId>
+				<groupId>org.ow2.petals</groupId>
+				<version>${petals-se-flowable.version}</version>
+				<type>jbi-component</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-se-flowable-junit</artifactId>
+				<version>${petals-se-flowable-junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2</artifactId>
+				<version>2.2.224</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
-   <scm>
-      <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
-      <developerConnection>${project.scm.connection}</developerConnection>
-   </scm>
+	<scm>
+		<connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>
+		<developerConnection>${project.scm.connection}</developerConnection>
+	</scm>
 </project>
