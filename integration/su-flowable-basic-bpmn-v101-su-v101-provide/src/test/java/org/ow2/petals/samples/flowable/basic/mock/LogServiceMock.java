@@ -15,9 +15,9 @@
  */
 package org.ow2.petals.samples.flowable.basic.mock;
 
-import javax.xml.ws.WebServiceException;
-
 import org.ow2.petals.integration.tests.se_flowable.log.services.v1.Log;
+
+import jakarta.xml.ws.WebServiceException;
 
 public class LogServiceMock implements Log {
 

@@ -16,34 +16,34 @@
 package org.ow2.petals.samples.flowable.basic;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.ow2.petals.flowable.utils.test.Assert.assertCurrentUserTask;
+import static org.ow2.petals.flowable.utils.test.Await.waitEndOfProcessInstance;
+import static org.ow2.petals.flowable.utils.test.Await.waitUserTaskAssignment;
 
-import java.io.File;
-import java.net.URISyntaxException;
+import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.LogManager;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.Endpoint;
 
+import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.test.Deployment;
 import org.flowable.task.api.Task;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.ow2.petals.flowable.junit.PetalsFlowableRule;
+import org.ow2.petals.flowable.junit.extensions.PetalsFlowableTest;
 import org.ow2.petals.samples.flowable.basic.mock.LogServiceMock;
 
-public class ProcessDeploymentTest {
+import jakarta.xml.ws.Endpoint;
 
-    @Rule
-    public final PetalsFlowableRule flowableRule = new PetalsFlowableRule();
+@PetalsFlowableTest
+public class ProcessDeploymentTest {
 
     // -------------------------
     // Prepare service mocks
@@ -52,15 +52,19 @@ public class ProcessDeploymentTest {
 
     private Endpoint logServiceEdp;
 
-    @BeforeClass
-    public static void initLog() throws URISyntaxException {
-        final URL logCfg = Thread.currentThread().getContextClassLoader().getResource("logging.properties");
-        assertNotNull("Log conf file not found", logCfg);
-        System.setProperty("java.util.logging.config.file", new File(logCfg.toURI()).getAbsolutePath());
+    static {
+        final URL logConfig = ProcessDeploymentTest.class.getResource("/logging.properties");
+        assertNotNull(logConfig, "Logging configuration file not found");
+
+        try {
+            LogManager.getLogManager().readConfiguration(logConfig.openStream());
+        } catch (final SecurityException | IOException e) {
+            throw new AssertionError(e);
+        }
     }
 
-    @Before
-    public void setupEndpoints() throws Exception {
+    @BeforeEach
+    public void setupEndpoints(final ProcessEngine processEngine) throws Exception {
         final ConcurrentMap<QName, URL> endpoints = new ConcurrentHashMap<>();
 
         final String urlCollaboration = "http://localhost:12345/logService";
@@ -68,40 +72,36 @@ public class ProcessDeploymentTest {
         endpoints.put(new QName("http://petals.ow2.org/integration/tests/se-flowable/log/services/v1", "autogenerate"),
                 new URL(urlCollaboration));
 
-        ((ProcessEngineConfigurationImpl) this.flowableRule.getProcessEngine().getProcessEngineConfiguration())
+        ((ProcessEngineConfigurationImpl) processEngine.getProcessEngineConfiguration())
                 .setWsOverridenEndpointAddresses(endpoints);
     }
 
-    @After
+    @AfterEach
     public void destroy() {
         this.logServiceEdp.stop();
     }
 
-    @AfterClass
-    public static void cleanLog() {
-        System.clearProperty("java.util.logging.config.file");
-    }
-
     @Test
     @Deployment(resources = { "jbi/basic.bpmn" })
-    public void nominal() throws InterruptedException {
+    public void nominal(final ProcessEngine processEngine) throws InterruptedException {
 
         // Assertion about the deployment of processes
-        assertNotNull(this.flowableRule.getRepositoryService().createProcessDefinitionQuery()
+        assertNotNull(processEngine.getRepositoryService().createProcessDefinitionQuery()
                 .processDefinitionKey("basicProcess").singleResult());
 
-        final ProcessInstance masterBasicInst = this.flowableRule.getRuntimeService()
+        final ProcessInstance masterBasicInst = processEngine.getRuntimeService()
                 .startProcessInstanceByKey("basicProcess");
         assertNotNull(masterBasicInst);
 
-        this.flowableRule.waitUserTaskAssignment(masterBasicInst.getProcessInstanceId(), "usertask1", "kermit");
-        final Task userTask1 = this.flowableRule.assertCurrentUserTask(masterBasicInst.getProcessInstanceId(),
-                "usertask1", "kermit");
-        this.flowableRule.getTaskService().complete(userTask1.getId());
+        waitUserTaskAssignment(masterBasicInst.getProcessInstanceId(), "usertask1", "kermit",
+                processEngine.getTaskService());
+        final Task userTask1 = assertCurrentUserTask(masterBasicInst.getProcessInstanceId(), "usertask1", "kermit",
+                processEngine.getTaskService());
+        processEngine.getTaskService().complete(userTask1.getId());
 
-        this.flowableRule.waitEndOfProcessInstance(masterBasicInst.getProcessInstanceId());
+        waitEndOfProcessInstance(masterBasicInst.getProcessInstanceId(), processEngine.getHistoryService());
 
-        final HistoricProcessInstance masterBasicHistInst = this.flowableRule.getHistoryService()
+        final HistoricProcessInstance masterBasicHistInst = processEngine.getHistoryService()
                 .createHistoricProcessInstanceQuery().processInstanceId(masterBasicInst.getId())
                 .includeProcessVariables().singleResult();
         assertNotNull(masterBasicHistInst);

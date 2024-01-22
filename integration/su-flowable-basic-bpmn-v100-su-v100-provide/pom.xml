@@ -44,11 +44,11 @@
    
    <dependencies>
       <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
+         <groupId>org.junit.jupiter</groupId>
+         <artifactId>junit-jupiter-api</artifactId>
          <scope>test</scope>
       </dependency>
-      
+
       <dependency>
          <groupId>${project.groupId}</groupId>
          <artifactId>su-SOAP-logService-v1-provide</artifactId>
@@ -66,6 +66,10 @@
          <groupId>org.ow2.petals</groupId>
          <artifactId>petals-se-flowable-junit</artifactId>
       </dependency>
+      <dependency>
+         <groupId>org.ow2.petals</groupId>
+         <artifactId>petals-se-flowable-test-utils</artifactId>
+      </dependency>
       
       <!-- To test the process definition we must use our own Flowable engine-->
       <dependency>
@@ -73,6 +77,13 @@
          <artifactId>flowable-engine</artifactId>
          <version>${flowable.version}</version>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- We prefer to use the SLF bridge 'jcl-over-slf4j' to redirect JCL calls to SLF4J API -->
+               <groupId>org.springframework</groupId>
+               <artifactId>spring-jcl</artifactId>
+            </exclusion>
+		 </exclusions>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -85,6 +96,13 @@
          <artifactId>flowable-cxf</artifactId>
          <version>${flowable.version}</version>
          <scope>test</scope>
+         <exclusions>
+			<exclusion>
+               <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by Petals SE Flowable Junit framework-->
+               <groupId>jakarta.jws</groupId>
+               <artifactId>jakarta.jws-api</artifactId>
+            </exclusion>
+		 </exclusions>
       </dependency>
       <dependency>
          <!-- To implement a ws-service mock server -->
@@ -113,14 +131,16 @@
          </exclusions>
       </dependency>
       <dependency>
-         <groupId>jakarta.jws</groupId>
-         <artifactId>jakarta.jws-api</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
          <groupId>jakarta.xml.ws</groupId>
          <artifactId>jakarta.xml.ws-api</artifactId>
          <scope>test</scope>
+         <exclusions>
+            <exclusion>
+               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK provided by the component -->
+               <groupId>jakarta.activation</groupId>
+               <artifactId>jakarta.activation-api</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>

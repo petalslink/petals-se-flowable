@@ -63,6 +63,12 @@
 				<scope>test</scope>
 			</dependency>
 			<dependency>
+				<groupId>org.ow2.petals</groupId>
+				<artifactId>petals-se-flowable-test-utils</artifactId>
+				<version>${petals-se-flowable-junit.version}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
 				<groupId>com.h2database</groupId>
 				<artifactId>h2</artifactId>
 				<version>2.2.224</version>
