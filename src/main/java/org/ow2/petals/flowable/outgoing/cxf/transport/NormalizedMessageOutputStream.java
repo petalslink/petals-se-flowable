@@ -45,6 +45,7 @@ import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.jbidescriptor.generated.MEPType;
 import org.ow2.petals.component.framework.listener.AbstractListener;
+import org.ow2.petals.component.framework.logger.StepLogHelper;
 import org.ow2.petals.flowable.outgoing.PetalsFlowableAsyncContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -106,25 +107,25 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
         final EndpointInfo endpointInfo = cxfExchange.getEndpoint().getEndpointInfo();
         final QName interfaceName = endpointInfo.getInterface().getName();
-        final QName serviceName = endpointInfo.getService().getName();
+        final QName service = endpointInfo.getService().getName();
         final OperationInfo operationInfo = cxfExchange.getBindingOperationInfo().getOperationInfo();
-        final QName operationName = operationInfo.getName();
+        final QName operation = operationInfo.getName();
 
         try {
             Consumes consume = this.sender.getComponent().getServiceUnitManager().getConsumesFromDestination(null,
-                    serviceName, interfaceName, operationName);
+                    service, interfaceName, operation);
 
             final MEPPatternConstants mep = getMEP(operationInfo, consume);
 
             if (consume == null) {
                 this.sender.getLogger().log(Level.WARNING, String.format(
                         "No Consumes declared in the JBI descriptor for the request to send, using informations from the process and default timeout: interface=%s, serviceName=%s, operation=%s, mep=%s",
-                        interfaceName, serviceName, operationName, mep));
+                        interfaceName, service, operation, mep));
                 consume = new Consumes();
                 // TODO: Create a unit test where the interface name is missing
                 consume.setInterfaceName(interfaceName);
                 // TODO: Create a unit test where the service name is missing
-                consume.setServiceName(serviceName);
+                consume.setServiceName(service);
             } else {
                 if (interfaceName != null && !consume.getInterfaceName().equals(interfaceName)) {
                     this.sender.getLogger().log(Level.WARNING,
@@ -132,10 +133,10 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                                     + consume.getInterfaceName() + " vs " + interfaceName
                                     + "), using Consumes information.");
                 }
-                if (serviceName != null && !serviceName.equals(consume.getServiceName())) {
+                if (service != null && !service.equals(consume.getServiceName())) {
                     this.sender.getLogger().log(Level.WARNING,
                             "Mismatch between JBI Consumes service name and process information ("
-                                    + consume.getServiceName() + " vs " + serviceName
+                                    + consume.getServiceName() + " vs " + service
                                     + "), using Consumes information.");
                 }
             }
@@ -149,7 +150,7 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
 
             // We always use the operation from the process (the JBI Consumes defines the service used, not the
             // operation)
-            jbiExchange.setOperation(operationName);
+            jbiExchange.setOperation(operation);
 
             // Set timeout at CXF level. It must be upper than the timeout defined into SU JBI descriptor level)
             final long timeout = this.sender.getTimeout(consume);
@@ -186,6 +187,19 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
             // here manually.
             // TODO: Try to find a way to send exchange asynchronously
             if (cxfExchange.isOneWay()) {
+
+                // We store here service name, endpoint name and operation because if a timeout occurs we can't get them
+                // because we have not the ownership on the JBI exchange
+                final String serviceName = jbiExchange.getService() == null
+                        ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                        : jbiExchange.getService().toString();
+                final String endpointName = jbiExchange.getEndpointName() == null
+                        ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                        : jbiExchange.getEndpointName();
+                final String operationName = jbiExchange.getOperation() == null
+                        ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                        : jbiExchange.getOperation().toString();
+
                 if (this.sender.sendSync(jbiExchange)) {
                     if (jbiExchange.isErrorStatus()) {
                         // An error was returned
@@ -212,7 +226,10 @@ public class NormalizedMessageOutputStream extends ByteArrayOutputStream {
                     }
                 } else {
                     // A timeout occurs
-                    throw new MessagingException("A timeout occurs invoking service.");
+                    final String timeoutErrorMessage = String.format(StepLogHelper.TIMEOUT_ERROR_MSG_PATTERN, timeout,
+                            interfaceName, serviceName, endpointName, operationName,
+                            this.flowAttributes.getFlowInstanceId(), this.flowAttributes.getFlowStepId());
+                    throw new MessagingException(timeoutErrorMessage);
                 }
             } else {
                 this.sender.sendAsync(jbiExchange, new PetalsFlowableAsyncContext(cxfExchange, this.asyncCallback));

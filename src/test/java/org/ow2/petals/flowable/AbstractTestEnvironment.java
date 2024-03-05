@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.LogRecord;
+import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 
@@ -219,6 +220,19 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
 
         org.ow2.petals.flowable.utils.test.Assert.assertUserTaskEnded(processInstanceId, taskDefinitionKey, user,
                 FLOWABLE_CLIENT.getHistoryService());
+    }
+
+    /**
+     * Assertion to check that a process instance is put as dead letter job.
+     * 
+     * @param processInstanceId
+     *            The identifier of the process instance for which a service task was put put as dead letter job.
+     * @param errorMessagePattern
+     *            The message pattern of the error putting the job as dead letter job
+     */
+    protected void assertDeadLetterJob(final String processInstanceId, final Pattern errorMessagePattern) {
+        org.ow2.petals.flowable.utils.test.Assert.assertDeadLetterJob(processInstanceId, errorMessagePattern,
+                FLOWABLE_CLIENT.getManagementService());
     }
 
     /**
