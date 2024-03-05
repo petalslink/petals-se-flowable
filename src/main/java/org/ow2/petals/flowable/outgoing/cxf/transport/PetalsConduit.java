@@ -30,19 +30,25 @@ import java.util.logging.Logger;
 
 import javax.jbi.messaging.Fault;
 import javax.jbi.messaging.MessagingException;
+import javax.xml.namespace.QName;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.message.MessageImpl;
+import org.apache.cxf.service.model.EndpointInfo;
+import org.apache.cxf.service.model.OperationInfo;
 import org.apache.cxf.transport.AbstractConduit;
 import org.apache.cxf.ws.addressing.EndpointReferenceType;
 import org.flowable.engine.impl.context.Context;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
 import org.ow2.petals.commons.log.FlowAttributes;
+import org.ow2.petals.commons.log.PetalsExecutionContext;
 import org.ow2.petals.component.framework.api.exception.PEtALSCDKException;
+import org.ow2.petals.component.framework.jbidescriptor.generated.Consumes;
 import org.ow2.petals.component.framework.listener.AbstractListener;
+import org.ow2.petals.component.framework.logger.StepLogHelper;
 import org.ow2.petals.component.framework.util.SourceUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -185,10 +191,35 @@ public class PetalsConduit extends AbstractConduit implements AsyncCallback {
             final Exchange cxfExchange) {
 
         // A timeout occurs, the error is pushed into CXF exchange as a standard fault
-        final String errorMsg = String.format("A timeout occurs on exchange '%s'", asyncExchange.getExchangeId());
-        LOG.warning(errorMsg);
 
-        final Document xmlPayload = wrapAsSoapCommonFault(new Exception(errorMsg));
+        // TODO: Perhaps can we build the timeout error message at Petals CDK level, for example in new method of
+        // AbstractJBIListener ?
+
+        // 1 - We build the timeout error
+        final EndpointInfo endpointInfo = cxfExchange.getEndpoint().getEndpointInfo();
+        final QName interfaceName = endpointInfo.getInterface().getName();
+        final QName service = endpointInfo.getService().getName();
+        final OperationInfo operationInfo = cxfExchange.getBindingOperationInfo().getOperationInfo();
+        final QName operation = operationInfo.getName();
+        final Consumes consume = this.sender.getComponent().getServiceUnitManager().getConsumesFromDestination(null,
+                service, interfaceName, operation);
+
+        final String serviceName = service == null ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF : service.toString();
+        final String endpointName = consume.getEndpointName() == null ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                : consume.getEndpointName();
+        final String operationName = operation == null ? StepLogHelper.TIMEOUT_ERROR_MSG_UNDEFINED_REF
+                : operation.toString();
+        final FlowAttributes currentFlowAttributes = PetalsExecutionContext.getFlowAttributes();
+
+        final String timeoutErrorMessage = String.format(StepLogHelper.TIMEOUT_ERROR_MSG_PATTERN,
+                this.sender.getTimeout(consume), interfaceName, serviceName, endpointName, operationName,
+                currentFlowAttributes.getFlowInstanceId(), currentFlowAttributes.getFlowStepId());
+
+        final Exception timeoutException = new MessagingException(timeoutErrorMessage);
+        timeoutException.setStackTrace(new StackTraceElement[0]);
+
+        // 2 - Next, we put the timeout error into the CXF exchange as a standard fault
+        final Document xmlPayload = wrapAsSoapCommonFault(timeoutException);
 
         final EasyByteArrayOutputStream ebaos = new EasyByteArrayOutputStream();
         DOMHelper.prettyPrint(xmlPayload, ebaos);

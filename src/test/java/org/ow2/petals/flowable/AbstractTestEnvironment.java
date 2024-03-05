@@ -21,6 +21,7 @@ import static org.ow2.petals.flowable.FlowableSEConstants.DBServer.DEFAULT_JDBC_
 
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.apache.mina.util.AvailablePortFinder;
 import org.flowable.engine.runtime.ProcessInstance;
@@ -158,6 +159,19 @@ public abstract class AbstractTestEnvironment extends AbstractTest {
 
         org.ow2.petals.flowable.utils.test.Assert.assertUserTaskEnded(processInstanceId, taskDefinitionKey, user,
                 this.flowableClient.getHistoryService());
+    }
+
+    /**
+     * Assertion to check that a process instance is put as dead letter job.
+     * 
+     * @param processInstanceId
+     *            The identifier of the process instance for which a service task was put put as dead letter job.
+     * @param errorMessagePattern
+     *            The message pattern of the error putting the job as dead letter job
+     */
+    protected void assertDeadLetterJob(final String processInstanceId, final Pattern errorMessagePattern) {
+        org.ow2.petals.flowable.utils.test.Assert.assertDeadLetterJob(processInstanceId, errorMessagePattern,
+                this.flowableClient.getManagementService());
     }
 
     /**

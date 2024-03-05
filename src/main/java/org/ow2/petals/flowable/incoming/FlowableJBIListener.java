@@ -182,7 +182,8 @@ public class FlowableJBIListener extends AbstractJBIListener {
     @Override
     public void onExpiredAsyncJBIMessage(final Exchange asyncExchange, final AsyncContext asyncContext) {
 
-        // TODO: Add MONIT trace
+        super.onExpiredAsyncJBIMessage(asyncExchange, asyncContext);
+
         if (asyncContext instanceof PetalsFlowableAsyncContext) {
             final PetalsFlowableAsyncContext petalsFlowableAsyncContext = (PetalsFlowableAsyncContext) asyncContext;
 
@@ -191,7 +192,7 @@ public class FlowableJBIListener extends AbstractJBIListener {
 
         } else {
             this.getLogger().warning(
-                    "Unexpected expired asynchronous context received: " + asyncContext.getClass().getName());
+                    () -> "Unexpected expired asynchronous context received: " + asyncContext.getClass().getName());
         }
     }
 }

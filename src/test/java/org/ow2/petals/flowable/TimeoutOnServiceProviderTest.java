@@ -17,15 +17,25 @@
  */
 package org.ow2.petals.flowable;
 
+import java.util.List;
+import java.util.logging.LogRecord;
+
 import javax.jbi.messaging.ExchangeStatus;
 import javax.jbi.messaging.MessageExchange;
+import javax.xml.namespace.QName;
 import javax.xml.transform.Source;
 
+import org.flowable.job.api.DeadLetterJobQuery;
+import org.flowable.job.api.Job;
 import org.junit.Test;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation;
 import org.ow2.easywsdl.wsdl.api.abstractItf.AbsItfOperation.MEPPatternConstants;
+import org.ow2.petals.commons.log.FlowLogData;
+import org.ow2.petals.commons.log.Level;
+import org.ow2.petals.commons.log.TraceCode;
 import org.ow2.petals.component.framework.api.Constants;
 import org.ow2.petals.component.framework.junit.Message;
+import org.ow2.petals.component.framework.junit.MonitLogFilter;
 import org.ow2.petals.component.framework.junit.RequestMessage;
 import org.ow2.petals.component.framework.junit.ResponseMessage;
 import org.ow2.petals.component.framework.junit.StatusMessage;
@@ -34,6 +44,8 @@ import org.ow2.petals.component.framework.junit.helpers.ServiceProviderImplement
 import org.ow2.petals.component.framework.junit.impl.message.RequestToProviderMessage;
 import org.ow2.petals.component.framework.junit.impl.message.ResponseToConsumerMessage;
 import org.ow2.petals.component.framework.junit.impl.message.StatusToConsumerMessage;
+import org.ow2.petals.component.framework.listener.AbstractListener;
+import org.ow2.petals.component.framework.logger.StepLogHelper;
 import org.ow2.petals.se_flowable.unit_test.timeout_on_service.Start;
 import org.ow2.petals.se_flowable.unit_test.timeout_on_service.StartResponse;
 import org.ow2.petals.se_flowable.unit_test.timeout_on_service.archivageservice.ArchiverDefaultAsync;
@@ -111,7 +123,11 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         // The job associated to the service task is executed only once (configured in the BPMN process)
 
         this.waitProcessInstanceAsDeadLetterJob(processInstanceId.toString());
+        assertDeadLetterJobAsTimeout(processInstanceId.toString(), ARCHIVE_SHORT_TIMEOUT,
+                ARCHIVER_SHORT_SYNC_OPERATION);
 
+        // Assertion about the timeout warning message
+        assertTimeoutWarnMessage(ARCHIVER_SHORT_SYNC_OPERATION, ARCHIVE_SHORT_TIMEOUT);
     }
 
     /**
@@ -171,7 +187,11 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         // The job associated to the service task is executed only once (configured in the BPMN process)
 
         this.waitProcessInstanceAsDeadLetterJob(processInstanceId.toString());
+        assertDeadLetterJobAsTimeout(processInstanceId.toString(), ARCHIVE_SHORT_TIMEOUT,
+                ARCHIVER_SHORT_ASYNC_OPERATION);
 
+        // Assertion about the timeout warning message
+        assertTimeoutWarnMessage(ARCHIVER_SHORT_ASYNC_OPERATION, ARCHIVE_SHORT_TIMEOUT);
     }
 
     /**
@@ -245,6 +265,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         }, ExchangeStatus.DONE);
 
         this.waitEndOfProcessInstance(processInstanceId.toString(), ARCHIVE_LONG_TIMEOUT_S);
+
+        // Assertion about the timeout warning message: no timeout warning message expected
+        final List<LogRecord> warnRecords = IN_MEMORY_LOG_HANDLER.getAllRecords(java.util.logging.Level.WARNING);
+        assertEquals(0, warnRecords.size());
     }
 
     /**
@@ -323,6 +347,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         }, ExchangeStatus.DONE);
 
         this.waitEndOfProcessInstance(processInstanceId.toString(), ARCHIVE_LONG_TIMEOUT_S);
+
+        // Assertion about the timeout warning message: no timeout warning message expected
+        final List<LogRecord> warnRecords = IN_MEMORY_LOG_HANDLER.getAllRecords(java.util.logging.Level.WARNING);
+        assertEquals(0, warnRecords.size());
     }
 
     /**
@@ -382,7 +410,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         // The job associated to the service task is executed only once (configured in the BPMN process)
 
         this.waitProcessInstanceAsDeadLetterJob(processInstanceId.toString());
+        assertDeadLetterJobAsTimeout(processInstanceId.toString(), ARCHIVE_LONG_TIMEOUT, ARCHIVER_LONG_SYNC_OPERATION);
 
+        // Assertion about the timeout warning message
+        assertTimeoutWarnMessage(ARCHIVER_LONG_SYNC_OPERATION, ARCHIVE_LONG_TIMEOUT);
     }
 
     /**
@@ -460,6 +491,10 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         }, ExchangeStatus.DONE);
 
         this.waitEndOfProcessInstance(processInstanceId.toString(), ARCHIVE_LONG_TIMEOUT_S);
+
+        // Assertion about the timeout warning message: no timeout warning message expected
+        final List<LogRecord> warnRecords = IN_MEMORY_LOG_HANDLER.getAllRecords(java.util.logging.Level.WARNING);
+        assertEquals(0, warnRecords.size());
     }
 
     /**
@@ -519,7 +554,11 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         // The job associated to the service task is executed only once (configured in the BPMN process)
 
         this.waitProcessInstanceAsDeadLetterJob(processInstanceId.toString());
+        assertDeadLetterJobAsTimeout(processInstanceId.toString(), Constants.Component.DEFAULT_SEND_TIMEOUT,
+                ARCHIVER_DEFAULT_SYNC_OPERATION);
 
+        // Assertion about the timeout warning message
+        assertTimeoutWarnMessage(ARCHIVER_DEFAULT_SYNC_OPERATION, Constants.Component.DEFAULT_SEND_TIMEOUT);
     }
 
     /**
@@ -579,6 +618,44 @@ public class TimeoutOnServiceProviderTest extends TimeoutOnServiceProviderTestEn
         // The job associated to the service task is executed only once (configured in the BPMN process)
 
         this.waitProcessInstanceAsDeadLetterJob(processInstanceId.toString());
+        assertDeadLetterJobAsTimeout(processInstanceId.toString(), Constants.Component.DEFAULT_SEND_TIMEOUT,
+                ARCHIVER_DEFAULT_ASYNC_OPERATION);
 
+        // Assertion about the timeout warning message
+        assertTimeoutWarnMessage(ARCHIVER_DEFAULT_ASYNC_OPERATION, Constants.Component.DEFAULT_SEND_TIMEOUT);
+    }
+
+    private void assertTimeoutWarnMessage(final QName operation, final long timeout) {
+        final LogRecord firstStepLogRecord = new MonitLogFilter(
+                IN_MEMORY_LOG_HANDLER.getAllRecords(Level.MONIT))
+                        .traceCode(TraceCode.CONSUME_EXT_FLOW_STEP_BEGIN).singleResult();
+        final FlowLogData processFlowLogData = StepLogHelper.extractFlowLogDataFromLogRecord(firstStepLogRecord);
+
+        final List<LogRecord> warnRecords = IN_MEMORY_LOG_HANDLER.getAllRecords(java.util.logging.Level.WARNING);
+        assertEquals(1, warnRecords.size());
+        assertEquals(
+                String.format(AbstractListener.TIMEOUT_WARN_LOG_MSG_PATTERN, timeout, ARCHIVE_INTERFACE.toString(),
+                        ARCHIVE_SERVICE.toString(), ARCHIVE_ENDPOINT, operation.toString(),
+                        processFlowLogData.get(FlowLogData.FLOW_INSTANCE_ID_PROPERTY_NAME),
+                        processFlowLogData.get(FlowLogData.FLOW_STEP_ID_PROPERTY_NAME)),
+                warnRecords.get(0).getMessage());
+    }
+
+    private void assertDeadLetterJobAsTimeout(final String processInstanceId, final long timeout,
+            final QName operation) {
+
+        // We can't use a pattern for the assertion as into the trunk because the dead letter job truncates the error
+        // message
+
+        final DeadLetterJobQuery query = this.flowableClient.getManagementService().createDeadLetterJobQuery()
+                .processInstanceId(processInstanceId);
+        final Job job = query.singleResult();
+        assertNotNull("No pending dead letter job found.", job);
+        final String errorMessage = job.getExceptionMessage().trim();
+        assertEquals("Actual error message: " + errorMessage,
+                String.format(
+                        "javax.jbi.messaging.MessagingException: A timeout expired (%d ms) sending a message to a service provider ({http://petals.ow2.org/se-flowable/unit-test/timeout-on-service/archivageService}archiver|{http://petals.ow2.org/se-flowable/unit-test/timeout...",
+                        timeout),
+                errorMessage);
     }
 }

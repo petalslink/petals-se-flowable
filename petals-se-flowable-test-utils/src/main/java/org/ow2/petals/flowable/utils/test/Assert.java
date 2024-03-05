@@ -17,7 +17,10 @@
  */
 package org.ow2.petals.flowable.utils.test;
 
+import java.util.regex.Pattern;
+
 import org.flowable.engine.HistoryService;
+import org.flowable.engine.ManagementService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.history.HistoricProcessInstance;
@@ -26,6 +29,8 @@ import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ExecutionQuery;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.engine.runtime.ProcessInstanceQuery;
+import org.flowable.job.api.DeadLetterJobQuery;
+import org.flowable.job.api.Job;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
@@ -153,4 +158,25 @@ public class Assert extends org.junit.Assert {
         return execution;
     }
 
+    /**
+     * Assertion to check that a process instance is put as dead letter job.
+     * 
+     * @param processInstanceId
+     *            The identifier of the process instance for which a service task was put put as dead letter job.
+     * @param errorMessagePattern
+     *            The message pattern of the error putting the job as dead letter job
+     * @return The {@link Job} associated to the dead letter job.
+     */
+    public static Job assertDeadLetterJob(final String processInstanceId, final Pattern errorMessagePattern,
+            final ManagementService managementService) {
+
+        final DeadLetterJobQuery query = managementService.createDeadLetterJobQuery()
+                .processInstanceId(processInstanceId);
+        final Job job = query.singleResult();
+        assertNotNull("No pending dead letter job found.", job);
+        final String errorMessage = job.getExceptionMessage().trim();
+        assertTrue("Actual error message: " + errorMessage, errorMessagePattern.matcher(errorMessage).matches());
+
+        return job;
+    }
 }
