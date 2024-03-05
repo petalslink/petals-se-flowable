@@ -1,4 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (c) 2015-2024 Linagora
+
+ This program/library is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+
+ This program/library is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ for more details.
+
+ You should have received a copy of the GNU Lesser General Public License
+ along with this program/library; If not, see http://www.gnu.org/licenses/
+ for the GNU Lesser General Public License version 2.1.
+-->
 <con:soapui-project activeEnvironment="Default" name="Flowable Sample - Vacation Process" resourceRoot="" soapui-version="5.0.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="vacationBinding" type="wsdl" bindingName="{http://petals.ow2.org/samples/se-flowable/vacationService}vacationBinding" soapVersion="1_1" anonymous="optional" definition="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-bpmn2/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacationService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-bpmn2/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacationService.wsdl"><con:part><con:url>file:/home/cdeneux/workspace/petals-trunk/components-sls/components/petals-se-bpmn2/samples/su-flowable-vacationService-provide/src/main/resources/jbi/vacationService.wsdl</con:url><con:content><![CDATA[<!--Copyright (c) 2014-2015 Linagora
  
  This program/library is free software: you can redistribute it and/or modify
