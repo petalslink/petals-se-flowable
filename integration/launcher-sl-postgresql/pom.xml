@@ -36,7 +36,7 @@
          <type>jbi-component</type>
       </dependency>
       <dependency>
-         <artifactId>petals-sl-postgresql-9.4-1201-jdbc4</artifactId>
+         <artifactId>petals-sl-postgresql-42.7.4-jdbc42</artifactId>
          <groupId>org.ow2.petals</groupId>
          <type>jbi-shared-library</type>
       </dependency>
