@@ -54,7 +54,7 @@
          <type>jbi-component</type>
       </dependency>
       <dependency>
-         <artifactId>petals-sl-groovy-3.0.9</artifactId>
+         <artifactId>petals-sl-groovy-4.0.22</artifactId>
          <groupId>org.ow2.petals</groupId>
          <type>jbi-shared-library</type>
       </dependency>
