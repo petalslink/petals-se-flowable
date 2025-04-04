@@ -81,11 +81,6 @@
          <artifactId>flowable-cxf</artifactId>
          <scope>test</scope>
          <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
 			<exclusion>
                <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by Petals SE Flowable Junit framework-->
                <groupId>jakarta.jws</groupId>
@@ -135,25 +130,11 @@
          <groupId>org.patrodyne.jvnet</groupId>
          <artifactId>hisrc-basicjaxb-runtime</artifactId>
          <scope>test</scope>
-         <exclusions>
-			 <exclusion>
-                <!-- We prefer com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
-                <groupId>jakarta.activation</groupId>
-                <artifactId>jakarta.activation-api</artifactId>
-             </exclusion>
-		 </exclusions>
       </dependency>
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
          <scope>test</scope>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation provided by Petals SE Flowable Junit framework-->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
    </dependencies>
 

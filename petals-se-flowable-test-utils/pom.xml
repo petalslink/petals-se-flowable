@@ -54,18 +54,7 @@
                <groupId>org.springframework</groupId>
                <artifactId>spring-jcl</artifactId>
             </exclusion>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation that we prefer -->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
          </exclusions>
-      </dependency>
-      <dependency>
-         <!-- Required by flowable-engine -->
-         <groupId>com.sun.activation</groupId>
-         <artifactId>jakarta.activation</artifactId>
-         <scope>runtime</scope>
       </dependency>
       <dependency>
          <groupId>${flowable.groupId}</groupId>
@@ -85,35 +74,8 @@
       <dependency>
          <groupId>jakarta.xml.ws</groupId>
          <artifactId>jakarta.xml.ws-api</artifactId>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation provided by com.sun.mail:jakarta-mail -->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
    </dependencies>
-   
-   <build>
-      <plugins>
-         <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-               <execution>
-                  <id>analyze</id>
-                  <configuration>
-                     <usedDependencies>
-                        <!-- Required by flowable-engine in replacement of other dependencies -->
-                        <usedDependency>com.sun.activation:jakarta.activation</usedDependency>
-                     </usedDependencies>
-                  </configuration>
-               </execution>
-            </executions>
-         </plugin>
-      </plugins>
-   </build>
 
    <scm>
       <connection>scm:git:https://github.com/petalslink/petals-se-flowable.git</connection>

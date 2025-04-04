@@ -40,24 +40,10 @@
       <dependency>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation provided by Apache CXF -->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>jakarta.xml.ws</groupId>
          <artifactId>jakarta.xml.ws-api</artifactId>
-         <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation provided by Apache CXF -->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.apache.cxf</groupId>
@@ -65,11 +51,6 @@
          <version>${cxf.version}</version>
          <scope>runtime</scope>
          <exclusions>
-            <exclusion>
-               <!-- Already included in com.sun.activation:jakarta.activation provided by Apache CXF-->
-               <groupId>jakarta.activation</groupId>
-               <artifactId>jakarta.activation-api</artifactId>
-            </exclusion>
             <exclusion>
                <!-- Already included in jakarta.xml.ws:jakarta.xml.ws-api provided by Apache CXF-->
                <groupId>jakarta.jws</groupId>

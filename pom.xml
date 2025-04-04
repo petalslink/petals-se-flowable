@@ -115,31 +115,12 @@
 				<groupId>${flowable.groupId}</groupId>
 				<artifactId>flowable-engine</artifactId>
 				<version>${flowable.version}</version>
-				<exclusions>
-					<exclusion>
-						<!-- Already included in com.sun.activation:jakarta.activation provided by easycommon-util -->
-						<groupId>jakarta.activation</groupId>
-						<artifactId>jakarta.activation-api</artifactId>
-					</exclusion>
-					<exclusion>
-						<!-- Already included in com.sun.mail:jakarta.mail provided by petals-message-exchange -->
-						<groupId>jakarta.mail</groupId>
-						<artifactId>jakarta.mail-api</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			<dependency>
 				<!-- flowable-cxf adds support of WSDL-based services to the Flowable engine to call Petals services -->
 				<groupId>${flowable.groupId}</groupId>
 				<artifactId>flowable-cxf</artifactId>
 				<version>${flowable.version}</version>
-				<exclusions>
-					<exclusion>
-						<!-- Already included in com.sun.activation:jakarta.activation provided by easycommon-util -->
-						<groupId>jakarta.activation</groupId>
-						<artifactId>jakarta.activation-api</artifactId>
-					</exclusion>
-				</exclusions>
 			</dependency>
 			<dependency>
 				<!-- Align dependency 'org.eclipse.angus:angus-mail' between flowable-engine and flowable-cxf -->
@@ -185,24 +166,10 @@
 		<dependency>
 			<groupId>org.patrodyne.jvnet</groupId>
 			<artifactId>hisrc-basicjaxb-runtime</artifactId>
-			<exclusions>
-				<exclusion>
-					<!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
-			<exclusions>
-				<exclusion>
-					<!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.petals</groupId>
@@ -321,13 +288,6 @@
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-core</artifactId>
 			<version>4.0.2</version>
-			<exclusions>
-				<exclusion>
-					<!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<!-- flowable-ldap add support of LDAP integration -->
@@ -533,13 +493,6 @@
 			<artifactId>jersey-media-json-jackson</artifactId>
 			<version>${jersey.version}</version>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<!-- Already included in com.sun.activation:jakarta.activation provided by Petals CDK -->
-					<groupId>jakarta.activation</groupId>
-					<artifactId>jakarta.activation-api</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.inject</groupId>
