@@ -23,7 +23,7 @@
       <artifactId>petals-parent</artifactId>
       <groupId>org.ow2.petals</groupId>
       <relativePath />
-      <version>20.4.0-SNAPSHOT</version>
+      <version>20.4.0</version>
    </parent>
 
    <name>Petals ESB - Components - SE Flowable - Utilities for test</name>
@@ -34,7 +34,7 @@
    <properties>
       <!--flowable.version>6.7.2</flowable.version>
       <flowable.groupId>org.flowable</flowable.groupId-->
-      <flowable.version>7.0.0-PETALS-0-SNAPSHOT</flowable.version>
+      <flowable.version>7.0.0-PETALS-0</flowable.version>
       <flowable.groupId>org.ow2.petals.flowable</flowable.groupId>
    </properties>
    
