@@ -54,7 +54,7 @@
 			<!-- Align versions of dependencies hisrc-basicjaxb-runtime and spring-boot-starter-web-services to the upper one --> 
             <groupId>org.eclipse.angus</groupId>
             <artifactId>angus-activation</artifactId>
-            <version>2.0.1</version>
+            <version>2.0.2</version>
          </dependency>
          <dependency>
 			<!-- Align versions of dependencies hisrc-basicjaxb-runtime and jaxb-runtime to the upper one --> 
